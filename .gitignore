@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+_workspace
+
+# 콘텐츠 스테이징: 구조/문서는 추적, 실제 자료 파일은 제외
+content/exclusive-rights/*
+content/global/*
+content/domestic/*
+!content/**/.gitkeep
+!content/README.md

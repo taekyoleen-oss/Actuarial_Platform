@@ -1,0 +1,60 @@
+{
+  "$comment": "Insurance Insights Board API 계약 (api-designer). UI/QA가 이 응답 shape를 정확히 따른다.",
+  "version": "1.1",
+  "endpoints": {
+    "POST /api/posts/{id}/summarize": {
+      "auth": "public",
+      "description": "AI 요약 생성(캐시 미스 시) 또는 캐시 반환. 첫 생성 후 ib_posts.summary 캐싱.",
+      "request": { "params": { "id": "uuid" }, "body": null },
+      "response": {
+        "200": { "summary": "string", "cached": "boolean", "generated_at": "string(ISO)" },
+        "404": { "error": "post_not_found" },
+        "502": { "error": "summarize_failed" }
+      }
+    },
+    "POST /api/posts/{id}/view": {
+      "auth": "public",
+      "description": "조회수 +1 (RPC ib_increment_view). 게시글만 증가.",
+      "request": { "params": { "id": "uuid" }, "body": null },
+      "response": { "200": { "ok": true }, "404": { "error": "post_not_found" } }
+    },
+    "POST /api/comments": {
+      "auth": "public(anon)",
+      "description": "익명 댓글 작성. 길이 제한 + IP rate limit(v1.0 최소안).",
+      "request": {
+        "body": {
+          "post_id": "uuid",
+          "nickname": "string(1..20)",
+          "content": "string(1..1000)"
+        }
+      },
+      "response": {
+        "201": { "comment": { "id": "uuid", "post_id": "uuid", "nickname": "string", "content": "string", "created_at": "string(ISO)" } },
+        "400": { "error": "invalid_input", "detail": "string" },
+        "429": { "error": "rate_limited" }
+      }
+    },
+    "POST /api/upload": {
+      "auth": "admin",
+      "description": "관리자 파일 업로드(서버 service_role). Storage ib-attachments에 저장하고 ib_attachments 메타 기록.",
+      "request": { "form-data": { "post_id": "uuid", "file": "binary", "category_slug": "string" } },
+      "response": {
+        "201": { "attachment": { "id": "uuid", "file_name": "string", "storage_path": "string", "mime_type": "string", "file_size": "number" } },
+        "401": { "error": "unauthorized" },
+        "400": { "error": "invalid_file" }
+      }
+    }
+  },
+  "server_actions": {
+    "createPost": { "auth": "admin", "input": "{ title, content, category_id, author_name?, is_published }", "effect": "ib_posts INSERT", "returns": "{ id }" },
+    "updatePost": { "auth": "admin", "input": "{ id, ...fields }", "effect": "ib_posts UPDATE" },
+    "deletePost": { "auth": "admin", "input": "{ id }", "effect": "ib_posts DELETE (cascade attachments/comments)" },
+    "deleteComment": { "auth": "admin", "input": "{ id }", "effect": "ib_comments DELETE" }
+  },
+  "data_reads": {
+    "listPosts": "{ categorySlug?, q?, sort: 'latest'|'popular' } -> PostListItem[] (is_published=true)",
+    "getPost": "{ id } -> PostDetail | null (조회수 표시는 view_count)",
+    "listComments": "{ postId } -> Comment[] (created_at asc)",
+    "listCategories": "() -> Category[] (sort_order asc)"
+  }
+}

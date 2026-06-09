@@ -1,0 +1,76 @@
+@import "pretendard/dist/web/static/pretendard.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   Tesla 토큰 (tweakcn-tesla-theme 스킬)
+   비협상: 그림자 0, 강조 1색(#3E6AE1), 색상 트랜지션만 0.33s, weight 400/500
+   ========================================================= */
+:root {
+  --primary: #3e6ae1;
+  --background: #ffffff;
+  --surface-alt: #f4f4f4;
+  --foreground: #171a20;
+  --text-body: #393c41;
+  --text-tertiary: #5c5e62;
+  --placeholder: #8e8e8e;
+  --border: #eeeeee;
+  --dark-surface: #171a20;
+
+  --radius: 4px;
+  --radius-cover: 12px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 0.33s;
+
+  /* shadcn 호환 HSL 매핑 */
+  --color-background: 0 0% 100%;
+  --color-foreground: 220 16% 11%;
+  --color-primary: 224 73% 56%;
+  --color-primary-foreground: 0 0% 100%;
+  --color-muted: 0 0% 96%;
+  --color-muted-foreground: 220 3% 37%;
+  --color-border: 0 0% 93%;
+  --color-ring: 224 73% 56%;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    /* 색상 계열만 트랜지션 — scale/translate 금지 */
+    transition: color var(--dur) var(--ease),
+      background-color var(--dur) var(--ease),
+      border-color var(--dur) var(--ease),
+      fill var(--dur) var(--ease);
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--text-body);
+    font-family: Pretendard, Inter, -apple-system, system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: normal;
+  }
+  h1, h2, h3, h4 {
+    color: var(--foreground);
+    font-weight: 500;
+    letter-spacing: normal;
+  }
+  ::placeholder {
+    color: var(--placeholder);
+  }
+  /* 포커스 가시성 (WCAG AA: 키보드 내비) */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+/* 모노크롬 카테고리 커버 (카드 썸네일 기본안 b) */
+.cover-mono {
+  background: var(--surface-alt);
+  color: var(--text-tertiary);
+}
