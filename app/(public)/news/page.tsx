@@ -1,37 +1,31 @@
-import { NewsCard } from "@/components/feature/NewsCard";
-import { NewsFilters } from "@/components/feature/NewsFilters";
-import { listNews } from "@/lib/news";
+// 기존 배포된 보험 뉴스 대시보드(insurance-article)를 이 앱 프레임 안에 그대로 임베드.
+// 새로 설계하지 않고 운영 중인 사이트를 가져온다. URL은 env로 교체 가능.
+const NEWS_URL =
+  process.env.NEXT_PUBLIC_NEWS_URL ||
+  "https://taekyoleen-oss-insurance-article.vercel.app";
 
-export const revalidate = 300; // 뉴스는 크론 수집 → 5분 캐시
+export const metadata = { title: "보험 뉴스 — Insurance Insights Board" };
 
-export default async function NewsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; q?: string }>;
-}) {
-  const sp = await searchParams;
-  const articles = await listNews({ category: sp.category, q: sp.q });
-
+export default function NewsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <header className="mb-8">
-        <h1 className="text-2xl font-medium text-foreground">보험 뉴스</h1>
-        <p className="mt-1.5 text-sm text-tertiary">
-          국내 보험 뉴스를 자동 수집·요약하여 제공합니다.
-        </p>
-      </header>
-
-      <NewsFilters current={sp.category} q={sp.q} />
-
-      <div className="mt-8">
-        {articles.length === 0 ? (
-          <p className="py-20 text-center text-sm text-tertiary">
-            표시할 뉴스가 없습니다.
-          </p>
-        ) : (
-          articles.map((a) => <NewsCard key={a.id} article={a} />)
-        )}
+    <div className="flex flex-col" style={{ height: "calc(100vh - 3.5rem)" }}>
+      <div className="flex items-center justify-between border-b border-border px-6 py-2">
+        <span className="text-sm font-medium text-foreground">보험 뉴스</span>
+        <a
+          href={NEWS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-primary"
+        >
+          새 탭에서 열기 ↗
+        </a>
       </div>
+      <iframe
+        src={NEWS_URL}
+        title="보험 뉴스 대시보드"
+        className="w-full flex-1 border-0"
+        loading="lazy"
+      />
     </div>
   );
 }

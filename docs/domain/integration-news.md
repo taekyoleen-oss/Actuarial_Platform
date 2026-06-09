@@ -6,11 +6,13 @@
 - 뉴스 데이터: `ins_news_articles` 테이블 (RLS **읽기 공개**). 컬럼: id, title, url, summary, summary_short, snippet, source, published_at, category(생명보험/손해보험/제도·규제/상품/기타), edition(08:00/14:00), edition_date, cluster_id, is_representative.
 - 본 게시판은 이 **동일 프로젝트에 ADDITIVE로 추가**(`ib_` 격리, 충돌 없음).
 
-## 구현됨 (2026-06-09): 보드 내 "보험 뉴스" 섹션
+## 구현됨 (2026-06-09): 보드 내 "보험 뉴스" = 기존 사이트 임베드
 - 보드 앱에 내비 항목 "보험 뉴스" + `/news` 페이지 추가.
-- `lib/news.ts`의 `listNews()`가 **공유 anon 클라이언트로 `ins_news_articles`를 직접 읽음**(대표 기사만, 카테고리/검색 필터). 데이터 복제 없음 = 단일 출처.
-- 뉴스 앱은 계속 수집(크론), 보드는 읽기만 → 같이 작동. Next/Tailwind 버전 충돌 없음(앱 이식 안 함).
-- 제목은 `cleanNewsText()`로 `<b>`/HTML 엔티티 정리.
+- **방식 변경**: 보드에서 새로 구현하지 않고, **운영 중인 뉴스 대시보드 사이트를 `/news`에 iframe으로 임베드**한다.
+  - 임베드 URL: `NEXT_PUBLIC_NEWS_URL`(기본 `https://taekyoleen-oss-insurance-article.vercel.app`).
+  - 대상 사이트에 X-Frame-Options/CSP 프레임 차단 헤더가 없어 임베드 가능(확인 완료).
+  - 기존 앱(수집 크론·UI)을 그대로 사용 → 중복 구현/버전 충돌 없음. 보드는 프레임만 제공.
+- (이전의 `lib/news.ts` 직접-읽기 + NewsCard/NewsFilters는 제거. 향후 "결합" 단계에서 단일 DB 기반으로 재구현 예정 — 분리+브리지 뷰 `ib_feed_v` 참고.)
 
 ## 공존 안전성 (이미 충족)
 | 항목 | 격리 방식 |
