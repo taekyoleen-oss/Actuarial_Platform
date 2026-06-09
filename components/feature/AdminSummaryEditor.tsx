@@ -75,9 +75,9 @@ export function AdminSummaryEditor({
 
   return (
     <div className="border-t border-border pt-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-[15px] font-medium text-foreground">AI 요약</h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             size="sm"

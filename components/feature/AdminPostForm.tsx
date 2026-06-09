@@ -93,10 +93,12 @@ export function AdminPostForm({
               <li key={a.id}>{a.file_name}</li>
             ))}
           </ul>
-          <label className="mt-3 inline-block">
-            <span className="cursor-pointer text-sm font-medium text-primary">
-              {uploading ? "업로드 중…" : "+ PDF 추가"}
-            </span>
+          <label
+            className={`mt-3 flex h-11 w-full items-center justify-center gap-2 rounded border border-border px-4 text-sm font-medium text-primary transition-colors hover:border-primary sm:inline-flex sm:w-auto ${
+              uploading ? "pointer-events-none opacity-60" : "cursor-pointer"
+            }`}
+          >
+            {uploading ? "업로드 중…" : "📄 파일 선택 (PDF 검색)"}
             <input
               type="file"
               accept="application/pdf"
@@ -105,6 +107,9 @@ export function AdminPostForm({
               disabled={uploading}
             />
           </label>
+          <p className="mt-1.5 text-xs text-tertiary">
+            탭하면 기기에서 파일을 검색·선택합니다. 드래그앤드롭 없이 모바일에서도 업로드할 수 있습니다.
+          </p>
         </div>
       )}
 
