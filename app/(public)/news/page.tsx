@@ -2,7 +2,7 @@
 // 새로 설계하지 않고 운영 중인 사이트를 가져온다. URL은 env로 교체 가능.
 const NEWS_URL =
   process.env.NEXT_PUBLIC_NEWS_URL ||
-  "https://taekyoleen-oss-insurance-article.vercel.app";
+  "https://insurance-article-five.vercel.app";
 
 // 보드는 라이트 모드 → 임베드도 라이트 강제(뉴스 사이트가 ?theme= 파라미터 인식)
 const EMBED_URL = `${NEWS_URL}${NEWS_URL.includes("?") ? "&" : "?"}theme=light`;
