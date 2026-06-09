@@ -4,6 +4,9 @@ const NEWS_URL =
   process.env.NEXT_PUBLIC_NEWS_URL ||
   "https://taekyoleen-oss-insurance-article.vercel.app";
 
+// 보드는 라이트 모드 → 임베드도 라이트 강제(뉴스 사이트가 ?theme= 파라미터 인식)
+const EMBED_URL = `${NEWS_URL}${NEWS_URL.includes("?") ? "&" : "?"}theme=light`;
+
 export const metadata = { title: "보험 뉴스 — Insurance Insights Board" };
 
 export default function NewsPage() {
@@ -21,7 +24,7 @@ export default function NewsPage() {
         </a>
       </div>
       <iframe
-        src={NEWS_URL}
+        src={EMBED_URL}
         title="보험 뉴스 대시보드"
         className="w-full flex-1 border-0"
         loading="lazy"
