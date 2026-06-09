@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
+import { AdminSummaryEditor } from "@/components/feature/AdminSummaryEditor";
 import { createPost, updatePost } from "@/app/actions";
 import type { Attachment, Category, Post } from "@/types";
 
@@ -105,6 +106,10 @@ export function AdminPostForm({
             />
           </label>
         </div>
+      )}
+
+      {isEdit && post && (
+        <AdminSummaryEditor postId={post.id} initialSummary={post.summary} />
       )}
     </div>
   );

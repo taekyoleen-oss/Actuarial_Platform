@@ -43,7 +43,7 @@ export default async function PostDetailPage({
       </div>
 
       <div className="mt-8">
-        <SummaryPanel postId={id} initialSummary={post.summary} />
+        <SummaryPanel summary={post.summary} />
       </div>
 
       <div className="prose-tesla mt-8 whitespace-pre-wrap text-[15px] leading-relaxed text-body">

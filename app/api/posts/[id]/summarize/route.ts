@@ -1,36 +1,32 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { extractPdfText } from "@/lib/utils/pdf";
 import { summarize } from "@/lib/summarize";
 
 /**
- * AI 요약 — 캐시 우선. 미스 시 PDF 추출 → Sonnet 요약 → 캐싱.
- * 캐시 쓰기는 service_role(서버 전용)로 수행한다(익명은 ib_posts UPDATE 불가).
+ * AI 요약 생성 — 관리자 전용. PDF 추출 → Sonnet(개조식) → 저장 후 반환.
+ * 일반 사용자는 생성하지 않는다(공개 페이지는 저장된 요약을 읽기만).
  */
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const admin = await requireAdmin();
+  if (!admin.ok) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   const supabase = await createClient();
-
   const { data: post } = await supabase
     .from("ib_posts")
-    .select("id, title, content, summary, summary_generated_at, is_published")
+    .select("id, title, content")
     .eq("id", id)
     .maybeSingle();
 
-  if (!post || !post.is_published) {
+  if (!post) {
     return NextResponse.json({ error: "post_not_found" }, { status: 404 });
-  }
-
-  // 캐시 히트 → 재호출 0
-  if (post.summary) {
-    return NextResponse.json({
-      summary: post.summary,
-      cached: true,
-      generated_at: post.summary_generated_at,
-    });
   }
 
   try {
@@ -62,14 +58,13 @@ export async function POST(
     });
     const generated_at = new Date().toISOString();
 
-    // 캐싱 (service_role)
     const svc = createServiceClient();
     await svc
       .from("ib_posts")
       .update({ summary, summary_generated_at: generated_at })
       .eq("id", id);
 
-    return NextResponse.json({ summary, cached: false, generated_at });
+    return NextResponse.json({ summary, generated_at });
   } catch {
     return NextResponse.json({ error: "summarize_failed" }, { status: 502 });
   }
