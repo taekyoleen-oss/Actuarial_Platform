@@ -14,9 +14,9 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
-      <section className="mx-auto max-w-container px-6 pb-24">
-        <div className="mb-8 flex items-end justify-between">
-          <h2 className="text-2xl font-medium text-foreground">최신 자료</h2>
+      <section className="mx-auto max-w-container px-6 pb-24 pt-10">
+        <div className="mb-6 flex items-end justify-between">
+          <h2 className="text-xl font-medium text-foreground">최신 자료</h2>
           <Link href="/posts" className="text-sm font-medium text-primary">
             전체 보기
           </Link>
