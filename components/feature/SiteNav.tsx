@@ -29,10 +29,20 @@ export function SiteNav() {
       <nav className="mx-auto flex h-14 max-w-container items-center justify-between px-6">
         <Link
           href="/"
-          className="text-[15px] font-medium text-foreground"
+          className="flex items-center gap-2"
           onClick={() => setOpen(false)}
         >
-          Insurance Insights
+          {/* tkLeen 브랜드 마크 (라이트 헤더용) */}
+          <img
+            src="/brand/tkleen-mark.svg"
+            alt="tkLeen"
+            width={28}
+            height={28}
+            className="h-7 w-7 shrink-0"
+          />
+          <span className="text-[15px] font-medium text-foreground">
+            Insurance Insights
+          </span>
         </Link>
 
         {/* 데스크톱 (lg 이상) — 카테고리 폴더명 */}

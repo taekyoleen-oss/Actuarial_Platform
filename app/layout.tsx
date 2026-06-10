@@ -5,6 +5,7 @@ import { SiteNav } from "@/components/feature/SiteNav";
 export const metadata: Metadata = {
   title: "Insurance Insights Board",
   description: "보험 배타적 사용권·국내외 보험 정보 분석 자료 게시판",
+  icons: { icon: "/brand/tkleen-favicon.svg" },
 };
 
 // 모바일 반응형: viewport 메타가 없으면 데스크톱 폭(980px)으로 렌더→축소되어
@@ -24,8 +25,20 @@ export default function RootLayout({
       <body>
         <SiteNav />
         <main className="min-h-[calc(100vh-3.5rem)]">{children}</main>
-        <footer className="border-t border-border py-8 text-center text-sm text-tertiary">
-          © {new Date().getFullYear()} Insurance Insights Board
+        <footer className="border-t border-border py-10">
+          <div className="mx-auto flex max-w-container flex-col items-center gap-3 px-6 text-center">
+            {/* tkLeen 브랜드 락업 */}
+            <img
+              src="/brand/tkleen-lockup.svg"
+              alt="tkLeen — AI Workflows · Insurance & Finance"
+              width={170}
+              height={45}
+              className="h-10 w-auto"
+            />
+            <p className="text-xs text-tertiary">
+              © {new Date().getFullYear()} Insurance Insights Board · tkLeen
+            </p>
+          </div>
         </footer>
       </body>
     </html>
