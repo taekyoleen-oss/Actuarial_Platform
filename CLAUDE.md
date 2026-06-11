@@ -24,6 +24,7 @@
 | 2026-06-11 | 이론 사전 카드 단순화(제목↑커버↓) + PDF 노출 제거 | theory 목록/뷰어, lib/theory, README×2, theory-publisher 스킬 | 사용자 결정: 제목·그림 클릭=본문 진입 단일 동선, 보조 링크 없음, pdf는 폴더 보관만(html 필수). 스킬에 비협상으로 반영 |
 | 2026-06-11 | "만든이"(/about) 추가 — AI4Insurance 소개 이식 | app/(public)/about, SiteNav | AI4Insurance 프로젝트의 about(소개·신뢰지표·경력·성과·논문 8편·전문분야·철학)만 이식, 메뉴는 관리자 왼쪽. 나머지 섹션은 미이식 |
 | 2026-06-11 | 이론 사전 표시 제목 정리 규칙 | lib/theory.ts(displayTitle), README×2, theory-publisher 스킬 | 사용자 결정: '해설서' 단어 제거, `_`→띄어쓰기 (URL·파일명은 유지) |
+| 2026-06-11 | 이론 사전 제목 영문 병기 + '보험통계' 주제 추가 | lib/theory.ts(titleFromHtml, THEORY_TOPICS), public/theory/statistics, README×3, theory-publisher 스킬 | 제목은 html <title> "한글명 (영문명)" 자동 추출(폴백: 파일명 규칙). 주제 탭 3개: 생명/손해/보험통계 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 

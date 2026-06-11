@@ -9,6 +9,7 @@ import path from "node:path";
 export const THEORY_TOPICS = [
   { slug: "life", name: "생명보험" },
   { slug: "general", name: "손해보험" },
+  { slug: "statistics", name: "보험통계" },
 ] as const;
 
 export type TheoryTopicSlug = (typeof THEORY_TOPICS)[number]["slug"];
@@ -16,7 +17,7 @@ export type TheoryTopicSlug = (typeof THEORY_TOPICS)[number]["slug"];
 export interface TheoryItem {
   /** 파일명(확장자 제외) — 라우트 파라미터이자 html/pdf/svg 짝 매칭 키 */
   base: string;
-  /** 표시 제목 — displayTitle() 변환 결과 (숫자 접두사·'해설서' 제거, _ → 공백) */
+  /** 표시 제목 — html <title>의 "한글명 (영문명)" 우선, 폴백은 displayTitle() */
   title: string;
   htmlPath: string | null;
   pdfPath: string | null;
@@ -26,7 +27,22 @@ export interface TheoryItem {
 
 const ROOT = path.join(process.cwd(), "public", "theory");
 
-/** 표시 제목 규칙(2026-06-11 사용자 결정):
+/** html <title>에서 표시 제목 추출: "한글명 (영문명) — 학습 해설서" → "한글명 (영문명)".
+ *  공백으로 둘러싸인 대시(—·–·-) 이후 꼬리를 제거하므로 "Chain-ladder" 같은
+ *  단어 내 하이픈은 보존된다. 형식이 없으면 null → 파일명 규칙으로 폴백. */
+function titleFromHtml(filePath: string): string | null {
+  try {
+    const head = fs.readFileSync(filePath, "utf8").slice(0, 2000);
+    const m = head.match(/<title>([^<]+)<\/title>/i);
+    if (!m) return null;
+    const t = m[1].split(/\s+[—–-]\s+/)[0].trim();
+    return t || null;
+  } catch {
+    return null;
+  }
+}
+
+/** 표시 제목 폴백 규칙(2026-06-11 사용자 결정):
  *  숫자 접두사("01_") 제거 → "_"는 띄어쓰기로 → "해설서" 단어 제거.
  *  파일명·URL(base)은 바꾸지 않고 표시만 정리한다. */
 function displayTitle(base: string): string {
@@ -58,8 +74,11 @@ export function listTheoryItems(topic: TheoryTopicSlug): TheoryItem[] {
       coverPath: null,
     };
     const url = `/theory/${topic}/${encodeURIComponent(file)}`;
-    if (ext === ".html") item.htmlPath = url;
-    else if (ext === ".pdf") item.pdfPath = url;
+    if (ext === ".html") {
+      item.htmlPath = url;
+      // 영문 병기 제목(2026-06-11 사용자 요청): html <title>에서 자동 추출
+      item.title = titleFromHtml(path.join(dir, file)) ?? item.title;
+    } else if (ext === ".pdf") item.pdfPath = url;
     else item.coverPath = url;
     map.set(base, item);
   }
