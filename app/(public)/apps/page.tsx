@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ModelSelectIdent } from "@/components/feature/ModelSelectIdent";
 
 // 모델분석·업무지원 앱 모음 — App Collecter 프로젝트의 카드 데이터 중
 // 사용자가 지정한 7종만 이식(2026-06-11). 카드는 보드 공통 카드 시스템과 동일.
@@ -156,6 +157,11 @@ export default function AppsPage() {
         보험 실무에 바로 쓸 수 있는 자체 개발 앱 모음입니다. 카드를 누르면 새
         탭에서 앱이 열립니다.
       </p>
+
+      {/* 모델선택 아이덴트 — 데이터 흐름 → 최적 분류기 선택 (PC 전용) */}
+      <div className="mt-10 hidden lg:block">
+        <ModelSelectIdent className="mx-auto max-w-4xl" />
+      </div>
 
       <section className="mt-10">
         <h2 className="mb-6 flex items-center gap-2.5 text-xl font-medium text-foreground">

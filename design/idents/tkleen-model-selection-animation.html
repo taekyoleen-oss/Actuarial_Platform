@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tkLeen — Optimal Classifier Selection Ident</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --ink: #0A0A0A;
+    --sky: #4A90C2;
+    --navy: #1B2845;
+    --cream: #FAFAF7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Pretendard', 'Inter', sans-serif;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scene {
+    position: relative;
+    width: min(1020px, 96vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sky);
+  }
+  .headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(22px, 3.4vw, 32px);
+    margin-bottom: 6px;
+  }
+  .headline em { font-style: normal; color: var(--sky); font-weight: 400; }
+
+  .diagram { width: 100%; }
+
+  /* ── 노드 공통 ───────────── */
+  .node { opacity: 0; transform: translateY(10px); transform-box: fill-box; }
+  .node.go { animation: nodeIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes nodeIn { to { opacity: 1; transform: translateY(0); } }
+
+  .node rect.box {
+    fill: var(--cream);
+    stroke: var(--ink);
+    stroke-width: 1.3;
+    rx: 10;
+    transition: stroke 0.5s, fill 0.5s, opacity 0.6s;
+  }
+  .node text.title {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    fill: var(--ink);
+    transition: fill 0.5s, opacity 0.6s;
+  }
+  .node text.meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    fill: var(--ink);
+    opacity: 0.6;
+    transition: fill 0.5s, opacity 0.6s;
+  }
+  .node text.score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    fill: var(--sky);
+    transition: opacity 0.6s;
+  }
+
+  /* 패자 모듈 디밍 / 승자 강조 */
+  .node.dim rect.box { opacity: 0.32; }
+  .node.dim text { opacity: 0.22; }
+  .node.win rect.box {
+    stroke: var(--sky);
+    stroke-width: 2.2;
+    fill: #EEF5FB;
+  }
+  .node.win { animation: winPulse 3s ease-in-out infinite; }
+  @keyframes winPulse {
+    0%, 100% { filter: drop-shadow(0 0 0 rgba(74,144,194,0)); }
+    50% { filter: drop-shadow(0 0 10px rgba(74,144,194,0.45)); }
+  }
+  .win-badge { opacity: 0; }
+  .win-badge.go { animation: nodeIn 0.5s ease forwards; }
+  .win-badge rect { fill: var(--sky); rx: 9; }
+  .win-badge text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    fill: var(--cream);
+    font-weight: 500;
+  }
+
+  /* ── 연결선 ───────────── */
+  .link {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.1;
+    opacity: 0.3;
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    transition: opacity 0.7s, stroke 0.7s, stroke-width 0.7s;
+  }
+  .link.go { animation: drawLink 0.9s ease-out forwards; }
+  @keyframes drawLink { to { stroke-dashoffset: 0; } }
+  .link.dim { opacity: 0.07; }
+  .link.win-link {
+    stroke: var(--sky);
+    stroke-width: 2;
+    opacity: 0.9;
+  }
+
+  .pulse-dot { opacity: 0; }
+
+  /* ── 출력 분포 바 ───────────── */
+  .out-bar { transition: width 1s cubic-bezier(0.22,1,0.36,1); }
+
+  .principle {
+    margin-top: 10px;
+    font-size: 13.5px;
+    opacity: 0;
+    letter-spacing: 0.01em;
+  }
+  .principle.go { animation: fade70 0.9s ease forwards; }
+  @keyframes fade70 { to { opacity: 0.7; } }
+  .principle b { color: var(--sky); font-weight: 600; }
+
+  .replay {
+    position: absolute;
+    bottom: -52px;
+    right: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid rgba(10,10,10,0.18);
+    color: var(--ink);
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .replay:hover { border-color: var(--sky); color: var(--sky); }
+  .replay:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+  .concept-note {
+    position: absolute;
+    bottom: -52px;
+    left: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.38;
+    line-height: 1.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .node, .link, .principle, .win-badge {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      stroke-dashoffset: 0 !important;
+    }
+    .node.win { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="eyebrow">Model Selection · 최적 분류기 탐색</div>
+  <div class="headline">데이터가 흐르고, <em>최적의 분류</em>가 선택됩니다</div>
+
+  <svg class="diagram" id="svg" viewBox="0 0 1000 520"
+    aria-label="입력 특성 모듈에서 후보 머신러닝 모델 모듈로 데이터 펄스가 흐르고, 평가 점수가 가장 높은 모델의 경로가 하늘색으로 강조되며 최종 위험등급 분류가 출력되는 네트워크 애니메이션">
+    <g id="links"></g>
+    <g id="nodes"></g>
+    <g id="pulses"></g>
+  </svg>
+
+  <div class="principle" id="principle">
+    모든 후보 모듈을 <b>동일한 데이터로 평가</b>하고, 가장 높은 판별력의 모델만 <b>최종 분류 경로</b>로 채택합니다
+  </div>
+
+  <div class="concept-note">Concept 03<br>모듈 네트워크 → 최적 분류</div>
+  <button class="replay" id="replayBtn" type="button">Replay ↻</button>
+</div>
+
+<script>
+(function () {
+  const INK = '#0A0A0A', SKY = '#4A90C2', NAVY = '#1B2845', CREAM = '#FAFAF7';
+  const ns = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 네트워크 정의 ───────────── */
+  const inputs = [
+    { id: 'in0', label: '연령 · 성별', y: 120 },
+    { id: 'in1', label: '병력 · BMI', y: 215 },
+    { id: 'in2', label: '직업 · 운전', y: 310 },
+    { id: 'in3', label: '계약 정보', y: 405 },
+  ].map(d => ({ ...d, x: 60, w: 120, h: 46 }));
+
+  const models = [
+    { id: 'm0', label: 'GLM',           meta: 'baseline',  score: 0.812, y: 95 },
+    { id: 'm1', label: 'Random Forest', meta: 'ensemble',  score: 0.846, y: 200 },
+    { id: 'm2', label: 'GBM',           meta: 'boosting',  score: 0.873, y: 305, winner: true },
+    { id: 'm3', label: 'Neural Net',    meta: 'deep',      score: 0.861, y: 410 },
+  ].map(d => ({ ...d, x: 360, w: 170, h: 64 }));
+
+  const selector = { id: 'sel', x: 650, y: 230, w: 140, h: 76 };
+
+  const outputs = [
+    { id: 'o0', label: '우량체', pct: 32, y: 150 },
+    { id: 'o1', label: '표준체', pct: 51, y: 250 },
+    { id: 'o2', label: '할증체', pct: 17, y: 350 },
+  ].map(d => ({ ...d, x: 860, w: 130, h: 52 }));
+
+  let links = [], pulseTimers = [], timers = [], loopId = null;
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  function bezier(x1, y1, x2, y2) {
+    const mx = (x1 + x2) / 2;
+    return `M ${x1},${y1} C ${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+  }
+
+  function buildNetwork() {
+    const linksG = $('links'), nodesG = $('nodes');
+    linksG.innerHTML = ''; nodesG.innerHTML = ''; $('pulses').innerHTML = '';
+    links = [];
+
+    // 링크: 입력 → 모델 (전결합)
+    inputs.forEach(inp => models.forEach(m => {
+      addLink(inp.x + inp.w, inp.y, m.x, m.y, `L-${inp.id}-${m.id}`, m.winner);
+    }));
+    // 링크: 모델 → 셀렉터
+    models.forEach(m => {
+      addLink(m.x + m.w, m.y, selector.x, selector.y, `L-${m.id}-sel`, m.winner);
+    });
+    // 링크: 셀렉터 → 출력
+    outputs.forEach(o => {
+      addLink(selector.x + selector.w, selector.y, o.x, o.y, `L-sel-${o.id}`, true);
+    });
+
+    function addLink(x1, y1, x2, y2, id, toWinner) {
+      const p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', bezier(x1, y1, x2, y2));
+      p.setAttribute('class', 'link');
+      p.setAttribute('id', id);
+      linksG.appendChild(p);
+      links.push({ el: p, id, toWinner });
+    }
+
+    // 입력 노드
+    inputs.forEach(d => nodesG.appendChild(nodeBox(d, {
+      title: d.label, titleSize: 13, mono: false
+    })));
+    // 모델 노드 (점수 자리 포함)
+    models.forEach(d => {
+      const g = nodeBox(d, { title: d.label, meta: d.meta });
+      const s = document.createElementNS(ns, 'text');
+      s.setAttribute('x', d.x + d.w / 2);
+      s.setAttribute('y', d.y + 21);
+      s.setAttribute('text-anchor', 'middle');
+      s.setAttribute('class', 'score');
+      s.setAttribute('id', 'score-' + d.id);
+      s.textContent = 'AUC —';
+      g.appendChild(s);
+      nodesG.appendChild(g);
+    });
+    // 셀렉터 노드
+    const selG = nodeBox(selector, { title: '모델 선택', meta: 'argmax AUC' });
+    selG.setAttribute('id', 'node-sel');
+    const badge = document.createElementNS(ns, 'g');
+    badge.setAttribute('class', 'win-badge');
+    badge.setAttribute('id', 'selBadge');
+    badge.innerHTML =
+      `<rect x="${selector.x + 8}" y="${selector.y + 14}" width="${selector.w - 16}" height="20"/>` +
+      `<text x="${selector.x + selector.w / 2}" y="${selector.y + 28}" text-anchor="middle">GBM · 0.873</text>`;
+    selG.appendChild(badge);
+    nodesG.appendChild(selG);
+    // 출력 노드 (등급 + 분포 바)
+    outputs.forEach(d => {
+      const g = nodeBox(d, { title: d.label });
+      const barBg = document.createElementNS(ns, 'rect');
+      barBg.setAttribute('x', d.x + 12); barBg.setAttribute('y', d.y + 10);
+      barBg.setAttribute('width', d.w - 24); barBg.setAttribute('height', 5);
+      barBg.setAttribute('rx', 2.5); barBg.setAttribute('fill', 'rgba(10,10,10,0.08)');
+      const bar = document.createElementNS(ns, 'rect');
+      bar.setAttribute('x', d.x + 12); bar.setAttribute('y', d.y + 10);
+      bar.setAttribute('width', 0); bar.setAttribute('height', 5);
+      bar.setAttribute('rx', 2.5); bar.setAttribute('fill', SKY);
+      bar.setAttribute('class', 'out-bar'); bar.setAttribute('id', 'bar-' + d.id);
+      const pct = document.createElementNS(ns, 'text');
+      pct.setAttribute('x', d.x + d.w - 14); pct.setAttribute('y', d.y - 9);
+      pct.setAttribute('text-anchor', 'end'); pct.setAttribute('class', 'meta');
+      pct.setAttribute('id', 'pct-' + d.id);
+      pct.setAttribute('style', 'font-family:"JetBrains Mono",monospace;font-size:10.5px;fill:#4A90C2;opacity:0;font-weight:500;');
+      pct.textContent = d.pct + '%';
+      g.appendChild(barBg); g.appendChild(bar); g.appendChild(pct);
+      nodesG.appendChild(g);
+    });
+
+    function nodeBox(d, { title, meta }) {
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'node');
+      g.setAttribute('id', 'node-' + d.id);
+      const r = document.createElementNS(ns, 'rect');
+      r.setAttribute('class', 'box');
+      r.setAttribute('x', d.x); r.setAttribute('y', d.y - d.h / 2);
+      r.setAttribute('width', d.w); r.setAttribute('height', d.h);
+      r.setAttribute('rx', 10);
+      g.appendChild(r);
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('class', 'title');
+      t.setAttribute('x', d.x + d.w / 2);
+      t.setAttribute('y', meta ? d.y - 4 : d.y + 5);
+      t.setAttribute('text-anchor', 'middle');
+      t.textContent = title;
+      g.appendChild(t);
+      if (meta) {
+        const m = document.createElementNS(ns, 'text');
+        m.setAttribute('class', 'meta');
+        m.setAttribute('x', d.x + 12);
+        m.setAttribute('y', d.y - d.h / 2 + 16);
+        m.textContent = meta.toUpperCase();
+        g.appendChild(m);
+      }
+      return g;
+    }
+  }
+
+  /* 펄스: path를 따라 점이 흐름 */
+  function sendPulse(pathEl, color, dur, r) {
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('r', r || 4);
+    dot.setAttribute('fill', color);
+    dot.setAttribute('class', 'pulse-dot');
+    $('pulses').appendChild(dot);
+    const len = pathEl.getTotalLength();
+    const start = performance.now();
+    (function frame(now) {
+      const u = Math.min((now - (start || now)) / dur, 1);
+      const pt = pathEl.getPointAtLength(len * u);
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+      dot.style.opacity = u < 0.08 ? u / 0.08 : (u > 0.9 ? (1 - u) / 0.1 : 1);
+      if (u < 1) requestAnimationFrame(frame); else dot.remove();
+    })(start);
+  }
+
+  function countUp(el, target, dur, prefix) {
+    const start = performance.now();
+    (function frame(now) {
+      const u = Math.min((now - start) / dur, 1);
+      const e = 1 - Math.pow(1 - u, 3);
+      el.textContent = prefix + (target * e).toFixed(3);
+      if (u < 1) requestAnimationFrame(frame);
+    })(start);
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout); pulseTimers.forEach(clearInterval);
+    timers = []; pulseTimers = [];
+    if (loopId) { clearInterval(loopId); loopId = null; }
+    $('principle').classList.remove('go');
+  }
+
+  function play() {
+    reset();
+    buildNetwork();
+    const allIds = [...inputs, ...models, { id: 'sel' }, ...outputs].map(d => 'node-' + d.id);
+
+    if (reduceMotion) {
+      allIds.forEach(id => $(id).classList.add('go'));
+      links.forEach(l => l.el.classList.add('go'));
+      models.forEach(m => {
+        $('score-' + m.id).textContent = 'AUC ' + m.score.toFixed(3);
+        if (!m.winner) $('node-' + m.id).classList.add('dim');
+        else $('node-' + m.id).classList.add('win');
+      });
+      links.forEach(l => l.toWinner ? l.el.classList.add('win-link') : l.el.classList.add('dim'));
+      $('selBadge').classList.add('go');
+      outputs.forEach(o => {
+        $('bar-' + o.id).setAttribute('width', (o.w - 24) * o.pct / 100);
+        $('pct-' + o.id).style.opacity = 1;
+      });
+      $('principle').classList.add('go');
+      return;
+    }
+
+    // 1) 노드 등장: 입력 → 모델 → 셀렉터 → 출력
+    inputs.forEach((d, i) => later(() => $('node-' + d.id).classList.add('go'), 150 + i * 120));
+    models.forEach((d, i) => later(() => $('node-' + d.id).classList.add('go'), 700 + i * 120));
+    later(() => $('node-sel').classList.add('go'), 1250);
+    outputs.forEach((d, i) => later(() => $('node-' + d.id).classList.add('go'), 1400 + i * 110));
+
+    // 2) 연결선 드로잉
+    links.forEach((l, i) => later(() => l.el.classList.add('go'), 1700 + (i % 8) * 90));
+
+    // 3) 데이터 펄스: 입력→모델 전 경로 3 웨이브 + 점수 카운트업
+    const flowStart = 2900;
+    for (let wave = 0; wave < 3; wave++) {
+      later(() => {
+        links.filter(l => l.id.startsWith('L-in')).forEach((l, i) => {
+          setTimeout(() => sendPulse(l.el, INK, 800), (i % 4) * 90 + Math.random() * 120);
+        });
+      }, flowStart + wave * 700);
+    }
+    models.forEach((m, i) => later(() =>
+      countUp($('score-' + m.id), m.score, 1500, 'AUC '), flowStart + 600 + i * 150));
+
+    // 4) 승자 결정: GBM 강조, 나머지 디밍
+    const judge = flowStart + 2700;
+    later(() => {
+      models.forEach(m => {
+        const node = $('node-' + m.id);
+        if (m.winner) node.classList.add('win');
+        else node.classList.add('dim');
+      });
+      links.forEach(l => {
+        if (l.toWinner) l.el.classList.add('win-link');
+        else l.el.classList.add('dim');
+      });
+    }, judge);
+
+    // 5) 승자 경로 펄스 → 셀렉터 배지 → 출력 분포
+    later(() => {
+      links.filter(l => l.id === 'L-m2-sel').forEach(l => sendPulse(l.el, SKY, 900, 5));
+    }, judge + 400);
+    later(() => $('selBadge').classList.add('go'), judge + 1200);
+    later(() => {
+      links.filter(l => l.id.startsWith('L-sel')).forEach((l, i) =>
+        setTimeout(() => sendPulse(l.el, SKY, 800, 4.5), i * 160));
+    }, judge + 1500);
+    later(() => {
+      outputs.forEach(o => {
+        $('bar-' + o.id).setAttribute('width', (o.w - 24) * o.pct / 100);
+        $('pct-' + o.id).style.opacity = 1;
+      });
+    }, judge + 2200);
+    later(() => $('principle').classList.add('go'), judge + 2700);
+
+    // 6) 루프: 최적 경로 위로 잔잔한 펄스 반복
+    later(() => {
+      loopId = setInterval(() => {
+        const path1 = links.filter(l => l.id.startsWith('L-in') && l.id.endsWith('-m2'));
+        path1.forEach((l, i) => setTimeout(() => sendPulse(l.el, SKY, 900, 3.5), i * 110));
+        setTimeout(() => {
+          const l2 = links.find(l => l.id === 'L-m2-sel');
+          if (l2) sendPulse(l2.el, SKY, 800, 4);
+        }, 750);
+        setTimeout(() => {
+          links.filter(l => l.id.startsWith('L-sel')).forEach((l, i) =>
+            setTimeout(() => sendPulse(l.el, SKY, 750, 3.5), i * 130));
+        }, 1450);
+      }, 3200);
+    }, judge + 3000);
+  }
+
+  $('replayBtn').addEventListener('click', play);
+  play();
+})();
+</script>
+</body>
+</html>

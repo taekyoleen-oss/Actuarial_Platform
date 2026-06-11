@@ -17,3 +17,4 @@
 |------|----------|--------|
 | `tkleen-hero-animation.html` (Risk Pooling Ident — TK 픽셀 리거처) | `components/feature/HeroIdent.tsx` | 홈 히어로 우측(PC), 모바일 헤더 마크 |
 | `tkleen-theory-dictionary-animation.html` (무질서→질서 풀링 모션) | `components/feature/PoolIdent.tsx` | 보험이론 사전 페이지 헤더 우측(PC), 상시 루프 |
+| `tkleen-model-selection-animation.html` (최적 분류기 선택 네트워크) | `components/feature/ModelSelectIdent.tsx` | 모델분석/업무지원앱(/apps) 헤더 하단 전폭(PC), 1회 연출 후 최적 경로 펄스 루프 |
