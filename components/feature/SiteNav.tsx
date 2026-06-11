@@ -15,6 +15,7 @@ const CATEGORIES = [
 const EXTRA = [
   { href: "/theory", name: "보험이론 사전" },
   { href: "/news", name: "보험 뉴스" },
+  { href: "/apps", name: "모델분석/업무지원앱" },
   { href: "/about", name: "만든이" },
   { href: "/admin", name: "관리자" },
 ];
@@ -44,14 +45,13 @@ export function SiteNav() {
             height={28}
             className="hidden h-7 w-7 shrink-0 lg:block"
           />
-          {/* lg 구간은 메뉴 7개가 빠듯해 워드마크 텍스트를 xl부터 표시 */}
-          <span className="text-[15px] font-medium text-foreground lg:hidden xl:inline">
+          <span className="text-[15px] font-medium text-foreground">
             Insurance Insights
           </span>
         </Link>
 
-        {/* 데스크톱 (lg 이상) — 카테고리 폴더명 */}
-        <div className="hidden items-center gap-4 text-sm font-medium lg:flex xl:gap-5">
+        {/* 데스크톱 — 메뉴 8개라 xl(1280px)부터 풀 메뉴, 그 아래는 햄버거 */}
+        <div className="hidden items-center gap-4 text-sm font-medium xl:flex">
           {CATEGORIES.map((c) => (
             <Link
               key={c.slug}
@@ -68,21 +68,21 @@ export function SiteNav() {
           ))}
         </div>
 
-        {/* 모바일 햄버거 (lg 미만) */}
+        {/* 햄버거 (xl 미만) */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label="메뉴 열기/닫기"
           aria-expanded={open}
-          className="text-foreground lg:hidden"
+          className="text-foreground xl:hidden"
         >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
 
-      {/* 모바일 드롭다운 패널 */}
+      {/* 드롭다운 패널 (xl 미만) */}
       {open && (
-        <div className="border-t border-border bg-white lg:hidden">
+        <div className="border-t border-border bg-white xl:hidden">
           <div className="mx-auto max-w-container px-6 py-2">
             {CATEGORIES.map((c) => (
               <Link
