@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 총 손실 모델링: 개별 클레임이 깔때기를 지나 총손실 S로 합산 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 떨어지는 개별 클레임 블록 -->
+  <g stroke="#171A20" stroke-width="2">
+    <rect x="172" y="60" width="16" height="16" fill="#EEF4FF"/>
+    <rect x="216" y="48" width="12" height="12" fill="#ECFDF5"/>
+    <rect x="254" y="64" width="18" height="18" fill="#FFF7ED"/>
+    <rect x="196" y="90" width="13" height="13" fill="#F5F3FF"/>
+    <rect x="238" y="94" width="15" height="15" fill="#EAF2F9"/>
+  </g>
+  <!-- 깔때기 -->
+  <path d="M 146 124 L 334 124 L 262 192 L 262 224 L 218 224 L 218 192 Z"
+        fill="#FFFFFF" stroke="#171A20" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 총손실 S 블록 (Sky) -->
+  <rect x="206" y="236" width="68" height="36" rx="6" fill="#4A90C2" stroke="#171A20" stroke-width="3"/>
+  <text x="296" y="260" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">S = ΣX</text>
+  <!-- 깔때기 가장자리에서 지켜보는 캐릭터 -->
+  <g transform="translate(352 110)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

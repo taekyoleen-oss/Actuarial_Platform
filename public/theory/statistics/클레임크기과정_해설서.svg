@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 클레임 크기 과정: 시간축 위 제각각인 클레임 크기, 최대 클레임만 Sky -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <path d="M 72 70 L 72 238 L 420 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 클레임 크기 롤리팝 -->
+  <g stroke="#171A20" stroke-width="2.5" stroke-linecap="round">
+    <line x1="120" y1="238" x2="120" y2="186"/>
+    <line x1="168" y1="238" x2="168" y2="146"/>
+    <line x1="216" y1="238" x2="216" y2="200"/>
+    <line x1="264" y1="238" x2="264" y2="120"/>
+    <line x1="312" y1="238" x2="312" y2="168"/>
+    <line x1="360" y1="238" x2="360" y2="188"/>
+  </g>
+  <circle cx="120" cy="186" r="7" fill="#EEF4FF" stroke="#171A20" stroke-width="2.5"/>
+  <circle cx="168" cy="146" r="7" fill="#ECFDF5" stroke="#171A20" stroke-width="2.5"/>
+  <circle cx="216" cy="200" r="7" fill="#FFF7ED" stroke="#171A20" stroke-width="2.5"/>
+  <circle cx="264" cy="120" r="8" fill="#4A90C2" stroke="#171A20" stroke-width="2.5"/>
+  <circle cx="312" cy="168" r="7" fill="#F5F3FF" stroke="#171A20" stroke-width="2.5"/>
+  <circle cx="360" cy="188" r="7" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="82" y="64" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">X_i</text>
+  <text x="398" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">t →</text>
+  <!-- 최대 클레임을 올려다보는 캐릭터 -->
+  <g transform="translate(392 223)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-3" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-3" r="1.8" fill="#171A20"/>
+    <path d="M -4.5 4.5 L 4.5 4.5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

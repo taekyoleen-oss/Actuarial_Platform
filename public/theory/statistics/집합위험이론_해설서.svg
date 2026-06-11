@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 집합위험 이론: 보험료로 오르고 클레임마다 떨어지는 잉여금 U(t) 경로 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 경로 아래 면 -->
+  <path d="M 80 150 L 135 126 L 135 170 L 195 144 L 195 200 L 255 174 L 255 224 L 330 192 L 400 162 L 400 238 L 80 238 Z"
+        fill="#EAF2F9"/>
+  <!-- 좌표축 -->
+  <path d="M 72 70 L 72 238 L 420 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 잉여금 경로 (Sky) -->
+  <path d="M 80 150 L 135 126 L 135 170 L 195 144 L 195 200 L 255 174 L 255 224 L 330 192 L 400 162"
+        fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="82" y="64" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">U(t)</text>
+  <text x="54" y="154" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">u</text>
+  <text x="398" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">t →</text>
+  <!-- 경로 끝에서 안도하는 캐릭터 -->
+  <g transform="translate(400 147)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -4.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -4.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

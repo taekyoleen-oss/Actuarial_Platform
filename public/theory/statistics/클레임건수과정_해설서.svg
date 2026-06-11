@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 클레임 건수 과정: 사고가 도착할 때마다 한 칸씩 오르는 계단 N(t) -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <path d="M 72 70 L 72 238 L 420 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 계단 함수 (Sky) -->
+  <path d="M 80 222 L 140 222 L 140 196 L 196 196 L 196 170 L 234 170 L 234 144 L 312 144 L 312 118 L 396 118"
+        fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 클레임 도착 시점 -->
+  <g fill="#171A20" opacity=".55">
+    <circle cx="140" cy="238" r="3.5"/>
+    <circle cx="196" cy="238" r="3.5"/>
+    <circle cx="234" cy="238" r="3.5"/>
+    <circle cx="312" cy="238" r="3.5"/>
+  </g>
+  <text x="82" y="64" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">N(t)</text>
+  <text x="398" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">t →</text>
+  <!-- 계단 위에 앉은 캐릭터 -->
+  <g transform="translate(273 129)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
