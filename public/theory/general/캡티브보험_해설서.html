@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>캡티브 (Captives) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>캡티브 (자가전속보험)</h1>
+<div class="meta">Captives &nbsp;·&nbsp; 원저자: Roger Wade &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>캡티브 보험회사(captive insurance company)</b>는 <b>자기 모회사(소유주)의 위험을 인수</b>한다는 제한된 목적으로 설립되는 보험회사다. 한 모회사가 단독 소유할 수도, 여러 소유주가 그룹으로 소유할 수도 있다. 그밖에 제3자가 소유·운영하여 자체 캡티브를 갖기엔 너무 작은 기업에게 대안적 위험금융 수단을 제공하는 <b>렌터캡티브(rent-a-captive)</b>와 <b>보호셀 캡티브(protected cell captive)</b>도 있다.</p>
+<p>일반적으로 캡티브는 자가관리식 자가보험(self-insurance)보다 <b>더 공식화·전문화된 구조</b>로 소유주의 위험을 자가보험한다. 이를 통해 <b>초과보험(excess insurance)</b> 구매 능력이 강화되고, <b>재보험 시장에 직접 접근</b>할 수 있게 된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 캡티브 = "우리 회사를 위한 우리 보험사"</div><p style="margin-bottom:0">대기업이 자기 위험(공장 화재, 배상책임 등)을 외부 보험사에 맡기는 대신, <b>스스로 보험회사를 하나 차려</b> 그 위험을 인수하게 하는 것이 캡티브다. 자가보험을 “회사 형태로 제도화”한 것으로, 보험료가 외부로 새지 않고 그룹 안에 남으며, 재보험 시장에 직접 접근해 위험을 더 싸게 분산할 수 있다.</p></div>
+<h2>2. 설립지(domicile)와 규제 <span class="en">Domiciles & Regulation</span></h2>
+<p>캡티브 설립을 쉽게 하도록 <b>유연한 규제</b>를 갖춘 설립지(domicile)가 많다. 이는 <b>보험료세 인하, 낮은 자본금 요건, 더 완화된 규제</b> 형태로 나타난다. 요구되는 보험계리 서비스는 캡티브 유형·설립지마다 다르다. 일부 설립지(미국 전역과 버뮤다 등)는 <b>연차 보험계리 의견서(statement of opinion)</b>를 요구한다. 작성 시점 기준 케이맨 제도·영국령 버진아일랜드 등은 그런 요건이 없었다. 많은 설립지가 규제당국 제출용 <b>캡티브 타당성 검토(feasibility study)</b>에 보험계리 분석을 첨부하도록 요구하며, 대부분 캡티브 업무를 수행하는 계리사가 설립지 규제당국에 <b>등록·승인</b>되도록 한다.</p>
+<h2>3. 보험계리·세무상 고려 <span class="en">Actuarial & Tax Aspects</span></h2>
+<p>그룹 캡티브에서는 여러 소유주 간 형평을 지키기 위해 <b>보험료 산정, 분담금 결정, 이익 배분</b>이 주요 고려사항이다. 또한 보험회사가 모회사 대비 받을 수 있는 <b>미국 세제상 유리함</b> 때문에, 캡티브 설계에서 <b>세무 계획</b>이 중요하다. 세제 이점은 <b>손해준비금(loss reserve)</b>을 곧바로 비용으로 인정받는 것과 실제 지급 시점에 인정받는 것 사이의 <b>시점 차이</b>에서 나온다. 이때 보험계리는 보장에 대한 <b>독립거래 가격(arms length pricing)</b> 산정과 <b>위험이전(risk transfer) 요건 검증</b>을 지원한다.</p>
+<p>캡티브에 담기 좋은 대표 보장은 <b>산업재해보상</b>과 의료과실·제조물책임 같은 <b>장기지급형(롱테일) 배상책임</b>이다. 일단 이들 보장으로 캡티브가 정당화되면, 자동차배상 등 다른 모회사 위험도 함께 담는 것이 일반적이다. 신용위험·테러·건설디폴트·보증위험처럼 상업시장에서 구하기 어려운 위험도 캡티브에 인수된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 캡티브가 유리한 상황 판단</div><p class="q">한 대기업이 매년 안정적으로 일정 규모의 손해가 발생하는 산재·배상책임 위험을 갖고 있고, 외부 보험료가 기대손해보다 크게 높다. 캡티브가 합리적인가?</p><p style="margin-bottom:0">손해가 <b>예측 가능하고 빈도가 충분</b>하면 자가보험의 풀링 효과가 크고, 외부 사업비·이윤 마진을 절감할 수 있어 캡티브가 유리하다. 추가로 (1) 재보험 직접 접근으로 거대위험만 재보험에 넘기고, (2) 손해준비금의 <b>세무 시점 차이</b>로 현금흐름 이점을 얻는다. 다만 자본금·규제·운영비용과 위험이전 요건 충족 여부를 함께 따져야 한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Self-insurance(자가보험) · Reserving in Non-life Insurance(손해보험 준비금) · Reinsurance(재보험) · Alternative Risk Transfer(대체위험전가)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>캡티브 (captive)</b> — 모회사(소유주)의 위험만 인수하려고 세운 전속 보험회사.</li><li><b>렌터캡티브 (rent-a-captive)·보호셀 (protected cell)</b> — 제3자가 운영하는 캡티브 설비를 빌려 쓰는 소규모 기업용 구조.</li><li><b>자가보험 (self-insurance)</b> — 외부 보험에 들지 않고 위험을 스스로 부담·적립하는 방식.</li><li><b>설립지 (domicile)</b> — 캡티브가 설립·규제되는 관할지(버뮤다, 케이맨, 미국 버몬트 등).</li><li><b>초과보험 (excess insurance)</b> — 일정 금액을 넘는 손해만 보장하는 상위 계층 보험.</li><li><b>손해준비금 (loss reserve)</b> — 아직 지급하지 않은 미래 보험금 지급에 대비해 쌓는 부채.</li><li><b>위험이전 (risk transfer)</b> — 보험으로 인정받으려면 실제로 위험이 보험사로 넘어가야 한다는 요건.</li><li><b>롱테일(장기지급) 배상책임 (long-tail liability)</b> — 사고 후 보험금 확정·지급까지 오래 걸리는 배상책임 보험.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Captives”, Roger Wade. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

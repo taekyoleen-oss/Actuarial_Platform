@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 신뢰도법 지급준비금: 자기 자료(z)와 집단 평균(1−z)을 다는 천칭 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 지면 -->
+  <line x1="110" y1="232" x2="380" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 천칭: 기둥·받침·기울어진 보(집단 쪽이 무거움) -->
+  <path d="M 218 232 L 262 232 L 240 218 Z" fill="#FFFFFF" stroke="#171A20" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="240" y1="218" x2="240" y2="120" stroke="#171A20" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="152" y1="108" x2="328" y2="126" stroke="#171A20" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="240" cy="117" r="5" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+  <!-- 왼쪽 접시(자기 자료 z) -->
+  <line x1="152" y1="108" x2="152" y2="138" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 124 138 Q 152 156 180 138" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <rect x="138" y="124" width="28" height="13" rx="2" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="146" y="98" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">z</text>
+  <!-- 오른쪽 접시(집단 평균 1−z) -->
+  <line x1="328" y1="126" x2="328" y2="156" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 300 156 Q 328 174 356 156" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <rect x="312" y="142" width="32" height="13" rx="2" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <rect x="312" y="128" width="32" height="13" rx="2" fill="#FFFFFF" stroke="#171A20" stroke-width="2.5"/>
+  <rect x="312" y="114" width="32" height="13" rx="2" fill="#4A90C2" stroke="#171A20" stroke-width="2.5"/>
+  <text x="308" y="100" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">1−z</text>
+  <!-- 가중평균을 살피는 캐릭터 -->
+  <g transform="translate(120 217)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
