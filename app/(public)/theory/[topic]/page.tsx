@@ -75,39 +75,53 @@ export default async function TheoryTopicPage({
         </p>
       ) : (
         <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <article
-              key={item.base}
-              className="flex flex-col rounded-cover border border-border bg-white p-5 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
-            >
-              <h2 className="flex-1 text-lg font-semibold leading-snug text-brand-sky">
-                <Link
-                  href={`/theory/${t.slug}/v/${encodeURIComponent(item.base)}`}
-                  className="hover:text-primary"
-                >
-                  {item.title}
-                </Link>
-              </h2>
-              <div className="mt-4 flex items-center gap-3 text-sm font-medium">
-                <Link
-                  href={`/theory/${t.slug}/v/${encodeURIComponent(item.base)}`}
-                  className="text-primary"
-                >
-                  {item.htmlPath ? "HTML 열람" : "PDF 열람"}
-                </Link>
-                {item.pdfPath && (
-                  <a
-                    href={item.pdfPath}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-tertiary hover:text-foreground"
+          {items.map((item) => {
+            const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
+            return (
+              <article
+                key={item.base}
+                className="flex flex-col overflow-hidden rounded-cover border border-border bg-white shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+              >
+                {/* 커버 일러스트 (플랫 카툰 SVG — theory-publisher 스킬 생성) */}
+                {item.coverPath && (
+                  <Link
+                    href={viewerHref}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="block border-b border-border"
                   >
-                    PDF ↓
-                  </a>
+                    <img
+                      src={item.coverPath}
+                      alt=""
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  </Link>
                 )}
-              </div>
-            </article>
-          ))}
+                <div className="flex flex-1 flex-col p-5">
+                  <h2 className="flex-1 text-lg font-semibold leading-snug text-brand-sky">
+                    <Link href={viewerHref} className="hover:text-primary">
+                      {item.title}
+                    </Link>
+                  </h2>
+                  <div className="mt-4 flex items-center gap-3 text-sm font-medium">
+                    <Link href={viewerHref} className="text-primary">
+                      {item.htmlPath ? "HTML 열람" : "PDF 열람"}
+                    </Link>
+                    {item.pdfPath && (
+                      <a
+                        href={item.pdfPath}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-tertiary hover:text-foreground"
+                      >
+                        PDF ↓
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

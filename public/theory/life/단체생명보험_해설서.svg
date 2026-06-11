@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 단체생명보험: 하나의 우산 아래 모인 구성원들, 비는 우산 밖에만 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <g stroke="#4A90C2" stroke-width="3" stroke-linecap="round" opacity=".55">
+    <line x1="96" y1="118" x2="90" y2="132"/>
+    <line x1="112" y1="162" x2="106" y2="176"/>
+    <line x1="74" y1="196" x2="68" y2="210"/>
+    <line x1="384" y1="110" x2="378" y2="124"/>
+    <line x1="402" y1="158" x2="396" y2="172"/>
+    <line x1="372" y1="200" x2="366" y2="214"/>
+  </g>
+  <path d="M 140 152 A 100 100 0 0 1 340 152 Z" fill="#4A90C2" stroke="#171A20" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="240" y1="52" x2="240" y2="44" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 240 152 L 240 206 Q 240 215 231 215" fill="none" stroke="#171A20" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="130" y1="232" x2="350" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <g transform="translate(178 216)">
+    <circle r="13" fill="#EEF4FF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(219 216)">
+    <circle r="13" fill="#ECFDF5" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -4.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -4.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(261 216)">
+    <circle r="13" fill="#FFF7ED" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(302 216)">
+    <circle r="13" fill="#F5F3FF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M 2.5 -2 L 6.5 -2" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

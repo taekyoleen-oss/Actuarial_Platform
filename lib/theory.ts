@@ -14,12 +14,14 @@ export const THEORY_TOPICS = [
 export type TheoryTopicSlug = (typeof THEORY_TOPICS)[number]["slug"];
 
 export interface TheoryItem {
-  /** 파일명(확장자 제외) — 라우트 파라미터이자 html/pdf 짝 매칭 키 */
+  /** 파일명(확장자 제외) — 라우트 파라미터이자 html/pdf/svg 짝 매칭 키 */
   base: string;
   /** 표시 제목 — base에서 "01_" 같은 정렬용 숫자 접두사를 제거한 것 */
   title: string;
   htmlPath: string | null;
   pdfPath: string | null;
+  /** 같은 파일명.svg — 카드 커버 일러스트 (theory-publisher 스킬이 생성) */
+  coverPath: string | null;
 }
 
 const ROOT = path.join(process.cwd(), "public", "theory");
@@ -31,21 +33,25 @@ export function listTheoryItems(topic: TheoryTopicSlug): TheoryItem[] {
   const map = new Map<string, TheoryItem>();
   for (const file of fs.readdirSync(dir)) {
     const ext = path.extname(file).toLowerCase();
-    if (ext !== ".html" && ext !== ".pdf") continue;
+    if (ext !== ".html" && ext !== ".pdf" && ext !== ".svg") continue;
     const base = file.slice(0, -ext.length);
     const item = map.get(base) ?? {
       base,
       title: base.replace(/^\d+[\s._-]*/, "") || base,
       htmlPath: null,
       pdfPath: null,
+      coverPath: null,
     };
     const url = `/theory/${topic}/${encodeURIComponent(file)}`;
     if (ext === ".html") item.htmlPath = url;
-    else item.pdfPath = url;
+    else if (ext === ".pdf") item.pdfPath = url;
+    else item.coverPath = url;
     map.set(base, item);
   }
-  // 파일명 가나다순(숫자 접두사로 순서 지정 가능)
-  return [...map.values()].sort((a, b) => a.base.localeCompare(b.base, "ko"));
+  // 커버(svg)만 있는 항목은 자료가 아니므로 제외. 파일명 가나다순(숫자 접두사로 순서 지정 가능)
+  return [...map.values()]
+    .filter((i) => i.htmlPath || i.pdfPath)
+    .sort((a, b) => a.base.localeCompare(b.base, "ko"));
 }
 
 export function getTheoryTopic(slug: string) {

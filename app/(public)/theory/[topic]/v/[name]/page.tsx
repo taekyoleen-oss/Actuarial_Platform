@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { PdfViewer } from "@/components/feature/PdfViewer";
 import {
   THEORY_TOPICS,
@@ -86,32 +87,38 @@ export default async function TheoryViewerPage({
             {item.title}
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-3 text-sm font-medium">
-          {item.pdfPath && (
-            <a
-              href={item.pdfPath}
-              target="_blank"
-              rel="noreferrer"
-              className="text-tertiary hover:text-foreground"
-            >
-              PDF ↓
-            </a>
-          )}
-          <a
-            href={item.htmlPath}
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary"
-          >
-            새 탭에서 열기 ↗
-          </a>
-        </div>
+        <a
+          href={item.htmlPath}
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 text-sm font-medium text-primary"
+        >
+          새 탭에서 열기 ↗
+        </a>
       </div>
       <iframe
         src={item.htmlPath}
         title={item.title}
         className="w-full flex-1 border-0 bg-white"
       />
+      {/* PDF 다운로드 — HTML 본문 아래 고정 바 */}
+      {item.pdfPath && (
+        <div className="flex items-center justify-between gap-3 border-t border-border bg-white px-6 py-3">
+          <span className="truncate text-sm text-tertiary">
+            이 자료의 원문 PDF가 준비되어 있습니다.
+          </span>
+          <Button asChild variant="secondary" size="sm">
+            <a
+              href={item.pdfPath}
+              download={`${item.title}.pdf`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              PDF 다운로드 ↓
+            </a>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

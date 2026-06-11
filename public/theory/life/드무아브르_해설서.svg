@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 드무아브르: 직선 생존함수, 균등 사망 눈금, 한계연령 ω 깃발 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <path d="M 76 92 L 412 234 L 412 236 L 76 236 Z" fill="#EAF2F9"/>
+  <path d="M 72 70 L 72 238 L 420 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="76" y1="92" x2="412" y2="234" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <g stroke="#171A20" stroke-width="2.5" stroke-linecap="round" opacity=".4">
+    <line x1="143.2" y1="120.4" x2="146.4" y2="112.8"/>
+    <line x1="210.4" y1="148.8" x2="213.6" y2="141.2"/>
+    <line x1="277.6" y1="177.2" x2="280.8" y2="169.6"/>
+    <line x1="344.8" y1="205.6" x2="348" y2="198"/>
+  </g>
+  <line x1="412" y1="234" x2="412" y2="194" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 412 194 L 446 203 L 412 212 Z" fill="#4A90C2"/>
+  <text x="66" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">0</text>
+  <text x="404" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">ω</text>
+  <g transform="translate(96 84)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(244 140)">
+    <g stroke="#171A20" stroke-width="2.2" stroke-linecap="round" opacity=".3">
+      <line x1="-26" y1="-8" x2="-16" y2="-4"/>
+      <line x1="-28" y1="2" x2="-18" y2="6"/>
+    </g>
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
