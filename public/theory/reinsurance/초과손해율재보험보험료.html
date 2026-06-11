@@ -45,4 +45,9 @@ ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
 <div class="xref"><b>관련 표제어.</b> Stop-loss Reinsurance(초과손해율 재보험) · Ordering of Risks(위험의 순서화) · Retention and Reinsurance Programmes(보유와 재보험 프로그램) · Premium Principles(보험료 원리)</div>
 <h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
 <ul><li><b>보유한도 (retention) d</b> — 보험사가 스스로 부담하는 손실의 상한.</li><li><b>스톱로스 확률변수 (X−d)₊</b> — 보유한도를 넘는 초과손실.</li><li><b>스톱로스 보험료·변환 π<sub>X</sub>(d)=E[(X−d)₊]</b> — 초과손실의 기대값.</li><li><b>생존함수·꼬리확률 F̄(x)=1−F(x)</b> — 손실이 x를 넘을 확률.</li><li><b>보유손실 X∧d=min{X,d}</b> — 보험사가 실제로 부담하는 부분.</li></ul>
-<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Stop-loss Premium”, Jun Cai. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>본문의 stop-loss 보험료 π = E[(S−d)⁺] 계산이 한국에서 가장 체계적으로 수행되는 현장은 상업 재보험보다 <b>정책보험의 국가재보험</b>이다. 농작물재해보험이 대표적인데, 연간 손해율 분포를 추정해 정부와 민간(보험사 컨소시엄)의 손익 분담 구간 — 사실상 다층 stop-loss 구조 — 을 설계하고, 구간별 기대손실로 분담 조건을 정한다. 기상 변동이라는 계통적 위험 탓에 총손해액 S의 분포가 두꺼운 꼬리를 갖는다는 점까지, 본문 이론의 전제와 정확히 맞아떨어지는 사례다.</p>
+<p>민간 영역에서는 단체실손·신담보의 손해율 캡 약정, 일부 장기 담보의 손해율 연동 정산 조항 등에서 같은 계산이 쓰인다. 실무 절차는 본문의 해석적 방법보다 <b>시뮬레이션 중심</b>이다 — 빈도(포아송·음이항)와 심도(로그정규·파레토) 모형을 적합해 S의 분포를 몬테카를로로 생성하고, 발동점 d 이상 꼬리의 기대값을 직접 계산한다. 패널 데이터가 짧을수록 모수 불확실성 로딩을 얹는 관행도 이론의 권고 그대로다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> K-ICS·IFRS17에서의 (S−d)⁺ — 같은 수학, 다른 자리</div>
+<p>흥미로운 점은 (S−d)⁺의 기대값이라는 동일한 수학이 자본 규제 곳곳에 재등장한다는 것이다. K-ICS 요구자본은 본질적으로 "분포의 상위 꼬리(99.5%)에서의 초과손실"을 재는 작업이고, IFRS17 위험조정(RA)을 분위수 방식으로 산출할 때도 손실 분포의 꼬리 적분이 핵심이다. 즉 stop-loss premium 계산법을 익힌 계리사는 재보험 가격, 요구자본, 위험조정이라는 세 가지 실무를 같은 도구로 다루게 된다 — 본문이 "이 적분은 보험수리의 만능 부품"이라 말하는 이유를 한국 규제 환경이 증명하는 셈이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Stop-loss Premium”, Jun Cai. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>

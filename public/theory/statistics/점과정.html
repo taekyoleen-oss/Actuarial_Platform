@@ -47,4 +47,9 @@ ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
 <div class="xref"><b>관련 표제어.</b> Poisson Processes(포아송 과정) · Claim Number Processes(클레임 건수 과정) · Mixed Poisson Distributions(혼합 포아송) · Operational Time(운영 시간) · Renewal Theory(재생이론)</div>
 <h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
 <ul><li><b>점 과정 (point process)</b> — 무작위로 흩어진 사건 시점(점)들의 모임.</li><li><b>강도 (intensity) λ</b> — 단위 시간·공간당 점의 평균 개수.</li><li><b>포아송 점 과정</b> — 독립·일정 강도의 가장 기본적인 점 과정.</li><li><b>갱신 과정 (renewal)</b> — 점 사이 간격이 i.i.d.인 과정.</li><li><b>솎음 (thinning)</b> — 점을 확률적으로 골라 남기는 연산.</li><li><b>혼합 포아송·Cox 과정</b> — 강도가 무작위인 이중확률적 포아송.</li></ul>
-<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Point Processes”, Tomasz Rolski. · 본 해설서의 [해설]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>점과정의 추상 이론은 한국 실무에서 "사고가 언제, 얼마나 몰려서 오는가"라는 질문으로 번역된다. 가장 단순한 균질 포아송 과정은 자동차·일반보험의 기본 빈도 가정으로 일상화되어 있고, 본문의 확장들 — 비균질 포아송, 혼합(Cox) 과정, 군집 과정 — 도 각각 대응되는 실무 장면이 있다. 계절·요일·시간대에 따라 사고 강도가 변하는 자동차 사고는 <b>비균질 포아송</b>으로, 운전자별 위험 성향의 이질성은 <b>혼합 포아송(음이항)</b>으로, 태풍·집중호우 때 청구가 한꺼번에 몰리는 현상은 <b>군집(cluster) 과정</b>의 관점으로 해석한다.</p>
+<p>특히 대재해 분석에서 점과정 사고방식이 유용하다. 태풍 시즌(7~9월)에 사건 발생이 몰리고 한 사건이 수만 건의 청구를 낳는 구조는 "사건 과정(parent) 위에 청구 과정(offspring)이 얹힌" 이중 구조이며, 국내 풍수해 損 통계나 Cat 모형의 사건 세트(event set)가 바로 이 관점으로 만들어진다. 재보험의 사고 정의(any one event, 72시간 조항 등)도 결국 "점들을 어떻게 한 사건으로 묶을 것인가"라는 점과정의 문제다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 데이터 시대의 점과정</div>
+<p>텔레매틱스·UBI 보험의 보급으로 주행 데이터가 초 단위로 쌓이면서, 사고를 시간·공간 위의 점과정으로 직접 모형화할 수 있는 환경이 한국에도 열리고 있다. 보험사기 탐지(청구 시점의 비정상 군집 탐지), 콜센터·보상 조직의 처리량 설계(도착 과정 기반 인력 산정) 같은 운영 영역에서도 같은 수학이 쓰인다. K-ICS 대재해리스크의 시나리오 설계 역시 "저빈도·고심도 사건의 발생 과정"에 대한 가정 위에 서 있으므로, 점과정은 보이지 않는 곳에서 자본 규제까지 떠받치는 기초 이론이라 할 수 있다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Point Processes”, Tomasz Rolski. · 본 해설서의 [해설]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>

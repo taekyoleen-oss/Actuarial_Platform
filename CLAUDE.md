@@ -28,6 +28,7 @@
 | 2026-06-11 | "모델분석/업무지원앱"(/apps) 추가 — App Collecter 카드 7종 이식 | app/(public)/apps, SiteNav | 모델분석 2종(보험료 자동산출·머신러닝 자동 플로우) + 업무지원 5종(강의 지원·PDF Master·Actuary Pro Calc·보험수리 화이트보드·이미지 수식변환기). 메뉴 8개 → 데스크톱 풀 메뉴 xl부터(미만 햄버거) |
 | 2026-06-11 | 모델선택 아이덴트(ModelSelectIdent) — /apps 헤더 하단 | components/feature/ModelSelectIdent.tsx, globals.css, app/(public)/apps, design/idents | tkleen-model-selection-animation.html 이식(노드 등장→펄스 3웨이브→AUC 카운트업→GBM 승자 강조→분포 출력→최적 경로 루프). PC(lg+) 전용 |
 | 2026-06-11 | 이론 사전 '재보험' 주제 추가 + 제목 추출 버그 수정 | lib/theory.ts(THEORY_TOPICS, titleFromHtml), public/theory/reinsurance, theory-publisher 스킬 | 주제 탭 4개: 생명/손해/재보험/통계. titleFromHtml은 "— 학습 해설서" 꼬리만 제거(제목 내 대시 보존) |
+| 2026-06-11 | 전 자료(41종) '한국보험시장 현황' 섹션 추가 + 스킬 필수 규칙화 | public/theory/**/*.html, theory-publisher 스킬 | 30년차 계리사 페르소나, 이론↔한국 시장 일치/차이 중심. 상품=국내 판매상품, 계리·통계=IFRS17·K-ICS, 재보험=국내 방식·공동재보험. 웹서치 앵커(5세대 실손 2026.5, K-ICS 130%/기본자본 2027, 10회 생명표 등) 스킬에 수록 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
