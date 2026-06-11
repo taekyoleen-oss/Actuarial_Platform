@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>질병보험 (Sickness Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 건강·장해</div>
+<h1>질병보험 (Sickness Insurance)</h1>
+<div class="meta">원저자: William Szuch &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요 <span class="en">Introduction</span></h2>
+<p>넓은 의미의 <b>질병보험(sickness insurance)</b>은 피용자·자영업자에게 <b>질병 급부</b>를 제공하는 개인보험 상품과 고용주 단체제도를 가리킨다. 또한 지역사회 전반에 의료·입원비를 보장하는 <b>사회보험(social insurance)</b> 제도까지 포괄하기도 한다. 예컨대 스위스에서 sickness insurance는 질병(그리고 상해보험으로 보장되지 않는 사고) 시 모두에게 적절한 의료를 보장하는 사회제도를 뜻한다.</p>
+<p>질병보험은 <b>개인이 질병에 걸렸을 때 급부를 제공</b>하는 것으로, 흔히 <b>질병과 상해를 하나의 증권</b>으로 함께 보장한다. 급부의 범위와 보장 수준은 증권 조건과 유형(개인형·고용주 단체·사회보험)에 따라 크게 다르다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 질병·상해·건강보험은 서로 겹친다</div><p style="margin-bottom:0">질병보험은 나라·맥락마다 정의가 다르다. 개인형은 민영보험에 가깝고, 사회보험형은 건강보험(공적 의료보장)에 가깝다. 그래서 본문도 “Disability Insurance·Health Insurance·Social Security를 함께 보라”고 안내한다. 핵심은 <b>‘아픈 동안의 비용·소득 손실’을 보전</b>한다는 점이다.</p></div>
+<h2>2. 보장 대상 <span class="en">Coverage</span></h2>
+<ul><li><b>개인(individuals)</b> — 보통 피용자·자영업자. 급부 내용·지급 조건·갱신 조건을 명시한 단일 증권으로 보장.</li><li><b>단체제도(group schemes)</b> — 피용자(고용주 기반) 또는 직업·퇴직급여제도 등으로 묶인 개인 집단에 급부 제공.</li><li><b>지역사회 기반(community-based)</b> — 건강·사회보험으로, 아동·학생·실업자 등 더 넓은 범위에 급부 제공.</li></ul>
+<h2>3. 급부와 재원 <span class="en">Benefits & Funding</span></h2>
+<p>급부로는 <b>의료비·입원비</b>(주로 단체·지역제도)와, 흔치 않지만 <b>사망급부</b>(질병·상해보험의 확장)가 있다. 재원은 (1) 보험자에게 내는 <b>보험료</b>(개인형), (2) 고용주·피용자 기여 또는 자가보험(단체형), (3) <b>조세 + 개인 추가기여</b>(지역사회형)로 다양하다.</p>
+<h2>참고 및 관련 표제어</h2>
+<p class="refs">참고: Lewis, D.E. (1977) <i>Dictionary of Insurance</i>; <i>Handbook of Insurance</i> (1973).</p>
+<div class="xref"><b>관련 표제어.</b> Disability Insurance(소득보상보험) · Health Insurance(건강보험) · Social Security(사회보장) · Accident Insurance(상해보험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>질병보험 (sickness insurance)</b> — 질병으로 인한 비용·소득 손실을 보전하는 보험. 흔히 상해보험과 함께 가입.</li><li><b>사회보험 (social insurance)</b> — 국가가 운영하며 조세 등으로 재원을 마련하는 강제·보편 보장제도.</li><li><b>단체제도 (group scheme)</b> — 고용주·직역 등으로 묶인 집단을 대상으로 한 보험제도.</li><li><b>자가보험 (self-insured)</b> — 외부 보험 없이 고용주가 위험을 직접 부담하는 방식.</li><li><b>기여 (contribution)</b> — 보험·제도 재원으로 가입자·고용주가 분담해 내는 금액.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Sickness Insurance”, William Szuch. · 본 해설서의 [해설]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

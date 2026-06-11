@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 소득보상보험: 끊긴 소득 막대를 보험금(Sky)이 메우는 장면 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <path d="M 80 86 L 80 238 L 412 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 소득 막대 (근로 기간) -->
+  <g fill="#EAF2F9" stroke="#171A20" stroke-width="2.5">
+    <rect x="100" y="168" width="38" height="70"/>
+    <rect x="156" y="160" width="38" height="78"/>
+    <rect x="268" y="150" width="38" height="88"/>
+    <rect x="324" y="146" width="38" height="92"/>
+  </g>
+  <!-- 장해 기간: 보험금이 메우는 막대 (Sky) + 사고 표시 -->
+  <rect x="212" y="154" width="38" height="84" fill="#4A90C2" stroke="#171A20" stroke-width="2.5"/>
+  <path d="M 238 116 l 7 -11 l -5 1 l 7 -11" fill="none" stroke="#171A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <!-- 보장받아 안심한 캐릭터 (Sky 막대 위) -->
+  <g transform="translate(231 139)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -4.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -4.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <text x="396" y="258" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">t →</text>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

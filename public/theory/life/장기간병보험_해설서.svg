@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 장기간병보험: 휠체어를 미는 돌봄의 장면, 무릎담요는 Sky -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 지면 -->
+  <line x1="84" y1="238" x2="400" y2="238" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 휠체어 -->
+  <circle cx="232" cy="206" r="30" fill="none" stroke="#171A20" stroke-width="3"/>
+  <circle cx="232" cy="206" r="3.5" fill="#171A20"/>
+  <g stroke="#171A20" stroke-width="2" stroke-linecap="round" opacity=".3">
+    <line x1="232" y1="180" x2="232" y2="232"/>
+    <line x1="206" y1="206" x2="258" y2="206"/>
+  </g>
+  <circle cx="290" cy="227" r="9" fill="none" stroke="#171A20" stroke-width="2.5"/>
+  <path d="M 204 142 Q 196 142 196 150 L 200 150 L 200 200 L 276 200 L 276 224"
+        fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 무릎담요 (Sky) -->
+  <rect x="206" y="192" width="62" height="16" rx="5" fill="#4A90C2" stroke="#171A20" stroke-width="2.5"/>
+  <!-- 탑승 캐릭터 (노년, 감은 눈 미소) -->
+  <g transform="translate(236 172)">
+    <circle r="13" fill="#FFF7ED" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -0.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -0.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- 간병 캐릭터 (핸들 곁) -->
+  <g transform="translate(160 158)">
+    <circle r="13" fill="#ECFDF5" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -4.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -4.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- 돌봄 하트 (Sky) -->
+  <path d="M 318 128 c -5 -7 -16 -2 -16 6 c 0 8 10 13 16 18 c 6 -5 16 -10 16 -18 c 0 -8 -11 -13 -16 -6 Z"
+        fill="#4A90C2"/>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

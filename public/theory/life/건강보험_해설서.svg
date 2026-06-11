@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 건강보험: 심전도 위의 건강한 일상과 구급상자 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 심전도 라인 -->
+  <path d="M 64 188 L 152 188 L 170 168 L 188 224 L 208 134 L 228 188 L 414 188"
+        fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 구급상자 -->
+  <rect x="298" y="88" width="78" height="62" rx="8" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+  <path d="M 324 88 L 324 80 Q 324 74 330 74 L 344 74 Q 350 74 350 80 L 350 88"
+        fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#4A90C2">
+    <rect x="331" y="103" width="12" height="32"/>
+    <rect x="321" y="113" width="32" height="12"/>
+  </g>
+  <!-- 건강한 캐릭터 -->
+  <g transform="translate(112 167)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <path d="M -6.5 -2.5 Q -4.5 -4.5 -2.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 2.5 -2.5 Q 4.5 -4.5 6.5 -2.5" fill="none" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

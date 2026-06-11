@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>건강보험 (Health Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 건강·장해</div>
+<h1>건강보험 (Health Insurance)</h1>
+<div class="meta">출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요 — 건강보험은 다르다 <span class="en">Introduction</span></h2>
+<p>대부분의 건강보험 가입자는 <b>매년 청구가 발생할 것을 당연히 예상</b>한다. 건강보험은 일종의 <b>선지급(prepayment)</b>으로, 전통적 보험의 “낮은 확률·거대 손해 보장” 역할보다 <b>의료산업의 재원 조달</b>이 급부 설계에 더 중요하다. 건강보험은 정기검진처럼 <b>고빈도·저비용</b> 사건까지 보장하는데, 이런 사건은 위험회피 관점에서 풀링(pooling)의 효율 이득이 없다. 그럼에도 보장하는 이유는 경제적이라기보다 <b>정치·사회적</b> 배경에 가깝다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 왜 “정기검진”까지 보장하나 — 보험 vs 선지급</div><p style="margin-bottom:0">자동차보험은 ‘오일 교환’을 보장하지 않는다. 예측 가능한 소액 지출은 스스로 대비하면 되기 때문이다. 그런데 건강보험은 예측 가능한 검진·routine care까지 보장한다. 이는 위험 분산이라기보다 <b>의료비 재원을 보험으로 모아 선지급</b>하는 성격이 강하다 — 그래서 건강보험은 다른 보험과 본질적으로 다르다.</p></div>
+<h2>2. 제도와 비용 <span class="en">Systems & Cost</span></h2>
+<p>많은 나라는 정부가 <b>건강보험자</b> 역할을 하며 조세로 재원을 마련하고 전 국민을 보장한다. 미국은 그림이 더 복잡하다 — 정부는 노인(<b>Medicare</b>)과 저소득 가정(<b>Medicaid</b>)에 대해 보험자 역할을 하고, 대부분의 사람은 <b>고용주를 통해 민영보험</b>에 가입한다. 건강보험은 소비자에게도 큰 비용이다(2002년 미국 기준 개인 연 평균 약 $3,060, 가족 약 $7,954로, 자동차 $687·주택 $487 대비 훨씬 큼).</p>
+<h2>3. 단체 건강보험 요율 산정 <span class="en">Group Health Rate Setting</span></h2>
+<p>상업 보험사가 정해진 집단(보통 한 회사의 피용자와 부양가족)에 대해 요율을 정하는 과정은 HMO·PPO·전통적 실손(예: Blue Cross/Blue Shield) 등 어떤 유형에도 적용된다. <b>급부 설계, 공동부담, 인구 특성</b>이 발생률(이용률, utilization rate)을 좌우하고, 의료공급자 네트워크 특성도 이용률에 영향을 준다. 전형적 보험료 산정은 “이용률 → 단위비용 → 1인당 비용 → 부가” 순서로 전개된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 1인당 입원비(PMPY) 계산 — 원문 단순 예</div><p class="q">가입자 2,000명, 1,000명당 연 입원일수 280일, 1일당 병상비(per diem) $750일 때, 1인당 연 입원비(PMPY)는?</p><p style="margin:2pt 0">총 입원일수 = 2,000 × (280/1,000) = <b>560일</b></p><p style="margin:2pt 0">총 입원비 = 560 × $750 = <b>$420,000</b></p><p style="margin-bottom:0">PMPY = $420,000 / 2,000 = <b>$210</b>(연·1인). 여기에 부가(loading)를 더해 최종 보험료를 완성한다.</p></div>
+<div class="note"><div class="head"><span class="tag">해설</span> 요율 조정이 느려서 생기는 위험</div><p style="margin-bottom:0">건강보험 요율은 보통 <b>연 1회</b>만 조정할 수 있다. 그래서 의료비가 빠르게 오르거나 요율을 잘못 책정하면, 손해를 수개월 만에 크게 입을 수 있다(생명보험사가 수십 년에 걸쳐 겪을 일을 건강보험사는 몇 달 만에 겪는다).</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Disability Insurance(소득보상보험) · Sickness Insurance(질병보험) · Long-term Care Insurance(장기간병보험) · Social Security(사회보장) · Pooling in Insurance(보험의 풀링)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>선지급 (prepayment)</b> — 미래 의료비를 보험료로 미리 모아 충당하는 성격.</li><li><b>이용률 (utilization rate)</b> — 가입자가 의료서비스를 이용하는 빈도. 보험료의 핵심 변수.</li><li><b>PMPY / PMPM</b> — Per Member Per Year / Per Month, 1인당 연·월 비용.</li><li><b>per diem</b> — 입원 1일당 정액 병상비.</li><li><b>HMO·PPO</b> — 관리의료 조직(건강관리기구)·선호공급자 조직 등 의료 전달·보장 방식.</li><li><b>Medicare·Medicaid</b> — 미국의 노인용·저소득층용 공적 의료보장 제도.</li><li><b>풀링 (pooling)</b> — 다수의 위험을 모아 평균으로 분산하는 보험 원리.</li><li><b>부가·로딩 (loading)</b> — 순보험료에 사업비·이윤 등을 더하는 것.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Health Insurance”. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수치는 원문(2002년 미국 자료) 기준.</div></div></body></html>
