@@ -26,7 +26,7 @@ const STATS = [
   { value: "30년", label: "코리안리 재보험 실무" },
   { value: "보험계리사", label: "2002년 자격 취득" },
   { value: "논문 8편", label: "KCI 등재 다수" },
-  { value: "도구 4종", label: "보험 실무 자동화" },
+  { value: "자문교수", label: "보험계리" },
 ];
 
 const TIMELINE: { period: string; title: string; detail?: string }[] = [
