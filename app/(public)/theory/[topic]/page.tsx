@@ -43,8 +43,8 @@ export default async function TheoryTopicPage({
             보험이론 사전
           </h1>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-tertiary">
-            보험 이론·실무 기초 자료를 주제별로 정리했습니다. 각 자료는 HTML로
-            바로 열람하거나 PDF로 내려받을 수 있습니다.
+            보험 이론·실무 기초 자료를 주제별로 정리했습니다. 제목이나 그림을
+            누르면 본문을 바로 열람할 수 있습니다.
           </p>
         </div>
         {/* 풀링 아이덴트 (무질서→질서 상시 루프) — PC(lg 이상) 전용 */}
@@ -82,13 +82,20 @@ export default async function TheoryTopicPage({
                 key={item.base}
                 className="flex flex-col overflow-hidden rounded-cover border border-border bg-white shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
               >
-                {/* 커버 일러스트 (플랫 카툰 SVG — theory-publisher 스킬 생성) */}
+                {/* 제목(상단) → 커버(하단). 제목·그림 클릭 = 본문 열람. 보조 링크 없음 */}
+                <div className="p-5">
+                  <h2 className="text-lg font-semibold leading-snug text-brand-sky">
+                    <Link href={viewerHref} className="hover:text-primary">
+                      {item.title}
+                    </Link>
+                  </h2>
+                </div>
                 {item.coverPath && (
                   <Link
                     href={viewerHref}
                     tabIndex={-1}
                     aria-hidden="true"
-                    className="block border-b border-border"
+                    className="mt-auto block border-t border-border"
                   >
                     <img
                       src={item.coverPath}
@@ -97,28 +104,6 @@ export default async function TheoryTopicPage({
                     />
                   </Link>
                 )}
-                <div className="flex flex-1 flex-col p-5">
-                  <h2 className="flex-1 text-lg font-semibold leading-snug text-brand-sky">
-                    <Link href={viewerHref} className="hover:text-primary">
-                      {item.title}
-                    </Link>
-                  </h2>
-                  <div className="mt-4 flex items-center gap-3 text-sm font-medium">
-                    <Link href={viewerHref} className="text-primary">
-                      {item.htmlPath ? "HTML 열람" : "PDF 열람"}
-                    </Link>
-                    {item.pdfPath && (
-                      <a
-                        href={item.pdfPath}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-tertiary hover:text-foreground"
-                      >
-                        PDF ↓
-                      </a>
-                    )}
-                  </div>
-                </div>
               </article>
             );
           })}

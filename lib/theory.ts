@@ -48,9 +48,10 @@ export function listTheoryItems(topic: TheoryTopicSlug): TheoryItem[] {
     else item.coverPath = url;
     map.set(base, item);
   }
-  // 커버(svg)만 있는 항목은 자료가 아니므로 제외. 파일명 가나다순(숫자 접두사로 순서 지정 가능)
+  // html이 있는 자료만 목록화(본문 열람은 HTML 기준 — 2026-06-11 사용자 결정).
+  // pdf·svg는 같은 base명일 때 부속물로만 매칭. 파일명 가나다순(숫자 접두사로 순서 지정 가능)
   return [...map.values()]
-    .filter((i) => i.htmlPath || i.pdfPath)
+    .filter((i) => i.htmlPath)
     .sort((a, b) => a.base.localeCompare(b.base, "ko"));
 }
 
