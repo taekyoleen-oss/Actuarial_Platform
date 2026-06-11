@@ -13,6 +13,7 @@ const CATEGORIES = [
 ];
 
 const EXTRA = [
+  { href: "/theory", name: "보험이론 사전" },
   { href: "/news", name: "보험 뉴스" },
   { href: "/admin", name: "관리자" },
 ];

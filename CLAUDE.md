@@ -17,6 +17,7 @@
 | 2026-06-09 | "보험 뉴스" 섹션(/news) 추가 | app/(public)/news, lib/news.ts, components/feature/News* , SiteNav | ins_news_articles(읽기 공개) 직접 연동. 뉴스 앱 배포 유지, 보드는 읽기. build 통과(13 라우트) |
 | 2026-06-11 | tkLeen 아이덴트 애니메이션 (HeroIdent) | components/feature/HeroIdent·HeroSection·SiteNav, globals.css, tailwind | 히어로 우측(PC)+모바일 헤더 마크. 픽셀 맵·타이밍은 tkleen-hero-animation.html 원본 유지 |
 | 2026-06-11 | 카드 입체화 + 카드 타이틀 구별 + 홈 개선 | globals.css, tailwind, layout, PostCard·HeroSection·SummaryPanel·PdfViewer·ui/card, 홈, tweakcn-tesla-theme 스킬 | 사용자 결정: 카드 엘리베이션(2단 섀도+lift) 허용, 타이틀 Noto Serif KR 600·navy, 페이지 캔버스 cream·격자점 히어로·섹션 픽셀 액센트 |
+| 2026-06-11 | "보험이론 사전" 섹션(/theory) — 폴더 기반 정적 자료실 | app/(public)/theory, lib/theory.ts, public/theory/{life,general}, SiteNav | public/theory/<주제>/에 .html·.pdf 추가→빌드 시 자동 목록화(주제: 생명/손해, 추가는 THEORY_TOPICS 배열). HTML 임베드 열람+PDF 병행, 같은 파일명은 한 항목 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
