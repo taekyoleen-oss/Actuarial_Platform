@@ -16,7 +16,7 @@ export type TheoryTopicSlug = (typeof THEORY_TOPICS)[number]["slug"];
 export interface TheoryItem {
   /** 파일명(확장자 제외) — 라우트 파라미터이자 html/pdf/svg 짝 매칭 키 */
   base: string;
-  /** 표시 제목 — base에서 "01_" 같은 정렬용 숫자 접두사를 제거한 것 */
+  /** 표시 제목 — displayTitle() 변환 결과 (숫자 접두사·'해설서' 제거, _ → 공백) */
   title: string;
   htmlPath: string | null;
   pdfPath: string | null;
@@ -25,6 +25,21 @@ export interface TheoryItem {
 }
 
 const ROOT = path.join(process.cwd(), "public", "theory");
+
+/** 표시 제목 규칙(2026-06-11 사용자 결정):
+ *  숫자 접두사("01_") 제거 → "_"는 띄어쓰기로 → "해설서" 단어 제거.
+ *  파일명·URL(base)은 바꾸지 않고 표시만 정리한다. */
+function displayTitle(base: string): string {
+  const t = base
+    .replace(/^\d+[\s._-]*/, "")
+    .split(/_+/)
+    .join(" ")
+    .split(/\s+/)
+    .filter((w) => w !== "해설서")
+    .join(" ")
+    .trim();
+  return t || base;
+}
 
 export function listTheoryItems(topic: TheoryTopicSlug): TheoryItem[] {
   const dir = path.join(ROOT, topic);
@@ -37,7 +52,7 @@ export function listTheoryItems(topic: TheoryTopicSlug): TheoryItem[] {
     const base = file.slice(0, -ext.length);
     const item = map.get(base) ?? {
       base,
-      title: base.replace(/^\d+[\s._-]*/, "") || base,
+      title: displayTitle(base),
       htmlPath: null,
       pdfPath: null,
       coverPath: null,

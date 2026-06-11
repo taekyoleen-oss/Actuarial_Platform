@@ -93,6 +93,8 @@ description: "보험이론 사전(/theory) 자료 게시 자동화 스킬. publi
   제목·그림 둘 다 뷰어 링크. "HTML 열람/PDF ↓" 같은 보조 링크는 표시하지 않는다.
 - 뷰어: HTML iframe 본문만(상단: ← 주제 / 제목 / 새 탭에서 열기). **PDF 다운로드 미노출**.
 - 자동 매칭: `lib/theory.ts` `listTheoryItems()` — **html 있는 항목만 목록화**, 같은 base의 svg → coverPath, pdf → pdfPath(보관용).
+- 표시 제목: 파일명에서 **숫자 접두사 제거 → `_`는 띄어쓰기로 → "해설서" 단어 제거** (`lib/theory.ts` displayTitle, 2026-06-11 사용자 결정).
+  파일명에는 `_해설서`를 계속 써도 된다 — 표시만 정리되고 URL·파일 매칭(base)은 그대로다.
 - 파일 위치: `app/(public)/theory/[topic]/page.tsx`(목록), `app/(public)/theory/[topic]/v/[name]/page.tsx`(뷰어).
 
 ## 에러 핸들링
