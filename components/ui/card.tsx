@@ -1,12 +1,17 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-// Tesla: 그림자·테두리 없는 클린 화이트 표면. 커버형은 rounded-cover + overflow-hidden.
+// 카드 표면: 화이트 + 소프트 엘리베이션(--shadow-card). 커버형은 rounded-cover + overflow-hidden.
 export function Card({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("bg-background", className)} {...props} />;
+  return (
+    <div
+      className={cn("rounded-cover bg-white shadow-card", className)}
+      {...props}
+    />
+  );
 }
 
 export function CardBody({

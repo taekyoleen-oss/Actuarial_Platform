@@ -6,11 +6,14 @@
 
 /* =========================================================
    Tesla 토큰 (tweakcn-tesla-theme 스킬)
-   비협상: 그림자 0, 강조 1색(#3E6AE1), 색상 트랜지션만 0.33s, weight 400/500
+   비협상: 강조 1색(#3E6AE1), 그라데이션·세만틱 색상 없음, weight 400/500
+   허용 예외: 카드 엘리베이션(--shadow-card 2단 소프트 섀도 + hover lift),
+   카드 타이틀 Noto Serif KR 600(--brand-navy) — 2026-06-11 입체감 개선
    ========================================================= */
 :root {
   --primary: #3e6ae1;
   --background: #ffffff;
+  --page-bg: #fafaf7; /* 페이지 캔버스(브랜드 cream) — 카드 화이트가 떠 보이는 바탕 */
   --surface-alt: #f4f4f4;
   --foreground: #171a20;
   --text-body: #393c41;
@@ -26,6 +29,13 @@
 
   /* tkLeen 브랜드 시그니처 (public/brand/*.svg 와 동일 컬러) */
   --brand-sky: #4a90c2;
+  --brand-navy: #1b2845; /* 카드 타이틀 전용 */
+
+  /* 카드 엘리베이션 — 카드 표면 한정(버튼·입력은 그림자 0 유지) */
+  --shadow-card: 0 1px 2px rgba(23, 26, 32, 0.04),
+    0 6px 20px rgba(23, 26, 32, 0.06);
+  --shadow-card-hover: 0 2px 4px rgba(23, 26, 32, 0.05),
+    0 14px 36px rgba(23, 26, 32, 0.1);
 
   /* shadcn 호환 HSL 매핑 */
   --color-background: 0 0% 100%;
@@ -51,7 +61,7 @@
     -webkit-font-smoothing: antialiased;
   }
   body {
-    background-color: var(--background);
+    background-color: var(--page-bg);
     color: var(--text-body);
     font-family: Pretendard, Inter, -apple-system, system-ui, sans-serif;
     font-weight: 400;
@@ -76,6 +86,16 @@
 .cover-mono {
   background: var(--surface-alt);
   color: var(--text-tertiary);
+}
+
+/* 보험수리표 격자점 텍스처 (히어로 밴드) — tkLeen 아이덴트의 grid-dot 모티프 */
+.bg-actuarial-dots {
+  background-image: radial-gradient(
+    circle,
+    rgba(23, 26, 32, 0.05) 1.4px,
+    transparent 1.5px
+  );
+  background-size: 56px 56px;
 }
 
 /* =========================================================

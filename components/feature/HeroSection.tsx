@@ -3,7 +3,7 @@ import { HeroIdent } from "@/components/feature/HeroIdent";
 // 컴팩트 인트로 밴드 — 화면을 적게 차지하고, 사이트 목적만 명확히 전달.
 export function HeroSection() {
   return (
-    <section className="border-b border-border bg-surface/60">
+    <section className="border-b border-border bg-actuarial-dots">
       <div className="mx-auto flex max-w-container items-center justify-between gap-8 px-6 py-7">
         <div>
           <h1 className="text-xl font-medium text-foreground sm:text-2xl">

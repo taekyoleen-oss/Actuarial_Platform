@@ -28,7 +28,7 @@ export function PdfViewer({ url, fileName }: { url: string; fileName: string }) 
   }, [fullscreen]);
 
   return (
-    <div className="rounded-cover border border-border">
+    <div className="rounded-cover border border-border bg-white shadow-card">
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <span className="truncate text-sm font-medium text-foreground">
           {fileName}
