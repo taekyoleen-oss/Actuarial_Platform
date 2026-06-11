@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>최대클레임·ECOMOR 재보험 (Largest Claims and ECOMOR Reinsurance)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 재보험</div>
+<h1>최대클레임·ECOMOR 재보험 (Largest Claims and ECOMOR Reinsurance)</h1>
+<div class="meta">원저자: Jozef L. Teugels &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag adv">고급</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>으로 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 정의 <span class="en">Definition</span></h2>
+<p>이 표제어는 <b>가장 큰 청구들</b>에 기반한 두 가지 재보험을 다룬다. 한 해의 청구를 크기순으로 정렬해 X<sub>(1)</sub> ≥ X<sub>(2)</sub> ≥ ⋯ 라 하자.</p>
+<ul><li><b>최대클레임 재보험(largest claims, LC)</b> — 가장 큰 r개의 청구 합 X<sub>(1)</sub>+⋯+X<sub>(r)</sub>을 재보험자가 부담.</li><li><b>ECOMOR 재보험</b> — 가장 큰 r개의 청구에서 <b>(r+1)번째로 큰 청구를 공제(우선액)</b>로 빼고 그 초과분만 부담. 즉 Σ<sub>i=1..r</sub>(X<sub>(i)</sub> − X<sub>(r+1)</sub>).</li></ul>
+<div class="note"><div class="head"><span class="tag">해설</span> ECOMOR = ‘스스로 우선액이 정해지는 XL’</div><p style="margin-bottom:0">고정 우선액의 XL과 달리, ECOMOR는 <b>그해 (r+1)번째로 큰 청구</b>를 우선액으로 삼는다. 그래서 <b>인플레이션·통화 변화에 자동으로 적응</b>하는 장점이 있다(우선액이 손해 규모에 따라 같이 움직임). 이름은 프랑스어 ‘excédent du coût moyen relatif’에서 왔다.</p></div>
+<h2>2. 분포 결과와 근사 <span class="en">Distributional Results</span></h2>
+<p>이 재보험금들의 정확한 분포는 복잡해, 실무에서는 <b>근사</b>와 <b>1차 모멘트(평균)</b> 표현이 가장 유용하다. 청구 수 N의 확률생성함수와 청구금액의 꼬리(특히 <b>극단값이론</b>의 파레토형·검벨형)에 기대어 라플라스 변환·점근식이 유도된다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">고급</span> 극단값이론과의 연결 (참고)</div><p style="margin-bottom:0">청구금액이 <b>정규변동(파레토형) 꼬리</b>이면, 청구 수가 커질 때(λ=E(N)→∞) 최대클레임 재보험금의 라플라스 변환이 극단값 분포(파레토형 γ&gt;0, 검벨형 γ=0)로 점근한다. 즉 이 재보험들의 분석은 <b>극단값이론·준지수분포</b>와 직접 연결된다. 입문 단계에서는 “가장 큰 청구 몇 개에 집중하는 재보험이며, 두꺼운 꼬리 이론으로 다룬다”는 점만 알면 충분하다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Nonproportional Reinsurance(비비례 재보험) · Extreme Value Theory(극단값 이론) · Subexponential Distributions(준지수분포) · Excess-of-loss Reinsurance(초과손해액 재보험) · Reinsurance Pricing(재보험 요율산정)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>순서통계량 X<sub>(i)</sub></b> — 청구를 큰 순서로 정렬했을 때 i번째 값.</li><li><b>최대클레임 재보험 (largest claims, LC)</b> — 가장 큰 r개 청구의 합을 보장.</li><li><b>ECOMOR 재보험</b> — 가장 큰 r개에서 (r+1)번째 청구를 공제한 초과분을 보장.</li><li><b>우선액 (priority)</b> — 재보험이 시작되는 기준 금액(ECOMOR는 자동 결정).</li><li><b>극단값이론 (extreme value theory)</b> — 최댓값·꼬리의 점근 분포를 다루는 이론(파레토형·검벨형).</li><li><b>라플라스 변환 (Laplace transform)</b> — 분포를 분석하는 적분변환 도구.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Largest Claims and ECOMOR Reinsurance”, Jozef L. Teugels. · 본 해설서의 [해설]·[고급]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

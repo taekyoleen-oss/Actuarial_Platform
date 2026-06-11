@@ -9,6 +9,7 @@ import path from "node:path";
 export const THEORY_TOPICS = [
   { slug: "life", name: "생명보험" },
   { slug: "general", name: "손해보험" },
+  { slug: "reinsurance", name: "재보험" },
   { slug: "statistics", name: "보험통계" },
 ] as const;
 
@@ -28,14 +29,15 @@ export interface TheoryItem {
 const ROOT = path.join(process.cwd(), "public", "theory");
 
 /** html <title>에서 표시 제목 추출: "한글명 (영문명) — 학습 해설서" → "한글명 (영문명)".
- *  공백으로 둘러싸인 대시(—·–·-) 이후 꼬리를 제거하므로 "Chain-ladder" 같은
- *  단어 내 하이픈은 보존된다. 형식이 없으면 null → 파일명 규칙으로 폴백. */
+ *  "— 학습 해설서" 꼬리만 제거한다 — 제목 본문에 대시가 들어가는 표제어
+ *  (예: "재보험 – 조건과 출재 방법 (...)")를 자르지 않기 위함.
+ *  <title>이 없으면 null → 파일명 규칙으로 폴백. */
 function titleFromHtml(filePath: string): string | null {
   try {
     const head = fs.readFileSync(filePath, "utf8").slice(0, 2000);
     const m = head.match(/<title>([^<]+)<\/title>/i);
     if (!m) return null;
-    const t = m[1].split(/\s+[—–-]\s+/)[0].trim();
+    const t = m[1].replace(/\s+[—–-]\s+학습 해설서\s*$/u, "").trim();
     return t || null;
   } catch {
     return null;

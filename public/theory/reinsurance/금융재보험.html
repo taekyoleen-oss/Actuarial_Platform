@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>금융재보험 (Financial Reinsurance)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 재보험</div>
+<h1>금융재보험 (Financial Reinsurance)</h1>
+<div class="meta">원저자: Ngai Hang Chan &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 정의 <span class="en">Definition</span></h2>
+<p><b>금융재보험(financial reinsurance)</b>은 엄밀히 말해 보험손실의 <b>금융(financing)과 재보험(reinsuring)을 결합</b>한 것이다. 그 결합은 ‘순수 금융’에서 ‘순수 재보험’까지의 연속선 어디에나 놓일 수 있다. 흔히 <b>유한위험 재보험(finite-risk reinsurance)</b>이라 불린다. 통합·혼합 담보가 보험손실에 투자성과 위험 등 <b>다른 위험까지</b> 묶는 것과 달리, 금융재보험은 <b>보험손실만</b> 다룬다. 또 대체위험전가(ART)가 위험을 결국 자본시장으로 넘기는 것과 달리, 금융재보험은 <b>재보험자에게</b> 넘긴다.</p>
+<h2>2. 구조 — 경험계정과 이익수수료 <span class="en">Experience Account & Profit Commission</span></h2>
+<p>핵심 장치는 <b>경험계정(experience account)</b>과 <b>이익수수료(profit commission)</b>다. 보험료에서 마진(margin)과 손실 일부를 차감해 경험계정을 만들고, 계정이 양(+)이면 그만큼을 이익수수료로 원수사에 돌려준다. 이 구조는 위험이전을 <b>수직(비례) 요소</b>와 <b>수평(비비례) 요소</b>로 나눠 설계한다. 재보험자는 손실이 나서 <b>되돌려받지 못할 부도위험(default risk)</b> 같은 금융위험을 진다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 마진과 위험이전 (원문 예 단순화)</div><p class="q">보험료 100, 마진 40, 이익수수료 PC = max(0.6·(100−L), 0) (L=손실). 이때 재보험자가 지는 위험은?</p><p style="margin:2pt 0">최대 수수료는 L=0일 때 0.6·100 = <b>$60</b>. 사실상 원수사는 <b>첫 $100 손실의 60%를 스스로 자금조달</b>하는 셈.</p><p style="margin-bottom:0">마진 $40가 첫 $100의 40%(수직 요소) + $100 <b>초과 손실 전부</b>(수평 요소)를 담당한다. 즉 보험위험은 일부, 나머지는 금융(자금조달) 성격.</p></div>
+<div class="note"><div class="head"><span class="tag">해설</span> ‘유한위험’이라 불리는 이유</div><p style="margin-bottom:0">금융재보험은 실제 이전되는 <b>보험위험이 제한적(finite)</b>이고, 상당 부분이 <b>시점 조정·자금조달</b> 성격이다. 그래서 회계·감독상 “위험이전이 충분한가(진짜 재보험인가)”가 항상 쟁점이 된다(위험이전 요건).</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Reinsurance(재보험) · Alternative Risk Transfer(대체위험전가) · Financial Engineering(금융공학) · Captives(캡티브) · Reinsurance Forms(재보험의 형태)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>금융재보험·유한위험 재보험 (financial / finite-risk)</b> — 금융과 재보험을 결합해 위험이전이 제한적인 재보험.</li><li><b>경험계정 (experience account)</b> — 보험료·손실·마진을 정산해 적립하는 계정.</li><li><b>이익수수료 (profit commission)</b> — 손실이 적을 때 원수사에 돌려주는 수수료.</li><li><b>마진 (margin)</b> — 재보험자가 위험·비용 대가로 떼는 부분.</li><li><b>수직(비례)·수평(비비례) 위험요소</b> — 비율로 / 한도 초과로 지는 위험.</li><li><b>부도위험 (default risk)</b> — 정산금을 되돌려받지 못할 위험.</li><li><b>대체위험전가 (ART)</b> — 위험을 자본시장으로 넘기는 기법.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Financial Reinsurance”, Ngai Hang Chan. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 재보험 감독: 점검 항목에 체크해 나가는 감독 클립보드 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 클립보드 -->
+  <rect x="170" y="80" width="140" height="152" rx="8" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+  <rect x="218" y="68" width="44" height="20" rx="6" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <!-- 점검 항목과 체크 -->
+  <g stroke="#171A20" stroke-width="3" stroke-linecap="round" opacity=".22">
+    <line x1="216" y1="118" x2="288" y2="118"/>
+    <line x1="216" y1="154" x2="288" y2="154"/>
+    <line x1="216" y1="190" x2="288" y2="190"/>
+  </g>
+  <g fill="none" stroke="#4A90C2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 188 116 l 6 7 l 11 -13"/>
+    <path d="M 188 152 l 6 7 l 11 -13"/>
+  </g>
+  <rect x="188" y="183" width="14" height="14" rx="3" fill="none" stroke="#171A20" stroke-width="2.5" opacity=".45"/>
+  <!-- 감독 캐릭터 -->
+  <g transform="translate(352 217)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -4.5 5 L 4.5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <line x1="130" y1="238" x2="380" y2="238" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

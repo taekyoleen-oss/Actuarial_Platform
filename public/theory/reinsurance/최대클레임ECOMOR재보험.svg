@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 최대클레임·ECOMOR 재보험: 가장 큰 클레임들에만 왕관(Sky)을 씌워 인수 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <line x1="84" y1="238" x2="410" y2="238" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 클레임 막대들 -->
+  <g stroke="#171A20" stroke-width="2.5">
+    <rect x="120" y="168" width="36" height="70" fill="#EEF4FF"/>
+    <rect x="180" y="92" width="36" height="146" fill="#EAF2F9"/>
+    <rect x="240" y="148" width="36" height="90" fill="#ECFDF5"/>
+    <rect x="300" y="72" width="36" height="166" fill="#EAF2F9"/>
+    <rect x="360" y="184" width="36" height="54" fill="#FFF7ED"/>
+  </g>
+  <!-- 최대 클레임 왕관 (Sky) -->
+  <path d="M 184 88 L 191 72 L 198 81 L 205 70 L 212 88 Z" fill="#4A90C2" stroke="#171A20" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 304 68 L 311 52 L 318 61 L 325 50 L 332 68 Z" fill="#4A90C2" stroke="#171A20" stroke-width="2" stroke-linejoin="round"/>
+  <!-- 순위를 매기는 캐릭터 -->
+  <g transform="translate(97 223)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

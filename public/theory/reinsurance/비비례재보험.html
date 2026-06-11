@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>비비례 재보험 (Nonproportional Reinsurance)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 재보험</div>
+<h1>비비례 재보험 (Nonproportional Reinsurance)</h1>
+<div class="meta">원저자: Andrea Splitt &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요 — 층(layer) 구조 <span class="en">Introduction</span></h2>
+<p><b>비비례 재보험(nonproportional reinsurance)</b>은 손해를 비율로 나누지 않고, <b>보유한도(공제액·우선액)와 한도(layer)</b>로 나눈다. 원수사는 일정 금액까지 보유하고, 그 위의 손해를 재보험자가 <b>층(layer)</b>별로 인수한다(예: 1차층 5백만 초과, 2차층 10백만 초과 등). 손해가 한 층의 한도를 넘으면 그 위 층이 작동한다.</p>
+<h2>2. 종류 <span class="en">Types</span></h2>
+<ul><li><b>위험별 초과손해액(WXL, per-risk XL)</b> — 개별 위험의 손해가 보유한도를 넘는 부분.</li><li><b>사고별 초과손해액(per-event XL)</b> — 하나의 사건에서 누적된 손해. 재물에서는 <b>재해 초과손해액(CXL)</b>, 배상에서는 <b>클래시 레이어(clash layer)</b>라 부른다.</li><li><b>총계 초과손해액(aggregate XL)·초과손해율(stop loss, SL)</b> — 한 해 특정 담보위험의 모든 손해를 합쳐 하나의 손해로 보고 한도 초과분을 보장.</li></ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 비례와 무엇이 다른가</div><p style="margin-bottom:0">비례(quota share)는 “모든 손해를 같은 비율로 나누기”라 <b>큰 손해도 일부만</b> 덜어준다. 비비례(XL/stop-loss)는 “일정 금액까지는 내가, 그 위는 재보험자가”라 <b>거대 손해를 집중적으로</b> 방어한다. 그래서 비비례는 <b>대재해·이상손해</b> 대비에 쓰인다.</p></div>
+<h2>3. 보험료 <span class="en">Premium</span></h2>
+<p>비비례 특약의 보험료는 원수 손해보험료와 마찬가지로 <b>위험이론(risk theory)</b>에 기초해 계산한다(기대 손해부담 + 변동부가 + 사업비 부가). 자세한 산정은 표제어 <i>재보험 요율산정(Reinsurance Pricing)</i> 참조.</p>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Excess-of-loss Reinsurance(초과손해액 재보험) · Stop-loss Reinsurance(초과손해율 재보험) · Catastrophe Excess of Loss(재해 초과손해) · Largest Claims and ECOMOR Reinsurance(최대클레임·ECOMOR) · Reinsurance Pricing(재보험 요율산정)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>비비례 재보험 (nonproportional)</b> — 손해를 한도(layer) 기준으로 나누는 재보험.</li><li><b>층 (layer)·우선액 (priority)·한도 (limit)</b> — 재보험이 작동하는 구간 / 시작 금액 / 최대 금액.</li><li><b>위험별/사고별 초과손해액 (per-risk / per-event XL)</b> — 개별 위험 / 한 사건 단위의 초과손해 보장.</li><li><b>재해 초과손해(CXL)·클래시 레이어 (clash layer)</b> — 대재해 / 한 사건에 여러 계약이 얽힌 배상 손해 보장.</li><li><b>초과손해율 (stop loss, SL)</b> — 연간 총손해의 한도 초과분 보장.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Nonproportional Reinsurance”, Andrea Splitt. · 본 해설서의 [해설]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

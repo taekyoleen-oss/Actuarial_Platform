@@ -94,7 +94,7 @@ description: "보험이론 사전(/theory) 자료 게시 자동화 스킬. publi
 - 뷰어: HTML iframe 본문만(상단: ← 주제 / 제목 / 새 탭에서 열기). **PDF 다운로드 미노출**.
 - 자동 매칭: `lib/theory.ts` `listTheoryItems()` — **html 있는 항목만 목록화**, 같은 base의 svg → coverPath, pdf → pdfPath(보관용).
 - 표시 제목(2026-06-11 사용자 결정): **html `<title>`의 "한글명 (영문명)" 부분을 우선 사용**
-  (`lib/theory.ts` titleFromHtml — 공백 둘러싼 대시 이후 꼬리 제거, 영문 병기 자동).
+  (`lib/theory.ts` titleFromHtml — **"— 학습 해설서" 꼬리만 제거**, 제목 본문의 대시는 보존. 영문 병기 자동).
   `<title>`이 없거나 비면 파일명 폴백: 숫자 접두사 제거 → `_`→띄어쓰기 → "해설서" 단어 제거(displayTitle).
   파일명에는 `_해설서`를 계속 써도 된다 — URL·파일 매칭(base)은 그대로다.
 - 게시 시 점검: html `<title>`이 `한글명 (영문명) — 학습 해설서` 형식인지 확인하고,

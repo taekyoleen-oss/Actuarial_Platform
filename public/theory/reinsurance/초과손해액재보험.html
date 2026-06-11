@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>초과손해액 재보험 (Excess-of-loss Reinsurance)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 재보험</div>
+<h1>초과손해액 재보험 (Excess-of-loss Reinsurance)</h1>
+<div class="meta">원저자: Andrea Splitt &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 정의와 표기 <span class="en">Definition</span></h2>
+<p><b>초과손해액 재보험(excess-of-loss, XL)</b>은 비비례 재보험의 대표 형태로, 손해가 <b>우선액(공제액)을 넘는 부분</b>을 한도까지 재보험자가 부담한다. 흔히 “<b>한도 xs 우선액</b>” 형태로 표기한다. 예: 화재 WXL <b>$1m xs $1m</b>은 “$1m을 넘는 손해를 $1m 한도까지 보장”한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> ‘$1m xs $1m’ 읽는 법</div><p style="margin-bottom:0">‘xs’는 excess(초과)다. “<b>한도 xs 우선액</b>”에서 앞이 재보험자가 지는 <b>최대 금액(한도)</b>, 뒤가 재보험이 시작되는 <b>우선액(원수 보유)</b>이다. $1m xs $1m이면, 손해 $1m까지는 원수사가, $1m~$2m 구간을 재보험자가 부담한다(그 위 초과분은 원수사 또는 상위 층).</p></div>
+<h2>2. 복원(reinstatement)과 연간총한도 <span class="en">Reinstatements & AAL</span></h2>
+<p>재물에서는 소진된 담보를 되살리는 <b>복원(reinstatement)</b> 개념을 쓴다. 예컨대 $1m xs $1m에 <b>복원 2회</b>면 총 3×$1m=$3m의 담보가 제공된다. 배상에서는 특약 기간 총 담보를 <b>연간총한도(AAL)</b>로 정한다. 복원은 <b>무상</b>이거나, NP 보험료의 일정 비율로 <b>유상</b>일 수 있고, 손해 발생 시점에 비례해 정산하는 <b>일할(pro rata temporis)</b> 방식도 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 복원이 있는 XL의 지급</div><p class="q">$1m xs $1m, 복원 1회(무상). 한 해에 $1.6m, $2.4m 두 건의 손해가 났다. 재보험자가 지급하는 금액은?</p><p style="margin:2pt 0">손해1 $1.6m → 층($1m~$2m)에서 (1.6−1.0)=<b>$0.6m</b> 지급(담보 $0.4m 남음 → 복원으로 $1m 회복)</p><p style="margin-bottom:0">손해2 $2.4m → 층 한도 $1m까지 = <b>$1.0m</b> 지급. 합계 재보험금 = <b>$1.6m</b>(우선액 $1m 초과분만, 층 한도 내).</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Nonproportional Reinsurance(비비례 재보험) · Stop-loss Reinsurance(초과손해율 재보험) · Catastrophe Excess of Loss(재해 초과손해) · Reinsurance Pricing(재보험 요율산정) · Retention and Reinsurance Programmes(보유와 재보험 프로그램)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>초과손해액 재보험 (excess-of-loss, XL)</b> — 우선액 초과분을 한도까지 보장하는 비비례 재보험.</li><li><b>우선액 (priority/deductible)·한도 (limit)</b> — 재보험 시작 금액 / 재보험자 최대 부담액.</li><li><b>xs (excess)</b> — “한도 xs 우선액” 표기에서 ‘초과’를 뜻함.</li><li><b>복원 (reinstatement)</b> — 소진된 담보를 다시 채우는 것(무상/유상).</li><li><b>연간총한도 (AAL, annual aggregate limit)</b> — 한 해 특약이 제공하는 총 담보액.</li><li><b>일할정산 (pro rata temporis)</b> — 잔여 담보기간에 비례해 보험료를 정산.</li></ul>
+<div class="src">원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Excess-of-loss Reinsurance”, Andrea Splitt. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>
