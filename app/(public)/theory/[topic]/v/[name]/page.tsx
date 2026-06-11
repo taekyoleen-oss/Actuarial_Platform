@@ -63,7 +63,7 @@ export default async function TheoryViewerPage({
           >
             ← {t.name}
           </Link>
-          <h1 className="truncate font-serif text-lg font-semibold text-brand-navy">
+          <h1 className="truncate text-lg font-semibold text-brand-sky">
             {item.title}
           </h1>
         </div>
@@ -82,7 +82,7 @@ export default async function TheoryViewerPage({
           >
             ← {t.name}
           </Link>
-          <h1 className="truncate font-serif text-sm font-semibold text-brand-navy">
+          <h1 className="truncate text-sm font-semibold text-brand-sky">
             {item.title}
           </h1>
         </div>

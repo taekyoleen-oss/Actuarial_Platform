@@ -18,12 +18,13 @@
 | 2026-06-11 | tkLeen 아이덴트 애니메이션 (HeroIdent) | components/feature/HeroIdent·HeroSection·SiteNav, globals.css, tailwind | 히어로 우측(PC)+모바일 헤더 마크. 픽셀 맵·타이밍은 tkleen-hero-animation.html 원본 유지 |
 | 2026-06-11 | 카드 입체화 + 카드 타이틀 구별 + 홈 개선 | globals.css, tailwind, layout, PostCard·HeroSection·SummaryPanel·PdfViewer·ui/card, 홈, tweakcn-tesla-theme 스킬 | 사용자 결정: 카드 엘리베이션(2단 섀도+lift) 허용, 타이틀 Noto Serif KR 600·navy, 페이지 캔버스 cream·격자점 히어로·섹션 픽셀 액센트 |
 | 2026-06-11 | "보험이론 사전" 섹션(/theory) — 폴더 기반 정적 자료실 | app/(public)/theory, lib/theory.ts, public/theory/{life,general}, SiteNav | public/theory/<주제>/에 .html·.pdf 추가→빌드 시 자동 목록화(주제: 생명/손해, 추가는 THEORY_TOPICS 배열). HTML 임베드 열람+PDF 병행, 같은 파일명은 한 항목 |
+| 2026-06-11 | 카드 타이틀 고딕 600·로고 블루(--brand-sky)로 변경 | PostCard, 홈, theory 페이지, layout, tailwind, globals, 테마 스킬 | 사용자 결정: 세리프(Noto Serif KR)·네이비 안 철회, 세리프 폰트 로딩 제거 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
 - **DB 공존**: 기존 보험 뉴스 Supabase 프로젝트(`hkrxnkntapcychtbxpmv`)에 `ib_` 프리픽스로 additive 추가. 기존 객체 DROP/ALTER 금지. 합산 운영은 `output/integration_bridge_view.draft.sql`(분리+브리지 뷰) 참조 — 현재는 미연결.
 - **시크릿은 서버 전용**: `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`는 Route Handler/Server Action에서만 사용. 클라이언트 노출 금지. `.env`는 커밋 금지.
 - **테이블 프리픽스** `ib_`. 익명에게 테이블 UPDATE 권한 금지(조회수는 RPC `ib_increment_view`).
-- **디자인 비협상**: 그라데이션·세만틱 색상 없음, 강조는 `--primary`(#3E6AE1)만(브랜드 마크·액센트 한정 `--brand-sky`/`--brand-navy`), 그림자는 카드 엘리베이션(`--shadow-card`/`-hover`)만, 트랜지션 색상 0.33s + 카드 hover lift 한정 예외, 폰트 Pretendard/Inter 400·500 + 카드 타이틀 Noto Serif KR 600. 페이지 캔버스 `--page-bg`(cream)·카드 화이트. 상세는 `tweakcn-tesla-theme` 스킬.
+- **디자인 비협상**: 그라데이션·세만틱 색상 없음, 강조는 `--primary`(#3E6AE1)만(브랜드 마크·카드 타이틀 한정 `--brand-sky`), 그림자는 카드 엘리베이션(`--shadow-card`/`-hover`)만, 트랜지션 색상 0.33s + 카드 hover lift 한정 예외, 폰트 Pretendard/Inter 400·500 + 카드 타이틀 고딕 600·`--brand-sky`. 페이지 캔버스 `--page-bg`(cream)·카드 화이트. 상세는 `tweakcn-tesla-theme` 스킬.
 - **산출물 컨벤션**: 구조화 산출물(스키마·계약·리포트)은 `output/*.sql|json|md`, 중간물은 `_workspace/`. `output/*.sql`은 Supabase SQL Editor에서 실행하거나 자격증명 확보 시 `supabase-sync` 스킬로 적용.
 - TypeScript는 `async/await`.

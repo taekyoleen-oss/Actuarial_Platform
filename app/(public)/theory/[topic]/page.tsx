@@ -71,7 +71,7 @@ export default async function TheoryTopicPage({
               key={item.base}
               className="flex flex-col rounded-cover border border-border bg-white p-5 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
             >
-              <h2 className="flex-1 font-serif text-lg font-semibold leading-snug text-brand-navy">
+              <h2 className="flex-1 text-lg font-semibold leading-snug text-brand-sky">
                 <Link
                   href={`/theory/${t.slug}/v/${encodeURIComponent(item.base)}`}
                   className="hover:text-primary"

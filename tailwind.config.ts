@@ -35,8 +35,6 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Pretendard", "Inter", "-apple-system", "system-ui", "sans-serif"],
-        // 카드 타이틀 전용 세리프 (next/font가 --font-serif 주입)
-        serif: ["var(--font-serif)", "Georgia", "serif"],
       },
       fontWeight: {
         // 400/500만 사용 (700·300 금지)

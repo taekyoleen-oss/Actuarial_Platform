@@ -1,16 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import { SiteNav } from "@/components/feature/SiteNav";
-
-// 카드 타이틀 전용 세리프 — 본문(Pretendard 400/500)과 위계를 분리한다.
-// 한글 폰트는 unicode-range 분할 로딩이라 preload 대상이 없어 preload: false.
-const notoSerifKr = Noto_Serif_KR({
-  weight: ["600"],
-  variable: "--font-serif",
-  display: "swap",
-  preload: false,
-});
 
 export const metadata: Metadata = {
   title: "Insurance Insights Board",
@@ -31,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className={notoSerifKr.variable}>
+    <html lang="ko">
       <body>
         <SiteNav />
         <main className="min-h-[calc(100vh-3.5rem)]">{children}</main>

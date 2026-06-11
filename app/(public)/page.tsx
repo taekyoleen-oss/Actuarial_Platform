@@ -54,7 +54,7 @@ export default async function HomePage() {
                 href={`/posts?category=${c.slug}`}
                 className="group flex flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
               >
-                <h3 className="font-serif text-[17px] font-semibold text-brand-navy">
+                <h3 className="text-[17px] font-semibold text-brand-sky">
                   {c.name}
                 </h3>
                 <p className="mt-2 flex-1 text-sm text-tertiary">
@@ -82,7 +82,7 @@ export default async function HomePage() {
                 rel="noopener noreferrer"
                 className="rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
               >
-                <h3 className="font-serif text-[17px] font-semibold text-brand-navy">
+                <h3 className="text-[17px] font-semibold text-brand-sky">
                   {l.title}
                 </h3>
                 <p className="mt-2 text-sm text-tertiary">{l.description}</p>
