@@ -15,6 +15,7 @@ const CATEGORIES = [
 const EXTRA = [
   { href: "/theory", name: "보험이론 사전" },
   { href: "/news", name: "보험 뉴스" },
+  { href: "/about", name: "만든이" },
   { href: "/admin", name: "관리자" },
 ];
 
@@ -43,13 +44,14 @@ export function SiteNav() {
             height={28}
             className="hidden h-7 w-7 shrink-0 lg:block"
           />
-          <span className="text-[15px] font-medium text-foreground">
+          {/* lg 구간은 메뉴 7개가 빠듯해 워드마크 텍스트를 xl부터 표시 */}
+          <span className="text-[15px] font-medium text-foreground lg:hidden xl:inline">
             Insurance Insights
           </span>
         </Link>
 
         {/* 데스크톱 (lg 이상) — 카테고리 폴더명 */}
-        <div className="hidden items-center gap-5 text-sm font-medium lg:flex">
+        <div className="hidden items-center gap-4 text-sm font-medium lg:flex xl:gap-5">
           {CATEGORIES.map((c) => (
             <Link
               key={c.slug}

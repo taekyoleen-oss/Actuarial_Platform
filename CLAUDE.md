@@ -21,6 +21,8 @@
 | 2026-06-11 | 카드 타이틀 고딕 600·로고 블루(--brand-sky)로 변경 | PostCard, 홈, theory 페이지, layout, tailwind, globals, 테마 스킬 | 사용자 결정: 세리프(Noto Serif KR)·네이비 안 철회, 세리프 폰트 로딩 제거 |
 | 2026-06-11 | 풀링 아이덴트(PoolIdent) + 아이덴트 시안 폴더 design/idents/ | components/feature/PoolIdent.tsx, app/(public)/theory/[topic], design/idents/ | 이론 사전 헤더 우측(PC) 무질서→질서 루프. 모션 시안 HTML은 design/idents/에서 관리(README에 변환 규칙·매핑) |
 | 2026-06-11 | 이론 사전 커버 일러스트(플랫 카툰 SVG) + 뷰어 PDF 하단 다운로드 + theory-publisher 스킬 | lib/theory.ts, theory 목록/뷰어, public/theory/life/*.svg, .claude/skills/theory-publisher | 커버 스타일 A(플랫 카툰) 사용자 확정. 자료명.svg 자동 매칭, 게시+커버 생성은 theory-publisher 스킬로 자동화 |
+| 2026-06-11 | 이론 사전 카드 단순화(제목↑커버↓) + PDF 노출 제거 | theory 목록/뷰어, lib/theory, README×2, theory-publisher 스킬 | 사용자 결정: 제목·그림 클릭=본문 진입 단일 동선, 보조 링크 없음, pdf는 폴더 보관만(html 필수). 스킬에 비협상으로 반영 |
+| 2026-06-11 | "만든이"(/about) 추가 — AI4Insurance 소개 이식 | app/(public)/about, SiteNav | AI4Insurance 프로젝트의 about(소개·신뢰지표·경력·성과·논문 8편·전문분야·철학)만 이식, 메뉴는 관리자 왼쪽. 나머지 섹션은 미이식 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
