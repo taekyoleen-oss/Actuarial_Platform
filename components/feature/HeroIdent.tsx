@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 // tkLeen 아이덴트 — "흩어진 리스크 → 하나의 보장"
-// tkleen-hero-animation.html의 픽셀 맵·애니메이션 타이밍을 그대로 이식.
+// design/idents/tkleen-hero-animation.html 시안의 픽셀 맵·애니메이션 타이밍을 그대로 이식.
 // 색상만 브랜드 토큰으로 매핑: Ink → --foreground, Sky → --brand-sky.
 // 마운트 시 1회 재생: 히어로(PC)·헤더(모바일) 어디든 className으로 크기만 지정.
 

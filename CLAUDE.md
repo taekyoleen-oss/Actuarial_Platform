@@ -19,6 +19,7 @@
 | 2026-06-11 | 카드 입체화 + 카드 타이틀 구별 + 홈 개선 | globals.css, tailwind, layout, PostCard·HeroSection·SummaryPanel·PdfViewer·ui/card, 홈, tweakcn-tesla-theme 스킬 | 사용자 결정: 카드 엘리베이션(2단 섀도+lift) 허용, 타이틀 Noto Serif KR 600·navy, 페이지 캔버스 cream·격자점 히어로·섹션 픽셀 액센트 |
 | 2026-06-11 | "보험이론 사전" 섹션(/theory) — 폴더 기반 정적 자료실 | app/(public)/theory, lib/theory.ts, public/theory/{life,general}, SiteNav | public/theory/<주제>/에 .html·.pdf 추가→빌드 시 자동 목록화(주제: 생명/손해, 추가는 THEORY_TOPICS 배열). HTML 임베드 열람+PDF 병행, 같은 파일명은 한 항목 |
 | 2026-06-11 | 카드 타이틀 고딕 600·로고 블루(--brand-sky)로 변경 | PostCard, 홈, theory 페이지, layout, tailwind, globals, 테마 스킬 | 사용자 결정: 세리프(Noto Serif KR)·네이비 안 철회, 세리프 폰트 로딩 제거 |
+| 2026-06-11 | 풀링 아이덴트(PoolIdent) + 아이덴트 시안 폴더 design/idents/ | components/feature/PoolIdent.tsx, app/(public)/theory/[topic], design/idents/ | 이론 사전 헤더 우측(PC) 무질서→질서 루프. 모션 시안 HTML은 design/idents/에서 관리(README에 변환 규칙·매핑) |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 

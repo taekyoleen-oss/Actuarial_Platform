@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PoolIdent } from "@/components/feature/PoolIdent";
 import { cn } from "@/lib/utils";
 import {
   THEORY_TOPICS,
@@ -36,11 +37,19 @@ export default async function TheoryTopicPage({
 
   return (
     <div className="mx-auto max-w-container px-6 py-12">
-      <h1 className="text-2xl font-medium text-foreground">보험이론 사전</h1>
-      <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-tertiary">
-        보험 이론·실무 기초 자료를 주제별로 정리했습니다. 각 자료는 HTML로 바로
-        열람하거나 PDF로 내려받을 수 있습니다.
-      </p>
+      <div className="flex items-center justify-between gap-8">
+        <div>
+          <h1 className="text-2xl font-medium text-foreground">
+            보험이론 사전
+          </h1>
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-tertiary">
+            보험 이론·실무 기초 자료를 주제별로 정리했습니다. 각 자료는 HTML로
+            바로 열람하거나 PDF로 내려받을 수 있습니다.
+          </p>
+        </div>
+        {/* 풀링 아이덴트 (무질서→질서 상시 루프) — PC(lg 이상) 전용 */}
+        <PoolIdent className="hidden shrink-0 lg:block" />
+      </div>
 
       {/* 주제 탭 (상단 주제별 정리) */}
       <div className="mt-8 flex flex-wrap gap-2">
