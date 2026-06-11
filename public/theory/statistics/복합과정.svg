@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 복합과정: 시간 위에서 점프하며 쌓이는 누적 클레임 경로 S(t) -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <path d="M 76 236 L 130 236 L 130 206 L 196 206 L 196 186 L 250 186 L 250 132 L 322 132 L 322 110 L 392 110 L 392 236 Z" fill="#EAF2F9" opacity=".85"/>
+  <path d="M 72 70 L 72 238 L 420 238" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 76 236 L 130 236 M 130 206 L 196 206 M 196 186 L 250 186 M 250 132 L 322 132 M 322 110 L 392 110" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <g stroke="#171A20" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round" opacity=".5">
+    <path d="M 130 236 L 130 206 M 196 206 L 196 186 M 250 186 L 250 132 M 322 132 L 322 110"/>
+  </g>
+  <g fill="#171A20" opacity=".55">
+    <circle cx="130" cy="241" r="2.2"/><circle cx="196" cy="241" r="2.2"/><circle cx="250" cy="241" r="2.2"/><circle cx="322" cy="241" r="2.2"/>
+  </g>
+  <text x="82" y="64" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">S(t)</text>
+  <text x="396" y="260" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">t →</text>
+  <text x="236" y="160" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">X3</text>
+  <g transform="translate(356 88)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -4.5 5 L 4.5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M 17 -11 q 3.5 4.5 0 7 q -3.5 -2.5 0 -7" fill="#4A90C2"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
