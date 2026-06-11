@@ -24,6 +24,9 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --dur: 0.33s;
 
+  /* tkLeen 브랜드 시그니처 (public/brand/*.svg 와 동일 컬러) */
+  --brand-sky: #4a90c2;
+
   /* shadcn 호환 HSL 매핑 */
   --color-background: 0 0% 100%;
   --color-foreground: 220 16% 11%;
@@ -73,4 +76,55 @@
 .cover-mono {
   background: var(--surface-alt);
   color: var(--text-tertiary);
+}
+
+/* =========================================================
+   tkLeen 아이덴트 (components/feature/HeroIdent.tsx)
+   "흩어진 리스크 → 하나의 보장" — 브랜드 모션이므로 색상 트랜지션
+   규칙의 예외. 타이밍은 tkleen-hero-animation.html 원본 그대로.
+   ========================================================= */
+.hero-ident-cell {
+  transition: none; /* 전역 * 트랜지션 제외 — 인라인 스타일이 타이밍 전담 */
+  will-change: transform, opacity;
+}
+.hero-ident-cell.pulsing {
+  animation: hero-ident-pulse 5s ease-in-out infinite;
+}
+@keyframes hero-ident-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+
+/* 보장 링: 결집 완료 순간 퍼지는 원 */
+.hero-ident-ring {
+  fill: none;
+  stroke: var(--brand-sky);
+  stroke-width: 1.5;
+  opacity: 0;
+}
+.hero-ident-ring.fire {
+  animation: hero-ident-ring-out 1.8s ease-out forwards;
+}
+@keyframes hero-ident-ring-out {
+  0% {
+    opacity: 0.5;
+    r: 30;
+    stroke-width: 2;
+  }
+  100% {
+    opacity: 0;
+    r: 160;
+    stroke-width: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ident-cell {
+    animation: none !important;
+  }
 }

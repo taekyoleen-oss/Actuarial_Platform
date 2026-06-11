@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tkLeen — Risk Pooling Ident</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --ink: #0A0A0A;
+    --sky: #4A90C2;
+    --navy: #1B2845;
+    --cream: #FAFAF7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Pretendard', 'Inter', sans-serif;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+  }
+
+  /* ── 배경: 보험수리 그리드 + 생존곡선 ───────────── */
+  .bg-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .survival-curve {
+    fill: none;
+    stroke: var(--sky);
+    stroke-width: 1.5;
+    opacity: 0.14;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: drawCurve 4s ease-out 1.2s forwards;
+  }
+  .grid-dot { fill: var(--ink); opacity: 0.045; }
+  @keyframes drawCurve { to { stroke-dashoffset: 0; } }
+
+  /* ── 로고 스테이지 ───────────── */
+  .logo-stage {
+    position: relative;
+    width: min(340px, 70vw);
+    aspect-ratio: 1;
+  }
+  .logo-svg { width: 100%; height: 100%; overflow: visible; }
+
+  .cell {
+    transition: none;
+    will-change: transform, opacity;
+  }
+  .cell.pulsing { animation: cellPulse 5s ease-in-out infinite; }
+  @keyframes cellPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.82; }
+  }
+
+  /* 보장 링: 결집 완료 순간 퍼지는 원 */
+  .coverage-ring {
+    fill: none;
+    stroke: var(--sky);
+    stroke-width: 1.5;
+    opacity: 0;
+  }
+  .coverage-ring.fire { animation: ringOut 1.8s ease-out forwards; }
+  @keyframes ringOut {
+    0%   { opacity: 0.5; r: 30; stroke-width: 2; }
+    100% { opacity: 0;   r: 160; stroke-width: 0.5; }
+  }
+
+  /* ── 워드마크 ───────────── */
+  .word-block {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: riseIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) 2.9s forwards;
+  }
+  @keyframes riseIn { to { opacity: 1; transform: translateY(0); } }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sky);
+    margin-bottom: 14px;
+  }
+  .wordmark {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(44px, 8vw, 72px);
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .wordmark .ell { color: var(--sky); font-weight: 400; }
+  .tagline {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--ink);
+    opacity: 0.62;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── 리플레이 ───────────── */
+  .replay {
+    position: absolute;
+    bottom: 28px;
+    right: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid rgba(10,10,10,0.18);
+    color: var(--ink);
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .replay:hover { border-color: var(--sky); color: var(--sky); }
+  .replay:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+  .concept-note {
+    position: absolute;
+    bottom: 28px;
+    left: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.38;
+    line-height: 1.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cell, .survival-curve, .word-block { animation: none !important; }
+    .survival-curve { stroke-dashoffset: 0; }
+    .word-block { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+
+  <!-- 배경: 보험수리 좌표계 + 생존곡선 l(x) -->
+  <svg class="bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g id="gridDots"></g>
+    <path class="survival-curve"
+      d="M 80,160 C 320,170 480,210 640,330 C 780,435 920,580 1140,680" />
+  </svg>
+
+  <!-- 로고: 픽셀 그리드 TK 리거처 -->
+  <div class="logo-stage">
+    <svg class="logo-svg" viewBox="0 0 200 200" role="img" aria-label="tkLeen 픽셀 그리드 TK 로고 — 개별 리스크가 모여 하나의 보장 구조로 결집되는 애니메이션">
+      <circle class="coverage-ring" id="ring" cx="80" cy="100" r="30"/>
+      <g id="cells"></g>
+    </svg>
+  </div>
+
+  <!-- 워드마크 + 태그라인 -->
+  <div class="word-block">
+    <div class="eyebrow">Risk Pooling · AI Workflow</div>
+    <div class="wordmark">tk<span class="ell">L</span>een</div>
+    <div class="tagline">보험·금융 실무를 위한 AI 워크플로우</div>
+  </div>
+
+  <div class="concept-note">Concept 01<br>흩어진 리스크 → 하나의 보장</div>
+  <button class="replay" id="replayBtn" type="button">Replay ↻</button>
+</div>
+
+<script>
+(function () {
+  const INK = '#0A0A0A';
+  const SKY = '#4A90C2';
+  const CELL = 10;
+
+  /* ── tkLeen 픽셀 맵 (20×20 그리드, col/row 단위) ──
+     T 크로스바: rows 4–5 (Ink) · 공유 스템 col 4–5:
+     y60–100 Ink → y100–160 Sky · K 대각 암: y100에서 방사 (Sky) */
+  const cells = [];
+  // T 크로스바 (Ink)
+  for (let r = 4; r <= 5; r++)
+    for (let c = 1; c <= 9; c++) cells.push({ c, r, color: INK });
+  // 스템 상단 (Ink)
+  for (let r = 6; r <= 9; r++)
+    for (let c = 4; c <= 5; c++) cells.push({ c, r, color: INK });
+  // 스템 하단 (Sky Blue — 시그니처)
+  for (let r = 10; r <= 15; r++)
+    for (let c = 4; c <= 5; c++) cells.push({ c, r, color: SKY });
+  // K 위쪽 대각 암 (Sky)
+  for (let i = 0; i <= 5; i++) {
+    cells.push({ c: 6 + i, r: 9 - i, color: SKY });
+    cells.push({ c: 7 + i, r: 9 - i, color: SKY });
+  }
+  // K 아래쪽 대각 암 (Sky)
+  for (let i = 0; i <= 5; i++) {
+    cells.push({ c: 6 + i, r: 10 + i, color: SKY });
+    cells.push({ c: 7 + i, r: 10 + i, color: SKY });
+  }
+
+  const cellsGroup = document.getElementById('cells');
+  const ring = document.getElementById('ring');
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // 배경 격자점 (보험수리표 느낌)
+  const dotsGroup = document.getElementById('gridDots');
+  for (let x = 80; x <= 1140; x += 60)
+    for (let y = 100; y <= 720; y += 60) {
+      const d = document.createElementNS(ns, 'circle');
+      d.setAttribute('cx', x); d.setAttribute('cy', y); d.setAttribute('r', 1.4);
+      d.setAttribute('class', 'grid-dot');
+      dotsGroup.appendChild(d);
+    }
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let rects = [];
+
+  function build() {
+    cellsGroup.innerHTML = '';
+    ring.classList.remove('fire');
+    rects = cells.map(({ c, r, color }) => {
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('width', CELL);
+      rect.setAttribute('height', CELL);
+      rect.setAttribute('x', c * CELL);
+      rect.setAttribute('y', r * CELL);
+      rect.setAttribute('fill', color);
+      rect.setAttribute('class', 'cell');
+      cellsGroup.appendChild(rect);
+      return { rect, c, r, color };
+    });
+  }
+
+  function animate() {
+    if (reduceMotion) {
+      rects.forEach(({ rect }) => rect.classList.add('pulsing'));
+      return;
+    }
+    // 1단계: 흩어진 리스크 입자 — 무작위 위치·미세 크기·반투명
+    rects.forEach(({ rect }) => {
+      rect.classList.remove('pulsing');
+      const dx = (Math.random() - 0.5) * 420;
+      const dy = (Math.random() - 0.5) * 420;
+      const rot = (Math.random() - 0.5) * 180;
+      rect.style.transition = 'none';
+      rect.style.opacity = '0';
+      rect.style.transformOrigin = 'center';
+      rect.style.transformBox = 'fill-box';
+      rect.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(0.4)`;
+    });
+
+    // 2단계: 풀링 — Ink(구조)가 먼저, Sky(보장)가 흘러들어 결집
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      rects.forEach(({ rect, r, color }, i) => {
+        const base = color === INK ? 200 : 900;        // Ink 먼저, Sky 나중
+        const delay = base + r * 45 + Math.random() * 250;
+        rect.style.transition =
+          `transform 1.3s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, ` +
+          `opacity 0.9s ease ${delay}ms`;
+        rect.style.opacity = '1';
+        rect.style.transform = 'translate(0,0) rotate(0deg) scale(1)';
+      });
+    }));
+
+    // 3단계: 보장 링 확산 + 잔잔한 호흡 펄스
+    setTimeout(() => ring.classList.add('fire'), 2600);
+    setTimeout(() => {
+      rects.forEach(({ rect }, i) => {
+        rect.style.transition = 'none';
+        rect.style.animationDelay = `${(i % 12) * 0.12}s`;
+        rect.classList.add('pulsing');
+      });
+    }, 3200);
+  }
+
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    build(); animate();
+  });
+
+  build();
+  animate();
+})();
+</script>
+</body>
+</html>

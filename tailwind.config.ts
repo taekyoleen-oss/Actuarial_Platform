@@ -25,6 +25,7 @@ const config: Config = {
         placeholder: "var(--placeholder)",
         border: "var(--border)",
         "dark-surface": "var(--dark-surface)",
+        "brand-sky": "var(--brand-sky)",
       },
       fontFamily: {
         sans: ["Pretendard", "Inter", "-apple-system", "system-ui", "sans-serif"],

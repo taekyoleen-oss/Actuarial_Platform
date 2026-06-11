@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { HeroIdent } from "@/components/feature/HeroIdent";
 
 // 상단 카테고리(ib_categories 시드와 일치). 카테고리 관리 UI는 v2.0.
 const CATEGORIES = [
@@ -32,13 +33,14 @@ export function SiteNav() {
           className="flex items-center gap-2"
           onClick={() => setOpen(false)}
         >
-          {/* tkLeen 브랜드 마크 (라이트 헤더용) */}
+          {/* 모바일: 실행 시 결집 애니메이션 마크 / 데스크톱: 정적 마크(히어로에 아이덴트 표시) */}
+          <HeroIdent className="h-7 w-7 shrink-0 lg:hidden" />
           <img
             src="/brand/tkleen-mark.svg"
             alt="tkLeen"
             width={28}
             height={28}
-            className="h-7 w-7 shrink-0"
+            className="hidden h-7 w-7 shrink-0 lg:block"
           />
           <span className="text-[15px] font-medium text-foreground">
             Insurance Insights
