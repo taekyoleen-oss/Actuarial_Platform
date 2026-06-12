@@ -10,7 +10,7 @@ export interface GlobalViewer {
 export const GLOBAL_VIEWERS: GlobalViewer[] = [
   {
     slug: "japan-fsa-cases",
-    title: "일본 금융청 보험상품 심사사례 (2026년 1월)",
+    title: "일본 금융청 보험상품 심사사례 (기간별 종합)",
     htmlPath: "/global/japan-fsa/cases.html",
   },
   {
@@ -22,6 +22,11 @@ export const GLOBAL_VIEWERS: GlobalViewer[] = [
     slug: "japan-life-insurer-timeline",
     title: "일본 생명보험회사 변천 가이드",
     htmlPath: "/global/japan-life/timeline.html",
+  },
+  {
+    slug: "japan-life-trends-2025",
+    title: "일본 생명보험의 동향 (2025년판)",
+    htmlPath: "/global/japan-life-trends/index.html",
   },
 ];
 
