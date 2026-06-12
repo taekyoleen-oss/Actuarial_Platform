@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 추정: 흩어진 자료가 깔때기를 지나 하나의 θ̂으로 모인다 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 흩어진 자료 점 (파스텔 + Ink 윤곽) -->
+  <g stroke="#171A20" stroke-width="2">
+    <circle cx="96" cy="84" r="8" fill="#EEF4FF"/><circle cx="142" cy="62" r="8" fill="#ECFDF5"/>
+    <circle cx="188" cy="92" r="8" fill="#FFF7ED"/><circle cx="120" cy="124" r="8" fill="#F5F3FF"/>
+    <circle cx="170" cy="138" r="8" fill="#EEF4FF"/><circle cx="222" cy="120" r="8" fill="#ECFDF5"/>
+    <circle cx="240" cy="66" r="8" fill="#FFF7ED"/>
+  </g>
+  <text x="86" y="170" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">x₁,…,xn</text>
+  <!-- 깔때기 -->
+  <path d="M 262 96 L 366 96 L 330 168 L 330 208 L 298 208 L 298 168 Z" fill="#FFFFFF" stroke="#171A20" stroke-width="3" stroke-linejoin="round"/>
+  <text x="294" y="132" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">max L</text>
+  <!-- 출력 화살표 (Sky) + 추정치 -->
+  <path d="M 314 214 L 314 244" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 304 232 L 314 246 L 324 232" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="370" cy="252" r="16" fill="#EAF2F9" stroke="#4A90C2" stroke-width="3"/>
+  <text x="362" y="257" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".8">θ̂</text>
+  <!-- 깔때기를 살피는 캐릭터 -->
+  <g transform="translate(214 222)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-2.5" cy="-3" r="1.8" fill="#171A20"/><circle cx="6" cy="-3" r="1.8" fill="#171A20"/>
+    <path d="M -4 5 Q 0.5 8.5 5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

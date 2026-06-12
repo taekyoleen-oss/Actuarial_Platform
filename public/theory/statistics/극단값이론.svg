@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 극단값이론: 임계값 u를 넘는 초과 관측만 골라 보는 POT의 장면 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 바닥축 -->
+  <path d="M 60 252 L 420 252" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 임계값 수평선 u (Sky) -->
+  <path d="M 60 150 L 420 150" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <text x="430" y="154" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">u</text>
+  <!-- 임계 아래 관측 (Ink, 옅게) -->
+  <g stroke="#171A20" stroke-width="3" stroke-linecap="round" opacity=".4">
+    <path d="M 95 252 L 95 206"/><path d="M 130 252 L 130 188"/><path d="M 165 252 L 165 214"/>
+    <path d="M 235 252 L 235 196"/><path d="M 305 252 L 305 210"/><path d="M 375 252 L 375 184"/>
+  </g>
+  <!-- 임계 초과 관측 (Ink 막대 + Sky 초과부) -->
+  <g stroke="#171A20" stroke-width="3" stroke-linecap="round">
+    <path d="M 200 252 L 200 150"/><path d="M 270 252 L 270 150"/><path d="M 340 252 L 340 150"/>
+  </g>
+  <g stroke="#4A90C2" stroke-width="5" stroke-linecap="round">
+    <path d="M 200 150 L 200 108"/><path d="M 270 150 L 270 78"/><path d="M 340 150 L 340 122"/>
+  </g>
+  <circle cx="200" cy="103" r="4.5" fill="#4A90C2"/><circle cx="270" cy="73" r="4.5" fill="#4A90C2"/><circle cx="340" cy="117" r="4.5" fill="#4A90C2"/>
+  <text x="246" y="62" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">GPD</text>
+  <!-- 임계선 위에 앉은 캐릭터 -->
+  <g transform="translate(120 133)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

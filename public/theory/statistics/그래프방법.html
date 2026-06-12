@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그래프 방법 (Graphical Methods)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','NanumGothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+table.data { border-collapse:collapse; margin:9pt auto; font-size:9.6pt; }
+table.data th, table.data td { border:1px solid #bbb; padding:3pt 8pt; text-align:center; }
+table.data th { background:#f0f0f0; }
+table.data caption { font-size:9pt; color:#666; margin-bottom:3pt; }
+@page { size:A4; margin:17mm 15mm; }</style></head><body><div class="wrap"><div class="entrynum">표제어 · 확률·통계</div>
+<h1>그래프 방법 (Graphical Methods)</h1>
+<div class="meta">출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며, 원문에는 없습니다. 처음 보는 용어는 글 끝 <b>부록(보험·통계 용어 풀이)</b>을 참고하세요.</div>
+<h2>1. 서론 — 그래프는 무엇을 해 주는가 <span class="en">Introduction</span></h2>
+<p>원문은 존 그란트(John Graunt, 1662)가 분석한 1600년대 런던의 인구통계 — 연도별 매장(burial)·세례(christening) 건수의 시계열 그림 — 로 시작한다. 그림 하나에서 두 가지 결론이 즉시 나온다: 1620년대 중반에 극적인 사건(아마도 전염병)이 있었고, 1640년대에는 세례 건수가 감소했다(아마도 내전 때문). 이 사례가 그래프를 그리는 근본 이유를 보여 준다 — <b>그래프는 방대한 자료를 한눈에 이해되는 형태로 요약하고, 표에서는 집어내기 어려운 특징을 드러낸다.</b> 단, 그래프가 제 역할을 하려면 명확하고 정확하게 그려지고, 척도가 적절하며, 라벨이 충분해야 한다. 실무의 유용한 원칙은 그래프를 "차트 정크(chart junk)" 없이 깔끔하게 유지하는 것이다 — 불필요하고 산만한 장식이나 과도한 주석 속에서 메시지가 사라지는 일이 너무 잦다.</p>
+<p>고전 문헌으로는 Bertin(1983)이 효시이고, Tufte(1983)의 시각화 3부작은 좋은(그리고 나쁜) 사례가 가득한 필독서이며, Wilkinson(1999)은 통계 그래픽의 형식화(grammar of graphics)를 제시했다. 통계 쪽 "how-to" 책들은 정확한 표현, 명확한 척도, 원점의 좋은 선택, 유익한 범례, 왜곡·잡동사니 배제를 강조하고, 다른 책들은 독자의 시선을 끄는 법을 강조하는데 — 둘은 상충하는 목표가 아니며 최고의 그래프는 양쪽의 장점을 결합한다. 문헌 대부분은 발표용 <b>정적</b> 그래픽을 다루지만, 결과가 웹으로 제공되는 시대에는 탐색적 분석을 위한 <b>대화형(인터랙티브)</b> 그래픽이 점점 중요해진다.</p>
+<h2>2. 기본 그래프 <span class="en">Basic displays</span></h2>
+<p>분류를 위해 <b>범주형 자료</b>(예: 성별)와 <b>연속형 자료</b>(예: 연령)를 구분하는 것이 유용하다(다만 연령을 "젊다/늙다"로만 기록하면 이 구분은 작위적이게 된다).</p>
+<ul><li><b>막대그래프(bar chart)</b> — 단순 범주형 자료의 표준. 막대의 <b>면적</b>이 빈도를 나타내며, 너비가 같으면 높이로 읽어도 된다. 가로 막대로 그리면 라벨 붙이기가 쉽다. 여러 해에 걸친 범주형 자료나 여러 범주형 변수의 조합은 효과적으로 보여 주기 어렵다(→ §5의 모자이크 플롯).</li><li><b>파이차트(piechart)</b> — 자료가 전체의 <b>몫(share)</b>일 때(예: 보험 상품종류별 비중). 몫이라는 사실은 잘 전달하지만 조각끼리 비교하기 어렵고, 가짜 3차원 효과나 조각 분리(cut-out) 같은 "강조" 장치가 그림을 더 심하게 왜곡하기 일쑤다.</li><li><b>히스토그램(histogram)</b> — 보험금액·보험료·연령 같은 연속 자료의 도수분포. 자료 범위를 겹치지 않는 같은 너비의 구간(bin)으로 나누고 구간별 개수를 면적으로 나타낸다. 막대그래프와 달리 <b>막대 사이에 틈이 없어야</b> 한다(구간이 실제로 인접하므로). <b>구간 너비의 선택이 그림 인상을 크게 좌우하므로 반드시 몇 가지를 실험</b>해야 한다. 남녀 연령분포를 세로축 기준으로 맞붙인 등맞댄(back-to-back) 히스토그램이 고전적 변형이다.</li><li><b>도트플롯(dotplot)</b> — 각 사례를 척도 위의 점으로. 자료가 조금만 많아도 겹쳐 찍히지만, 띄엄띄엄 묶인 자료를 드러내는 데 유용하다.</li><li><b>박스플롯(boxplot)</b> — 존 튜키(John Tukey)가 제안한 특수 표시. 가운데 상자가 자료의 50%(중앙값 위아래 각 25%)를 담고, 수염(whisker)은 "합리적" 값의 경계인 안울타리(inner fence) 안의 가장 먼 점까지 뻗는다. 울타리 밖 점은 개별 표시되어 <b>이상치</b>로 간주되고, 바깥울타리 밖이면 극단 이상치다.</li><li><b>시계열 그림(time series plot)</b> — 시간을 가로축에. 연 60개 값 정도면 선으로 이어도 되지만, 10개 남짓의 짧은 시계열은 <b>거짓 연속성</b>(없는 값을 보간해 읽는 착각)을 일으키지 않는 표시가 낫다. 척도가 비교 가능하면 여러 시계열을 한 그림에 겹쳐 그릴 수 있다.</li></ul>
+<p>원문의 박스플롯 사례가 인상적이다. 자동차보험 계약자 51,000명의 생년 박스플롯에서 절반은 1940년대 중반~1960년대 중반생이었는데, 위쪽 이상치들(최근 생년)은 명백한 오류였고, 1900년에 찍힌 한 점은 알고 보니 <b>33건</b>이 겹친 것으로 결측 코드 "00"이 1900년으로 잘못 해석된 결과였다. <b>그래프는 이런 자료 품질 문제를 찾아내는 데 탁월하다.</b> 마찬가지로 1629~1660년 남/녀 세례 비율의 히스토그램에서도 1659년의 입력 오류가 한눈에 드러났고, 오류를 제외하면 비율이 1.02~1.16 사이에서 낮은 값 쪽이 더 잦다는 구조가 보였다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 박스플롯의 울타리 계산</div><p class="q">어떤 화재보험 클레임 자료(백만 원)의 사분위수가 Q₁=12, 중앙값=20, Q₃=36이다. 튜키 방식(안울타리 = 사분위수 ± 1.5×IQR)으로 박스플롯을 그릴 때, 클레임 95백만 원은 이상치로 표시되는가?</p><p>사분위범위 IQR = Q₃−Q₁ = 24. 안울타리는 12 − 1.5×24 = −24 와 36 + 1.5×24 = 72. 바깥울타리는 36 + 3×24 = 108.</p><p style="margin-bottom:0">95 &gt; 72 이므로 95백만 원 클레임은 수염 밖에 <b>개별 점(이상치)</b>으로 찍힌다(108은 넘지 않으므로 극단 이상치는 아님). 클레임 자료처럼 오른쪽으로 긴 꼬리를 가진 분포에서는 위쪽 이상치가 여럿 나오는 것이 정상이며, 박스플롯은 "조사해 볼 후보"를 자동으로 골라 주는 도구로 읽어야 한다.</p></div>
+<h2>3. 두 변수 이상 — 산점도와 집단 비교 <span class="en">More than one variable</span></h2>
+<p>같은 사례에 대해 기록된 두 연속 변수는 <b>산점도(scatterplot)</b>가 매우 효과적이다. 연도별 여아 세례 수를 남아 세례 수에 대해 찍으면 남녀 출생비가 거의 일정하다는 것과 1659년 이상치가 <b>남아 수의 오기</b> 때문임이 드러난다(비율 자체가 관심사라면 히스토그램이 더 나은 표시다). 공간을 잘 쓰려고 원점을 (0,0)이 아닌 곳에 둘 수 있는데, <b>원점이 0이 아니면 반드시 명시</b>해야 한다 — 독자는 0을 기본값으로 가정하므로 심하게 오도될 수 있다. 성장세를 과시하고 싶은 회사는 축과 척도를 골라 1% 증가도 거대해 보이게 만들 수 있고, Tufte의 책에는 그런 끔찍한 사례들이 경고로 실려 있다(신문과 회사 보고서에는 지금도 나쁜 예가 넘친다). 반면 200년 전 플레이페어(Playfair)의 국가 간 무역 도표나, 19세기 런던 콜레라 사망과 공용 펌프 위치를 겹쳐 감염 경로를 극적으로 보여 준 스노우(Snow)의 지도는 모범 사례다.</p>
+<p>직업별 연령분포, 상품종류별 보험금액처럼 <b>집단 간 비교</b>가 목적일 때, 집단마다 히스토그램을 하나씩 그리는 것은 공간 낭비이고 비교도 어렵다. <b>집단별 도트플롯이나 박스플롯을 나란히</b> 놓는 것이 공간 활용과 비교 모두에 좋다.</p>
+<h2>4. 보험·금융의 특수 그래프 <span class="en">Special graphics</span></h2>
+<p>응용 분야마다 표준 그래프의 유용한 변형이 있다.</p>
+<ul><li><b>생존곡선(survival curve)</b> — 시간에 따라 생존해 있는 모집단 비율을 그린 특수한 시간 의존 표시. 가로축 시점 x에서의 곡선 높이가 적어도 그때까지 생존할 확률이다. (의학 시험 같은) 소집단에서는 사망 한 건마다 한 칸씩 내려가는 길이가 제각각인 계단 모양이 된다.</li><li><b>위험초과곡선(risk exceedance curve)</b> — 금융손실 위험의 표시. 가로축에 손실금액, 세로축에 그 금액을 초과할 확률을 그리면 금액이 커질수록 0으로 감소하는 곡선이 나온다. 금융시장의 <b>VaR(Value-at-Risk)</b>와 직결된다 — VaR보다 큰 손실이 날 확률을 1% 같은 낮은 값으로 설정하는 것이다.</li></ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 보험계리 실무에서 그래프가 일하는 곳</div><p style="margin-bottom:0">계리 실무에서 그래프는 장식이 아니라 검증 도구다. 경험위험률 산출에서는 연령별 사망률의 로그 플롯으로 평활(graduation) 결과와 원자료를 겹쳐 보고, 지급준비금에서는 잔차를 사고연도·진전연도·달력연도별로 찍어 모형(체인래더 등)의 적합성을 점검하며, 요율 GLM에서는 적합값 대비 잔차 플롯이 필수 산출물이다. 한국 감독당국 제출자료나 계리법인 검증보고서에도 추세 그래프가 관행적으로 들어간다 — 이 표제어의 원칙(척도·원점 명시, 장식 배제, 구간 너비 실험)은 그대로 체크리스트가 된다.</p></div>
+<h2>5. 고급 그래프 — 다변량 표시 <span class="en">Advanced graphics</span></h2>
+<ul><li><b>평행좌표 플롯(parallel coordinate plot)</b> — 많은 연속 변수를 한꺼번에. 변수마다 세로축을 하나씩 세우고 각 사례를 선분으로 잇는다. (변수가 몇 개뿐이면 모든 쌍의 산점도를 배열한 <b>산점도 행렬</b>도 가능.) 원문은 시드니 올림픽 10종경기 선수들의 종목별 점수를 예로 든다 — 종목 간 점수 수준·산포의 차이, 그리고 절반의 종목에서 최고 기록이 메달리스트가 아닌 선수에게서 나왔다는 사실이 보인다. 변수의 <b>순서와 척도</b>가 보이는 것을 좌우하므로 여러 배열을 시도해야 하며, 그래서 대화형 조작이 특히 중요하다.</li><li><b>모자이크 플롯(mosaic plot)</b> — 여러 범주형 변수의 동시 표시로, 막대그래프의 일반화다. 변수값 조합마다 사례 수에 비례하는 면적의 직사각형을 구조적으로 배치한다. 원문의 타이타닉 자료(성별×연령×선실등급×생존, 2201명) 예에서는 — 성인 여성의 생존율은 등급이 낮을수록 감소하고, 성인 남성의 생존율은 훨씬 낮으며 등급에 따른 감소가 평행하게 나타나지 않고, 승무원 생존율이 비교적 높은 것은 구명정마다 승무원이 탑승했기 때문임이 읽힌다. <b>비교하려는 질문에 따라 변수 배치 순서를 바꿔야</b> 한다.</li><li><b>트렐리스 다이어그램(trellis diagram)</b> — 조건화 변수의 중첩에 따라 자료 부분집합마다 같은 형식의 패널(예: 산점도)을 격자로 배열. "작은 반복(small multiples)" 아이디어이며 공간자료의 마이크로맵에도 쓰인다.</li></ul>
+<h2>6. 통계학과 그래픽, 그리고 그리기 <span class="en">Statistics and graphics</span></h2>
+<p>그래픽은 통계학보다 자료분석과 더 결부되어 자료의 기술·탐색에 주로 쓰여 왔다. 근래에는 정부기관들이 정보 전달 수단으로 그래프를 진지하게 받아들였다(미국 국립암연구소의 암 지도 등). 통계학 안에서는 <b>잔차 표시를 통한 모형 적합 점검</b>이 중요한 쓰임새로, 그래픽이 해석적 절차를 보완한다. 모형 선택에서의 가치도 연구되고 있다. 결과 발표 단계에서는 <b>결과를 둘러싼 불확실성</b>을 함께 표시하는 것이 바람직하며 — 오차막대, 신뢰구간 띠 — 그래픽 표시를 통계이론과 완전히 통합하는 일은 아직 연구 과제다.</p>
+<p>자료가 커지면 일부 그래프는 손봐야 한다. 히스토그램·막대그래프·모자이크 플롯 같은 <b>면적 표시</b>는 200건이든 2억 건이든 똑같이 유효하지만, 산점도 같은 <b>점 표시</b>는 밀도 추정 형태로 대체해야 한다. 좋은 그래프를 그리는 소프트웨어는 이제 흔하지만, 품질은 소프트웨어가 아니라 <b>무엇을 그리기로 결정하는가</b>에 달려 있다. 정확성과 미학 둘 다 중요하다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">심화 해설</span> "면적=빈도" 원칙 하나로 절반은 간다</div><p style="margin-bottom:0">이 표제어의 기본 그래프들은 하나의 원칙으로 묶인다 — <b>잉크가 차지하는 면적이 자료의 양에 비례해야 한다</b>. 막대그래프·히스토그램·모자이크 플롯이 모두 그 사례다. 흔한 위반이 (i) 3차원 파이/막대(앞쪽 조각이 과대 표현), (ii) 0이 아닌 원점의 막대그래프(차이 과장), (iii) 길이 대신 넓이·부피로 아이콘을 키우는 그림문자(값이 2배인데 면적은 4배)다. 그래프를 읽을 때도, 그릴 때도 이 원칙 위반부터 점검하라.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Credit Scoring(신용평점) · Extremes(극단값) · Graduation(평활) · Life Table Data, Combining(생명표 자료의 결합) · Regression Models for Data Analysis(자료분석을 위한 회귀모형)</div>
+<div class="refs"><b>원문 참고문헌(발췌).</b> Graunt, <i>Observations on the Bills of Mortality</i> (1662) · Tufte, <i>The Visual Display of Quantitative Information</i> (Graphics Press, 1983) · Bertin, <i>Semiology of Graphics</i> (1983) · Cleveland, <i>Visualizing Data</i> (Hobart, 1993) · Kosslyn, <i>Elements of Graph Design</i> (Freeman, 1994) · Wainer, <i>Visual Revelations</i> (Springer, 1997) · Wilkinson, <i>The Grammar of Graphics</i> (Springer, 1999) · Becker, Cleveland &amp; Shyu, <i>JCGS</i> 5 (1996) · Hofmann, <i>Metrika</i> 51 (2000).</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul><li><b>차트 정크 (chart junk)</b> — 정보 전달에 기여하지 않는 장식·격자·3D 효과 등. Tufte가 만든 말.</li><li><b>구간(빈) 너비 (bin width)</b> — 히스토그램의 계급 폭. 선택에 따라 분포 모양 인상이 크게 달라진다.</li><li><b>사분위수·IQR</b> — 자료를 4등분하는 값(Q₁, 중앙값, Q₃)과 그 사이 범위 Q₃−Q₁. 박스플롯의 골격.</li><li><b>안/바깥울타리 (inner/outer fence)</b> — Q₁−1.5×IQR, Q₃+1.5×IQR (안), ±3×IQR (바깥). 이상치 판별 경계.</li><li><b>이상치 (outlier)</b> — 자료 대다수의 패턴에서 벗어난 관측. 오류일 수도, 진짜 극단값일 수도 있다.</li><li><b>등맞댄 히스토그램 (back-to-back histogram)</b> — 두 집단(남/녀 등)의 분포를 축을 공유해 좌우로 맞붙인 그림. 인구 피라미드가 대표례.</li><li><b>생존곡선 (survival curve)</b> — 시점별 생존확률 S(t)의 그림. 캐플런–마이어 추정이 계단형 곡선을 준다.</li><li><b>VaR (Value-at-Risk)</b> — 주어진 낮은 확률(예: 1%)로만 초과되는 손실금액. 위험초과곡선에서 읽을 수 있다.</li><li><b>산점도 행렬 (scatterplot matrix)</b> — 변수 쌍마다 산점도를 격자로 배열한 다변량 표시.</li><li><b>밀도 추정 (density estimation)</b> — 점이 너무 많아 겹칠 때 분포를 매끄러운 밀도 함수로 요약하는 기법.</li><li><b>대화형 그래픽 (interactive graphics)</b> — 점 선택·질의, 구간 폭 변경, 변수 재배열 등을 즉석에서 하는 탐색 도구.</li></ul><h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>그란트가 런던 인구통계 그림에서 전염병과 출생 감소를 "한눈에" 읽어낸 것처럼, 한국 계리 실무의 그래프는 통계 검정보다 먼저 문제를 발견하는 도구로 쓰인다. 가장 일상적인 예가 지급준비금 실무의 <b>진전삼각형 시각화</b>다 — 사고연도×진전연도 표를 히트맵이나 진전계수 꺾은선으로 그리면, 특정 연도의 제도 변화(과실비율 기준 개정, 한방 진료비 추세 등)나 이상 진전이 숫자 표보다 훨씬 빨리 드러난다. 손해율 모니터링 대시보드, 월별 신계약·해지율 추이, 실손 담보별 지급 추세 같은 경영 보고도 본질적으로 시계열 그래프 읽기다.</p>
+<p>분포 적합 실무에서는 본문의 Q–Q 플롯·P–P 플롯이 표준 진단 도구다. 심도분포를 감마·로그정규·파레토 중 무엇으로 둘지 정할 때 적합도 검정 통계량(K–S, A–D)의 숫자만 보면 "어디가 어떻게 안 맞는지"를 모른다 — 꼬리가 벌어지는 Q–Q 플롯 한 장이 "파레토 꼬리가 필요하다"는 결론을 즉시 보여 준다. GLM 요율 분석의 잔차 플롯, 해지율 모형의 연령별 적합도 그림도 같은 역할을 한다.</p>
+<p>IFRS17 시행 이후 그래프의 수요는 오히려 커졌다. CSM 변동 분석, 손익 원천별 분해, 가정 변경의 영향처럼 여러 효과가 겹쳐 움직이는 수치를 경영진·감사인에게 설명하려면 워터폴 차트류의 시각화가 사실상 필수가 되었고, 금융당국 공시·경영공시 자료에도 추세 그림이 늘었다. 다만 본문의 경고 — 그래프는 가설을 만들고, 확인은 별도의 검정으로 — 는 국내 실무에서도 그대로 유효하다. 그림에서 본 패턴(예: 특정 연령대 해지율 급등)은 반드시 데이터 분해와 통계 검정으로 재확인한 뒤 가정에 반영한다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 그래프 한 장의 보고서 규율</div><p>요율·준비금 검증 보고서에는 "결론을 바꾼 그림"을 본문에, 나머지는 부록에 두는 것이 좋다. 축 눈금을 0부터 시작했는지, 두 그림의 축 척도가 같은지(비교 목적이면 반드시 통일), 절단·중도절단된 자료를 그대로 히스토그램으로 그리지 않았는지 — 이 세 가지가 계리 그래프에서 가장 흔한 함정이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Graphical Methods”, Antony Unwin. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>
