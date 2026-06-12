@@ -88,6 +88,12 @@
       .nav{align-items:flex-start;flex-direction:column}
     }
   </style>
+<style id="enh-integrate">
+  /* 표현 보강: 독립 사이트형 헤더(제목·메뉴·테마토글) 제거 → 카드 내 연속 콘텐츠 (내용 불변) */
+  header{ display:none !important; }
+  .skip{ display:none !important; }
+  main#content > .hero.wrap{ padding-top:1.5rem !important; }
+</style>
 </head>
 <body>
   <a class="skip" href="#content">본문으로 이동</a>

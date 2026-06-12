@@ -313,6 +313,65 @@
     .searchbar .wrap { gap: 10px; }
   }
 </style>
+<style>
+  /* ===== 검색 + 마스터-디테일 큰 화면 (표현 보강) ===== */
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .searchbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--hair); }
+  .searchbar .wrap { display: flex; align-items: center; gap: 16px; height: 62px; max-width: 1180px; }
+  .search-wrap { position: relative; flex: 1; max-width: 580px; }
+  .search-wrap input { width: 100%; height: 44px; border: 1px solid var(--hair); border-radius: 11px; padding: 0 40px 0 15px; font-size: 15px; font-family: inherit; background: var(--paper); color: var(--ink); }
+  .search-wrap input::placeholder { color: #9aa0ad; }
+  .search-wrap input:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-soft); background: #fff; }
+  #clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); padding: 6px 8px; line-height: 1; }
+  #clear:hover { color: var(--ink); }
+  .count { font-size: 13.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+  .cb { display: grid; grid-template-columns: 356px 1fr; height: calc(100vh - 58px - 62px); max-width: 1180px; margin: 0 auto; }
+  .cb-list { border-right: 1px solid var(--hair); overflow-y: auto; background: var(--paper); }
+  .list { padding: 4px 0 48px; }
+  .grp-month { position: sticky; top: 0; z-index: 2; background: var(--paper); font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--seal); padding: 15px 18px 7px; border-bottom: 1px solid var(--hair-soft); }
+  .grp-field { font-size: 12px; font-weight: 700; color: var(--muted); padding: 11px 18px 3px; }
+  .row { display: flex; gap: 9px; align-items: flex-start; width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; padding: 9px 18px; border-left: 3px solid transparent; font-family: inherit; }
+  .row:hover { background: var(--hair-soft); }
+  .row.is-active { background: #fff; border-left-color: var(--seal); }
+  .row-chip { flex: none; font-size: 10px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }
+  .row-title { font-size: 14px; line-height: 1.5; color: var(--ink); font-weight: 600; }
+  .row.is-active .row-title { color: var(--seal); }
+  .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 14px; }
+
+  .cb-detail { overflow-y: auto; background: var(--paper); }
+  .detail { max-width: 780px; margin: 0 auto; padding: 42px 44px 96px; }
+  .back { display: none; }
+  .d-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 13px; }
+  .d-meta .chip { font-size: 12px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 6px; padding: 4px 10px; }
+  .d-meta .law { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .d-context { font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: .01em; margin-bottom: 6px; }
+  .d-title { font-size: clamp(24px, 3.2vw, 33px); font-weight: 800; letter-spacing: -.022em; line-height: 1.3; margin: 2px 0 28px; color: var(--ink); }
+  .d-flow { display: grid; gap: 18px; }
+  .d-step { background: var(--surface); border: 1px solid var(--hair); border-radius: 15px; padding: 24px 26px; }
+  .d-step.act { background: var(--case-tint); border-color: var(--case-edge); }
+  .d-tag { font-size: 12.5px; font-weight: 800; letter-spacing: .03em; color: var(--seal); margin-bottom: 11px; }
+  .d-step.act .d-tag { color: #2d4a8a; }
+  .d-step p { margin: 0; font-size: 16.5px; line-height: 1.86; color: var(--ink); }
+  .d-bg { margin-top: 18px; border: 1px dashed var(--case-edge); border-radius: 15px; padding: 22px 26px; background: #fff; }
+  .d-bg-h { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 11px; }
+  .d-bg-b ol { margin: 0 0 0 18px; padding: 0; }
+  .d-bg-b li { font-size: 15px; line-height: 1.82; margin: 5px 0; color: #33405e; }
+  .d-bg-b p { font-size: 15px; line-height: 1.8; color: #33405e; margin: 9px 0 0; }
+  .d-bg-b .note { color: var(--muted); font-size: 13.5px; }
+  mark { background: #FCEFA1; color: inherit; padding: 0 1px; border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    .cb { grid-template-columns: 1fr; height: calc(100vh - 58px - 62px); }
+    .cb-detail { display: none; }
+    body.show-detail .cb-list { display: none; }
+    body.show-detail .cb-detail { display: block; }
+    .back { display: inline-flex; align-items: center; gap: 6px; margin: 16px 0 -10px 22px; border: 1px solid var(--hair); background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13.5px; font-weight: 700; color: var(--ink); cursor: pointer; font-family: inherit; }
+    .detail { padding: 16px 22px 80px; }
+    .searchbar .wrap { gap: 10px; }
+  }
+</style>
 </head>
 <body>
 
@@ -741,6 +800,7 @@ ITEMS.forEach(it=>{
 
 let current = ITEMS.length ? 0 : -1;
 let query = "";
+const mq = window.matchMedia('(max-width: 900px)');
 
 function hl(text){
   const q = query.trim();
@@ -806,8 +866,16 @@ function select(id, toDetail){
   renderDetail(id);
   document.querySelector('.cb-detail').scrollTop = 0;
   [...listEl.querySelectorAll('.row')].forEach(r=> r.classList.toggle('is-active', +r.dataset.id === id));
-  if(toDetail) document.body.classList.add('show-detail');
+  if(toDetail && mq.matches){
+    // 모바일: 목록 → 상세 진입 시 히스토리 항목을 쌓아 브라우저 뒤로가기로 목록 복귀
+    if(!document.body.classList.contains('show-detail')){
+      history.pushState({fsa:'detail'}, '');
+    }
+    document.body.classList.add('show-detail');
+  }
 }
+
+function goList(){ document.body.classList.remove('show-detail'); }
 
 listEl.addEventListener('click', e=>{
   const b = e.target.closest('.row');
@@ -816,7 +884,15 @@ listEl.addEventListener('click', e=>{
 const searchEl = document.getElementById('search');
 searchEl.addEventListener('input', ()=>{ query = searchEl.value; renderList(); });
 document.getElementById('clear').addEventListener('click', ()=>{ searchEl.value=''; query=''; renderList(); searchEl.focus(); });
-document.getElementById('back').addEventListener('click', ()=> document.body.classList.remove('show-detail'));
+// 브라우저 뒤로가기(popstate): 상세 화면이면 목록으로 복귀(카드는 유지). 목록 상태면 기본 동작(카드 밖으로).
+window.addEventListener('popstate', ()=>{
+  if(document.body.classList.contains('show-detail')) goList();
+});
+// '목록으로' 버튼도 히스토리와 동기화 — 쌓인 상세 항목이 있으면 뒤로가기로 처리
+document.getElementById('back').addEventListener('click', ()=>{
+  if(history.state && history.state.fsa === 'detail') history.back();
+  else goList();
+});
 
 renderList();
 if(current >= 0) select(current, false);
