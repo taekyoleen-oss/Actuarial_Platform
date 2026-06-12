@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보험상품 심사 사례 | 금융청 감독국 보험과</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --surface:#FFFFFF; --ink:#1A2238; --muted:#5A6275;
+    --hair:#E3E0D8; --hair-soft:#EDEAE2; --seal:#B23A2E; --seal-soft:#F4E7E4;
+    --case-tint:#F1F3F8; --case-edge:#D5DCEA;
+    --serif:"Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-weight:400; line-height:1.72;
+    font-size:16px; -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:880px; margin:0 auto; padding:0 28px;}
+
+  /* ---- top bar ---- */
+  .topbar{
+    position:sticky; top:0; z-index:20; background:rgba(251,250,247,.92);
+    backdrop-filter:saturate(1.1) blur(8px);
+    border-bottom:1px solid var(--hair);
+  }
+  .topbar .wrap{display:flex; align-items:center; justify-content:space-between; height:58px;}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:-.01em;}
+  .brand .seal{
+    width:26px; height:26px; border-radius:5px; background:var(--seal);
+    color:#fff; display:grid; place-items:center; font-size:13px; font-weight:800;
+    flex:none; box-shadow:0 1px 0 rgba(0,0,0,.08);
+  }
+  .brand small{display:block; font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.02em; margin-top:1px;}
+  .navlinks{display:flex; gap:4px;}
+  .navlinks a{
+    font-size:13.5px; font-weight:600; color:var(--muted); text-decoration:none;
+    padding:7px 13px; border-radius:7px; transition:color .15s, background .15s;
+  }
+  .navlinks a:hover{color:var(--ink); background:var(--hair-soft);}
+  .navlinks a.active{color:var(--ink); background:#fff; box-shadow:inset 0 0 0 1px var(--hair);}
+
+  /* ---- hero ---- */
+  .hero{padding:62px 0 40px; border-bottom:1px solid var(--hair);}
+  .eyebrow{
+    font-size:12.5px; font-weight:700; letter-spacing:.16em; color:var(--seal);
+    text-transform:uppercase;
+  }
+  .hero h1{
+    font-size:clamp(30px,5.4vw,46px); line-height:1.16; font-weight:800;
+    letter-spacing:-.025em; margin:14px 0 0;
+  }
+  .hero .lede{
+    margin:20px 0 0; max-width:62ch; font-size:16.5px; color:var(--muted); line-height:1.74;
+  }
+  .hero .meta{
+    margin-top:26px; display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center;
+    font-size:13.5px; color:var(--muted);
+  }
+  .hero .meta b{color:var(--ink); font-weight:600;}
+  .hero .meta .dot{width:3px; height:3px; border-radius:50%; background:var(--hair); display:inline-block;}
+
+  /* ---- month rail (연월) ---- */
+  .monthnav{
+    position:sticky; top:58px; z-index:15; background:var(--paper);
+    border-bottom:1px solid var(--hair); padding:14px 0;
+  }
+  .monthnav .wrap{display:flex; align-items:center; gap:14px; overflow-x:auto;}
+  .monthnav .label{font-size:12px; font-weight:700; letter-spacing:.08em; color:var(--muted); flex:none;}
+  .month-pill{
+    flex:none; border:1px solid var(--hair); background:#fff; color:var(--muted);
+    border-radius:999px; padding:7px 16px; font-size:14px; font-weight:600;
+    cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .month-pill[aria-current="true"]{
+    background:var(--ink); color:#fff; border-color:var(--ink);
+  }
+  .month-pill .n{font-weight:500; opacity:.7; font-size:12.5px; margin-left:7px;}
+  .month-pill[aria-current="true"] .n{opacity:.85;}
+
+  /* ---- month section ---- */
+  .month{padding:46px 0 8px;}
+  .month-head{margin-bottom:8px;}
+  .month-head h2{font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0;}
+  .month-head .sub{font-size:14px; color:var(--muted); margin-top:6px;}
+
+  /* ---- field group (분야) ---- */
+  .field{margin-top:38px;}
+  .field-head{
+    display:flex; align-items:baseline; gap:12px; padding-bottom:11px;
+    border-bottom:2px solid var(--ink); margin-bottom:8px;
+  }
+  .field-head .fnum{
+    font-size:13px; font-weight:800; color:var(--seal); font-variant-numeric:tabular-nums;
+  }
+  .field-head h3{font-size:18px; font-weight:700; letter-spacing:-.01em; margin:0;}
+
+  /* ---- case card ---- */
+  .case{
+    background:var(--surface); border:1px solid var(--hair);
+    border-radius:12px; padding:26px 28px 24px; margin-top:18px;
+    transition:border-color .18s, box-shadow .18s;
+  }
+  .case:hover{border-color:var(--case-edge); box-shadow:0 6px 22px -16px rgba(26,34,56,.45);}
+  .case-top{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:13px;}
+  .chip{
+    font-size:11.5px; font-weight:700; letter-spacing:.02em;
+    padding:4px 10px; border-radius:6px; background:var(--case-tint);
+    color:#2c3a63; border:1px solid var(--case-edge);
+  }
+  .law{
+    font-size:12.5px; color:var(--muted); font-weight:500;
+    border-left:1px solid var(--hair); padding-left:10px; margin-left:2px;
+  }
+  .case h4{
+    font-size:20px; font-weight:800; letter-spacing:-.02em; line-height:1.4;
+    margin:2px 0 20px;
+  }
+
+  /* signature: 사례 → 조치 flow */
+  .flow{position:relative; padding-left:30px;}
+  .flow::before{
+    content:""; position:absolute; left:9px; top:8px; bottom:30px;
+    width:2px; background:linear-gradient(var(--case-edge), var(--seal));
+  }
+  .step{position:relative; margin-bottom:22px;}
+  .step:last-child{margin-bottom:4px;}
+  .step .node{
+    position:absolute; left:-30px; top:2px; width:20px; height:20px; border-radius:50%;
+    background:#fff; border:2px solid var(--case-edge); display:grid; place-items:center;
+  }
+  .step .node i{width:7px; height:7px; border-radius:50%; background:var(--case-edge);}
+  .step.act .node{border-color:var(--seal);}
+  .step.act .node i{background:var(--seal);}
+  .step .tag{
+    display:inline-block; font-size:12px; font-weight:800; letter-spacing:.1em;
+    color:var(--muted); margin-bottom:6px;
+  }
+  .step.act .tag{
+    color:var(--seal); background:var(--seal-soft);
+    padding:3px 10px; border-radius:5px; letter-spacing:.06em;
+  }
+  .step p{margin:0; font-size:15.5px; line-height:1.74;}
+  .step.act p{font-weight:500;}
+
+  /* expandable 심사 배경 */
+  .more{margin-top:18px; border-top:1px dashed var(--hair); padding-top:4px;}
+  .more summary{
+    list-style:none; cursor:pointer; padding:11px 0 3px;
+    font-size:13.5px; font-weight:700; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .more summary::-webkit-details-marker{display:none;}
+  .more summary .caret{transition:transform .2s; color:var(--muted); font-size:12px;}
+  .more[open] summary .caret{transform:rotate(90deg);}
+  .more .body{padding:6px 0 8px; color:#33405e;}
+  .more ol{margin:6px 0 0; padding-left:4px; counter-reset:r; list-style:none;}
+  .more ol li{
+    position:relative; padding:6px 0 6px 34px; font-size:14.5px; line-height:1.7;
+    border-bottom:1px solid var(--hair-soft);
+  }
+  .more ol li:last-child{border-bottom:none;}
+  .more ol li::before{
+    counter-increment:r; content:counter(r);
+    position:absolute; left:0; top:7px; width:22px; height:22px; border-radius:6px;
+    background:var(--case-tint); color:#2c3a63; font-size:12px; font-weight:700;
+    display:grid; place-items:center; border:1px solid var(--case-edge);
+  }
+  .more p.note{font-size:14px; color:var(--muted); margin:10px 0 0;}
+
+  .ref{
+    margin-top:16px; font-size:13px; color:var(--muted);
+    background:var(--paper); border-radius:8px; padding:10px 14px;
+    border:1px solid var(--hair-soft);
+  }
+  .ref b{color:var(--ink); font-weight:600;}
+
+  /* footer */
+  footer{margin-top:70px; border-top:1px solid var(--hair); padding:34px 0 60px;}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:18px 40px; justify-content:space-between;}
+  footer .src{font-size:13px; color:var(--muted); max-width:60ch; line-height:1.7;}
+  footer .src b{color:var(--ink); font-weight:600;}
+  .disc{font-size:12px; color:var(--muted); margin-top:16px; line-height:1.65;}
+
+  @media (max-width:600px){
+    .wrap{padding:0 18px;}
+    .case{padding:22px 18px;}
+    .navlinks a{padding:6px 9px;}
+    .hero{padding:44px 0 32px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="seal">審</span>
+      <span>보험상품 심사 사례
+        <small>금융청 감독국 보험과 · 한국어판</small>
+      </span>
+    </div>
+    <nav class="navlinks">
+      <a href="보험상품_심사사례집_안내.html">사례집 안내</a>
+      <a class="active" href="#" aria-current="page">심사 사례</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">보험상품 심사사례집</div>
+    <h1>심사 과정에서 공유된<br>문제의식과 조치 사례</h1>
+    <p class="lede">금융청과 보험회사가 실제 상품 심사 과정에서 공유한 문제의식과, 그에 따라 이루어진 조치를 사례별로 정리했습니다. 각 사례는 <b style="color:var(--ink)">신청 내용(사례)</b>과 <b style="color:var(--ink)">심사 결과(조치)</b>로 나누어 보여 줍니다.</p>
+    <div class="meta">
+      <span>발행 <b>금융청 감독국 보험과</b></span>
+      <span class="dot"></span>
+      <span>수록 <b id="metaCount">—</b></span>
+      <span class="dot"></span>
+      <span><a href="보험상품_심사사례집_안내.html" style="color:var(--seal); font-weight:600; text-decoration:none;">사례집의 목적 보기 →</a></span>
+    </div>
+  </div>
+</section>
+
+<nav class="monthnav">
+  <div class="wrap" id="monthNav">
+    <span class="label">연월</span>
+  </div>
+</nav>
+
+<main id="content"></main>
+
+<footer>
+  <div class="wrap">
+    <div class="src">
+      <b>원자료</b> 금융청 「보험상품 심사사례집」(令和8年1月 / 2026년 1월), 금융청 감독국 보험과.<br>
+      본 페이지는 일본어 원문을 한국어로 옮긴 번역본입니다.
+      <p class="disc">원문의 연호는 서기로 환산해 표기했습니다(레이와 8년 → 2026년). 법령·조문 명칭은 일본 보험업법·동법 시행규칙·감독지침의 표현을 따랐으며, 한국의 보험 관련 법령과는 다릅니다. 번역 과정에서 의미가 달라질 수 있으므로, 정확한 내용은 금융청이 공표한 원문을 확인하시기 바랍니다.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const DATA = [
+  {
+    ym:"2026-01", year:2026, month:1,
+    label:"2026년 1월", sub:"令和8年1月 · 당해 사무연도 심사 사례 중심",
+    fields:[
+      {
+        no:"1", title:"생명보험 상품 (약관·사업방법서)",
+        cases:[
+          {
+            chip:"계약자 보호",
+            law:"법 제5조 1항 3호 가목 · 규칙 제11조 1호",
+            title:"무해지환급금형 치매보험의 가입연령",
+            case:"보험료를 낮추기 위한 무해지환급금형 치매보험에 대해, 당초 10대부터 가입할 수 있도록 신청한 내용이었다. 무해지환급금형은 계약자가 보험을 해지해도 적립된 책임준비금이 환급되지 않는 대신 그만큼 보험료가 낮아지는 구조다.",
+            act:"보험료 저렴화의 장점과, 책임준비금이 적립되어 있음에도 환급되지 않는 단점을 비교형량한 결과, 가입연령을 상향하는 조치가 이루어졌다.",
+            bg:{
+              title:"가입연령 상향의 배경",
+              list:[
+                "치매 발생률은 젊은 연령에서는 극히 낮고 고령에서 높아지므로, 장기간 가입한 경우 보험기간 전반부에 거액의 책임준비금이 보험회사에 적립된다.",
+                "그러나 무해지환급금형이므로 계약자가 보험을 해지해도 적립된 책임준비금은 환급되지 않는다.",
+                "이러한 단점이 있는 반면 그만큼 보험료가 인하되는 장점이 있어, 고객의 상품 접근을 보다 용이하게 한다.",
+                "다만 10대부터 가입할 경우 환급되지 않는 기간이 장기간에 이르러, 그 단점이 보험료 저렴화의 장점을 상회하는 것으로 판단되어 계약자 보호에 미흡할 우려가 있다."
+              ],
+              note:"본 사례는 「보험상품 심사사례집 2024년 2월 1.(2) 《보험상품의 해지환급금 삭감에 대하여》」와 같은 취지이다."
+            }
+          },
+          {
+            chip:"법인계약 설계",
+            law:"법 제5조 1항 3호 가목 · 규칙 제11조 1호 · 감독지침 Ⅳ-1-11",
+            title:"변액보험의 보험료 납입 정지·재개",
+            case:"일부 평준납입 변액보험에는, 계약자가 보험료를 납입하지 않은 채 납입유예기간이 지난 뒤 일정 기간 보험료 납입을 자동으로 정지하고 계약을 유효하게 지속시키는 기능이 있다. 이 자동정지 기능을 연속해서 쓸 수 있도록 하는 신청 내용이었으나, 계약자가 법인인 경우 의도적인 납입 정지·재개로 이익이나 손금 금액을 조작할 수 있게 된다.",
+            act:"보험 본래의 취지를 벗어나는 모집활동으로 이어질 우려가 있으므로, 법인계약에 대해서는 해당 기능을 취급하지 않는 것으로 조치하였다.",
+            bg:{
+              title:"심사상의 유의점",
+              para:"보험회사가 정한 요건에 해당하면 납입 정지·재개를 가능하게 하는 취급은 여럿 존재한다. 다만 법인 계약자가 이 기능으로 그 법인의 이익이나 손금을 조작할 수 있게 되는 경우가 있으므로, 법인과의 계약에서는 이러한 기능을 취급하지 않는 등의 대응을 통해 보험 본래의 취지를 벗어나는 모집활동으로 이어지지 않도록 해 두는 것이 중요하다."
+            }
+          }
+        ]
+      },
+      {
+        no:"2", title:"생명보험 상품 (산출방법서)",
+        cases:[
+          {
+            chip:"계약자가액 계산",
+            law:"규칙 제12조 1항 1호 · 감독지침 Ⅳ-1-18 (보험법 대응)",
+            title:"변액보험의 미경과보험료 환급",
+            case:"반기납·연납 등으로 보험료를 내는 변액상품이 해지되면, 미경과 월수에 해당하는 보험료 상당액을 계약자에게 환급해야 한다. 그러나 해당 변액보험은 부가보험료에 관한 미경과 보험료 상당액을 환급하는 산출방법서로 되어 있지 않았다.",
+            act:"보험법 시행 시(2010년 4월)의 대응과 정합적으로 환급하도록 산출방법서의 기재가 시정되었다.",
+            bg:{
+              title:"적용 범위",
+              para:"보험법 시행 후의 보험계약에 대해서는 미경과 월수에 해당하는 보험료 상당액을 계약자에게 환급해야 한다. 이러한 취급은 보험 종류와 관계없이 대응할 필요가 있으며, 변액상품의 부가보험료 부분에 대해서도 마찬가지이다."
+            }
+          }
+        ]
+      },
+      {
+        no:"3", title:"손해보험 상품 (약관·사업방법서)",
+        cases:[
+          {
+            chip:"손해보험성",
+            law:"법 제3조 5항 1호 (손해보험성)",
+            title:"파라메트릭(인덱스) 보험에 관한 유의점 보충",
+            case:"제2분야 보험에서 파라메트릭(인덱스) 보험을 조성할 때의 유의점 중 「실손보상성」에 관한 사항이다. 기업 대상 지진보험처럼 사고 발생률이 낮고 계약자 간 리스크 특성도 크게 다른 경우에는, 동질의 리스크를 다수 모으기가 어렵다.",
+            act:"실손보상성을 판단하는 「충분한 데이터 등」에는 통계적 접근뿐 아니라 공학적 접근에 의한 평가 결과도 포함될 수 있음을 확인하였다. 다만 공학적 접근을 쓸 때는 그 가정·한계를 충분히 파악하고, 손해신고서 제출 요구·사후조사권 약관 규정 등으로 실손보상성을 보강하는 것이 유효하다.",
+            bg:{
+              title:"공학적 접근의 위치",
+              list:[
+                "2022년 1월 공표 사례집에서는 파라메트릭 보험 조성 시 「손해보험 해당성」, 「실손보상성」, 「지표의 적절성」에 유의할 필요가 있다고 했다.",
+                "실손보상성에 대해서는, 지급 트리거를 충족한 경우의 손해액 분포 등을 충분한 데이터로 분석한 뒤 이득 발생 가능성이 충분히 작아지도록 보상금액을 설정해야 한다고 했다.",
+                "공학적 접근에 기초해 부지·구조 등 구분별로 리스크 특성에 따른 손해액 분포를 추정하고, 이를 전제로 보상금액을 설정하는 것은 합리적인 산출방법으로 판단된다.",
+                "공학적 접근 사용 시에는 해당 접근법의 가정·특성과 한계·약점을 충분히 파악할 필요가 있다."
+              ],
+              note:"본 사례는 2022년 1월 공표 사례집 《인덱스 보험에 관한 유의점 정리》의 「실손보상성」 항목을 보충한 것이다."
+            }
+          }
+        ]
+      }
+    ]
+  }
+];
+
+/* ---------- render ---------- */
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function caseHTML(c){
+  let bg = "";
+  if(c.bg){
+    let inner = "";
+    if(c.bg.list){
+      inner += "<ol>" + c.bg.list.map(t=>`<li>${esc(t)}</li>`).join("") + "</ol>";
+    }
+    if(c.bg.para){
+      inner += `<p style="margin:6px 0 0; font-size:14.5px; line-height:1.74; color:#33405e;">${esc(c.bg.para)}</p>`;
+    }
+    if(c.bg.note){
+      inner += `<p class="note">※ ${esc(c.bg.note)}</p>`;
+    }
+    bg = `<details class="more"><summary><span class="caret">▶</span>심사 배경 — ${esc(c.bg.title)}</summary><div class="body">${inner}</div></details>`;
+  }
+  return `<article class="case">
+    <div class="case-top">
+      <span class="chip">${esc(c.chip)}</span>
+      <span class="law">${esc(c.law)}</span>
+    </div>
+    <h4>《${esc(c.title)}》</h4>
+    <div class="flow">
+      <div class="step">
+        <span class="node"><i></i></span>
+        <span class="tag">사례 — 신청 내용</span>
+        <p>${esc(c.case)}</p>
+      </div>
+      <div class="step act">
+        <span class="node"><i></i></span>
+        <span class="tag">조치 — 심사 결과</span>
+        <p>${esc(c.act)}</p>
+      </div>
+    </div>
+    ${bg}
+  </article>`;
+}
+
+function monthHTML(m){
+  const fields = m.fields.map(f=>`
+    <div class="field">
+      <div class="field-head"><span class="fnum">${f.no}</span><h3>${esc(f.title)}</h3></div>
+      ${f.cases.map(caseHTML).join("")}
+    </div>`).join("");
+  return `<section class="month" id="${m.ym}" data-ym="${m.ym}">
+    <div class="wrap">
+      <div class="month-head"><h2>${esc(m.label)}</h2><div class="sub">${esc(m.sub)}</div></div>
+      ${fields}
+    </div>
+  </section>`;
+}
+
+const sorted = [...DATA].sort((a,b)=> b.year-a.year || b.month-a.month);
+document.getElementById("content").innerHTML = sorted.map(monthHTML).join("");
+
+const nav = document.getElementById("monthNav");
+sorted.forEach((m,i)=>{
+  const n = m.fields.reduce((s,f)=>s+f.cases.length,0);
+  const b = document.createElement("button");
+  b.className = "month-pill";
+  b.innerHTML = `${esc(m.label)}<span class="n">${n}건</span>`;
+  b.setAttribute("aria-current", i===0 ? "true":"false");
+  b.onclick = ()=>{ document.getElementById(m.ym).scrollIntoView({behavior:"smooth", block:"start"}); };
+  nav.appendChild(b);
+});
+
+const total = DATA.reduce((s,m)=>s+m.fields.reduce((x,f)=>x+f.cases.length,0),0);
+const months = DATA.length;
+document.getElementById("metaCount").textContent = `${months}개 연월 · 사례 ${total}건`;
+
+/* highlight active month pill on scroll */
+const pills = [...nav.querySelectorAll(".month-pill")];
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const ym = e.target.dataset.ym;
+      pills.forEach((p,i)=>p.setAttribute("aria-current", sorted[i].ym===ym ? "true":"false"));
+    }
+  });
+},{rootMargin:"-40% 0px -55% 0px"});
+document.querySelectorAll(".month").forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

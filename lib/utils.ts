@@ -15,7 +15,10 @@ export function formatDate(iso: string): string {
 
 /** 본문에서 카드 발췌 텍스트 생성 */
 export function excerpt(text: string, max = 120): string {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = text
+    .replace(/\[\[viewer:[a-z0-9-]+\]\]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
   return clean.length > max ? clean.slice(0, max) + "…" : clean;
 }
 

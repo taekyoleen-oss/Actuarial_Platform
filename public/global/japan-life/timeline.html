@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>일본 생명보험회사 변천 가이드</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=zodiak@400,700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.2rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --color-bg: #f7f6f2; --color-surface: #fbfbf9; --color-surface-2: #f1efea;
+      --color-text: #25231d; --color-muted: #6e6a61; --color-border: #d7d2c9;
+      --color-primary: #0b6b72; --color-accent: #a35b16; --color-danger: #8e304a;
+      --shadow: 0 8px 30px rgba(36,28,21,.08); --radius: 18px; --radius-sm: 12px;
+      --max: 1180px;
+    }
+    [data-theme="dark"] {
+      --color-bg: #181715; --color-surface: #201f1c; --color-surface-2: #2a2824;
+      --color-text: #ece7df; --color-muted: #b0aaa0; --color-border: #3f3b35;
+      --color-primary: #63a9b0; --color-accent: #d08a49; --color-danger: #d36a8c;
+      --shadow: 0 8px 30px rgba(0,0,0,.25);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:'Satoshi',sans-serif;background:var(--color-bg);color:var(--color-text);line-height:1.65;font-size:var(--text-base)}
+    h1,h2,h3{font-family:'Zodiak',serif;line-height:1.12;margin:0}
+    p{margin:0;max-width:74ch}
+    a{color:inherit}
+    .wrap{width:min(calc(100% - 2rem),var(--max));margin-inline:auto}
+    .skip{position:absolute;left:-9999px}.skip:focus{left:1rem;top:1rem;background:var(--color-surface);padding:.75rem 1rem;z-index:1000}
+    header{position:sticky;top:0;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--color-bg) 82%, transparent);border-bottom:1px solid var(--color-border);z-index:50}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:700}
+    .logo{width:36px;height:36px;border-radius:10px;border:1px solid var(--color-border);display:grid;place-items:center;background:var(--color-surface)}
+    .logo svg{width:22px;height:22px}
+    .navlinks{display:flex;gap:1rem;flex-wrap:wrap;font-size:var(--text-sm);color:var(--color-muted)}
+    .toggle{min-width:44px;min-height:44px;border:1px solid var(--color-border);border-radius:999px;padding:.6rem;background:var(--color-surface)}
+    .hero{padding:var(--space-16) 0 var(--space-12)}
+    .eyebrow{display:inline-flex;gap:.5rem;align-items:center;padding:.35rem .8rem;border-radius:999px;background:var(--color-surface);border:1px solid var(--color-border);font-size:var(--text-sm);color:var(--color-muted)}
+    .hero-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:var(--space-8);align-items:start;margin-top:var(--space-5)}
+    .hero h1{font-size:var(--text-2xl);margin-bottom:var(--space-4)}
+    .lead{font-size:var(--text-lg);color:var(--color-muted)}
+    .panel,.card,.event,.company{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .panel{padding:var(--space-6)}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4);margin-top:var(--space-4)}
+    .stat{padding:var(--space-4);border-radius:var(--radius-sm);background:var(--color-surface-2)}
+    .stat b{display:block;font-size:var(--text-xl);font-family:'Zodiak',serif}
+    main section{padding:var(--space-8) 0}
+    .section-head{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:var(--space-5)}
+    .section-head p{color:var(--color-muted)}
+    .legend{display:flex;gap:.75rem;flex-wrap:wrap;font-size:var(--text-sm);color:var(--color-muted)}
+    .chip{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .7rem;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface)}
+    .dot{width:.7rem;height:.7rem;border-radius:999px}
+    .d-rename{background:var(--color-primary)} .d-merge{background:var(--color-accent)} .d-end{background:var(--color-danger)}
+    .timeline{display:grid;gap:var(--space-4)}
+    .event{padding:var(--space-5);display:grid;grid-template-columns:120px 1fr;gap:var(--space-4)}
+    .year{font-family:'Zodiak',serif;font-size:var(--text-xl);color:var(--color-primary)}
+    .event h3{font-size:var(--text-lg);margin-bottom:.4rem}
+    .meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
+    .tag{font-size:var(--text-xs);padding:.3rem .55rem;border-radius:999px;background:var(--color-surface-2);border:1px solid var(--color-border)}
+    .rename{color:var(--color-primary)} .merge{color:var(--color-accent)} .end{color:var(--color-danger)}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5)}
+    .card{padding:var(--space-5)}
+    .card h3{font-size:var(--text-lg);margin-bottom:var(--space-3)}
+    .list{display:grid;gap:.8rem;margin-top:var(--space-3)}
+    .list li{margin-left:1.2rem}
+    .company-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5)}
+    .company{padding:var(--space-5)}
+    .route{display:grid;gap:.6rem;margin-top:var(--space-3)}
+    .step{padding:.75rem .9rem;border-left:3px solid var(--color-border);background:var(--color-surface-2);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+    .step.rename{border-left-color:var(--color-primary)} .step.merge{border-left-color:var(--color-accent)} .step.end{border-left-color:var(--color-danger)}
+    details{border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);padding:1rem 1.1rem}
+    details+details{margin-top:.9rem}
+    summary{cursor:pointer;font-weight:700}
+    footer{padding:var(--space-12) 0 var(--space-16);color:var(--color-muted)}
+    @media (max-width: 920px){
+      .hero-grid,.grid-2,.company-grid{grid-template-columns:1fr}
+      .event{grid-template-columns:1fr}
+      .year{font-size:var(--text-lg)}
+      .nav{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">본문으로 이동</a>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M4 16.5c3-6 13-6 16 0" />
+            <path d="M7 14V7.5M12 11V4.5M17 14V7.5" />
+          </svg>
+        </div>
+        <span>일본 생명보험회사 변천 가이드</span>
+      </div>
+      <nav class="navlinks" aria-label="페이지 내 링크">
+        <a href="#overview">보는 법</a>
+        <a href="#timeline">연표</a>
+        <a href="#cases">주요 회사별 변천</a>
+        <a href="#crisis">파산과 계약이전</a>
+        <a href="#closed">소멸 회사</a>
+      </nav>
+      <button class="toggle" type="button" data-theme-toggle aria-label="표시 전환">◐</button>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="hero wrap">
+      <span class="eyebrow">별첨 도표를 읽기 쉽게 다시 구성한 해설 페이지</span>
+      <div class="hero-grid">
+        <div>
+          <h1>사명 변경, 합병, 소멸 과정을 연도별로 따라갈 수 있도록 정리했습니다.</h1>
+          <p class="lead">원래 도표는 정보량이 많아 계통별 흐름을 따라가기 어렵기 때문에, 이 HTML에서는 “언제”, “무엇이”, “어느 회사로 어떻게 이어졌는가”를 문장과 간단한 흐름도로 다시 배치했습니다.</p>
+        </div>
+        <aside class="panel" id="overview">
+          <h2 style="font-size:var(--text-xl);margin-bottom:1rem;">이 페이지를 보는 법</h2>
+          <p>특히 <strong>없어진 회사</strong>, 다른 회사로 포괄이전된 뒤 소멸한 회사, 사명이 단계적으로 바뀐 회사를 중심으로 정리했습니다.</p>
+          <div class="stats">
+            <div class="stat"><b>3가지</b><span>사명변경·합병·소멸로 구분</span></div>
+            <div class="stat"><b>4개 장</b><span>연표·회사별·소멸회사·보충설명</span></div>
+            <div class="stat"><b>중점</b><span>외자계·재편계·구 상호회사계</span></div>
+            <div class="stat"><b>기준</b><span>별첨 「생명보험회사 변천도」 기재 내용</span></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="wrap" id="timeline">
+      <div class="section-head">
+        <div>
+          <h2>연표로 보는 주요 변천</h2>
+          <p>도표에서 읽기 쉬운 주요 이벤트만 뽑아, 이해의 출발점이 되는 순서대로 배열했습니다.</p>
+        </div>
+        <div class="legend" aria-label="범례">
+          <span class="chip"><span class="dot d-rename"></span>사명변경</span>
+          <span class="chip"><span class="dot d-merge"></span>합병·포괄이전</span>
+          <span class="chip"><span class="dot d-end"></span>해산·소멸</span>
+        </div>
+      </div>
+      <div class="timeline">
+        <article class="event">
+          <div class="year">1888</div>
+          <div>
+            <h3>제국생명보험 출범</h3>
+            <div class="meta"><span class="tag rename">기점 회사</span></div>
+            <p>1888년 3월 제국생명보험이 설립되었고, 이후 아사히생명으로 이어지는 중요한 출발점 가운데 하나가 됩니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1939–1947</div>
+          <div>
+            <h3>제국생명 계열이 마에카와생명을 거쳐 아사히생명으로 이어짐</h3>
+            <div class="meta"><span class="tag rename">사명변경</span><span class="tag merge">합병</span></div>
+            <p>제국생명보험은 1939년 5월 마에카와생명보험으로 사명을 변경했고, 1942년 7월 합병, 1947년 7월 제국생명보험(상호회사) 설립, 1947년 8월 아사히생명보험(상호회사)으로 사명을 변경했습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1974</div>
+          <div>
+            <h3>아플락 일본지점 설립</h3>
+            <div class="meta"><span class="tag rename">외자계 기점</span></div>
+            <p>아메리칸 패밀리 라이프 어슈어런스 컴퍼니 오브 콜럼버스 일본지점이 1974년 10월 설립되었고, 훗날 아플락생명보험으로 이어집니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1986–2009</div>
+          <div>
+            <h3>에퀴터블 계열이 알리안츠를 거쳐 카디프로 통합</h3>
+            <div class="meta"><span class="tag rename">연속 사명변경</span><span class="tag merge">합병</span></div>
+            <p>1986년 7월 에퀴터블생명보험 설립 후, 1992년 니코스생명, 2000년 크레디트스위스생명, 2006년 빈터투르 스위스생명, 2008년 1월 악사 파이낸셜생명, 같은 해 2월 알리안츠생명으로 사명이 바뀌었고, 2009년 10월 카디프생명보험에 합병되었습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1991–1995</div>
+          <div>
+            <h3>오마하 계열이 오릭스생명으로 전환</h3>
+            <div class="meta"><span class="tag rename">사명변경</span><span class="tag merge">포괄이전</span></div>
+            <p>1985년 10월 유나이티드 오브 오마하 일본지점을 기점으로, 1991년 3월 오릭스 오마하생명보험 설립, 같은 해 8월 일본통화 표시 계약 포괄이전, 1993년 2월 오릭스생명보험으로 사명을 변경했습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1994–2015</div>
+          <div>
+            <h3>악사 계열과 NN 계열의 분기가 뚜렷해짐</h3>
+            <div class="meta"><span class="tag rename">복선 구조</span></div>
+            <p>1994년 7월 악사생명보험 설립, 2000년 4월 악사니치단생명보험, 2001년 3월 악사생명보험으로 이어지는 흐름과, 1995년 1월 나쇼날레 네덜란덴생명보험 설립, 1997년 1월 ING생명보험, 2015년 4월 엔엔생명보험으로 이어지는 흐름은 서로 다른 계통으로 나누어 봐야 이해하기 쉽습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2006–2015</div>
+          <div>
+            <h3>SBI생명은 SBI악사·넥스티아를 거쳐 성립</h3>
+            <div class="meta"><span class="tag rename">연속 사명변경</span><span class="tag merge">합병</span></div>
+            <p>2006년 10월 SBI생보설립준비, 2008년 3월 SBI악사생명보험, 2010년 5월 넥스티아생명보험, 2015년 5월 SBI생명보험으로 사명이 바뀌었고, 2015년 7월 합병 기재가 있습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2006–2007</div>
+          <div>
+            <h3>우정민영화로 간포생명이 탄생</h3>
+            <div class="meta"><span class="tag rename">사명변경</span></div>
+            <p>2006년 9월 간포 설립, 2007년 10월 간포생명보험으로 사명을 변경한 흐름으로 읽으면 우정계 회사의 출발점을 파악하기 쉽습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2008–2023</div>
+          <div>
+            <h3>후지생명 계열이 FWD생명으로 전환</h3>
+            <div class="meta"><span class="tag rename">연속 사명변경</span></div>
+            <p>2000년 12월 하트퍼드생명보험 설립, 2008년 8월 후지생명보험 설립, 2013년 4월 AIG후지생명보험, 2017년 9월 FWD후지생명보험, 2021년 11월 FWD생명보험으로 사명이 변경되었습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2024–2025</div>
+          <div>
+            <h3>최근 흐름으로는 FWD 계열 통합과 메이지야스다트러스트생명으로의 변경이 눈에 띔</h3>
+            <div class="meta"><span class="tag merge">합병</span><span class="tag rename">사명변경</span></div>
+            <p>도표에는 2024년 4월 합병, 2025년 10월 메이지야스다트러스트생명보험으로 사명변경이라고 표시되어 있어, 최근 재편의 대표적 사례로 볼 수 있습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2026</div>
+          <div>
+            <h3>네오퍼스트생명이 다이이치네오생명으로 사명변경 예정</h3>
+            <div class="meta"><span class="tag rename">최신 사명변경</span></div>
+            <p>네오퍼스트생명보험은 2026년 4월 다이이치네오생명보험주식회사로 사명을 변경하는 것으로 도표에 표시되어 있습니다.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" id="cases">
+      <div class="section-head">
+        <div>
+          <h2>주요 회사별 변천</h2>
+          <p>읽는 사람이 특히 헷갈리기 쉬운 회사를 중심으로, 전신 회사부터 현재 명칭까지를 흐름 형태로 연결했습니다.</p>
+        </div>
+      </div>
+      <div class="company-grid">
+        <article class="company">
+          <h3>아사히생명</h3>
+          <p>매우 오래된 계보를 포함하고 있어 단순한 설립연도만으로는 이해하기 어려운 회사입니다.</p>
+          <div class="route">
+            <div class="step">1888 제국생명보험 설립</div>
+            <div class="step rename">1939 마에카와생명보험으로 사명변경</div>
+            <div class="step merge">1942 합병</div>
+            <div class="step">1947 제국생명보험(상호회사) 설립</div>
+            <div class="step rename">1947 아사히생명보험(상호회사)으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>악사생명</h3>
+          <p>니치단 계열과의 관계가 도표상 혼선되기 쉬우므로, 사명변경 순서를 분리해서 보면 이해하기 쉽습니다.</p>
+          <div class="route">
+            <div class="step">1994 악사생명보험 설립</div>
+            <div class="step rename">2000 악사니치단생명보험으로 사명변경</div>
+            <div class="step rename">2001 악사생명보험으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>엔엔생명</h3>
+          <p>현재 사명만 보면 독립적인 회사처럼 보이지만, 실제로는 NN·ING 계열의 연속적인 사명변경 결과입니다.</p>
+          <div class="route">
+            <div class="step">1985 나쇼날레 네덜란덴 생명보험 N.V. 일본지점 설립</div>
+            <div class="step merge">1995 계약 포괄이전</div>
+            <div class="step">1995 나쇼날레 네덜란덴생명보험 설립</div>
+            <div class="step rename">1997 ING생명보험으로 사명변경</div>
+            <div class="step rename">2015 엔엔생명보험으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>오릭스생명</h3>
+          <p>일본지점에서 일본 내 법인으로 계약이 이전된 뒤 오릭스 브랜드로 전환되었습니다.</p>
+          <div class="route">
+            <div class="step">1985 유나이티드 오브 오마하 일본지점 설립</div>
+            <div class="step">1991 오릭스 오마하생명보험 설립</div>
+            <div class="step merge">1991 일본통화 표시 계약 포괄이전</div>
+            <div class="step rename">1993 오릭스생명보험으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>SBI생명</h3>
+          <p>사명변경이 많아 서로 다른 회사처럼 보이기 쉬운 대표 사례입니다.</p>
+          <div class="route">
+            <div class="step">2006 SBI생보설립준비 설립</div>
+            <div class="step rename">2008 SBI악사생명보험으로 사명변경</div>
+            <div class="step rename">2010 넥스티아생명보험으로 사명변경</div>
+            <div class="step rename">2015 SBI생명보험으로 사명변경</div>
+            <div class="step merge">2015 합병</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>FWD생명</h3>
+          <p>하트퍼드 계열에서 후지생명, AIG후지생명을 거쳐 FWD 브랜드로 이동한 흐름입니다.</p>
+          <div class="route">
+            <div class="step">2000 하트퍼드생명보험 설립</div>
+            <div class="step">2008 후지생명보험 설립</div>
+            <div class="step rename">2013 AIG후지생명보험으로 사명변경</div>
+            <div class="step rename">2017 FWD후지생명보험으로 사명변경</div>
+            <div class="step rename">2021 FWD생명보험으로 사명변경</div>
+            <div class="step merge">2024 합병</div>
+            <div class="step rename">2025 메이지야스다트러스트생명보험으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>SOMPO히마와리생명</h3>
+          <p>손해보험 계열 통합이 누적되어 반영된 회사로, 명칭 변화가 여러 단계에 걸쳐 나타납니다.</p>
+          <div class="route">
+            <div class="step">1981 아이엔에이생명보험 설립</div>
+            <div class="step rename">1997 아이엔에이히마와리생명보험으로 사명변경</div>
+            <div class="step rename">2001 야스다화재히마와리생명보험으로 사명변경</div>
+            <div class="step rename">2002 손보재팬히마와리생명보험으로 사명변경</div>
+            <div class="step rename">2011 NKSJ히마와리생명보험으로 사명변경</div>
+            <div class="step rename">2014 손보재팬일본흥아히마와리생명으로 사명변경</div>
+            <div class="step rename">2019 SOMPO히마와리생명보험으로 사명변경</div>
+          </div>
+        </article>
+        <article class="company">
+          <h3>다이이치네오생명</h3>
+          <p>구 DIY생명에서 네오퍼스트생명을 거쳐, 다이이치생명그룹 색채가 더 분명해지는 흐름입니다.</p>
+          <div class="route">
+            <div class="step">1999 DIY생명보험 설립</div>
+            <div class="step rename">2002 손보재팬 DIY생명보험으로 사명변경</div>
+            <div class="step rename">2014 네오퍼스트생명보험으로 사명변경</div>
+            <div class="step rename">2026 다이이치네오생명보험주식회사로 사명변경</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+
+
+    <section class="wrap" id="crisis">
+      <div class="section-head">
+        <div>
+          <h2>1990년대 후반~2000년대 초반 파산과 계약이전</h2>
+          <p>이 시기는 일본 생명보험업계가 금리 하락, 역마진, 자산가격 하락, 과도한 규모 확대의 위험을 한꺼번에 드러낸 시기였습니다.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <article class="card">
+          <h3>왜 파산이 집중되었는가</h3>
+          <ul class="list">
+            <li>버블 붕괴 이후 자산가격 하락과 장기 금리 저하가 동시에 진행되면서, 높은 예정이율을 약속한 기존 계약이 역마진 부담으로 전환되었습니다.</li>
+            <li>1980년대에 예정이율 인상, 고배당, 저축성 상품 확대, 외화·주식·부동산 관련 위험자산 투자 확대가 누적되었고, 일부 중견사는 무리한 외형확대 경쟁까지 겹쳤습니다.</li>
+            <li>당시에는 ALM와 리스크 관리가 충분히 정착되지 않았고, 공시와 감독지표도 미흡해 문제가 늦게 드러났습니다.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>계약자는 어떻게 보호되었는가</h3>
+          <ul class="list">
+            <li>파산 회사의 계약은 다른 보험회사로 이전되거나, 구조조정 절차를 거쳐 영업재개 후 인수되는 방식으로 처리되었습니다.</li>
+            <li>금융청 자료에 따르면 계약자 보호는 원칙적으로 책임준비금 90% 수준을 기준으로 이루어졌고, 일부 회사는 예정이율 인하와 책임준비금 감액이 함께 이루어졌습니다.</li>
+            <li>즉, 계약이 완전히 사라진 것은 아니지만, 보장조건이나 해약환급금 가치가 조정되는 사례가 발생했습니다.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="section-head" style="margin-top:2rem;">
+        <div>
+          <h2 style="font-size:var(--text-xl);">주요 파산·계약이전 사례</h2>
+          <p>변천도를 읽을 때 특히 중요한 회사만 별도로 정리했습니다.</p>
+        </div>
+      </div>
+      <div class="timeline">
+        <article class="event">
+          <div class="year">1997</div>
+          <div>
+            <h3>닛산생명 파산 → 계약이전</h3>
+            <div class="meta"><span class="tag end">파산</span><span class="tag merge">계약이전</span></div>
+            <p>닛산생명은 1997년 4월 업무정지와 관리명령을 받았고, 이후 계약은 같은 해 10월 구조 처리되었습니다.</p>
+            <p>금융청 자료에서는 수탁 보험회사를 프루덴셜생명으로 제시하고 있으며, 개요 자료에서는 생명보험협회가 설립한 아오바생명이 계약 수용 역할을 담당한 뒤 최종적으로 프루덴셜 계열로 연결된 흐름이 설명됩니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">1999</div>
+          <div>
+            <h3>도호생명 파산 → AIG에디슨생명으로 이전</h3>
+            <div class="meta"><span class="tag end">파산</span><span class="tag merge">계약이전</span></div>
+            <p>도호생명은 1999년 6월 업무정지와 관리명령을 받았고, 2000년 3월 계약이전이 이루어졌습니다.</p>
+            <p>금융청 자료상 수탁 보험회사는 AIG에디슨생명이며, 이 사례는 파산 시점과 실제 계약이전 시점 사이에 시차가 있다는 점을 보여줍니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2000</div>
+          <div>
+            <h3>다수 중견 생보의 동시다발 파산</h3>
+            <div class="meta"><span class="tag end">집중 파산</span></div>
+            <p>2000년에는 제백생명, 다이쇼생명, 지요다생명, 교에이생명이 잇달아 파산 또는 회사갱생 절차에 들어갔습니다.</p>
+            <p>금융청 정리표에 따르면 제백생명은 매뉴라이프생명, 다이쇼생명은 대화생명, 지요다생명은 AIG스타생명, 교에이생명은 지브롤터생명으로 각각 이어졌습니다.</p>
+          </div>
+        </article>
+        <article class="event">
+          <div class="year">2001</div>
+          <div>
+            <h3>도쿄생명 파산 → T&amp;D파이낸셜생명으로 연결</h3>
+            <div class="meta"><span class="tag end">파산</span><span class="tag merge">계약승계</span></div>
+            <p>도쿄생명은 2001년 3월 회사갱생 절차에 들어갔고, 금융청 자료상 T&amp;D파이낸셜생명이 수탁 보험회사입니다.</p>
+            <p>도쿄생명 사례는 대형사 합작 구조를 통해 계약을 승계한 대표 사례로, 단순한 1대1 인수와는 다른 재편 방식이라는 점에서 의미가 큽니다.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="section-head" style="margin-top:2rem;">
+        <div>
+          <h2 style="font-size:var(--text-xl);">파산 회사 요약표</h2>
+        </div>
+      </div>
+      <div class="card" style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:.75rem;border-bottom:1px solid var(--color-border);">회사</th>
+              <th style="text-align:left;padding:.75rem;border-bottom:1px solid var(--color-border);">파산·절차 개시</th>
+              <th style="text-align:left;padding:.75rem;border-bottom:1px solid var(--color-border);">수탁·승계 회사</th>
+              <th style="text-align:left;padding:.75rem;border-bottom:1px solid var(--color-border);">주요 특징</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">닛산생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">1997.4</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">프루덴셜생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">헤이세이 생보위기의 시작점으로 자주 언급됨</td></tr>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">도호생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">1999.6</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">AIG에디슨생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">파산 후 계약이전까지 시차 존재</td></tr>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">제백생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">2000.5</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">매뉴라이프생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">2001.4 계약이전</td></tr>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">다이쇼생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">2000.8</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">대화생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">아자미생명을 거친 구조조정 흐름과 연결</td></tr>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">지요다생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">2000.10</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">AIG스타생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">회사갱생 절차 적용</td></tr>
+            <tr><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">교에이생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">2000.10</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">지브롤터생명</td><td style="padding:.75rem;border-bottom:1px solid var(--color-border);">보장 축소 사례로 자주 인용됨</td></tr>
+            <tr><td style="padding:.75rem;">도쿄생명</td><td style="padding:.75rem;">2001.3</td><td style="padding:.75rem;">T&amp;D파이낸셜생명</td><td style="padding:.75rem;">태양생명·다이도생명 합작 구조</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:1.25rem">
+        <details>
+          <summary>이 시기에서 읽어야 할 핵심 시사점</summary>
+          <p style="margin-top:.8rem">첫째, 생명보험은 장기부채 산업이므로 고금리 시기에 판매한 계약이 저금리기에 들어서면 역마진 리스크가 장기간 누적될 수 있습니다. 둘째, 외형 확대, 고배당, 공격적 자산운용이 동시에 진행되면 위기 시 충격이 증폭됩니다. 셋째, 계약이전 제도는 계약자 보호에 중요한 장치이지만, 예정이율 인하나 책임준비금 감액처럼 계약조건 조정이 수반될 수 있으므로, 단순히 “보험은 안전하다”는 수준보다 훨씬 정교한 건전성 관리가 필요하다는 점을 보여줍니다.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="wrap" id="closed">
+      <div class="section-head">
+        <div>
+          <h2>없어진 회사는 이렇게 보면 이해하기 쉽습니다</h2>
+          <p>도표에서는 “포괄이전 후 해산”, “계약이전 후 폐쇄”, “합병”이라는 표현이 섞여 있으므로, 소멸 방식별로 읽는 것이 이해에 도움이 됩니다.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <article class="card">
+          <h3>포괄이전·해산으로 사라진 사례</h3>
+          <ul class="list">
+            <li>일본단체생명보험은 1936년 12월 포괄이전 후 해산되었습니다.</li>
+            <li>중앙생명보험, 도카이생명보험, 호라이생명보험 등은 전전·전후 재편 과정에서 포괄이전 후 해산된 회사들입니다.</li>
+            <li>세이부 올스테이트생명에서 이어지는 계통도 후속 회사로 통합되면서 옛 사명이 소멸했습니다.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>계약이전·폐쇄로 종료된 사례</h3>
+          <ul class="list">
+            <li>생명보험중앙회는 1945년 4월 설립되었고, 1947년 9월 계약이전·폐쇄로 처리되어 일반적인 사명변경과는 다른 종료 형태를 보입니다.</li>
+            <li>외자계 일본지점 중 일부는 일본 법인으로 계약을 포괄이전한 뒤 일본지점 계통이 사라지기 때문에, 현재 사명만 보면 출발점을 알기 어렵습니다.</li>
+          </ul>
+        </article>
+      </div>
+      <div style="margin-top:1.25rem">
+        <details>
+          <summary>소멸 회사를 읽을 때의 포인트</summary>
+          <p style="margin-top:.8rem">“회사가 없어졌다”는 말이 항상 청산 소멸만을 뜻하지는 않습니다. 별첨 도표에는 포괄이전 후 계약을 다른 회사가 승계하고 해산한 사례, 합병으로 사명이 남지 않은 사례, 일본지점에서 일본 법인으로 사업이 이동한 사례가 함께 나타납니다. 따라서 최종적으로 계약이 어느 회사로 승계되었는지까지 확인하는 것이 중요합니다.</p>
+        </details>
+        <details>
+          <summary>사명변경 회사를 읽을 때의 포인트</summary>
+          <p style="margin-top:.8rem">겉으로 보면 다른 회사처럼 보여도 실제로는 동일 법인이 사명만 바꾸며 이어진 경우가 적지 않습니다. SBI생명, FWD생명, SOMPO히마와리생명, 엔엔생명은 대표적인 사례이며, 계보를 연도순으로 따라가면 현재 회사의 정체가 훨씬 명확해집니다.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>주기: 이 페이지는 별첨 「생명보험회사 변천도」에 기재된 회사명, 연월, 합병, 포괄이전, 개조직, 사명변경 정보를 읽기 쉬운 문장과 흐름도로 다시 구성한 것입니다. 필요하다면 다음 단계로 전체 회사를 빠짐없이 넣은 상세판, 특정 회사군만 뽑은 버전, 또는 한일 대역판으로 확장할 수 있습니다.</p>
+  </footer>
+
+  <script>
+    (function(){
+      const btn=document.querySelector('[data-theme-toggle]');
+      const root=document.documentElement;
+      let theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+      root.setAttribute('data-theme',theme);
+      btn.addEventListener('click',()=>{
+        theme=theme==='dark'?'light':'dark';
+        root.setAttribute('data-theme',theme);
+      });
+    })();
+  </script>
+</body>
+</html>

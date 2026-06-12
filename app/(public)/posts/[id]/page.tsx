@@ -4,6 +4,11 @@ import { CommentSection } from "@/components/feature/CommentSection";
 import { PdfViewer } from "@/components/feature/PdfViewer";
 import { SummaryPanel } from "@/components/feature/SummaryPanel";
 import { ViewCounter } from "@/components/feature/ViewCounter";
+import {
+  getGlobalViewer,
+  stripViewerMarker,
+  viewerSlugFromContent,
+} from "@/lib/global";
 import { getPost, listComments, publicUrl } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
@@ -17,6 +22,9 @@ export default async function PostDetailPage({
   if (!post || !post.is_published) notFound();
 
   const comments = await listComments(id);
+  const viewerSlug = viewerSlugFromContent(post.content);
+  const viewer = viewerSlug ? getGlobalViewer(viewerSlug) : undefined;
+  const bodyText = stripViewerMarker(post.content);
   const pdfs = await Promise.all(
     post.attachments
       .filter((a) => a.mime_type === "application/pdf")
@@ -46,9 +54,28 @@ export default async function PostDetailPage({
         <SummaryPanel summary={post.summary} />
       </div>
 
-      <div className="prose-tesla mt-8 whitespace-pre-wrap text-[15px] leading-relaxed text-body">
-        {post.content}
-      </div>
+      {bodyText ? (
+        <div className="prose-tesla mt-8 whitespace-pre-wrap text-[15px] leading-relaxed text-body">
+          {bodyText}
+        </div>
+      ) : null}
+
+      {viewer ? (
+        <div
+          className={
+            bodyText
+              ? "mt-8 overflow-hidden rounded-cover border border-border bg-white shadow-card"
+              : "mt-8 overflow-hidden rounded-cover border border-border bg-white shadow-card"
+          }
+          style={{ height: "min(72vh, 900px)" }}
+        >
+          <iframe
+            src={viewer.htmlPath}
+            title={viewer.title}
+            className="h-full w-full border-0"
+          />
+        </div>
+      ) : null}
 
       {pdfs.length > 0 && (
         <div className="mt-10 space-y-6">

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사례집 안내 | 보험상품 심사사례집</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --surface:#FFFFFF; --ink:#1A2238; --muted:#5A6275;
+    --hair:#E3E0D8; --hair-soft:#EDEAE2; --seal:#B23A2E; --seal-soft:#F4E7E4;
+    --case-tint:#F1F3F8; --case-edge:#D5DCEA;
+    --serif:"Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-weight:400; line-height:1.74; font-size:16px;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:800px; margin:0 auto; padding:0 28px;}
+
+  .topbar{
+    position:sticky; top:0; z-index:20; background:rgba(251,250,247,.92);
+    backdrop-filter:saturate(1.1) blur(8px); border-bottom:1px solid var(--hair);
+  }
+  .topbar .wrap{display:flex; align-items:center; justify-content:space-between; height:58px; max-width:880px;}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:-.01em;}
+  .brand .seal{
+    width:26px; height:26px; border-radius:5px; background:var(--seal); color:#fff;
+    display:grid; place-items:center; font-size:13px; font-weight:800; flex:none;
+    box-shadow:0 1px 0 rgba(0,0,0,.08);
+  }
+  .brand small{display:block; font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.02em; margin-top:1px;}
+  .navlinks{display:flex; gap:4px;}
+  .navlinks a{
+    font-size:13.5px; font-weight:600; color:var(--muted); text-decoration:none;
+    padding:7px 13px; border-radius:7px; transition:.15s;
+  }
+  .navlinks a:hover{color:var(--ink); background:var(--hair-soft);}
+  .navlinks a.active{color:var(--ink); background:#fff; box-shadow:inset 0 0 0 1px var(--hair);}
+
+  .hero{padding:66px 0 44px; border-bottom:1px solid var(--hair);}
+  .eyebrow{font-size:12.5px; font-weight:700; letter-spacing:.16em; color:var(--seal); text-transform:uppercase;}
+  .hero h1{font-size:clamp(30px,5.4vw,46px); line-height:1.16; font-weight:800; letter-spacing:-.025em; margin:14px 0 0;}
+  .hero .lede{margin:22px 0 0; max-width:60ch; font-size:17px; color:var(--muted); line-height:1.76;}
+
+  .body-sec{padding:50px 0;}
+  .lead-para{font-size:18px; line-height:1.8; letter-spacing:-.01em; margin:0 0 30px;}
+  .lead-para .hl{color:var(--seal); font-weight:700;}
+
+  h2{font-size:21px; font-weight:800; letter-spacing:-.02em; margin:46px 0 14px; padding-top:8px;}
+  h2 .mk{color:var(--seal); margin-right:10px; font-weight:800;}
+  p{margin:0 0 16px; font-size:16px; line-height:1.78;}
+  p strong{font-weight:700;}
+
+  .pillars{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:8px 0 6px;}
+  .pillar{
+    background:var(--surface); border:1px solid var(--hair); border-radius:12px;
+    padding:22px 22px 20px;
+  }
+  .pillar .k{
+    font-size:12px; font-weight:800; letter-spacing:.1em; color:var(--seal);
+    margin-bottom:9px;
+  }
+  .pillar h3{font-size:16.5px; font-weight:700; margin:0 0 8px; letter-spacing:-.01em;}
+  .pillar p{font-size:14.5px; color:#33405e; margin:0; line-height:1.72;}
+
+  .callout{
+    background:var(--case-tint); border:1px solid var(--case-edge);
+    border-radius:12px; padding:22px 24px; margin:26px 0;
+  }
+  .callout p{margin:0; font-size:15.5px; color:#2c3a63; line-height:1.76;}
+  .callout p+p{margin-top:12px;}
+
+  .fields-list{
+    list-style:none; margin:14px 0 0; padding:0;
+    border-top:1px solid var(--hair);
+  }
+  .fields-list li{
+    display:flex; align-items:baseline; gap:16px; padding:16px 4px;
+    border-bottom:1px solid var(--hair);
+  }
+  .fields-list .num{
+    font-size:13px; font-weight:800; color:var(--seal); flex:none; width:18px;
+    font-variant-numeric:tabular-nums;
+  }
+  .fields-list .t{font-size:16px; font-weight:700;}
+  .fields-list .d{font-size:14px; color:var(--muted); margin-top:3px; font-weight:400;}
+
+  .cta{
+    margin-top:42px; display:flex; flex-wrap:wrap; align-items:center; gap:16px;
+    background:var(--ink); border-radius:14px; padding:28px 30px; color:#fff;
+  }
+  .cta .ct{flex:1 1 280px;}
+  .cta h3{margin:0 0 6px; font-size:19px; font-weight:800; letter-spacing:-.02em; color:#fff;}
+  .cta p{margin:0; font-size:14.5px; color:#c6cbd9; line-height:1.65;}
+  .cta a{
+    flex:none; background:var(--seal); color:#fff; text-decoration:none;
+    font-weight:700; font-size:15px; padding:13px 24px; border-radius:9px;
+    transition:.15s; box-shadow:0 1px 0 rgba(0,0,0,.15);
+  }
+  .cta a:hover{background:#9e3226;}
+
+  footer{margin-top:60px; border-top:1px solid var(--hair); padding:32px 0 60px;}
+  footer .src{font-size:13px; color:var(--muted); line-height:1.7; max-width:62ch;}
+  footer .src b{color:var(--ink); font-weight:600;}
+  .disc{font-size:12px; color:var(--muted); margin-top:14px; line-height:1.65;}
+
+  @media (max-width:600px){
+    .wrap{padding:0 18px;}
+    .pillars{grid-template-columns:1fr;}
+    .hero{padding:46px 0 34px;}
+    .navlinks a{padding:6px 9px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="seal">審</span>
+      <span>보험상품 심사사례집
+        <small>금융청 감독국 보험과 · 한국어판</small>
+      </span>
+    </div>
+    <nav class="navlinks">
+      <a class="active" href="#" aria-current="page">사례집 안내</a>
+      <a href="보험상품_심사사례.html">심사 사례</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">사례집 안내</div>
+    <h1>보험상품 심사사례집은<br>무엇을 위한 자료인가</h1>
+    <p class="lede">실제 상품 심사에서 금융청과 보험회사가 공유한 문제의식과, 상품 개발의 선진적인 사례를 요약해 공개하는 자료입니다. 심사에서 무엇을 어떻게 보는지를 밝혀, 깊이 있는 논의와 고객 중심의 상품 개발을 돕기 위한 것입니다.</p>
+  </div>
+</section>
+
+<main class="body-sec">
+  <div class="wrap">
+    <p class="lead-para">보험상품의 심사기준은 보험업법 제5조 1항 3호·4호와 동법 시행규칙 제11조·제12조에 규정되어 있고, 감독지침 Ⅳ에서도 <span class="hl">효율화·명확화·투명성 제고</span>의 관점에서 심사상의 유의점을 공표하고 있습니다. 이 사례집은 그 운용 과정에서 쌓인 실제 사례를 정리한 것입니다.</p>
+
+    <h2><span class="mk">01</span>왜 공개하는가</h2>
+    <p>금융청의 입장을 명확히 함으로써, 상품 심사에서 보험회사와 금융청 사이에 <strong>깊이 있는 양방향 논의</strong>가 이루어지도록 하는 것이 목적입니다. 이를 통해 고객 중심의 업무 운영이라는 관점에서 우수한 상품 개발에 기여할 것으로 기대됩니다.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="k">공유</div>
+        <h3>문제의식의 공유</h3>
+        <p>심사 과정에서 금융청과 보험회사가 함께 인식하게 된 쟁점을 요약해 전달합니다.</p>
+      </div>
+      <div class="pillar">
+        <div class="k">선례</div>
+        <h3>선진적 사례의 안내</h3>
+        <p>상품 개발에서 참고할 만한 앞선 사례와 그에 대한 조치를 함께 보여 줍니다.</p>
+      </div>
+    </div>
+
+    <h2><span class="mk">02</span>읽을 때 유의할 점</h2>
+    <div class="callout">
+      <p>수록된 사례가 <strong>모든 보험회사에 그대로 해당하는 것은 아닙니다.</strong> 또한 문제의식에 대한 해결책이 반드시 수록된 사례에 한정되는 것도 아닙니다.</p>
+      <p>각 보험회사가 저마다의 창의를 더해 상품을 개발해 나가기를 기대합니다. 본 사례집은 당해 사무연도에 실시한 상품 심사 사례를 중심으로 작성되었습니다.</p>
+    </div>
+
+    <h2><span class="mk">03</span>사례를 나누는 기준</h2>
+    <p>각 사례는 공표된 <strong>연월</strong>에 따라 모은 뒤, 적용되는 법령 분야별로 정리합니다. 개별 사례는 다시 <strong>「사례(신청 내용)」와 「조치(심사 결과)」</strong>로 나누어, 무엇이 문제였고 어떻게 정리되었는지를 한눈에 볼 수 있도록 했습니다.</p>
+    <ul class="fields-list">
+      <li><span class="num">1</span><div><div class="t">생명보험 상품 (약관·사업방법서)</div><div class="d">계약자 보호, 상품 설계상의 유의점 등</div></div></li>
+      <li><span class="num">2</span><div><div class="t">생명보험 상품 (산출방법서)</div><div class="d">계약자가액 계산, 보험법 대응 등</div></div></li>
+      <li><span class="num">3</span><div><div class="t">손해보험 상품 (약관·사업방법서)</div><div class="d">손해보험성, 실손보상성 등</div></div></li>
+    </ul>
+
+    <div class="cta">
+      <div class="ct">
+        <h3>심사 사례 보기</h3>
+        <p>연월별로 정리된 개별 사례와 그에 대한 조치를 확인하실 수 있습니다.</p>
+      </div>
+      <a href="보험상품_심사사례.html">사례 목록으로 →</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="src">
+      <b>원자료</b> 금융청 「보험상품 심사사례집」(令和8年1月 / 2026년 1월), 금융청 감독국 보험과.<br>
+      본 페이지는 일본어 원문을 한국어로 옮긴 번역본입니다.
+      <p class="disc">법령·조문 명칭은 일본 보험업법·동법 시행규칙·감독지침의 표현을 따랐으며, 한국의 보험 관련 법령과는 다릅니다. 정확한 내용은 금융청이 공표한 원문을 확인하시기 바랍니다.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
