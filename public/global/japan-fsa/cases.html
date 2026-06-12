@@ -195,6 +195,124 @@
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
+<style>
+  /* ===== 검색 + 마스터-디테일 큰 화면 (표현 보강) ===== */
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .searchbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--hair); }
+  .searchbar .wrap { display: flex; align-items: center; gap: 16px; height: 62px; max-width: 1180px; }
+  .search-wrap { position: relative; flex: 1; max-width: 580px; }
+  .search-wrap input { width: 100%; height: 44px; border: 1px solid var(--hair); border-radius: 11px; padding: 0 40px 0 15px; font-size: 15px; font-family: inherit; background: var(--paper); color: var(--ink); }
+  .search-wrap input::placeholder { color: #9aa0ad; }
+  .search-wrap input:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-soft); background: #fff; }
+  #clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); padding: 6px 8px; line-height: 1; }
+  #clear:hover { color: var(--ink); }
+  .count { font-size: 13.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+  .cb { display: grid; grid-template-columns: 356px 1fr; height: calc(100vh - 58px - 62px); max-width: 1180px; margin: 0 auto; }
+  .cb-list { border-right: 1px solid var(--hair); overflow-y: auto; background: var(--paper); }
+  .list { padding: 4px 0 48px; }
+  .grp-month { position: sticky; top: 0; z-index: 2; background: var(--paper); font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--seal); padding: 15px 18px 7px; border-bottom: 1px solid var(--hair-soft); }
+  .grp-field { font-size: 12px; font-weight: 700; color: var(--muted); padding: 11px 18px 3px; }
+  .row { display: flex; gap: 9px; align-items: flex-start; width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; padding: 9px 18px; border-left: 3px solid transparent; font-family: inherit; }
+  .row:hover { background: var(--hair-soft); }
+  .row.is-active { background: #fff; border-left-color: var(--seal); }
+  .row-chip { flex: none; font-size: 10px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }
+  .row-title { font-size: 14px; line-height: 1.5; color: var(--ink); font-weight: 600; }
+  .row.is-active .row-title { color: var(--seal); }
+  .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 14px; }
+
+  .cb-detail { overflow-y: auto; background: var(--paper); }
+  .detail { max-width: 780px; margin: 0 auto; padding: 42px 44px 96px; }
+  .back { display: none; }
+  .d-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 13px; }
+  .d-meta .chip { font-size: 12px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 6px; padding: 4px 10px; }
+  .d-meta .law { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .d-context { font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: .01em; margin-bottom: 6px; }
+  .d-title { font-size: clamp(24px, 3.2vw, 33px); font-weight: 800; letter-spacing: -.022em; line-height: 1.3; margin: 2px 0 28px; color: var(--ink); }
+  .d-flow { display: grid; gap: 18px; }
+  .d-step { background: var(--surface); border: 1px solid var(--hair); border-radius: 15px; padding: 24px 26px; }
+  .d-step.act { background: var(--case-tint); border-color: var(--case-edge); }
+  .d-tag { font-size: 12.5px; font-weight: 800; letter-spacing: .03em; color: var(--seal); margin-bottom: 11px; }
+  .d-step.act .d-tag { color: #2d4a8a; }
+  .d-step p { margin: 0; font-size: 16.5px; line-height: 1.86; color: var(--ink); }
+  .d-bg { margin-top: 18px; border: 1px dashed var(--case-edge); border-radius: 15px; padding: 22px 26px; background: #fff; }
+  .d-bg-h { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 11px; }
+  .d-bg-b ol { margin: 0 0 0 18px; padding: 0; }
+  .d-bg-b li { font-size: 15px; line-height: 1.82; margin: 5px 0; color: #33405e; }
+  .d-bg-b p { font-size: 15px; line-height: 1.8; color: #33405e; margin: 9px 0 0; }
+  .d-bg-b .note { color: var(--muted); font-size: 13.5px; }
+  mark { background: #FCEFA1; color: inherit; padding: 0 1px; border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    .cb { grid-template-columns: 1fr; height: calc(100vh - 58px - 62px); }
+    .cb-detail { display: none; }
+    body.show-detail .cb-list { display: none; }
+    body.show-detail .cb-detail { display: block; }
+    .back { display: inline-flex; align-items: center; gap: 6px; margin: 16px 0 -10px 22px; border: 1px solid var(--hair); background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13.5px; font-weight: 700; color: var(--ink); cursor: pointer; font-family: inherit; }
+    .detail { padding: 16px 22px 80px; }
+    .searchbar .wrap { gap: 10px; }
+  }
+</style>
+<style>
+  /* ===== 검색 + 마스터-디테일 큰 화면 (표현 보강) ===== */
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .searchbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--hair); }
+  .searchbar .wrap { display: flex; align-items: center; gap: 16px; height: 62px; max-width: 1180px; }
+  .search-wrap { position: relative; flex: 1; max-width: 580px; }
+  .search-wrap input { width: 100%; height: 44px; border: 1px solid var(--hair); border-radius: 11px; padding: 0 40px 0 15px; font-size: 15px; font-family: inherit; background: var(--paper); color: var(--ink); }
+  .search-wrap input::placeholder { color: #9aa0ad; }
+  .search-wrap input:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-soft); background: #fff; }
+  #clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); padding: 6px 8px; line-height: 1; }
+  #clear:hover { color: var(--ink); }
+  .count { font-size: 13.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+  .cb { display: grid; grid-template-columns: 356px 1fr; height: calc(100vh - 58px - 62px); max-width: 1180px; margin: 0 auto; }
+  .cb-list { border-right: 1px solid var(--hair); overflow-y: auto; background: var(--paper); }
+  .list { padding: 4px 0 48px; }
+  .grp-month { position: sticky; top: 0; z-index: 2; background: var(--paper); font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--seal); padding: 15px 18px 7px; border-bottom: 1px solid var(--hair-soft); }
+  .grp-field { font-size: 12px; font-weight: 700; color: var(--muted); padding: 11px 18px 3px; }
+  .row { display: flex; gap: 9px; align-items: flex-start; width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; padding: 9px 18px; border-left: 3px solid transparent; font-family: inherit; }
+  .row:hover { background: var(--hair-soft); }
+  .row.is-active { background: #fff; border-left-color: var(--seal); }
+  .row-chip { flex: none; font-size: 10px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }
+  .row-title { font-size: 14px; line-height: 1.5; color: var(--ink); font-weight: 600; }
+  .row.is-active .row-title { color: var(--seal); }
+  .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 14px; }
+
+  .cb-detail { overflow-y: auto; background: var(--paper); }
+  .detail { max-width: 780px; margin: 0 auto; padding: 42px 44px 96px; }
+  .back { display: none; }
+  .d-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 13px; }
+  .d-meta .chip { font-size: 12px; font-weight: 800; color: var(--seal); background: var(--seal-soft); border-radius: 6px; padding: 4px 10px; }
+  .d-meta .law { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .d-context { font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: .01em; margin-bottom: 6px; }
+  .d-title { font-size: clamp(24px, 3.2vw, 33px); font-weight: 800; letter-spacing: -.022em; line-height: 1.3; margin: 2px 0 28px; color: var(--ink); }
+  .d-flow { display: grid; gap: 18px; }
+  .d-step { background: var(--surface); border: 1px solid var(--hair); border-radius: 15px; padding: 24px 26px; }
+  .d-step.act { background: var(--case-tint); border-color: var(--case-edge); }
+  .d-tag { font-size: 12.5px; font-weight: 800; letter-spacing: .03em; color: var(--seal); margin-bottom: 11px; }
+  .d-step.act .d-tag { color: #2d4a8a; }
+  .d-step p { margin: 0; font-size: 16.5px; line-height: 1.86; color: var(--ink); }
+  .d-bg { margin-top: 18px; border: 1px dashed var(--case-edge); border-radius: 15px; padding: 22px 26px; background: #fff; }
+  .d-bg-h { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 11px; }
+  .d-bg-b ol { margin: 0 0 0 18px; padding: 0; }
+  .d-bg-b li { font-size: 15px; line-height: 1.82; margin: 5px 0; color: #33405e; }
+  .d-bg-b p { font-size: 15px; line-height: 1.8; color: #33405e; margin: 9px 0 0; }
+  .d-bg-b .note { color: var(--muted); font-size: 13.5px; }
+  mark { background: #FCEFA1; color: inherit; padding: 0 1px; border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    .cb { grid-template-columns: 1fr; height: calc(100vh - 58px - 62px); }
+    .cb-detail { display: none; }
+    body.show-detail .cb-list { display: none; }
+    body.show-detail .cb-detail { display: block; }
+    .back { display: inline-flex; align-items: center; gap: 6px; margin: 16px 0 -10px 22px; border: 1px solid var(--hair); background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13.5px; font-weight: 700; color: var(--ink); cursor: pointer; font-family: inherit; }
+    .detail { padding: 16px 22px 80px; }
+    .searchbar .wrap { gap: 10px; }
+  }
+</style>
 </head>
 <body>
 
@@ -207,44 +325,31 @@
       </span>
     </div>
     <nav class="navlinks">
-      <a href="보험상품_심사사례집_안내.html">사례집 안내</a>
+      <a href="guide.html">사례집 안내</a>
       <a class="active" href="#" aria-current="page">심사 사례</a>
     </nav>
   </div>
 </header>
 
-<section class="hero">
+<div class="searchbar">
   <div class="wrap">
-    <div class="eyebrow">보험상품 심사사례집</div>
-    <h1>심사 과정에서 공유된<br>문제의식과 조치 사례</h1>
-    <p class="lede">금융청과 보험회사가 실제 상품 심사 과정에서 공유한 문제의식과, 그에 따라 이루어진 조치를 사례별로 정리했습니다. 각 사례는 <b style="color:var(--ink)">신청 내용(사례)</b>과 <b style="color:var(--ink)">심사 결과(조치)</b>로 나누어 보여 줍니다.</p>
-    <div class="meta">
-      <span>발행 <b>금융청 감독국 보험과</b></span>
-      <span class="dot"></span>
-      <span>수록 <b id="metaCount">—</b></span>
-      <span class="dot"></span>
-      <span><a href="보험상품_심사사례집_안내.html" style="color:var(--seal); font-weight:600; text-decoration:none;">사례집의 목적 보기 →</a></span>
+    <div class="search-wrap">
+      <input id="search" type="search" autocomplete="off" placeholder="사례 제목·내용 검색 (예: 치매, 변액, 파라메트릭, 톤틴)">
+      <button id="clear" type="button" aria-label="지우기">✕</button>
     </div>
+    <span id="count" class="count">—</span>
   </div>
-</section>
+</div>
 
-<nav class="monthnav">
-  <div class="wrap" id="monthNav">
-    <span class="label">연월</span>
-  </div>
-</nav>
-
-<main id="content"></main>
-
-<footer>
-  <div class="wrap">
-    <div class="src">
-      <b>원자료</b> 금융청 「보험상품 심사사례집」(令和8年1月 / 2026년 1월), 금융청 감독국 보험과.<br>
-      본 페이지는 일본어 원문을 한국어로 옮긴 번역본입니다.
-      <p class="disc">원문의 연호는 서기로 환산해 표기했습니다(레이와 8년 → 2026년). 법령·조문 명칭은 일본 보험업법·동법 시행규칙·감독지침의 표현을 따랐으며, 한국의 보험 관련 법령과는 다릅니다. 번역 과정에서 의미가 달라질 수 있으므로, 정확한 내용은 금융청이 공표한 원문을 확인하시기 바랍니다.</p>
-    </div>
-  </div>
-</footer>
+<main class="cb">
+  <aside class="cb-list">
+    <div id="list" class="list"></div>
+  </aside>
+  <section class="cb-detail">
+    <button id="back" class="back" type="button">← 목록으로</button>
+    <article id="detail" class="detail"></article>
+  </section>
+</main>
 
 <script>
 const DATA = [
@@ -616,88 +721,106 @@ const DATA = [
 ];
 
 /* ---------- render ---------- */
-const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const esc = s => (s==null?'':String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-function caseHTML(c){
+const sortedMonths = [...DATA].sort((a,b)=> b.year-a.year || b.month-a.month);
+let ITEMS = [];
+sortedMonths.forEach(m=>{
+  m.fields.forEach(f=>{
+    f.cases.forEach(c=>{
+      ITEMS.push({ id: ITEMS.length, ym: m.ym, monthLabel: m.label, fieldTitle: f.title, c });
+    });
+  });
+});
+ITEMS.forEach(it=>{
+  const c = it.c;
+  let parts = [it.monthLabel, it.fieldTitle, c.chip, c.law, c.title, c.case, c.act];
+  if(c.bg){ parts.push(c.bg.title); if(c.bg.para) parts.push(c.bg.para); if(c.bg.note) parts.push(c.bg.note); if(c.bg.list) parts.push(c.bg.list.join(' ')); }
+  it.blob = parts.join(' ').toLowerCase();
+});
+
+let current = ITEMS.length ? 0 : -1;
+let query = "";
+
+function hl(text){
+  const q = query.trim();
+  const safe = esc(text);
+  if(!q) return safe;
+  try{
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi');
+    return safe.replace(re,'<mark>$1</mark>');
+  }catch(e){ return safe; }
+}
+
+function detailHTML(it){
+  const c = it.c;
   let bg = "";
   if(c.bg){
     let inner = "";
-    if(c.bg.list){
-      inner += "<ol>" + c.bg.list.map(t=>`<li>${esc(t)}</li>`).join("") + "</ol>";
-    }
-    if(c.bg.para){
-      inner += `<p style="margin:6px 0 0; font-size:14.5px; line-height:1.74; color:#33405e;">${esc(c.bg.para)}</p>`;
-    }
-    if(c.bg.note){
-      inner += `<p class="note">※ ${esc(c.bg.note)}</p>`;
-    }
-    bg = `<details class="more"><summary><span class="caret">▶</span>심사 배경 — ${esc(c.bg.title)}</summary><div class="body">${inner}</div></details>`;
+    if(c.bg.list) inner += "<ol>" + c.bg.list.map(t=>`<li>${esc(t)}</li>`).join("") + "</ol>";
+    if(c.bg.para) inner += `<p>${esc(c.bg.para)}</p>`;
+    if(c.bg.note) inner += `<p class="note">※ ${esc(c.bg.note)}</p>`;
+    bg = `<div class="d-bg"><div class="d-bg-h">심사 배경 — ${esc(c.bg.title)}</div><div class="d-bg-b">${inner}</div></div>`;
   }
-  return `<article class="case">
-    <div class="case-top">
-      <span class="chip">${esc(c.chip)}</span>
-      <span class="law">${esc(c.law)}</span>
+  return `<div class="d-meta"><span class="chip">${esc(c.chip)}</span><span class="law">${esc(c.law)}</span></div>
+    <div class="d-context">${esc(it.monthLabel)} · ${esc(it.fieldTitle)}</div>
+    <h2 class="d-title">《${hl(c.title)}》</h2>
+    <div class="d-flow">
+      <div class="d-step"><div class="d-tag">사례 — 신청 내용</div><p>${hl(c.case)}</p></div>
+      <div class="d-step act"><div class="d-tag">조치 — 심사 결과</div><p>${hl(c.act)}</p></div>
     </div>
-    <h4>《${esc(c.title)}》</h4>
-    <div class="flow">
-      <div class="step">
-        <span class="node"><i></i></span>
-        <span class="tag">사례 — 신청 내용</span>
-        <p>${esc(c.case)}</p>
-      </div>
-      <div class="step act">
-        <span class="node"><i></i></span>
-        <span class="tag">조치 — 심사 결과</span>
-        <p>${esc(c.act)}</p>
-      </div>
-    </div>
-    ${bg}
-  </article>`;
+    ${bg}`;
 }
 
-function monthHTML(m){
-  const fields = m.fields.map(f=>`
-    <div class="field">
-      <div class="field-head"><span class="fnum">${f.no}</span><h3>${esc(f.title)}</h3></div>
-      ${f.cases.map(caseHTML).join("")}
-    </div>`).join("");
-  return `<section class="month" id="${m.ym}" data-ym="${m.ym}">
-    <div class="wrap">
-      <div class="month-head"><h2>${esc(m.label)}</h2><div class="sub">${esc(m.sub)}</div></div>
-      ${fields}
-    </div>
-  </section>`;
+const listEl = document.getElementById('list');
+const detailEl = document.getElementById('detail');
+const countEl = document.getElementById('count');
+
+function renderList(){
+  const q = query.trim().toLowerCase();
+  const filtered = ITEMS.filter(it=> !q || it.blob.includes(q));
+  if(filtered.length === 0){
+    listEl.innerHTML = `<div class="empty">검색 결과가 없습니다.</div>`;
+  } else {
+    let html = "", lastYm = null, lastField = null;
+    filtered.forEach(it=>{
+      if(it.ym !== lastYm){ html += `<div class="grp-month">${esc(it.monthLabel)}</div>`; lastYm = it.ym; lastField = null; }
+      if(it.fieldTitle !== lastField){ html += `<div class="grp-field">${esc(it.fieldTitle)}</div>`; lastField = it.fieldTitle; }
+      const active = it.id === current ? ' is-active' : '';
+      html += `<button class="row${active}" data-id="${it.id}" type="button"><span class="row-chip">${esc(it.c.chip)}</span><span class="row-title">${esc(it.c.title)}</span></button>`;
+    });
+    listEl.innerHTML = html;
+  }
+  countEl.textContent = q ? `검색 결과 ${filtered.length}건` : `전체 ${ITEMS.length}건`;
+  if(filtered.length && !filtered.some(it=>it.id===current)){ select(filtered[0].id, false); }
+  else { renderDetail(current); }
 }
 
-const sorted = [...DATA].sort((a,b)=> b.year-a.year || b.month-a.month);
-document.getElementById("content").innerHTML = sorted.map(monthHTML).join("");
+function renderDetail(id){
+  const it = ITEMS.find(x=>x.id===id);
+  detailEl.innerHTML = it ? detailHTML(it) : "";
+}
 
-const nav = document.getElementById("monthNav");
-sorted.forEach((m,i)=>{
-  const n = m.fields.reduce((s,f)=>s+f.cases.length,0);
-  const b = document.createElement("button");
-  b.className = "month-pill";
-  b.innerHTML = `${esc(m.label)}<span class="n">${n}건</span>`;
-  b.setAttribute("aria-current", i===0 ? "true":"false");
-  b.onclick = ()=>{ document.getElementById(m.ym).scrollIntoView({behavior:"smooth", block:"start"}); };
-  nav.appendChild(b);
+function select(id, toDetail){
+  current = id;
+  renderDetail(id);
+  document.querySelector('.cb-detail').scrollTop = 0;
+  [...listEl.querySelectorAll('.row')].forEach(r=> r.classList.toggle('is-active', +r.dataset.id === id));
+  if(toDetail) document.body.classList.add('show-detail');
+}
+
+listEl.addEventListener('click', e=>{
+  const b = e.target.closest('.row');
+  if(b) select(+b.dataset.id, true);
 });
+const searchEl = document.getElementById('search');
+searchEl.addEventListener('input', ()=>{ query = searchEl.value; renderList(); });
+document.getElementById('clear').addEventListener('click', ()=>{ searchEl.value=''; query=''; renderList(); searchEl.focus(); });
+document.getElementById('back').addEventListener('click', ()=> document.body.classList.remove('show-detail'));
 
-const total = DATA.reduce((s,m)=>s+m.fields.reduce((x,f)=>x+f.cases.length,0),0);
-const months = DATA.length;
-document.getElementById("metaCount").textContent = `${months}개 연월 · 사례 ${total}건`;
-
-/* highlight active month pill on scroll */
-const pills = [...nav.querySelectorAll(".month-pill")];
-const obs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const ym = e.target.dataset.ym;
-      pills.forEach((p,i)=>p.setAttribute("aria-current", sorted[i].ym===ym ? "true":"false"));
-    }
-  });
-},{rootMargin:"-40% 0px -55% 0px"});
-document.querySelectorAll(".month").forEach(s=>obs.observe(s));
+renderList();
+if(current >= 0) select(current, false);
+document.body.classList.remove('show-detail');
 </script>
 </body>
 </html>

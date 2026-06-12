@@ -61,19 +61,27 @@ export default async function PostDetailPage({
       ) : null}
 
       {viewer ? (
-        <div
-          className={
-            bodyText
-              ? "mt-8 overflow-hidden rounded-cover border border-border bg-white shadow-card"
-              : "mt-8 overflow-hidden rounded-cover border border-border bg-white shadow-card"
-          }
-          style={{ height: "min(72vh, 900px)" }}
-        >
-          <iframe
-            src={viewer.htmlPath}
-            title={viewer.title}
-            className="h-full w-full border-0"
-          />
+        <div className="mt-8">
+          <div className="mb-2 flex justify-end">
+            <a
+              href={`/global/${viewerSlug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-primary"
+            >
+              ⤢ 큰 화면으로 보기 ↗
+            </a>
+          </div>
+          <div
+            className="overflow-hidden rounded-cover border border-border bg-white shadow-card"
+            style={{ height: "min(82vh, 1100px)" }}
+          >
+            <iframe
+              src={viewer.htmlPath}
+              title={viewer.title}
+              className="h-full w-full border-0"
+            />
+          </div>
         </div>
       ) : null}
 
