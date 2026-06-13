@@ -1219,7 +1219,7 @@
  },
  "nps": {
   "source": "nps",
-  "display_name": "건강보험심사평가원 환자표본자료(HIRA-NPS)",
+  "display_name": "건강보험심사평가원 환자표본자료(NPS/HIRA)",
   "code_system": "KCD",
   "keys": {
    "person": "JID",
@@ -1243,7 +1243,12 @@
      {
       "name": "JID",
       "key": true,
-      "desc": "환자ID — 익명 환자 식별자. ⚠ 연도(자료연도) 내에서만 유효 — 동일인 연간 추적 불가(횡단)."
+      "desc": "환자ID — 익명 환자 식별자. ⚠ 자료연도 내에서만 유효 — 동일인 연간 추적 불가(횡단)."
+     },
+     {
+      "name": "YID",
+      "key": true,
+      "desc": "요양기관ID — 진료를 제공한 의료기관 식별. 요양기관(YKIHO) 연결키."
      },
      {
       "name": "SEX_TP_CD",
@@ -1253,12 +1258,12 @@
      {
       "name": "PAT_AGE",
       "key": false,
-      "desc": "환자 연령(만나이)."
+      "desc": "환자 연령."
      },
      {
-      "name": "YID",
-      "key": true,
-      "desc": "요양기관ID — 진료를 제공한 의료기관 식별. 요양기관(YKIHO) 연결키."
+      "name": "FOM_TP_CD",
+      "key": false,
+      "desc": "진료형태(서식)코드 — 입원(021·041·071·072·073) / 외래(031·051·081·082·091·111·991) 구분."
      },
      {
       "name": "MSICK_CD",
@@ -1271,9 +1276,9 @@
       "desc": "부상병코드(KCD)."
      },
      {
-      "name": "FOM_TP_CD",
+      "name": "SOPR_YN",
       "key": false,
-      "desc": "진료형태(서식)코드 — 입원(021·041·071·072·073) / 외래(031·051·081·082·091·111·991) 구분."
+      "desc": "수술여부 — 0=미수술, 1=수술."
      },
      {
       "name": "RECU_FR_DD",
@@ -1286,19 +1291,39 @@
       "desc": "요양종료일자."
      },
      {
-      "name": "VSHSP_DD_CNT",
+      "name": "FST_IPAT_DD",
       "key": false,
-      "desc": "입원일수 — 입원 명세서 기준 재원일수."
+      "desc": "최초입원일자 — 입원 명세서의 입원 시작일."
+     },
+     {
+      "name": "RECU_DDCNT",
+      "key": false,
+      "desc": "요양일수 — 입원 시 입원일수 포함(트랙B 입원일수 산출에 사용)."
      },
      {
       "name": "VST_DDCNT",
       "key": false,
-      "desc": "통원(외래 방문)일수."
+      "desc": "입내원일수 — 외래 방문일수(트랙B 통원일수 산출에 사용)."
      },
      {
-      "name": "EDC_SBA",
+      "name": "RVD_RPE_TAMT_AMT",
       "key": false,
-      "desc": "심결요양급여비용총액 — 총진료비(치료비 산출)."
+      "desc": "심결요양급여비용총액 — 총진료비(트랙B 치료비 산출)."
+     },
+     {
+      "name": "RVD_SLF_BRDN_AMT",
+      "key": false,
+      "desc": "심결본인부담금 — 수진자 부담금."
+     },
+     {
+      "name": "RVD_INSUP_BRDN_AMT",
+      "key": false,
+      "desc": "심결보험자부담금 — 공단(보험자) 부담금."
+     },
+     {
+      "name": "SelectionProb",
+      "key": false,
+      "desc": "표본추출확률 — 가중치 산출 근거(추출확률의 역수 기반)."
      },
      {
       "name": "SamplingWeight",
@@ -1331,9 +1356,24 @@
       "desc": "분류코드(행위·수가) — 수술·처치 발췌에 사용."
      },
      {
+      "name": "GNL_NM_CD",
+      "key": false,
+      "desc": "일반명코드 — 원내 약제 성분(일반)명 코드."
+     },
+     {
       "name": "TOT_USE_QTY_OR_EXEC_FQ",
       "key": false,
       "desc": "총사용량 또는 실시횟수."
+     },
+     {
+      "name": "UNPRC",
+      "key": false,
+      "desc": "단가."
+     },
+     {
+      "name": "AMT",
+      "key": false,
+      "desc": "금액 — 단가 × 사용량/횟수."
      }
     ]
    },
@@ -1351,9 +1391,19 @@
       "desc": "명세서일련번호 — 명세서(T200) 연결키."
      },
      {
+      "name": "SICK_SNO",
+      "key": false,
+      "desc": "상병일련번호 — 한 명세서의 상병 행 번호(상병은 행 단위로 다건)."
+     },
+     {
+      "name": "SICK_DGSBJT_CD",
+      "key": false,
+      "desc": "진료과목코드 — 해당 상병의 진료과목."
+     },
+     {
       "name": "SICK_CD",
       "key": false,
-      "desc": "상병코드(KCD) — 한 명세서의 모든 상병(행 단위로 다건 존재)."
+      "desc": "상병코드(KCD) — 진료받은 모든 상병."
      }
     ]
    },
@@ -1371,9 +1421,29 @@
       "desc": "명세서일련번호 — 명세서(T200) 연결키."
      },
      {
+      "name": "LN_NO",
+      "key": false,
+      "desc": "줄번호 — 처방 내 일련번호."
+     },
+     {
       "name": "GNL_NM_CD",
       "key": false,
-      "desc": "일반명코드 — 약제 성분(일반)명 코드. 약제 기반 필터에 사용."
+      "desc": "일반명코드 — 원외처방 약제 성분(일반)명 코드. 약제 기반 필터에 사용."
+     },
+     {
+      "name": "TOT_USE_QTY_OR_EXEC_FQ",
+      "key": false,
+      "desc": "총투여량 또는 횟수."
+     },
+     {
+      "name": "UNPRC",
+      "key": false,
+      "desc": "단가."
+     },
+     {
+      "name": "AMT",
+      "key": false,
+      "desc": "금액."
      }
     ]
    },
@@ -1391,9 +1461,24 @@
       "desc": "요양기관ID — 명세서(T200)의 YID와 연결."
      },
      {
+      "name": "SIDO_CD",
+      "key": false,
+      "desc": "시도코드 — 요양기관 소재지(시·도)."
+     },
+     {
       "name": "RECU_CL_CD",
       "key": false,
       "desc": "요양기관 종별코드 — 1=상급종합, 11=종합 등."
+     },
+     {
+      "name": "ORG_DF",
+      "key": false,
+      "desc": "설립구분 — 기관 설립 형태."
+     },
+     {
+      "name": "BED_GRADE",
+      "key": false,
+      "desc": "병상등급 — 병상 규모 등급."
      }
     ]
    }
