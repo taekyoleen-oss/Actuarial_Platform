@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Award, Quote } from "lucide-react";
+import { Award, FileText, Quote } from "lucide-react";
 import { Reveal } from "@/components/feature/Reveal";
 
 // "만든이" — AI4Insurance 프로젝트의 소개(about) 콘텐츠만 이식해 보드 테마로 재구성.
@@ -27,7 +27,7 @@ const STATS = [
   { value: "30년", label: "코리안리 재보험 실무" },
   { value: "보험계리사", label: "2002년 자격 취득" },
   { value: "논문 8편", label: "KCI 등재 다수" },
-  { value: "자문교수", label: "보험계리" },
+  { value: "겸임교수", label: "보험계리" },
 ];
 
 const TIMELINE: { period: string; title: string; detail?: string }[] = [
@@ -84,6 +84,7 @@ const RESEARCH: {
   journal: string;
   detail?: string;
   kci?: boolean;
+  pdf?: string;
 }[] = [
   {
     authors: "인태교, 전희주",
@@ -92,6 +93,7 @@ const RESEARCH: {
     journal: "보험학회지",
     detail: "제145호",
     kci: true,
+    pdf: "암 진단자의 특성에 따른 경과년도 별 주요치료율 차이 분석.pdf",
   },
   {
     authors: "인태교, 전희주",
@@ -100,6 +102,7 @@ const RESEARCH: {
     journal: "한국데이터정보과학회지",
     detail: "36(3), 443-455",
     kci: true,
+    pdf: "노인코호트DB를 이용한 개인건강상태에 따른 노인장기요양등급 예측모형.pdf",
   },
   {
     authors: "전희주, 인태교",
@@ -109,6 +112,7 @@ const RESEARCH: {
     journal: "보험학회지",
     detail: "제142호, 115-141",
     kci: true,
+    pdf: "간편고지보험 가입대상자 우량층 확대를 위한 요율차등화 연구.pdf",
   },
   {
     authors: "전희주, 인태교",
@@ -118,6 +122,7 @@ const RESEARCH: {
     journal: "금융감독연구",
     detail: "제12권 1호, 1-23",
     kci: true,
+    pdf: "과거질병이력과 건강검진지표에 기반한 치매 발병 예측모형 개발.pdf",
   },
   {
     authors: "전희주, 문기태, 인태교",
@@ -127,6 +132,7 @@ const RESEARCH: {
     journal: "금융감독연구",
     detail: "제11권 1호, 33-66",
     kci: true,
+    pdf: "건강상태에 따른 사망률 및 유병기간 분석과 건강여명을 활용한 건강나이 산출에 관한 연구.pdf",
   },
   {
     authors: "전희주, 인태교",
@@ -135,6 +141,7 @@ const RESEARCH: {
     journal: "보험학회지",
     detail: "제138호, 41-72",
     kci: true,
+    pdf: "간편고지보험 고지항목별 무사고기간에 따른 암 발생 및 치료 상대위험도 예측.pdf",
   },
   {
     authors: "전희주, 인태교, 황용순",
@@ -143,6 +150,7 @@ const RESEARCH: {
       "신용정보에 따른 입원 및 수술 발생 상대위험도 적용방안 연구: 신용정보원 데이터 이용",
     journal: "보험학회지",
     detail: "제135호, 101-125",
+    pdf: "신용정보에 따른 입원 및 수술 발생 상대위험도 적용방안 연구.pdf",
   },
   {
     authors: "전희주, 인태교",
@@ -151,6 +159,7 @@ const RESEARCH: {
       "국민건강보험 표본코호트2.0DB를 활용한 건강상태에 따른 암발생과 암수술건수 상대위험도 연구",
     journal: "리스크관리연구",
     detail: "제33권 4호, 53-83",
+    pdf: "국민건강보험 표본코호트2.0DB를 활용한 건강상태에 따른 암발생과 암수술건수 상대위험도 연구.pdf",
   },
 ];
 
@@ -246,7 +255,7 @@ export default function AboutPage() {
         <SectionTitle>연구 실적 · 논문 {RESEARCH.length}편</SectionTitle>
         <p className="mt-3 max-w-2xl text-sm text-tertiary">
           국민건강보험·신용정보 등 공공·금융 데이터를 활용한 보험 위험률 및
-          예측모형 연구.
+          예측모형 연구. 제목을 누르면 원문(PDF)을 볼 수 있습니다.
         </p>
         <ol className="mt-6 overflow-hidden rounded-cover border border-border bg-white shadow-card">
           {RESEARCH.map((p, i) => (
@@ -260,9 +269,27 @@ export default function AboutPage() {
                 {p.date}
               </div>
               <div className="flex-1">
-                <p className="text-[15px] font-medium leading-snug text-foreground">
-                  {p.title}
-                </p>
+                {p.pdf ? (
+                  <a
+                    href={`/published/${encodeURIComponent(p.pdf)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-start gap-1.5 text-[15px] font-medium leading-snug text-foreground transition-colors hover:text-brand-sky"
+                  >
+                    <span className="underline decoration-border underline-offset-4 group-hover:decoration-brand-sky">
+                      {p.title}
+                    </span>
+                    <FileText
+                      size={15}
+                      className="mt-0.5 shrink-0 text-tertiary transition-colors group-hover:text-brand-sky"
+                      aria-label="PDF 원문"
+                    />
+                  </a>
+                ) : (
+                  <p className="text-[15px] font-medium leading-snug text-foreground">
+                    {p.title}
+                  </p>
+                )}
                 <p className="mt-1.5 text-sm text-tertiary">
                   {p.authors} · {p.journal}
                   {p.detail ? `, ${p.detail}` : ""}
