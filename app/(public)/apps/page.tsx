@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Database, ArrowRight } from "lucide-react";
 import { ModelSelectIdent } from "@/components/feature/ModelSelectIdent";
+import { listDbs } from "@/lib/publicDb";
 
 // 모델분석·업무지원 앱 모음 — App Collecter 프로젝트의 카드 데이터 중
 // 사용자가 지정한 7종만 이식(2026-06-11). 카드는 보드 공통 카드 시스템과 동일.
@@ -190,12 +193,50 @@ export default function AppsPage() {
         <AppGrid apps={MODEL_APPS} featured />
       </section>
 
-      <section className="mt-16 pb-8">
+      <section className="mt-16">
         <h2 className="mb-6 flex items-center gap-2.5 text-xl font-medium text-foreground">
           <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
           업무지원
         </h2>
         <AppGrid apps={WORK_APPS} />
+      </section>
+
+      {/* 주요 공공DB — 위험률·모형 산출에 쓰는 공공 의료데이터의 특성 + DB 구조(ERD) */}
+      <section className="mt-16 pb-8">
+        <h2 className="mb-1.5 flex items-center gap-2.5 text-xl font-medium text-foreground">
+          <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
+          주요 공공DB
+        </h2>
+        <p className="mb-6 max-w-2xl text-sm leading-relaxed text-tertiary">
+          보험 위험률·예측모형 산출에 활용하는 공공 의료데이터입니다. 카드를 누르면
+          DB 특성과 테이블 구조(ERD)를 볼 수 있습니다.
+        </p>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {listDbs().map((db) => (
+            <Link
+              key={db.id}
+              href={`/apps/db/${db.id}`}
+              className="flex flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
+            >
+              <Database size={20} className="text-brand-sky" />
+              <h3 className="mt-3 text-[18px] font-semibold text-brand-sky">
+                {db.shortName}
+              </h3>
+              <p className="mt-0.5 text-[13px] text-placeholder">
+                {db.fullName}
+              </p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-body">
+                {db.tagline}
+              </p>
+              <span className="mt-3 w-fit rounded bg-chip-blue-bg px-2 py-0.5 text-[12px] font-medium text-chip-blue-fg">
+                {db.structure}
+              </span>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                DB 구조 보기 <ArrowRight size={15} />
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
     </div>
   );

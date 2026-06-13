@@ -13,3 +13,4 @@ content/global/*
 content/domestic/*
 !content/**/.gitkeep
 !content/README.md
+.gstack/

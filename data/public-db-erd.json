@@ -1,0 +1,1428 @@
+{
+ "nsc2": {
+  "source": "nsc2",
+  "display_name": "국민건강보험공단 표본코호트 2.2 DB",
+  "code_system": "KCD",
+  "keys": {
+   "person": "RN_INDI",
+   "claim": "RN_KEY",
+   "inst": "RN_INST",
+   "ltc_apply": "RN_INDI_SEQ",
+   "ltc_inst": "LTC_INST_ID"
+  },
+  "tables": [
+   {
+    "id": "eligibility",
+    "name": "NSC2_BNC",
+    "label": "자격·보험료 (BNC)",
+    "unit": "person_year",
+    "col": 1,
+    "group": "개인 단위(자격·인구)",
+    "columns": [
+     {
+      "name": "STD_YYYY",
+      "key": false,
+      "desc": "기준년도(YYYY) — 자격·보험료 정보가 속한 연도. 개인×년 단위의 시간축(매달 1일 기준 보정)."
+     },
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "SEX",
+      "key": false,
+      "desc": "성별 — 1=남, 2=여."
+     },
+     {
+      "name": "SGG",
+      "key": false,
+      "desc": "주소(시군구) 코드 — 시도(2)+시군구(3). 매년 1.1 유효 행정구역코드로 변환."
+     },
+     {
+      "name": "GAIBJA_TYPE",
+      "key": false,
+      "desc": "건강보장(가입자) 유형 — 1·2=지역, 5·6=직장, 7·8=의료급여. 모집단 한정에 사용."
+     },
+     {
+      "name": "CTRB_Q10",
+      "key": false,
+      "desc": "보험료 10분위 — 세대단위 보험료 기반 소득수준 대리지표(0~10분위)."
+     },
+     {
+      "name": "DSB_SVRT_CD",
+      "key": false,
+      "desc": "장애 중증도 — 1=중증(1~3등급), 2=경증(4~6등급), 결측=해당없음."
+     },
+     {
+      "name": "DSB_TYPE_CD",
+      "key": false,
+      "desc": "장애 유형 — 1=지체, 2=뇌병변, 3=시각, 4=청각, 9=기타장애."
+     },
+     {
+      "name": "G1E_OBJ_YN",
+      "key": false,
+      "desc": "일반1차검진 대상자 여부 — 해당 연도 검진 대상자면 Y. 검진효과 분석 등에 사용."
+     },
+     {
+      "name": "SMPL_TYPE_CD",
+      "key": false,
+      "desc": "표본구분 — 1·2=전국민 표본, 3·4=신생아 추가표본(2·4=보험료 결측군)."
+     }
+    ]
+   },
+   {
+    "id": "birth_death",
+    "name": "NSC2_BND",
+    "label": "출생·사망 (BND)",
+    "unit": "person",
+    "col": 1,
+    "group": "개인 단위(자격·인구)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "BTH_YYYY",
+      "key": false,
+      "desc": "출생연도(YYYY) — 연령 = STD_YYYY − BTH_YYYY 로 1세 단위 산출."
+     },
+     {
+      "name": "DTH_YYYYMM",
+      "key": false,
+      "desc": "사망연월(YYYYMM) — 사망자만 값 존재(통계청 사망원인 연계). 관찰 종료(절단) 판정에 사용."
+     },
+     {
+      "name": "COD1",
+      "key": false,
+      "desc": "사망원인1 — 한국표준질병·사인분류(KCD) 코드. 사망(원인별) 분석의 핵심 컬럼."
+     },
+     {
+      "name": "COD2",
+      "key": false,
+      "desc": "사망원인2 — 사망원인이 손상·중독(S00–T98)인 경우 외인(V01–Y98) 상세 원인."
+     }
+    ]
+   },
+   {
+    "id": "screening",
+    "name": "NSC2_G1E_0915",
+    "label": "건강검진 1차 (G1E)",
+    "unit": "person_exam",
+    "col": 1,
+    "group": "개인 단위(자격·인구)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "EXMD_BZ_YYYY",
+      "key": false,
+      "desc": "검진년도(YYYY)."
+     },
+     {
+      "name": "HME_YYYYMM",
+      "key": false,
+      "desc": "건강검진 수검 연월(YYYYMM)."
+     },
+     {
+      "name": "G1E_HGHT",
+      "key": false,
+      "desc": "신장(cm) — 100 미만 결측처리."
+     },
+     {
+      "name": "G1E_WGHT",
+      "key": false,
+      "desc": "체중(kg) — 20 미만 결측처리."
+     },
+     {
+      "name": "G1E_BMI",
+      "key": false,
+      "desc": "체질량지수(kg/m²) — 체중/(신장×신장)."
+     },
+     {
+      "name": "G1E_WSTC",
+      "key": false,
+      "desc": "허리둘레(cm) — 2008년부터 제공."
+     },
+     {
+      "name": "G1E_BP_SYS",
+      "key": false,
+      "desc": "수축기 혈압(mmHg)."
+     },
+     {
+      "name": "G1E_BP_DIA",
+      "key": false,
+      "desc": "이완기 혈압(mmHg)."
+     },
+     {
+      "name": "G1E_FBS",
+      "key": false,
+      "desc": "식전(공복) 혈당(mg/dL) — 0값 결측처리."
+     },
+     {
+      "name": "G1E_TOT_CHOL",
+      "key": false,
+      "desc": "총콜레스테롤(mg/dL)."
+     },
+     {
+      "name": "G1E_HDL",
+      "key": false,
+      "desc": "HDL 콜레스테롤(mg/dL)."
+     },
+     {
+      "name": "G1E_LDL",
+      "key": false,
+      "desc": "LDL 콜레스테롤(mg/dL)."
+     },
+     {
+      "name": "G1E_TG",
+      "key": false,
+      "desc": "트리글리세라이드(mg/dL)."
+     },
+     {
+      "name": "G1E_CRTN",
+      "key": false,
+      "desc": "혈청 크레아티닌."
+     },
+     {
+      "name": "G1E_GFR",
+      "key": false,
+      "desc": "신사구체여과율(GFR) — 2009·2012년부터 제공."
+     },
+     {
+      "name": "G1E_SGOT",
+      "key": false,
+      "desc": "AST(혈청지오티, U/L) — 0값 결측처리."
+     },
+     {
+      "name": "G1E_SGPT",
+      "key": false,
+      "desc": "ALT(혈청지피티, U/L)."
+     },
+     {
+      "name": "G1E_GGT",
+      "key": false,
+      "desc": "감마지티피(γ-GTP)."
+     },
+     {
+      "name": "G1E_HGB",
+      "key": false,
+      "desc": "혈색소(g/dL) — 0값 결측처리."
+     },
+     {
+      "name": "Q_SMK_YN",
+      "key": false,
+      "desc": "흡연상태 — 1=비흡연, 2=과거흡연, 3=현재흡연(문진)."
+     },
+     {
+      "name": "Q_DRK_FRQ_V09N",
+      "key": false,
+      "desc": "주간 음주일수(문진) — 0~7일."
+     }
+    ]
+   },
+   {
+    "id": "claim_med",
+    "name": "NSC2_M20",
+    "label": "진료 명세서 T20 (M20·의과 대표)",
+    "unit": "claim",
+    "col": 2,
+    "group": "진료 — 명세서(T20)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_KEY",
+      "key": true,
+      "desc": "청구고유번호(14자리) — 한 건의 진료(명세서)를 식별. 명세서(T20)↔진료내역(T30)↔상병내역(T40)↔처방(T60)을 잇는 청구 단위 연결변수."
+     },
+     {
+      "name": "RN_INST",
+      "key": true,
+      "desc": "요양기관고유번호(6자리) — 진료를 제공한 의료기관 식별. 요양기관(INST) 테이블 연결변수."
+     },
+     {
+      "name": "MDCARE_STRT_DT",
+      "key": false,
+      "desc": "요양개시일자 — 진료(입원/외래) 시작일(약국=조제투약일). 발생·이벤트 일자."
+     },
+     {
+      "name": "FORM_CD",
+      "key": false,
+      "desc": "서식코드 — 진료 서식 구분(02=의과입원, 03=의과외래, 04·05=치과, 12·13=한방, 20·21=약국 등). 입원/외래·진료형태 판정에 사용."
+     },
+     {
+      "name": "MCARE_SUBJ_CD",
+      "key": false,
+      "desc": "진료과목코드 — 실제 진료받은(또는 상병 해당) 진료과목."
+     },
+     {
+      "name": "SICK_SYM1",
+      "key": false,
+      "desc": "주상병 — 진료기간 중 요구가 가장 컸던 상병(KCD). 질병 필터의 핵심 컬럼."
+     },
+     {
+      "name": "SICK_SYM2",
+      "key": false,
+      "desc": "부상병 — 주상병과 함께 환자 진료에 영향을 준 상병(KCD)."
+     },
+     {
+      "name": "HSPTZ_PATH_TYPE",
+      "key": false,
+      "desc": "입원경로구분 — 병원급 이상 입원환자(도착경로·입원경로 2자리)."
+     },
+     {
+      "name": "OPRTN_YN",
+      "key": false,
+      "desc": "수술여부 — 0=미수술, 9=수술. 수술 플래그·진료형태에 사용."
+     },
+     {
+      "name": "MDCARE_DD_CNT",
+      "key": false,
+      "desc": "요양일수 — 진료한 총 일수(투약일수 포함). 0=협진."
+     },
+     {
+      "name": "VSHSP_DD_CNT",
+      "key": false,
+      "desc": "입내원일수 — 내원(초·재진) 또는 입원 일수. 입원일수 산출에 사용."
+     },
+     {
+      "name": "MCARE_RSLT_TYPE",
+      "key": false,
+      "desc": "진료결과구분 — 1=계속, 2=이송, 3=회송, 4=사망, 5=기타, 9=퇴원/외래종결."
+     },
+     {
+      "name": "FST_HSPTZ_DT",
+      "key": false,
+      "desc": "최초입원일자 — 입원 요양급여비용 분리청구 시 기재."
+     },
+     {
+      "name": "ED_RC_TOT_AMT",
+      "key": false,
+      "desc": "심결요양급여비용총액 — 심사결정 후 건강보험 총요양급여비용."
+     },
+     {
+      "name": "EDC_SBA",
+      "key": false,
+      "desc": "심결본인부담금 — 심사결정 후 수진자 부담금."
+     },
+     {
+      "name": "EDC_INSUR_BRDN_AMT",
+      "key": false,
+      "desc": "심결보험자부담금 — 심사결정 후 보험자(공단) 부담금."
+     }
+    ]
+   },
+   {
+    "id": "claim_detail",
+    "name": "NSC2_M30",
+    "label": "진료내역 T30 (M30)",
+    "unit": "claim_item",
+    "col": 3,
+    "group": "진료 — 세부내역(T30·T40·T60)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_KEY",
+      "key": true,
+      "desc": "청구고유번호(14자리) — 한 건의 진료(명세서)를 식별. 명세서(T20)↔진료내역(T30)↔상병내역(T40)↔처방(T60)을 잇는 청구 단위 연결변수."
+     },
+     {
+      "name": "MDCARE_STRT_DT",
+      "key": false,
+      "desc": "요양개시일자 — 진료(입원/외래) 시작일(약국=조제투약일). 발생·이벤트 일자."
+     },
+     {
+      "name": "FORM_CD",
+      "key": false,
+      "desc": "서식코드 — 진료 서식 구분(02=의과입원, 03=의과외래, 04·05=치과, 12·13=한방, 20·21=약국 등). 입원/외래·진료형태 판정에 사용."
+     },
+     {
+      "name": "MCARE_DESC_LN_NO",
+      "key": false,
+      "desc": "줄번호 — 처방전발행건 세부내역 일련번호."
+     },
+     {
+      "name": "CLA_CD",
+      "key": false,
+      "desc": "항코드 — 요양급여비용명세서 항(1~10) 또는 C·M·T 코드(코드표)."
+     },
+     {
+      "name": "ITEM_CD",
+      "key": false,
+      "desc": "목코드 — 항의 소분류 단위 번호(코드표)."
+     },
+     {
+      "name": "MCARE_DIV_CD",
+      "key": false,
+      "desc": "분류코드(행위/수가) — 진료내역(T30)의 건강보험 행위·수가코드. 수술·처치 발췌에 사용."
+     },
+     {
+      "name": "DD1_MQTY_FREQ",
+      "key": false,
+      "desc": "1일투여량 또는 실시횟수."
+     },
+     {
+      "name": "TOT_MCNT",
+      "key": false,
+      "desc": "총투여일수 또는 실시횟수."
+     },
+     {
+      "name": "UPRC",
+      "key": false,
+      "desc": "단가."
+     },
+     {
+      "name": "AMT",
+      "key": false,
+      "desc": "금액 — 단가 × 1일투여량(실시횟수) × 총투여일수(실시횟수)."
+     },
+     {
+      "name": "MCEXP_TYPE_CD",
+      "key": false,
+      "desc": "진료비 구분 — 1=기본진료료, 2=진료행위료, 3=약품비, 4=치료재료료, 5=정액수가."
+     },
+     {
+      "name": "EFMDC_CLSF_NO",
+      "key": false,
+      "desc": "약효분류번호 — 의약품 분류번호 규정에 따른 약효 분류(2.2 신규)."
+     }
+    ]
+   },
+   {
+    "id": "claim_dx",
+    "name": "NSC2_M40",
+    "label": "상병내역 T40 (M40)",
+    "unit": "claim_dx",
+    "col": 3,
+    "group": "진료 — 세부내역(T30·T40·T60)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_KEY",
+      "key": true,
+      "desc": "청구고유번호(14자리) — 한 건의 진료(명세서)를 식별. 명세서(T20)↔진료내역(T30)↔상병내역(T40)↔처방(T60)을 잇는 청구 단위 연결변수."
+     },
+     {
+      "name": "MDCARE_STRT_DT",
+      "key": false,
+      "desc": "요양개시일자 — 진료(입원/외래) 시작일(약국=조제투약일). 발생·이벤트 일자."
+     },
+     {
+      "name": "FORM_CD",
+      "key": false,
+      "desc": "서식코드 — 진료 서식 구분(02=의과입원, 03=의과외래, 04·05=치과, 12·13=한방, 20·21=약국 등). 입원/외래·진료형태 판정에 사용."
+     },
+     {
+      "name": "MCEX_SICK_SYM",
+      "key": false,
+      "desc": "요양급여상병기호 — 진료기간 중 진료받은 해당 상병(KCD). 한 명세서에 여러 상병이 행 단위로 존재."
+     },
+     {
+      "name": "DETAIL_TMSG_SUBJ_CD",
+      "key": false,
+      "desc": "세부전문과목코드 — 코드표 참고."
+     },
+     {
+      "name": "SICK_CLSF_TYPE",
+      "key": false,
+      "desc": "상병분류구분 — 1=주상병, 2=부상병, 3=배제된 상병."
+     }
+    ]
+   },
+   {
+    "id": "claim_rx",
+    "name": "NSC2_M60",
+    "label": "처방전상세 T60 (M60)",
+    "unit": "claim_rx",
+    "col": 3,
+    "group": "진료 — 세부내역(T30·T40·T60)",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_KEY",
+      "key": true,
+      "desc": "청구고유번호(14자리) — 한 건의 진료(명세서)를 식별. 명세서(T20)↔진료내역(T30)↔상병내역(T40)↔처방(T60)을 잇는 청구 단위 연결변수."
+     },
+     {
+      "name": "MCARE_STRT_DT",
+      "key": false,
+      "desc": "요양개시일자 — 최초내원일자·조제투여일자(T60)."
+     },
+     {
+      "name": "FORM_CD",
+      "key": false,
+      "desc": "서식코드 — 진료 서식 구분(02=의과입원, 03=의과외래, 04·05=치과, 12·13=한방, 20·21=약국 등). 입원/외래·진료형태 판정에 사용."
+     },
+     {
+      "name": "MPRSC_TIME1_TUYAK_CPCT",
+      "key": false,
+      "desc": "1회 투약량."
+     },
+     {
+      "name": "MPRSC_DD1_TUYAK_CPCT",
+      "key": false,
+      "desc": "1일 투약량."
+     },
+     {
+      "name": "TOT_MCNT",
+      "key": false,
+      "desc": "총투여일수 또는 실시횟수."
+     },
+     {
+      "name": "UPRC",
+      "key": false,
+      "desc": "단가."
+     },
+     {
+      "name": "AMT",
+      "key": false,
+      "desc": "금액 — 단가 × 1일투여량(실시횟수) × 총투여일수(실시횟수)."
+     },
+     {
+      "name": "GNL_NM_CD",
+      "key": false,
+      "desc": "일반명코드 — 약의 일반(성분)명 코드. 약제 기반 모집단/필터에 사용."
+     },
+     {
+      "name": "EFMDC_CLSF_NO",
+      "key": false,
+      "desc": "약효분류번호 — 의약품 분류번호 규정에 따른 약효 분류(2.2 신규)."
+     }
+    ]
+   },
+   {
+    "id": "institution",
+    "name": "NSC2_INST",
+    "label": "요양기관 (INST)",
+    "unit": "institution",
+    "col": 4,
+    "group": "요양기관",
+    "columns": [
+     {
+      "name": "STD_YYYY",
+      "key": false,
+      "desc": "기준년도(YYYY) — 자격·보험료 정보가 속한 연도. 개인×년 단위의 시간축(매달 1일 기준 보정)."
+     },
+     {
+      "name": "RN_INST",
+      "key": true,
+      "desc": "요양기관고유번호(6자리) — 진료를 제공한 의료기관 식별. 요양기관(INST) 테이블 연결변수."
+     },
+     {
+      "name": "INST_CLSFC_CD",
+      "key": false,
+      "desc": "요양기관종별코드 — 0=상급종합, 1=종합병원, 2=병원, 3=의원, 4·5=치과, 7=보건기관, 8=약국, 9=한방."
+     },
+     {
+      "name": "SGG_INST",
+      "key": false,
+      "desc": "요양기관 주소(시군구) — 시도(2)+시군구(3). 공간분석 지원."
+     },
+     {
+      "name": "DISP_SUBJ_TYPE",
+      "key": false,
+      "desc": "표시과목구분 — 서식코드별 과목 분류(코드표)."
+     },
+     {
+      "name": "CNT_DR_TOT",
+      "key": false,
+      "desc": "의사 수."
+     },
+     {
+      "name": "CNT_NRS_TOT",
+      "key": false,
+      "desc": "간호사 수."
+     },
+     {
+      "name": "CNT_BED_INP",
+      "key": false,
+      "desc": "입원병상 수."
+     },
+     {
+      "name": "CNT_BED_OP",
+      "key": false,
+      "desc": "수술병상 수."
+     },
+     {
+      "name": "CNT_BED_ER",
+      "key": false,
+      "desc": "응급병상 수."
+     }
+    ]
+   },
+   {
+    "id": "ltc_apply",
+    "name": "NSC2_T01",
+    "label": "장기요양 신청·등급 (T01)",
+    "unit": "ltc_apply",
+    "col": 5,
+    "group": "노인장기요양",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_INDI_SEQ",
+      "key": true,
+      "desc": "장기요양신청_일련번호 — 개인고유번호(7) + 장기요양신청일련번호(3). 신청·등급(T01)↔청구명세서(T04)를 잇는 장기요양 결합키."
+     },
+     {
+      "name": "APFRM_TYPE_CD",
+      "key": false,
+      "desc": "신청서구분 — 1=인정신청, 2=등급변경, 3=갱신, 4=재신청, 5=급여내용변경."
+     },
+     {
+      "name": "APLY_YM",
+      "key": false,
+      "desc": "신청년월."
+     },
+     {
+      "name": "LTC_OBJTR_TYPE_CD",
+      "key": false,
+      "desc": "장기요양대상자구분 — 1=기초수급, 2=건강보험감경, 3=건강보험, 4=의료급여."
+     },
+     {
+      "name": "GRADE_JUDG_YM",
+      "key": false,
+      "desc": "등급판정년월."
+     },
+     {
+      "name": "RCG_RCGT_SCOR",
+      "key": false,
+      "desc": "인정조사 인정점수."
+     },
+     {
+      "name": "GJU_RCGT_GRADE_CD",
+      "key": false,
+      "desc": "등급판정 인정등급 — 1~5등급·인지지원(6)·등급외(A~C)·기각(Y)·각하(Z)."
+     },
+     {
+      "name": "RCGT_EDA_FR_YM",
+      "key": false,
+      "desc": "인정유효기간 시작년월."
+     },
+     {
+      "name": "RCGT_EDA_TO_YM",
+      "key": false,
+      "desc": "인정유효기간 종료년월."
+     },
+     {
+      "name": "RSDN_TP_CD",
+      "key": false,
+      "desc": "주거형태 — 1=자택, 2~6=시설, 7=요양병원, 9=기타."
+     },
+     {
+      "name": "LVTGT_PRSN_CD",
+      "key": false,
+      "desc": "동거인 구분(독거·부부·자녀 등)."
+     },
+     {
+      "name": "CAREPSN_CD",
+      "key": false,
+      "desc": "주수발자 구분(배우자·자녀·간병인 등)."
+     }
+    ]
+   },
+   {
+    "id": "ltc_claim",
+    "name": "NSC2_T04",
+    "label": "장기요양 청구명세서 (T04)",
+    "unit": "ltc_claim",
+    "col": 5,
+    "group": "노인장기요양",
+    "columns": [
+     {
+      "name": "RN_INDI",
+      "key": true,
+      "desc": "개인고유번호(7자리) — 표본 개인을 식별하는 익명화 키. 자격·출생사망·진료·검진·장기요양을 잇는 개인 단위 연결변수. (2.2부터 진료 세부테이블 T30·T40·T60에도 제공)"
+     },
+     {
+      "name": "RN_INDI_SEQ",
+      "key": true,
+      "desc": "장기요양신청_일련번호 — 개인고유번호(7) + 장기요양신청일련번호(3). 신청·등급(T01)↔청구명세서(T04)를 잇는 장기요양 결합키."
+     },
+     {
+      "name": "LTCP_FR_DT",
+      "key": false,
+      "desc": "장기요양급여 시작일자."
+     },
+     {
+      "name": "PAY_YYYYMM",
+      "key": false,
+      "desc": "지급연월."
+     },
+     {
+      "name": "LTC_DTST_SEQ_NO",
+      "key": false,
+      "desc": "장기요양명세서 일련번호."
+     },
+     {
+      "name": "LTCP_CLSFC_CD",
+      "key": false,
+      "desc": "장기요양급여종별 — 001=방문요양, 002=방문목욕, 003=방문간호, 004=주야간보호, 005=단기보호, 012=노인요양 등."
+     },
+     {
+      "name": "LTCP_TYPE_CD",
+      "key": false,
+      "desc": "장기요양급여구분 — 1=시설, 2=재가."
+     },
+     {
+      "name": "LTC_INST_ID",
+      "key": true,
+      "desc": "장기요양시설번호(7자리) — 청구명세서(T04)↔장기요양기관 현황(T05)을 잇는 연결변수."
+     },
+     {
+      "name": "LAST_PD_TOT_AMT",
+      "key": false,
+      "desc": "최종지급결정 총액."
+     },
+     {
+      "name": "LAST_PD_SBA",
+      "key": false,
+      "desc": "최종지급결정 본인부담금."
+     },
+     {
+      "name": "LAST_PD_NBA",
+      "key": false,
+      "desc": "최종지급결정 공단부담금."
+     },
+     {
+      "name": "EADJ_TOTAL_PAY_DCNT",
+      "key": false,
+      "desc": "요양 지급일수."
+     }
+    ]
+   },
+   {
+    "id": "ltc_inst",
+    "name": "NSC2_T05",
+    "label": "장기요양기관 현황 (T05)",
+    "unit": "ltc_institution",
+    "col": 5,
+    "group": "노인장기요양",
+    "columns": [
+     {
+      "name": "STD_YYYYMM",
+      "key": false,
+      "desc": "기준년월."
+     },
+     {
+      "name": "LTC_INST_ID",
+      "key": true,
+      "desc": "장기요양시설번호(7자리) — 청구명세서(T04)↔장기요양기관 현황(T05)을 잇는 연결변수."
+     },
+     {
+      "name": "LTC_YKIHO_SIDO",
+      "key": false,
+      "desc": "요양기관 시도코드."
+     },
+     {
+      "name": "LTCO_FDAT_TYPE_CD",
+      "key": false,
+      "desc": "기관설립구분 — 1=국가, 2=지자체, 3=법인, 4=개인, 5=기타."
+     },
+     {
+      "name": "ADMIN_KIND_CD",
+      "key": false,
+      "desc": "기관종류 — A=시설급여, B=재가급여, C=재가 장기요양기관."
+     },
+     {
+      "name": "LTCOS_TYPE_CD",
+      "key": false,
+      "desc": "기관서비스구분 — 1=시설, 2=재가, $=통합."
+     },
+     {
+      "name": "LTCP_CLSFC_CD",
+      "key": false,
+      "desc": "장기요양급여종별 — 001=방문요양, 002=방문목욕, 003=방문간호, 004=주야간보호, 005=단기보호, 012=노인요양 등."
+     },
+     {
+      "name": "LTCO_NS_NOP",
+      "key": false,
+      "desc": "간호사 인원수."
+     },
+     {
+      "name": "LTCO_CHFG_NOP",
+      "key": false,
+      "desc": "요양보호사 1급 인원수."
+     },
+     {
+      "name": "LTCO_PHTRST_NOP",
+      "key": false,
+      "desc": "물리치료사 인원수."
+     }
+    ]
+   }
+  ],
+  "relations": [
+   {
+    "from": "NSC2_BNC",
+    "to": "NSC2_BND",
+    "via": "RN_INDI",
+    "label": "개인(RN_INDI)"
+   },
+   {
+    "from": "NSC2_BNC",
+    "to": "NSC2_M20",
+    "via": "RN_INDI",
+    "label": "개인(RN_INDI)"
+   },
+   {
+    "from": "NSC2_BNC",
+    "to": "NSC2_G1E_0915",
+    "via": "RN_INDI",
+    "label": "개인(RN_INDI)"
+   },
+   {
+    "from": "NSC2_BNC",
+    "to": "NSC2_T01",
+    "via": "RN_INDI",
+    "label": "개인(RN_INDI)"
+   },
+   {
+    "from": "NSC2_M20",
+    "to": "NSC2_M30",
+    "via": "RN_KEY",
+    "label": "청구건(RN_KEY)"
+   },
+   {
+    "from": "NSC2_M20",
+    "to": "NSC2_M40",
+    "via": "RN_KEY",
+    "label": "청구건(RN_KEY)"
+   },
+   {
+    "from": "NSC2_M20",
+    "to": "NSC2_M60",
+    "via": "RN_KEY",
+    "label": "청구건(RN_KEY)"
+   },
+   {
+    "from": "NSC2_M20",
+    "to": "NSC2_INST",
+    "via": "RN_INST",
+    "label": "기관(RN_INST)"
+   },
+   {
+    "from": "NSC2_T01",
+    "to": "NSC2_T04",
+    "via": "RN_INDI_SEQ",
+    "label": "신청건(RN_INDI_SEQ)"
+   },
+   {
+    "from": "NSC2_T04",
+    "to": "NSC2_T05",
+    "via": "LTC_INST_ID",
+    "label": "장기요양시설(LTC_INST_ID)"
+   }
+  ]
+ },
+ "hps": {
+  "source": "hps",
+  "display_name": "보건복지부 환자조사 마이크로데이터 (2016)",
+  "code_system": "KCD-7",
+  "keys": {
+   "link": "num",
+   "region": "v1"
+  },
+  "tables": [
+   {
+    "id": "institution",
+    "name": "HPS_INST",
+    "label": "기관 조사표 (INST)",
+    "unit": "institution",
+    "col": 1,
+    "group": "기관 단위(시설·인력)",
+    "columns": [
+     {
+      "name": "v1",
+      "key": true,
+      "desc": "자료처리번호 — 시도(시·도) 코드. 기관·외래·퇴원 공통 식별 보조키."
+     },
+     {
+      "name": "num",
+      "key": true,
+      "desc": "고유번호 — 파일 간 연결번호. 기관 조사표(1행=1기관)와 외래·퇴원 환자 record를 잇는 핵심 조인키(기관:환자 = 1:N)."
+     },
+     {
+      "name": "kv1",
+      "key": false,
+      "desc": "의료기관종별 — 01 상급종합·11 종합병원·21 병원·28 요양병원·31 의원·41 치과병원·51 치과의원·61 조산원·71 보건소·92 한방병원·93 한의원 등."
+     },
+     {
+      "name": "kv2",
+      "key": false,
+      "desc": "설립형태 — 1 국립·2 공립·3 기타·4 법인(특수법인 포함)·5 개인."
+     },
+     {
+      "name": "kv3",
+      "key": false,
+      "desc": "일반병상 수(실수)."
+     },
+     {
+      "name": "kv4",
+      "key": false,
+      "desc": "정신과병상 수."
+     },
+     {
+      "name": "kv8",
+      "key": false,
+      "desc": "병상합계 — 기관의 총 병상 수(kv3~kv7 합)."
+     },
+     {
+      "name": "kv11",
+      "key": false,
+      "desc": "방사선치료장비 보유 수(고가 의료장비; kv9 CT·kv10 MRI와 함께 시설 지표)."
+     },
+     {
+      "name": "kv12",
+      "key": false,
+      "desc": "외래환자 수 — 보건소 등은 의료기관 종별 외래환자 수의 합(출처: 심평원 청구자료)."
+     },
+     {
+      "name": "kv13",
+      "key": false,
+      "desc": "재원환자 수 — 보건의료원·조산원은 종별 재원환자 수의 합."
+     },
+     {
+      "name": "kv14",
+      "key": false,
+      "desc": "퇴원환자 수 — 보건의료원·조산원은 종별 퇴원환자 수의 합."
+     },
+     {
+      "name": "kv36t",
+      "key": false,
+      "desc": "병의원 인력 합계(계) — 전 직종 합. (직종별 상세: kv15~kv36=전체, s15~s36=상근, b15~b36=비상근, 각 계/남/여 t·m·f)."
+     },
+     {
+      "name": "wt",
+      "key": false,
+      "desc": "승수(가중치) — 표본을 전국 모집단으로 확대 추정하는 가중치. 집계 시 반드시 곱한다."
+     },
+     {
+      "name": "n1",
+      "key": false,
+      "desc": "행정기관 기관수 — 보건소·보건지소·보건진료소·보건의료원·조산원의 기관수(출처: 건강보험심사평가원 청구자료)."
+     }
+    ]
+   },
+   {
+    "id": "discharge",
+    "name": "HPS_DIS",
+    "label": "퇴원환자 조사표 (DIS)",
+    "unit": "discharge",
+    "col": 2,
+    "group": "환자 기록(record-level)",
+    "columns": [
+     {
+      "name": "v1",
+      "key": true,
+      "desc": "자료처리번호 — 시도(시·도) 코드. 기관·외래·퇴원 공통 식별 보조키."
+     },
+     {
+      "name": "num",
+      "key": true,
+      "desc": "고유번호 — 파일 간 연결번호. 기관 조사표(1행=1기관)와 외래·퇴원 환자 record를 잇는 핵심 조인키(기관:환자 = 1:N)."
+     },
+     {
+      "name": "dv1",
+      "key": false,
+      "desc": "의료기관종별 — 퇴원(입원) 기관의 종별(kv1과 동일 코드체계)."
+     },
+     {
+      "name": "dv2",
+      "key": false,
+      "desc": "진료과 — 진료과 코드(HPS_DEPT 참조)."
+     },
+     {
+      "name": "dv3",
+      "key": false,
+      "desc": "성별 — 1 남자·2 여자."
+     },
+     {
+      "name": "dv4",
+      "key": false,
+      "desc": "연령 — 환자 연령(실수)."
+     },
+     {
+      "name": "dv5",
+      "key": false,
+      "desc": "환자거주지(시도) — 시·도 코드."
+     },
+     {
+      "name": "dv6",
+      "key": false,
+      "desc": "주진단코드 — KCD-7 주상병(문자 12자리)."
+     },
+     {
+      "name": "dv7",
+      "key": false,
+      "desc": "상해원인 — 01 자동차 교통사고 … 10 미상."
+     },
+     {
+      "name": "dv8",
+      "key": false,
+      "desc": "부진단코드 — KCD-7 부상병(문자 12자리). 퇴원조사표에만 제공."
+     },
+     {
+      "name": "dv9",
+      "key": false,
+      "desc": "주수술코드 — ICD-9-CM. (부수술코드는 미제공.)"
+     },
+     {
+      "name": "dv11",
+      "key": false,
+      "desc": "치료결과 — 1 호전·완쾌·2 호전안됨·3 진단뿐·4 가망없는 퇴원·5 사망."
+     },
+     {
+      "name": "dv12",
+      "key": false,
+      "desc": "퇴원형태 — 1 정상퇴원·2 자의퇴원·3 전원·4 탈원."
+     },
+     {
+      "name": "dv13",
+      "key": false,
+      "desc": "입원경로 — 1 외래·2 응급실·3 기타."
+     },
+     {
+      "name": "dv14",
+      "key": false,
+      "desc": "내원경위 — 1 직접내원·2 다른기관 의뢰."
+     },
+     {
+      "name": "dv15",
+      "key": false,
+      "desc": "진료비 지불방법 — 1 일반·2 국민건강보험·3 산재·4 자동차보험·5 의료급여·6 기타."
+     },
+     {
+      "name": "dv16",
+      "key": false,
+      "desc": "재원일수 — 퇴원환자의 재원일수(입원 기간). 입원일수 산출의 핵심 컬럼."
+     },
+     {
+      "name": "wt",
+      "key": false,
+      "desc": "승수(가중치) — 표본을 전국 모집단으로 확대 추정하는 가중치. 집계 시 반드시 곱한다."
+     },
+     {
+      "name": "dv17",
+      "key": false,
+      "desc": "내원목적(치과) — 1 치료·2 보철·3 교정·4 검진·5 예방치료·6 기타."
+     },
+     {
+      "name": "dv18",
+      "key": false,
+      "desc": "일상생활능력(ADL) 식사하기(요양) — 1 완전자립 … 7 기록없음."
+     },
+     {
+      "name": "dv19",
+      "key": false,
+      "desc": "일상생활능력(ADL) 체위변경하기(요양) — 1 완전자립 … 7 기록없음."
+     },
+     {
+      "name": "dv20",
+      "key": false,
+      "desc": "일상생활능력(ADL) 옮겨앉기(요양) — 1 완전자립 … 7 기록없음."
+     },
+     {
+      "name": "dv21",
+      "key": false,
+      "desc": "일상생활능력(ADL) 화장실사용하기(요양) — 1 완전자립 … 7 기록없음."
+     },
+     {
+      "name": "dv22",
+      "key": false,
+      "desc": "양한방협진(한방) — 1 유·2 무."
+     },
+     {
+      "name": "dv23",
+      "key": false,
+      "desc": "양한방협진목적(한방) — 1 치료목적·2 검사목적·3 기타·4 해당없음."
+     },
+     {
+      "name": "dv24",
+      "key": false,
+      "desc": "퇴원환자 수 — 보건소 등 종별 퇴원환자 수(출처: 심평원 청구자료)."
+     },
+     {
+      "name": "n1",
+      "key": false,
+      "desc": "행정기관 기관수 — 보건소·보건지소·보건진료소·보건의료원·조산원의 기관수(출처: 건강보험심사평가원 청구자료)."
+     }
+    ]
+   },
+   {
+    "id": "outpatient",
+    "name": "HPS_OUT",
+    "label": "외래환자 조사표 (OUT)",
+    "unit": "outpatient_visit",
+    "col": 2,
+    "group": "환자 기록(record-level)",
+    "columns": [
+     {
+      "name": "v1",
+      "key": true,
+      "desc": "자료처리번호 — 시도(시·도) 코드. 기관·외래·퇴원 공통 식별 보조키."
+     },
+     {
+      "name": "num",
+      "key": true,
+      "desc": "고유번호 — 파일 간 연결번호. 기관 조사표(1행=1기관)와 외래·퇴원 환자 record를 잇는 핵심 조인키(기관:환자 = 1:N)."
+     },
+     {
+      "name": "ov1",
+      "key": false,
+      "desc": "의료기관종별 — 외래 진료가 이루어진 기관의 종별(kv1과 동일 코드체계)."
+     },
+     {
+      "name": "ov2",
+      "key": false,
+      "desc": "진료과 — 진료과 코드(HPS_DEPT 참조: 01 내과 … 80 한방내과 등)."
+     },
+     {
+      "name": "ov3",
+      "key": false,
+      "desc": "성별 — 1 남자·2 여자."
+     },
+     {
+      "name": "ov4",
+      "key": false,
+      "desc": "연령 — 환자 연령(실수, 만나이)."
+     },
+     {
+      "name": "ov5",
+      "key": false,
+      "desc": "환자거주지(시도) — 11 서울 … 39 제주 등 시·도 코드."
+     },
+     {
+      "name": "ov6",
+      "key": false,
+      "desc": "주진단코드 — KCD-7(한국표준질병사인분류 7차) 주상병. 질병 분석의 핵심 컬럼(문자 12자리)."
+     },
+     {
+      "name": "ov7",
+      "key": false,
+      "desc": "상해원인 — 01 자동차 교통사고 … 10 미상."
+     },
+     {
+      "name": "ov8",
+      "key": false,
+      "desc": "주수술코드 — ICD-9-CM. (부수술코드는 결측 과다로 2016 마이크로데이터에서 미제공.)"
+     },
+     {
+      "name": "ov10",
+      "key": false,
+      "desc": "원내주사여부 — 1 주사함·2 주사안함."
+     },
+     {
+      "name": "ov11",
+      "key": false,
+      "desc": "투약처방방법 — 1 원내·2 원외·3 원내외 모두·4 처방안함."
+     },
+     {
+      "name": "ov12",
+      "key": false,
+      "desc": "진료비 지불방법 — 1 일반·2 국민건강보험·3 산재·4 자동차보험·5 의료급여·6 기타."
+     },
+     {
+      "name": "ov13",
+      "key": false,
+      "desc": "내원목적(치과) — 1 치료·2 보철·3 교정·4 검진·5 예방치료·6 기타."
+     },
+     {
+      "name": "wt",
+      "key": false,
+      "desc": "승수(가중치) — 표본을 전국 모집단으로 확대 추정하는 가중치. 집계 시 반드시 곱한다."
+     },
+     {
+      "name": "ov14",
+      "key": false,
+      "desc": "외래환자 수 — 보건소 등 종별 외래환자 수(출처: 심평원 청구자료)."
+     },
+     {
+      "name": "n1",
+      "key": false,
+      "desc": "행정기관 기관수 — 보건소·보건지소·보건진료소·보건의료원·조산원의 기관수(출처: 건강보험심사평가원 청구자료)."
+     }
+    ]
+   },
+   {
+    "id": "dept_code",
+    "name": "HPS_DEPT",
+    "label": "진료과 코드 (DEPT)",
+    "unit": "code_ref",
+    "col": 3,
+    "group": "코드 참조",
+    "columns": [
+     {
+      "name": "DEPT_CD",
+      "key": false,
+      "desc": "진료과 코드 — 병의원(01~30)·치과(50~60)·한방(80~90). ov2·dv2가 참조."
+     },
+     {
+      "name": "DEPT_NM",
+      "key": false,
+      "desc": "진료과명 — 예: 01 내과·04 외과·11 소아청소년과·80 한방내과 등."
+     }
+    ]
+   }
+  ],
+  "relations": [
+   {
+    "from": "HPS_INST",
+    "to": "HPS_OUT",
+    "via": "num",
+    "label": "연결번호(num) 1:N"
+   },
+   {
+    "from": "HPS_INST",
+    "to": "HPS_DIS",
+    "via": "num",
+    "label": "연결번호(num) 1:N"
+   },
+   {
+    "from": "HPS_OUT",
+    "to": "HPS_DEPT",
+    "via": "ov2",
+    "label": "진료과(ov2)"
+   },
+   {
+    "from": "HPS_DIS",
+    "to": "HPS_DEPT",
+    "via": "dv2",
+    "label": "진료과(dv2)"
+   }
+  ]
+ },
+ "nps": {
+  "source": "nps",
+  "display_name": "건강보험심사평가원 환자표본자료(HIRA-NPS)",
+  "code_system": "KCD",
+  "keys": {
+   "person": "JID",
+   "claim": "SPEC_ID_SNO",
+   "inst": "YID"
+  },
+  "tables": [
+   {
+    "id": "claim_med",
+    "name": "T200",
+    "label": "명세서 일반 (T200)",
+    "unit": "청구·환자",
+    "col": 1,
+    "group": "명세서(허브)",
+    "columns": [
+     {
+      "name": "SPEC_ID_SNO",
+      "key": true,
+      "desc": "명세서일련번호 — 청구(진료) 1건을 식별. T200↔T300·T400·T530을 잇는 청구 단위 연결키."
+     },
+     {
+      "name": "JID",
+      "key": true,
+      "desc": "환자ID — 익명 환자 식별자. ⚠ 연도(자료연도) 내에서만 유효 — 동일인 연간 추적 불가(횡단)."
+     },
+     {
+      "name": "SEX_TP_CD",
+      "key": false,
+      "desc": "성별 — 1=남, 2=여."
+     },
+     {
+      "name": "PAT_AGE",
+      "key": false,
+      "desc": "환자 연령(만나이)."
+     },
+     {
+      "name": "YID",
+      "key": true,
+      "desc": "요양기관ID — 진료를 제공한 의료기관 식별. 요양기관(YKIHO) 연결키."
+     },
+     {
+      "name": "MSICK_CD",
+      "key": false,
+      "desc": "주상병코드(KCD) — 질병 분석의 핵심 컬럼."
+     },
+     {
+      "name": "SSICK_CD",
+      "key": false,
+      "desc": "부상병코드(KCD)."
+     },
+     {
+      "name": "FOM_TP_CD",
+      "key": false,
+      "desc": "진료형태(서식)코드 — 입원(021·041·071·072·073) / 외래(031·051·081·082·091·111·991) 구분."
+     },
+     {
+      "name": "RECU_FR_DD",
+      "key": false,
+      "desc": "요양개시일자 — 진료 시작일(이벤트 일자)."
+     },
+     {
+      "name": "RECU_TO_DD",
+      "key": false,
+      "desc": "요양종료일자."
+     },
+     {
+      "name": "VSHSP_DD_CNT",
+      "key": false,
+      "desc": "입원일수 — 입원 명세서 기준 재원일수."
+     },
+     {
+      "name": "VST_DDCNT",
+      "key": false,
+      "desc": "통원(외래 방문)일수."
+     },
+     {
+      "name": "EDC_SBA",
+      "key": false,
+      "desc": "심결요양급여비용총액 — 총진료비(치료비 산출)."
+     },
+     {
+      "name": "SamplingWeight",
+      "key": false,
+      "desc": "표본가중치 — 표본을 전국 모집단으로 확대 추정할 때 반드시 곱한다(횡단 표본 필수)."
+     }
+    ]
+   },
+   {
+    "id": "claim_detail",
+    "name": "T300",
+    "label": "진료내역 (T300)",
+    "unit": "청구 세부",
+    "col": 2,
+    "group": "세부내역",
+    "columns": [
+     {
+      "name": "SPEC_ID_SNO",
+      "key": true,
+      "desc": "명세서일련번호 — 명세서(T200) 연결키."
+     },
+     {
+      "name": "LN_NO",
+      "key": false,
+      "desc": "줄번호 — 명세서 내 진료내역 일련번호."
+     },
+     {
+      "name": "DIV_CD",
+      "key": false,
+      "desc": "분류코드(행위·수가) — 수술·처치 발췌에 사용."
+     },
+     {
+      "name": "TOT_USE_QTY_OR_EXEC_FQ",
+      "key": false,
+      "desc": "총사용량 또는 실시횟수."
+     }
+    ]
+   },
+   {
+    "id": "claim_dx",
+    "name": "T400",
+    "label": "상병내역 (T400)",
+    "unit": "청구 상병",
+    "col": 2,
+    "group": "세부내역",
+    "columns": [
+     {
+      "name": "SPEC_ID_SNO",
+      "key": true,
+      "desc": "명세서일련번호 — 명세서(T200) 연결키."
+     },
+     {
+      "name": "SICK_CD",
+      "key": false,
+      "desc": "상병코드(KCD) — 한 명세서의 모든 상병(행 단위로 다건 존재)."
+     }
+    ]
+   },
+   {
+    "id": "claim_rx",
+    "name": "T530",
+    "label": "처방내역 (T530)",
+    "unit": "청구 처방",
+    "col": 2,
+    "group": "세부내역",
+    "columns": [
+     {
+      "name": "SPEC_ID_SNO",
+      "key": true,
+      "desc": "명세서일련번호 — 명세서(T200) 연결키."
+     },
+     {
+      "name": "GNL_NM_CD",
+      "key": false,
+      "desc": "일반명코드 — 약제 성분(일반)명 코드. 약제 기반 필터에 사용."
+     }
+    ]
+   },
+   {
+    "id": "institution",
+    "name": "YKIHO",
+    "label": "요양기관 (YKIHO)",
+    "unit": "기관",
+    "col": 3,
+    "group": "요양기관",
+    "columns": [
+     {
+      "name": "YID",
+      "key": true,
+      "desc": "요양기관ID — 명세서(T200)의 YID와 연결."
+     },
+     {
+      "name": "RECU_CL_CD",
+      "key": false,
+      "desc": "요양기관 종별코드 — 1=상급종합, 11=종합 등."
+     }
+    ]
+   }
+  ],
+  "relations": [
+   {
+    "from": "T200",
+    "to": "T300",
+    "via": "SPEC_ID_SNO",
+    "label": "청구건(SPEC_ID_SNO)"
+   },
+   {
+    "from": "T200",
+    "to": "T400",
+    "via": "SPEC_ID_SNO",
+    "label": "청구건(SPEC_ID_SNO)"
+   },
+   {
+    "from": "T200",
+    "to": "T530",
+    "via": "SPEC_ID_SNO",
+    "label": "청구건(SPEC_ID_SNO)"
+   },
+   {
+    "from": "T200",
+    "to": "YKIHO",
+    "via": "YID",
+    "label": "기관(YID)"
+   }
+  ]
+ }
+}
