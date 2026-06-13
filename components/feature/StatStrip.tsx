@@ -4,6 +4,7 @@
  * 스탯 스트립 — 뷰포트 진입 시 숫자 카운트업. "살아있는 데이터 플랫폼" 인상.
  * prefers-reduced-motion이면 즉시 최종값 표시.
  */
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 export interface StatItem {
@@ -12,6 +13,8 @@ export interface StatItem {
   suffix?: string;
   /** 숫자 대신 표기할 고정 텍스트 (카운트업 없음) */
   text?: string;
+  /** 지정 시 셀 전체가 해당 경로로 이동하는 링크가 된다 */
+  href?: string;
 }
 
 function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
@@ -61,16 +64,34 @@ function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
 export function StatStrip({ items }: { items: StatItem[] }) {
   return (
     <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-cover border border-border bg-border shadow-card sm:grid-cols-4">
-      {items.map((s) => (
-        <div key={s.label} className="bg-white px-5 py-5 text-center sm:py-6">
-          <dd className="text-[26px] font-bold tracking-tight text-foreground sm:text-[30px]">
-            {s.text ?? <CountUp to={s.value} suffix={s.suffix} />}
-          </dd>
-          <dt className="mt-1 text-[13px] font-medium text-tertiary">
-            {s.label}
-          </dt>
-        </div>
-      ))}
+      {items.map((s) => {
+        const inner = (
+          <>
+            <dd className="text-[26px] font-bold tracking-tight text-foreground transition-colors duration-tesla group-hover:text-primary sm:text-[30px]">
+              {s.text ?? <CountUp to={s.value} suffix={s.suffix} />}
+            </dd>
+            <dt className="mt-1 text-[13px] font-medium text-tertiary">
+              {s.label}
+            </dt>
+          </>
+        );
+        if (s.href) {
+          return (
+            <Link
+              key={s.label}
+              href={s.href}
+              className="group block bg-white px-5 py-5 text-center transition-colors duration-tesla hover:bg-[var(--page-bg)] sm:py-6"
+            >
+              {inner}
+            </Link>
+          );
+        }
+        return (
+          <div key={s.label} className="bg-white px-5 py-5 text-center sm:py-6">
+            {inner}
+          </div>
+        );
+      })}
     </dl>
   );
 }

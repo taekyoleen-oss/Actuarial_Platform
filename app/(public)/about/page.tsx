@@ -251,7 +251,7 @@ export default function AboutPage() {
       </section>
 
       {/* 연구 실적 */}
-      <section className="mt-16">
+      <section id="research" className="mt-16 scroll-mt-24">
         <SectionTitle>연구 실적 · 논문 {RESEARCH.length}편</SectionTitle>
         <p className="mt-3 max-w-2xl text-sm text-tertiary">
           국민건강보험·신용정보 등 공공·금융 데이터를 활용한 보험 위험률 및

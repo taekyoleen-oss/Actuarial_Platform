@@ -75,14 +75,30 @@ export default async function HomePage() {
         <Reveal>
           <StatStrip
             items={[
-              { label: "게시 자료", value: recent.length, suffix: "건" },
+              {
+                label: "게시 자료",
+                value: recent.length,
+                suffix: "건",
+                href: "/posts?category=exclusive-rights",
+              },
               {
                 label: "일본 금융청 심사사례",
                 value: FSA_STATS.cases,
                 suffix: "건",
+                href: "/global/japan-fsa",
               },
-              { label: "보험이론 사전 문서", value: theoryCount, suffix: "편" },
-              { label: "KCI 연구 논문", value: 8, suffix: "편" },
+              {
+                label: "보험이론 사전 문서",
+                value: theoryCount,
+                suffix: "편",
+                href: "/theory",
+              },
+              {
+                label: "KCI 연구 논문",
+                value: 8,
+                suffix: "편",
+                href: "/about#research",
+              },
             ]}
           />
         </Reveal>
