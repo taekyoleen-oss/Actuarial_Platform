@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>담보 (Coverage) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>담보 (보장범위)</h1>
+<div class="meta">Coverage &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>담보(coverage)</b>는 보험계약에서 <b>보험자가 보장하기로 약정한 위험·손해의 범위</b>를 뜻한다. 어떤 사고(위험)를, 어떤 대상에 대해, 얼마까지, 어떤 조건에서 보상하는지를 정한 것으로, 보험계약의 핵심을 이룬다. ‘보장’, ‘보상범위’로도 옮긴다.</p>
+<p>담보의 범위는 <b>보험증권(policy)</b>의 보장조항·정의·면책조항(exclusions)·조건(conditions)으로 정해진다. 따라서 담보를 이해하려면 “무엇을 보상하는가”뿐 아니라 “무엇을 보상하지 않는가(면책)”까지 함께 보아야 한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 담보의 4요소</div><p style="margin-bottom:0">담보는 보통 ① <b>담보위험</b>(무슨 사고를: 화재·도난·배상책임 등), ② <b>담보대상</b>(무엇을: 건물·가재·신체·법적 책임), ③ <b>담보금액·한도</b>(얼마까지), ④ <b>담보조건</b>(자기부담금·기간·지역 등)으로 짜인다. 이 네 가지가 모이면 “이 계약이 정확히 무엇을 지켜 주는가”가 정해진다.</p></div>
+<h2>2. 담보 방식: 열거담보와 포괄담보 <span class="en">Named-perils vs. All-risks</span></h2>
+<p>담보위험을 정하는 방식은 크게 둘이다. <b>열거담보(named-perils)</b>는 화재·낙뢰·폭발처럼 보상하는 위험을 <b>일일이 나열</b>하고 거기에 든 사고만 보상한다. <b>포괄담보(all-risks)</b>는 <b>면책으로 빼지 않은 모든 우연한 사고</b>를 보상한다. 포괄담보가 보장이 넓지만 보험료도 높고, 입증책임 구조도 다르다(열거담보는 피보험자가 담보위험 해당을 입증, 포괄담보는 보험자가 면책 해당을 입증).</p>
+<h2>3. 담보를 제한·확장하는 장치 <span class="en">Limits, Deductibles, Endorsements</span></h2>
+<p>담보의 크기는 여러 장치로 조절된다. <b>보상한도(limit)</b>는 보험자가 지급할 최대 금액, <b>자기부담금(deductible)</b>은 피보험자가 먼저 부담하는 금액이다. <b>면책조항(exclusion)</b>은 특정 위험(전쟁·지진·핵 등)을 담보에서 제외하고, <b>특약(endorsement/rider)</b>은 기본 담보를 확장하거나 변경한다. 이런 장치들은 위험을 분담시켜 <b>도덕적 해이</b>를 줄이고 보험료를 낮추는 역할을 한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 담보 적용 순서</div><p class="q">보상한도 1억, 자기부담금 100만원인 재물보험에서 1,500만원 손해가 났다. 보험금은?</p><p style="margin-bottom:0">먼저 자기부담금 100만원을 빼고, 한도 1억 이내이므로 그대로 지급한다. 보험금 = 1,500만 − 100만 = <b>1,400만원</b>. 만약 손해가 1억 2천만이었다면 자기부담금을 뺀 뒤에도 한도 <b>1억</b>까지만 지급된다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Deductible(자기부담금) · Property Insurance(재물보험) · Liability Insurance(배상책임보험) · Fire Insurance(화재보험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>담보 (coverage)</b> — 보험이 보장하는 위험·대상·금액·조건의 범위.</li>
+<li><b>열거담보·포괄담보 (named-perils / all-risks)</b> — 보상위험을 나열하는 방식 / 면책 외 전부 보상하는 방식.</li>
+<li><b>면책조항 (exclusion)</b> — 담보에서 제외하는 위험·손해를 정한 조항.</li>
+<li><b>특약 (endorsement, rider)</b> — 기본담보를 확장·변경하는 추가 약정.</li>
+<li><b>보상한도 (limit)</b> — 보험자가 지급할 최대 금액.</li>
+<li><b>자기부담금 (deductible)</b> — 피보험자가 먼저 부담하는 금액.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국 손해보험의 담보 범위는 금융감독원이 정한 <b>표준약관</b>과 회사별 특별약관으로 정해진다. 대부분의 상품이 <b>주계약(기본담보)+다수의 특약</b> 구조여서, 본문의 담보 4요소(위험·대상·금액·조건)가 특약 단위로 조립된다. 화재보험에 풍수재·도난·배상책임 특약을 덧붙이거나, 상해보험에 질병·운전자 특약을 더하는 방식이 전형적이다.</p><p>열거담보와 포괄담보 구분도 그대로 적용된다. 가계성 상품은 열거담보가 많고, 기업성 재산종합보험(PAR)은 면책 외 전부를 보상하는 포괄담보를 쓴다. 4세대·5세대 실손이 급여·비급여를 별도 담보로 분리한 것도 담보 설계로 손해율을 관리한 사례다.</p><div class="note"><div class="head"><span class="tag">실무</span> 표준약관과 면책의 명확성</div><p style="margin-bottom:0">담보 범위를 둘러싼 분쟁(예: 코로나 기업휴지, 자연재해 인과)이 늘면서, 감독당국은 표준약관의 보장·면책 조항을 명확히 하고 중요사항 설명의무를 강화해 왔다. 한국에서 "무엇을 보상하지 않는가(면책)"를 약관에 분명히 적는 것은 분쟁 예방의 핵심 실무다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

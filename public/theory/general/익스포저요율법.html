@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>익스포저 요율법 (Exposure Rating) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>익스포저 요율법 (Exposure Rating)</h1>
+<div class="meta">Exposure Rating &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>익스포저 요율법(exposure rating)</b>은 계약 자체의 <b>손해경험이 부족하거나 없을 때</b>, 노출(exposure)의 특성과 <b>업계의 손해분포 정보</b>를 이용해 보험료(특히 재보험 층의 가격)를 산정하는 방법이다. 개별 경험이 신뢰할 만큼 쌓이지 않은 <b>고액·저빈도</b> 위험에서 특히 중요하다. 경험요율(experience rating)이 ‘그 계약의 과거 실적’을 쓰는 것과 대비된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 경험요율 vs. 익스포저 요율</div><p style="margin-bottom:0"><b>경험요율</b>은 “이 계약이 과거에 얼마나 손해를 냈나”를 본다. <b>익스포저 요율</b>은 “이런 규모·종류의 위험은 일반적으로 손해가 어떻게 분포하나”를 본다. 자료가 적은 거대위험·상위 재보험 층에서는 개별 경험이 무의미하므로 익스포저 요율이 주가 되고, 실무에서는 둘을 <b>신뢰도로 절충</b>해 쓴다.</p></div>
+<h2>2. 노출곡선 <span class="en">Exposure Curves</span></h2>
+<p>핵심 도구는 <b>노출곡선(exposure curve)</b> 또는 <b>손해심도분포</b>다. 보험가입금액(또는 MPL) 대비 손해를 비율로 표준화하면, “전체 손해 가운데 일정 비율(자기부담금~한도) 층에 떨어지는 몫”을 곡선으로 표현할 수 있다. 재보험에서는 이 곡선으로 특정 층(layer)에 들어갈 기대손해 비율을 읽어, 원수 보험료에서 그 층의 몫을 떼어내 가격을 매긴다. 화재보험의 <b>Lloyd’s/Swiss Re 곡선</b>, MBBEFD 곡선 등이 잘 알려져 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 층(layer) 가격</div><p class="q">원수 기대손해 1,000. 노출곡선에서 “자기부담금 80%~한도 100%” 층이 전체 손해의 12%를 차지한다면, 이 초과손해 재보험 층의 기대손해는?</p><p style="margin-bottom:0">층 기대손해 = 1,000 × 0.12 = <b>120</b>. 여기에 안전할증·사업비·이윤을 더해 재보험료를 만든다. 개별 경험이 없어도 노출곡선만으로 층 가격을 산출할 수 있다는 것이 익스포저 요율의 강점이다.</p></div>
+<h2>3. 활용 분야 <span class="en">Applications</span></h2>
+<p>익스포저 요율은 <b>초과손해액 재보험(excess-of-loss)</b>의 상위 층 가격, 대형 물건의 신규 인수, 자료가 부족한 신상품 요율 산정 등에 쓰인다. 장점은 개별 경험이 없어도 가격을 만들 수 있다는 것, 약점은 <b>노출곡선·분포 가정에 의존</b>한다는 것이다. 따라서 가능한 경우 경험요율과 비교·절충한다.</p>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Experience-rating(경험요율) · Excess-of-loss Reinsurance(초과손해액 재보험) · Reinsurance Pricing(재보험 요율산정) · Claim Size Processes(클레임 크기 과정)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>익스포저 요율법 (exposure rating)</b> — 노출 특성과 업계 손해분포로 가격을 산정.</li>
+<li><b>노출곡선 (exposure curve)</b> — 가입금액 대비 손해층 비율을 나타내는 곡선.</li>
+<li><b>층 (layer)</b> — 자기부담금과 한도 사이의 손해 구간(재보험 단위).</li>
+<li><b>MPL</b> — 최대추정손해(Maximum Probable Loss).</li>
+<li><b>초과손해액 재보험 (excess-of-loss)</b> — 일정 금액 초과 손해를 보상하는 재보험.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>익스포저 요율법은 한국에서 주로 <b>재보험과 고액·기업성 물건</b> 가격산정에 쓰인다. 개별 계약의 손해경험이 부족한 고액·저빈도 위험(대형 공장, 초과층 재보험)에서는 노출곡선(exposure curve)과 업계 손해분포를 이용해 층(layer)별 보험료를 배분한다. 코리안리 등 재보험자와 원수사 특약 재보험 협상에서 경험요율과 함께 표준적으로 활용된다.</p><p>실무에서는 글로벌 재보험사·브로커가 제공하는 노출곡선(Swiss Re, Lloyd’s 등)이나 업종별 한도손해분포를 참조한다. 신상품·신종위험(사이버 등)처럼 자사 경험이 없을 때 익스포저 요율법은 사실상 유일한 출발점이 된다.</p><div class="note"><div class="head"><span class="tag">실무</span> K-ICS 대재해와 노출 기반 평가</div><p style="margin-bottom:0">K-ICS 일반손해보험리스크의 대재해(Cat) 충격은 본질적으로 익스포저 기반 평가다. 지역·업종별 노출 규모에 시나리오 손해율을 적용해 요구자본을 산출하므로, 노출곡선과 한도손해분포를 다루는 익스포저 요율 역량이 자본관리와 직결된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

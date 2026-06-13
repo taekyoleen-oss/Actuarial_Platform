@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>여행보험 (Travel Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>여행보험 (Travel Insurance)</h1>
+<div class="meta">Travel Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>여행보험(travel insurance)</b>은 <b>여행 중 발생하는 다양한 위험</b>—질병·상해, 휴대품 손해·도난, 여행취소·지연, 해외 의료·구조송환, 배상책임 등—을 한데 묶어 보장하는 <b>단기·패키지</b> 보험이다. 보험기간이 며칠~몇 주로 짧고, 여러 종목(상해·재물·배상책임·비용보상)이 결합된 것이 특징이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 여러 위험을 한 상품에</div><p style="margin-bottom:0">여행자는 짧은 기간에 의료·분실·취소 등 잡다한 위험에 노출된다. 이를 따로 들기 번거로우니 <b>패키지</b>로 묶는다. 그중 <b>해외 의료·송환</b>은 비용이 막대할 수 있어 핵심 담보이고, <b>여행취소(cancellation)</b>는 빈도가 높아 보험료의 큰 부분을 차지한다.</p></div>
+<h2>2. 담보 구성 <span class="en">Coverage</span></h2>
+<ul>
+<li><b>의료·상해</b> — 여행 중 질병·사고의 치료비, 긴급 후송·송환.</li>
+<li><b>여행취소·중단(cancellation/curtailment)</b> — 부득이한 사유로 여행을 취소·단축할 때의 비용.</li>
+<li><b>휴대품·수하물</b> — 분실·도난·지연 손해.</li>
+<li><b>배상책임·법률비용</b> — 여행 중 타인에게 입힌 손해.</li>
+</ul>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>여행보험은 <b>고빈도·저심도</b>가 많은 한편, 해외 중증의료처럼 <b>저빈도·고심도</b> 꼬리도 있다. 위험은 <b>목적지·여행기간·여행자 연령·활동(레저·스포츠)</b>에 좌우되며, 전염병·자연재해·항공대란 같은 <b>집적·체계적 사건</b>(예: 팬데믹, 화산재 결항)에 한꺼번에 노출된다. 짧은 보험기간 덕에 <b>숏테일</b>이라 손익 인식이 빠르지만, 여행취소 담보는 외부충격에 민감하다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 집적위험</div><p class="q">대규모 화산 폭발로 수많은 항공편이 결항됐다. 여행보험에 어떤 영향이 있나?</p><p style="margin-bottom:0">평소 독립적이던 ‘여행지연·취소’ 청구가 <b>한 사건으로 동시에 폭증</b>한다. 개별 위험은 작아도 집적되면 큰 손해가 된다. 그래서 보험사는 약관에 면책·한도를 두고 이런 <b>체계적 사건</b>을 관리한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Accident Insurance(상해보험) · Health Insurance(건강보험) · Property Insurance(재물보험) · Coverage(담보)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>여행보험 (travel insurance)</b> — 여행 중 의료·분실·취소 등을 묶은 단기 패키지 보험.</li>
+<li><b>여행취소담보 (cancellation)</b> — 부득이한 사유의 여행취소 비용 보상.</li>
+<li><b>긴급송환 (repatriation)</b> — 해외 중증환자의 본국 이송.</li>
+<li><b>집적위험 (accumulation)</b> — 한 사건으로 다수 청구가 동시 발생.</li>
+<li><b>숏테일 (short-tail)</b> — 손해 확정·지급이 빠른 종목.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국의 여행보험은 <b>해외여행보험</b>이 중심으로, 해외 상해·질병 의료비, 휴대품 손해·도난, 여행취소·항공기 지연, 해외 구조송환, 배상책임을 한 증권에 묶은 단기 패키지다. 보험기간이 며칠~몇 주로 짧고, 공항·여행사·<b>온라인·앱을 통한 소액 미니보험</b> 형태로 간편하게 판매되는 것이 특징이다.</p><p>본문대로 여러 종목(상해·재물·배상·비용보상)이 결합되어 있어 담보별 손해 특성이 다르고, 해외 의료비·구조송환처럼 고액·저빈도 손해의 관리가 인수의 관건이다. 코로나 이후 여행 회복과 함께 감염병·항공 지연 담보 수요가 커졌다.</p><div class="note"><div class="head"><span class="tag">실무</span> 미니보험·온라인 채널</div><p style="margin-bottom:0">여행보험은 짧은 기간·소액 보험료라 디지털 채널과 잘 맞아, 한국에서 인슈어테크·간편가입 상품의 대표 종목이 되었다. 출국 직전 모바일 가입, 일수·목적지별 자동요율, 해외 제휴 의료 네트워크 연계가 경쟁 포인트다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자기부담금 (Deductible) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>자기부담금 (Deductible)</h1>
+<div class="meta">Deductible &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>자기부담금(deductible)</b>은 손해가 발생했을 때 보험자가 보상하기 전에 <b>피보험자가 먼저 부담하는 금액</b>이다. 공제액·면책금액이라고도 한다. 손해액에서 자기부담금을 뺀 나머지를 보험자가 지급하므로, 작은 손해는 피보험자가 스스로 부담하고 큰 손해만 보험으로 처리하게 만든다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 자기부담금을 두는 이유</div><p style="margin-bottom:0">① <b>소액·빈번한 청구</b>를 걸러 보험금 처리비용을 아끼고, ② 피보험자가 손해 예방에 신경 쓰게 해 <b>도덕적 해이</b>를 줄이며, ③ 위험의 일부를 피보험자가 지므로 <b>보험료가 싸진다</b>. 보험은 ‘감당 못 할 큰 손해’를 막는 장치라는 원리를 가격에 반영한 것이다.</p></div>
+<h2>2. 자기부담금의 종류 <span class="en">Types of Deductible</span></h2>
+<ul>
+<li><b>정액(straight/ordinary) 자기부담금</b> — 손해액에서 일정 금액 d를 뺀다. 지급액 = max(X − d, 0). 가장 흔하다.</li>
+<li><b>정률(franchise) 자기부담금</b> — 손해가 일정 기준 d를 넘으면 <b>전액</b>을 보상, 넘지 못하면 한 푼도 보상하지 않는다. 기준 부근에서 손해를 부풀릴 유인이 있다.</li>
+<li><b>소멸성(disappearing) 자기부담금</b> — 손해가 커질수록 자기부담금이 줄어 일정 금액 이상이면 0이 된다.</li>
+<li><b>총계(aggregate) 자기부담금</b> — 한 건이 아니라 <b>기간 누적 손해</b>에 대해 적용한다(주로 재보험·기업보험).</li>
+</ul>
+<h2>3. 보험수리적 표현 <span class="en">Actuarial Treatment</span></h2>
+<p>손해액을 확률변수 X, 정액 자기부담금을 d라 하면, 보험자가 지급하는 금액 Y는 <b>Y = max(X − d, 0)</b>로, 이를 (X − d)<sub>+</sub>로 쓴다. 그 기대값은 손해분포의 <b>초과기대값(stop-loss transform)</b></p>
+<div class="eq">E[(X − d)<sub>+</sub>] = ∫<sub>d</sub><sup>∞</sup> (x − d) f(x) dx = ∫<sub>d</sub><sup>∞</sup> [1 − F(x)] dx</div>
+<p>이다. 자기부담금이 커질수록 보험자의 기대지급액은 줄고, 그만큼 순보험료도 낮아진다. 한도(limit) u가 함께 있으면 지급액은 min( max(X − d, 0), u )로 ‘층(layer)’이 된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 정액 vs. 정률</div><p class="q">자기부담금 50만원. 손해가 (가) 40만원, (나) 80만원일 때 정액과 정률(franchise) 지급액은?</p><p style="margin-bottom:0"><b>정액</b>: (가) max(40−50,0)=<b>0</b>, (나) max(80−50,0)=<b>30만원</b>. <b>정률(franchise)</b>: 기준 50만 미만인 (가)는 <b>0</b>, 기준을 넘은 (나)는 공제 없이 <b>80만원 전액</b>. 정률은 기준을 넘기는 순간 보상이 급증해 손해를 부풀릴 유인이 생긴다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Coverage(담보) · Stop-loss Reinsurance(초과손해율 재보험) · Retention(보유) · Premium Principles(보험료 원리)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>자기부담금 (deductible)</b> — 보험금 지급 전 피보험자가 먼저 부담하는 금액.</li>
+<li><b>정액·정률·소멸성·총계 자기부담금</b> — 적용 방식에 따른 분류.</li>
+<li><b>도덕적 해이 (moral hazard)</b> — 보험에 들어 손해 예방을 게을리하는 현상.</li>
+<li><b>초과기대값 (stop-loss transform)</b> — E[(X−d)₊]; 자기부담금 위 손해의 기대값.</li>
+<li><b>층 (layer)</b> — 자기부담금과 한도 사이의 손해 구간.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 자기부담금(공제·면책금액)은 도덕적 해이를 줄이는 핵심 장치로 거의 모든 종목에 쓰인다. <b>실손의료보험</b>은 세대별로 자기부담률이 강화되어 왔는데, 4세대는 급여 20%·비급여 30%였고, 2026년 5월 출시된 <b>5세대 실손</b>은 비중증 비급여의 자기부담을 50%까지 높이고 보장한도를 제한해 과잉의료 유인을 억제했다. <b>자동차보험</b> 자기차량손해는 자기부담금(손해액의 20%, 최저·최고 한도)과 물적사고 할증기준금액을 함께 둔다.</p><p>본문의 정액·정률·종합공제 구분은 국내 약관에도 그대로 나타난다. 화재·재물보험은 소액사고를 거르는 정액공제를, 기업성 물건은 거액 자기부담(SIR)을 두어 보험료를 낮춘다.</p><div class="note"><div class="head"><span class="tag">실무</span> 5세대 실손과 자기부담 설계</div><p style="margin-bottom:0">실손 적자의 핵심이 비급여 누수였던 만큼, 자기부담금 인상은 한국 실손 개혁의 중심 수단이 되었다. 자기부담률을 높이면 손해율은 개선되지만 보장 체감이 약해지므로, 중증은 낮게·비중증은 높게 차등하는 설계로 형평과 지속가능성을 맞추려 한 것이 5세대의 골자다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

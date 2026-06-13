@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>손해율 (Loss Ratio) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>손해율 (Loss Ratio)</h1>
+<div class="meta">Loss Ratio &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>손해율(loss ratio)</b>은 손해보험에서 가장 기본이 되는 수익성·적정성 지표로, <b>손해(보험금)를 보험료로 나눈 비율</b>이다. 한 회계기간 동안 받은 보험료 대비 얼마를 보험금으로 지급(또는 지급할 예정)했는지를 보여 준다.</p>
+<div class="eq">손해율 = (발생손해 + 손해사정비) / 경과보험료</div>
+<p>분자의 <b>발생손해(incurred losses)</b>는 그 기간에 실제 지급한 보험금에 더해, 아직 지급하지 않았지만 발생한 사고에 대한 <b>손해준비금의 증감</b>까지 포함한다. 분모는 보통 <b>경과보험료(earned premium)</b>를 쓴다. 손해사정비(LAE)를 분자에 포함하면 ‘손해·사정비율’이 된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 손해율의 두 가지 분모</div><p style="margin-bottom:0">손해율은 ‘무엇을 분모로 두느냐’에 따라 의미가 달라진다. <b>경과손해율</b>(발생손해/경과보험료)은 회계기간의 실제 성과를 본다. 요율산정에서는 <b>예정손해율</b>(기대손해/보험료)이나 사고연도(accident year) 기준 손해율을 쓴다. 같은 ‘손해율’이라도 발생주의·현금주의, 경과·수입 기준을 구분해야 한다.</p></div>
+<h2>2. 손해율의 종류 <span class="en">Types of Loss Ratio</span></h2>
+<p>실무에서 자주 구분하는 손해율은 다음과 같다.</p>
+<ul>
+<li><b>지급손해율(paid loss ratio)</b> — 실제 지급한 보험금만 분자에 넣는다. 준비금 추정이 빠져 보수적·후행적이다.</li>
+<li><b>발생손해율(incurred loss ratio)</b> — 지급보험금에 준비금 변동을 더한다. 사고연도 손익을 가장 잘 나타낸다.</li>
+<li><b>궁극손해율(ultimate loss ratio)</b> — 모든 보험금이 최종 확정됐을 때의 손해율을 전개법(예: 연쇄사다리법) 등으로 추정한 값이다.</li>
+</ul>
+<h2>3. 활용 <span class="en">Use in Ratemaking and Monitoring</span></h2>
+<p>손해율은 <b>요율산정(ratemaking)</b>의 출발점이다. 손해율법(loss ratio method)에서는 실적 손해율을 목표(예정) 손해율과 비교해 요율 인상·인하율을 정한다. 또한 <b>경험요율(experience rating)</b>에서 개별 계약자의 실적 손해율을 전체 평균과 비교해 보험료를 조정한다. 경영 모니터링에서는 종목·채널·지역별 손해율 추세를 보아 인수전략을 바꾼다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 손해율법에 의한 요율 조정</div><p class="q">실적 손해율이 75%이고 회사의 예정(목표) 손해율이 65%라면, 필요한 요율 인상률은?</p><p style="margin-bottom:0">요율 변경 지표 = (실적손해율 / 예정손해율) − 1 = (0.75/0.65) − 1 ≈ <b>+15.4%</b>. 즉 손해율을 목표 수준으로 되돌리려면 약 15% 인상이 필요하다. (신뢰도·추세·전개 보정은 별도로 적용한다.)</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Combined Ratio(합산비율) · Expense Ratios(사업비율) · Ratemaking(요율산정) · Experience-rating(경험요율) · Reserving(준비금 산정)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>손해율 (loss ratio)</b> — 손해를 보험료로 나눈 비율.</li>
+<li><b>발생손해 (incurred losses)</b> — 지급보험금 + 손해준비금 증감.</li>
+<li><b>손해사정비 (LAE)</b> — 보험금 조사·지급에 드는 비용.</li>
+<li><b>경과보험료 (earned premium)</b> — 위험기간이 경과한 만큼 인식한 보험료.</li>
+<li><b>궁극손해 (ultimate loss)</b> — 모든 보험금이 최종 확정됐을 때의 손해.</li>
+<li><b>예정손해율 (expected/permissible loss ratio)</b> — 사업비·이윤을 제외하고 보험금에 배정한 목표 손해율.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국 손해보험에서 손해율은 본문과 같이 <b>발생손해액÷경과보험료</b>(경과손해율)를 기본으로 하되, 종목별로 읽는 방식이 다르다. <b>자동차보험</b>은 손해율 약 80% 안팎을 손익분기로 보는데, 2024년 업계 손해율은 83.8%로 손익분기를 넘었고 4년간 누적된 보험료 인하와 사고건당 손해액 증가가 그 배경이다. <b>장기손해보험</b>은 위험보험료 대비 위험손해율을 따로 관리하며, 특히 <b>실손의료보험</b>은 비급여 진료 누수로 위험손해율이 100%를 크게 웃돌아 5세대 실손(2026.5) 개편의 직접적 원인이 되었다.</p><p>손해율은 요율 검증·갱신의 출발점이기도 하다. 보험개발원 참조순보험요율과 회사 경험손해율을 비교해 인상·인하 폭을 정하며, 감독당국은 손해율 추이를 근거로 실손·자동차 등 정책성 종목의 요율을 사실상 조율한다.</p><div class="note"><div class="head"><span class="tag">실무</span> IFRS17에서 손해율의 재정의</div><p style="margin-bottom:0">2023년 IFRS17 시행으로 손익계산서의 분모·분자가 바뀌었다. 전통적 "발생손해/경과보험료" 대신 <b>보험서비스비용÷보험수익</b> 구조로 손익을 보며, 발생사고요소(보험금)와 미래서비스(CSM 상각)가 분리 표시된다. 실무에서는 감독·요율용 경과손해율과 회계용 손해율을 병행해 관리한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

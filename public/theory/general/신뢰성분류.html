@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신뢰성 분류 (Reliability Classifications) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 확률·통계</div>
+<h1>신뢰성 분류 (Reliability Classifications)</h1>
+<div class="meta">Reliability Classifications &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>신뢰성 분류(reliability classifications)</b>는 수명(손해)분포를 <b>노화(aging) 성질</b>에 따라 묶는 체계다. 분포를 일일이 특정하지 않고도 “시간이 갈수록 고장 위험이 커지는가/작아지는가”, “꼬리가 두꺼운가”를 분류해, <b>꼬리·정렬·근사</b>에 관한 일반적 결론을 끌어낸다. 손해보험·재보험·위험이론에서 손해심도분포의 성질을 다룰 때 핵심 도구다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 분포를 ‘성격’으로 묶기</div><p style="margin-bottom:0">개별 분포(지수·감마·파레토…) 대신 <b>“고장률이 늘어나는 부류”, “꼬리가 두꺼운 부류”</b>처럼 성격으로 묶으면, 그 부류 전체에 통하는 부등식·근사를 쓸 수 있다. 예컨대 “IFR이면 지수분포보다 꼬리가 가볍다” 같은 정성적 결론이 가능하다.</p></div>
+<h2>2. 대표 분류 <span class="en">Main Classes</span></h2>
+<p>고장률 h(t)와 평균잔여수명 등을 기준으로 다음과 같이 분류한다.</p>
+<ul>
+<li><b>IFR / DFR</b> (Increasing / Decreasing Failure Rate) — 고장률이 시간에 따라 증가/감소. IFR은 노화(마모), DFR은 “오래 버틸수록 튼튼”.</li>
+<li><b>IFRA / DFRA</b> — 평균고장률 H(t)/t 가 증가/감소.</li>
+<li><b>NBU / NWU</b> (New Better/Worse than Used) — 새 것이 쓰던 것보다 좋음/나쁨. R(s+t) ≤ R(s)R(t)이면 NBU.</li>
+<li><b>NBUE / NWUE</b> — 새 것의 평균잔여수명이 쓰던 것보다 김/짧음.</li>
+<li><b>DMRL / IMRL</b> — 평균잔여수명(MRL)이 감소/증가.</li>
+</ul>
+<p>이들 사이에는 포함관계가 있다: <b>IFR ⊂ IFRA ⊂ NBU ⊂ NBUE</b> (DFR 쪽은 반대). 지수분포는 무기억성 때문에 <b>이 모든 경계의 한가운데</b>(IFR이자 DFR, NBU이자 NWU)에 놓인다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">심화</span> 꼬리가 두꺼운 분포(중후미)</div><p style="margin-bottom:0">DFR·NWU 계열은 흔히 <b>꼬리가 두꺼운</b> 손해분포(준지수·정규변동)와 연결된다. 이런 분포에서는 “총손해가 큰 사건은 한 건의 거대손해 때문”이라는 <b>단일대형클레임 원리</b>가 성립해, 재보험·거대위험 분석에서 중요하다.</p></div>
+<h2>3. 활용 <span class="en">Use</span></h2>
+<p>신뢰성 분류는 (1) 손해분포의 <b>꼬리위험</b> 판정과 재보험 가격, (2) <b>위험의 순서화(ordering of risks)</b>·정지손실 비교, (3) 신뢰도·보전(maintenance) 정책, (4) 근사식(룬드베리·준지수 근사)의 적용조건 확인에 쓰인다. 분포를 정확히 몰라도 그것이 어느 부류인지 알면 <b>상·하한과 정성적 결론</b>을 얻을 수 있다는 것이 핵심 가치다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 지수분포의 위치</div><p class="q">지수분포는 IFR인가 DFR인가?</p><p style="margin-bottom:0">지수분포의 고장률은 h(t)=λ로 <b>상수</b>다. 따라서 증가도 감소도 아니어서 <b>IFR이면서 동시에 DFR</b>인 경계에 있다. 무기억성 R(s+t)=R(s)R(t) 때문에 NBU와 NWU의 경계(NBUE이자 NWUE)이기도 하다. 모든 노화분류의 ‘기준선’이 되는 분포다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Reliability Analysis(신뢰성 분석) · Subexponential Distributions(준지수분포) · Ordering of Risks(위험의 순서화) · Tail of a Distribution(분포의 꼬리)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>IFR / DFR</b> — 고장률이 증가/감소하는 분포 부류.</li>
+<li><b>NBU / NWU</b> — 새 것이 쓰던 것보다 좋은/나쁜 분포 부류.</li>
+<li><b>평균잔여수명 (MRL)</b> — 현재까지 생존했을 때 앞으로의 기대수명.</li>
+<li><b>무기억성 (memoryless)</b> — 과거에 무관하게 잔여수명 분포가 같은 성질(지수분포).</li>
+<li><b>준지수분포 (subexponential)</b> — 단일대형클레임 원리가 성립하는 두꺼운 꼬리 분포.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>신뢰성 분류(노화 성질에 따른 분포 분류)는 한국 실무에서 직접 언급되지는 않지만, <b>손해심도분포의 꼬리</b>를 다루는 곳마다 배경 이론으로 작동한다. 일반·기업성 보험과 재보험에서 대형손해를 모형화할 때 파레토·로그정규처럼 꼬리가 두꺼운(증가고장률이 아닌) 분포를 쓰는 판단이 곧 신뢰성 분류의 응용이다.</p><p>장기손해보험의 해지·사망·발병처럼 시간에 따라 위험률이 변하는 현상도 증가/감소 고장률(IFR/DFR) 관점으로 이해된다. 경험생명표·해지율표가 연령·경과기간에 따라 단조 증가·감소하는지를 점검하는 것이 그 예다.</p><div class="note"><div class="head"><span class="tag">실무</span> 꼬리위험과 K-ICS</div><p style="margin-bottom:0">K-ICS 대재해·거대손해 평가는 분포의 꼬리 성질에 민감하다. 꼬리가 두꺼운 위험은 같은 평균이라도 요구자본과 재보험 필요액이 크게 달라지므로, 심도분포의 노화·꼬리 분류를 정확히 판단하는 것이 자본·재보험 의사결정의 토대가 된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사업비율 (Expense Ratios) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>사업비율 (Expense Ratios)</h1>
+<div class="meta">Expense Ratios &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>사업비율(expense ratio)</b>은 손해보험사가 보험계약을 <b>인수·유지·관리</b>하는 데 쓴 비용(사업비)을 보험료로 나눈 비율이다. 합산비율을 구성하는 두 축 가운데 손해가 아닌 쪽, 즉 회사의 <b>운영 효율성</b>을 나타낸다.</p>
+<div class="eq">사업비율 = 사업비 / 보험료</div>
+<p>사업비에는 대표적으로 <b>모집수수료(commission)</b>, 인수·계약관리 비용, 일반관리비, 광고·마케팅비, 보험료에 부과되는 세금·부담금 등이 들어간다. 손해사정비(LAE)는 보통 손해 쪽(손해율)으로 분류하여 사업비율에서 제외한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 분모를 무엇으로 두나</div><p style="margin-bottom:0">사업비 중 <b>모집수수료처럼 계약 체결 시 한꺼번에 나가는 비용</b>은 <b>수입보험료(written premium)</b>를 분모로, <b>일반관리비처럼 기간에 걸쳐 발생하는 비용</b>은 경과보험료를 분모로 두는 것이 더 정확하다. 그래서 실무에서는 두 분모를 섞어 쓰며, 어떤 기준인지에 따라 사업비율이 달라진다.</p></div>
+<h2>2. 고정비와 변동비 <span class="en">Fixed vs. Variable Expenses</span></h2>
+<p>요율산정에서는 사업비를 <b>변동비(variable)</b>와 <b>고정비(fixed)</b>로 나눈다. 변동비는 모집수수료·세금처럼 <b>보험료에 비례</b>하는 비용이라 요율에 비율(%)로 반영한다. 고정비는 계약 한 건당 거의 일정하게 드는 비용이라 <b>건당 정액(per-policy)</b>으로 반영하는 것이 합리적이다. 이 구분을 무시하면 보험료가 큰 계약은 사업비를 과대, 작은 계약은 과소 부과하게 된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 사업비를 반영한 보험료(grossing-up)</div><p class="q">순보험료(기대손해+LAE)가 600원, 변동사업비·이윤이 보험료의 30%일 때 영업보험료는?</p><p style="margin-bottom:0">영업보험료 = 순보험료 / (1 − 변동비율) = 600 / (1 − 0.30) = <b>857원</b>. 즉 사업비·이윤을 보험료의 30%로 두려면 순보험료를 0.70으로 나눠 ‘부풀려’ 준다. 고정비가 있으면 먼저 건당 정액으로 더한 뒤 변동비율로 나눈다.</p></div>
+<h2>3. 활용과 비교 <span class="en">Use and Benchmarking</span></h2>
+<p>사업비율은 회사의 <b>비용 경쟁력</b>을 보여 준다. 직판·온라인 채널은 모집수수료가 낮아 사업비율이 낮고, 대리점·설계사 채널은 높다. 사업비율이 낮으면 같은 손해율에서도 합산비율이 낮아져 가격경쟁력이 생긴다. 다만 사업비율만 낮추려다 인수심사·고객서비스를 소홀히 하면 장기적으로 손해율이 나빠질 수 있어, <b>손해율과 함께</b> 보아야 한다.</p>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Combined Ratio(합산비율) · Loss Ratio(손해율) · Ratemaking(요율산정) · Premium(보험료)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>사업비율 (expense ratio)</b> — 사업비를 보험료로 나눈 비율.</li>
+<li><b>모집수수료 (commission)</b> — 계약 모집의 대가로 대리점·설계사에 주는 비용.</li>
+<li><b>변동비·고정비 (variable / fixed expense)</b> — 보험료에 비례하는 비용 / 계약 건당 일정한 비용.</li>
+<li><b>수입보험료·경과보험료 (written / earned premium)</b> — 인수한 보험료 / 기간 경과분으로 인식한 보험료.</li>
+<li><b>영업보험료 (gross premium)</b> — 순보험료에 사업비·이윤을 더한 실제 청구 보험료.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국 손보사 사업비율은 종목에 따라 편차가 크다. 2024년 자동차보험 사업비율은 16.3%로 비교적 안정적이지만, 장기보험은 초기 모집비용(신계약비) 비중이 커서 신계약 증가기에 사업비율이 높게 나타난다. 과거에는 신계약비를 이연상각했으나 IFRS17에서는 <b>보험취득 현금흐름</b>으로 보아 CSM에 반영하므로, 사업비의 회계 처리 자체가 달라졌다.</p><p>실무의 핵심 쟁점은 모집비용 과당경쟁이다. 법인보험대리점(GA) 중심으로 시책·시상이 과열되자 감독당국은 <b>모집수수료 분급(선지급 한도)</b>과 이른바 1200%룰(초년도 수수료가 월납보험료의 12배를 넘지 못하게 하는 규제)로 사업비를 통제해 왔다.</p><div class="note"><div class="head"><span class="tag">실무</span> 사업비 규제와 K-ICS</div><p style="margin-bottom:0">사업비율 악화는 곧 보험료 인상·소비자부담으로 이어지므로 감독상 핵심 지표다. K-ICS에서는 사업비 가정의 변동(비용리스크)도 요구자본에 반영되어, 사업비를 낮고 안정적으로 유지하는 것이 자본효율에도 직결된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미국의 모기지보험 (Mortgage Insurance in the United States) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>미국의 모기지보험 (Mortgage Insurance)</h1>
+<div class="meta">Mortgage Insurance in the United States &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>모기지보험(mortgage insurance, MI)</b>은 <b>주택담보대출에서 차주가 채무를 이행하지 못해(부도·경매) 대주(은행)가 입는 손해</b>를 보상하는 보험이다. 미국에서는 통상 <b>주택가격 대비 대출비율(LTV)이 80%를 넘는</b> 고LTV 대출에서, 대주를 보호하기 위해 차주가 비용을 부담해 가입한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 누구를 위한 보험인가</div><p style="margin-bottom:0">보험료는 <b>차주(borrower)</b>가 내지만, 보호받는 것은 <b>대주(lender)</b>다. 머리금(down payment)이 적은 차주도 집을 살 수 있게 해 주는 대신, 부도 시 손실 위험을 보험으로 메운다. 차주의 자기자본(에쿼티)이 일정 수준에 이르면 보험을 해지할 수 있다.</p></div>
+<h2>2. 제도 구조: 민영과 공적 <span class="en">Private vs. Government</span></h2>
+<p>미국 모기지보험은 두 축으로 나뉜다. <b>민영 모기지보험(PMI)</b>은 민간 보험사가 제공하며 통상 손해의 상위 일부 층(예: 25~30%)을 담보한다. <b>공적 보증</b>으로는 <b>FHA</b>(연방주택청 보험)·<b>VA</b>(재향군인 보증)가 있다. 이들 보험·보증은 대출을 <b>유동화(MBS)</b>할 때 신용보강 기능도 한다.</p>
+<h2>3. 계리적 특징과 교훈 <span class="en">Actuarial Features</span></h2>
+<p>모기지보험 손해는 <b>주택가격·실업·금리</b> 등 거시변수에 강하게 좌우되는 <b>고상관·경기민감</b> 위험이다. 평상시 손해율은 낮지만 주택가격이 하락하면 부도·손실이 폭증한다. <b>2007~2009년 서브프라임 위기</b>에서 다수 MI사가 막대한 손실을 입은 것이 대표적 교훈이다. 그래서 충분한 <b>비상위험준비금(contingency reserve)</b>, 스트레스 시나리오, 자본관리가 규제로 요구된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 왜 거시충격에 취약한가</div><p class="q">개별 차주 부도는 드문데도 MI사가 위기 때 한꺼번에 무너지는 이유는?</p><p style="margin-bottom:0">집값이 전국적으로 떨어지면, 많은 차주가 <b>동시에</b> ‘대출>집값(언더워터)’ 상태가 되어 부도가 급증하고 경매 회수율도 동시에 하락한다. 위험이 <b>독립이 아니라 거시충격으로 묶여</b> 있어 분산이 안 된다. 이 상관·꼬리위험이 MI의 본질적 약점이다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Financial Insurance(금융보험) · Credit Risk(신용위험) · Fidelity and Surety(이행보증) · Catastrophe Risk(거대위험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>모기지보험 (mortgage insurance)</b> — 주택대출 부도 시 대주의 손해를 보상.</li>
+<li><b>LTV (loan-to-value)</b> — 집값 대비 대출비율; 높을수록 위험.</li>
+<li><b>PMI·FHA·VA</b> — 민영 모기지보험 / 연방주택청 / 재향군인 보증.</li>
+<li><b>비상위험준비금 (contingency reserve)</b> — 거대손실 대비 장기 적립금.</li>
+<li><b>언더워터 (underwater)</b> — 대출잔액이 집값을 넘는 상태.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>본문의 미국 모기지보험(고LTV 대출에서 대주를 보호하는 민영 PMI·공적 FHA)은 한국과 제도 배경이 다르다. 한국에서 모기지보험(MI)은 주로 <b>주택금융공사(HF)</b>가 공급해 왔고, 과거 민영(SGI서울보증)도 취급했으나 시장이 크지 않다. 차주 부도 시 대주 손실을 보전한다는 기본 구조는 같다.</p><p>한국 모기지보험이 미국만큼 발달하지 않은 이유는 <b>강력한 LTV·DSR 규제</b> 때문이다. 정부가 지역·소득별 LTV 한도와 총부채원리금상환비율(DSR)을 직접 규제해 고LTV 대출 자체를 억제하므로, 대주 보호를 보험으로 메울 필요가 상대적으로 작다. 대신 정책모기지(보금자리론 등)와 연계한 공적 MI가 그 역할을 보완한다.</p><div class="note"><div class="head"><span class="tag">실무</span> HF 모기지보험·LTV 규제</div><p style="margin-bottom:0">미국은 시장(민영 PMI)이, 한국은 규제(LTV·DSR)와 공적기관(HF)이 모기지 신용위험을 관리한다. 본문이 강조한 모기지보험의 경기민감성·꼬리위험은 한국에서도 유효해, 부동산 경기 침체 시 손해가 집중되는 구조적 위험으로 관리된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

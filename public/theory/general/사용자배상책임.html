@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사용자배상책임 (Employer's Liability) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>사용자배상책임 (Employer's Liability)</h1>
+<div class="meta">Employer's Liability &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>사용자배상책임(employer’s liability)</b>은 <b>근로자가 업무 중 부상·질병을 입었을 때 사용자(고용주)가 지는 법적 배상책임</b>을 담보하는 보험이다. 산재보상(workers’ compensation)이 과실과 무관하게 정해진 급부를 주는 <b>무과실(no-fault)</b> 제도라면, 사용자배상책임은 <b>사용자의 과실</b>이 인정될 때의 손해배상을 다룬다는 점에서 구별된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 산재보상과의 관계</div><p style="margin-bottom:0">많은 나라에서 둘은 짝을 이룬다. 근로자는 보통 <b>산재보상</b>으로 정액 급부를 받지만, 사용자의 중대한 과실이 있으면 <b>추가로 손해배상</b>을 청구할 수 있다. 사용자배상책임보험은 이 ‘과실 기반 추가책임’과 산재제도가 미치지 않는 영역(예: 영국식 EL)을 메운다.</p></div>
+<h2>2. 담보 내용 <span class="en">Coverage</span></h2>
+<p>담보 대상은 업무상 사고·직업병으로 인한 근로자의 <b>치료비·일실수입·위자료</b> 등 손해배상금과 방어비용이다. 영국에서는 <b>고용주배상책임보험(Employers’ Liability Compulsory Insurance)</b>이 법정 의무보험이다. 미국에서는 산재보상보험의 <b>Part B(employers’ liability)</b>로 함께 제공되어, 산재급부를 넘는 소송위험을 담보한다.</p>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>사용자배상책임은 <b>롱테일</b> 종목이다. 특히 <b>석면·소음성난청·반복사용손상(RSI)</b> 같은 <b>장잠복 직업병</b>은 노출 후 수십 년 뒤 청구되어, 과거 인수분에 막대한 손해를 남길 수 있다. 그래서 직업병의 잠복기·발현패턴 모형, 충분한 IBNR, 재보험이 핵심이다. 요율은 업종 위험등급·임금총액(payroll)·안전관리 수준에 따른다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 장잠복 직업병의 부담</div><p class="q">1970~80년대 석면을 다룬 기업의 근로자가 2020년대에 중피종으로 청구했다. 어떤 문제가 생기나?</p><p style="margin-bottom:0">노출과 발병 사이 수십 년의 <b>긴 잠복기</b> 때문에, 옛날에 받은 보험료로는 감당 못 할 손해가 뒤늦게 터진다. 어느 시점 증권이 책임지는지(노출·발현·청구 기준) 다툼도 크다. 보험사는 과거 인수분에 대해 거액의 <b>장기 준비금</b>을 쌓아야 한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Workers' Compensation(산재보상) · Liability Insurance(배상책임보험) · Employment Practices Liability(고용관행 배상책임) · Reserving(준비금)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>사용자배상책임 (employer’s liability)</b> — 근로자 업무상 재해에 대한 사용자의 과실책임 담보.</li>
+<li><b>무과실보상 (no-fault)</b> — 과실 불문하고 정액 급부를 주는 산재 방식.</li>
+<li><b>직업병 (occupational disease)</b> — 업무환경에서 비롯된 질병.</li>
+<li><b>잠복기 (latency)</b> — 노출과 발병 사이의 긴 시간차.</li>
+<li><b>임금총액 (payroll)</b> — 산재·EL 요율의 노출척도.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 사용자배상책임은 <b>근로자재해보장책임보험(근재보험)</b>으로 인수된다. 산재보험이 무과실로 정액 급부를 지급하는 것과 달리, 근재보험은 산재로 다 보상되지 않는 <b>위자료·민사상 손해배상(초과손해)</b>을 담보해, 근로자가 사용자의 과실을 물어 추가 배상을 청구할 때의 위험을 메운다.</p><p><b>중대재해처벌법</b>(2022년 시행)으로 중대 산업재해 시 경영책임자 처벌과 민사배상 위험이 커지면서 근재보험·임원배상 수요가 늘었다. 본문대로 산재보상(무과실)과 사용자배상책임(과실책임)은 보완 관계이며, 건설·제조업에서 함께 가입하는 것이 일반적이다.</p><div class="note"><div class="head"><span class="tag">실무</span> 근재보험과 중대재해처벌법</div><p style="margin-bottom:0">산재보험이 1차 안전망이라면 근재보험은 그 위의 민사배상 위험을 덮는 2차 장치다. 중대재해처벌법 이후 사용자의 배상·형사 리스크가 커져, 근재보험 보장한도 확대와 안전보건 통제 수준에 따른 언더라이팅이 중요해졌다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>해상보험 (Marine Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>해상보험 (Marine Insurance)</h1>
+<div class="meta">Marine Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>해상보험(marine insurance)</b>은 <b>선박·화물 등 해상운송과 관련한 위험</b>으로 생긴 손해를 보상하는, 보험 가운데 <b>가장 오래된</b> 종목이다. 근대 보험·재보험·로이즈(Lloyd’s) 시장이 모두 해상보험에서 비롯되었다. 크게 <b>선박보험(hull)</b>, <b>적하보험(cargo)</b>, <b>운임·배상책임(P&amp;I)</b> 등으로 나뉜다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 해상보험의 특수 개념</div><p style="margin-bottom:0">해상보험에는 오래된 고유 개념이 많다. <b>전손/분손</b>(total/partial loss), <b>공동해손(general average)</b>(공동의 안전을 위해 일부러 버린 화물의 손해를 모두가 분담), <b>위부(abandonment)</b>(추정전손 시 잔존물을 보험자에게 넘기고 전손보험금 청구) 등이 그것이다.</p></div>
+<h2>2. 담보 위험과 약관 <span class="en">Perils and Clauses</span></h2>
+<p>담보위험에는 좌초·충돌·침몰·악천후·해적·화재 등이 있다. 표준약관으로 영국의 <b>협회적하약관(Institute Cargo Clauses, ICC A/B/C)</b>이 널리 쓰이며, A는 포괄담보, B·C는 열거담보다. 해상보험은 국제거래·관습법(영국 1906년 해상보험법)에 깊이 기반하고, <b>고지의무·담보(워런티)·피보험이익</b> 원칙이 엄격히 적용된다.</p>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>해상위험은 <b>이동성·국제성·거대단일위험</b>(초대형 선박·집적 화물)이 특징이다. 한 척에 수천 개 컨테이너가 실려 <b>집적위험(accumulation)</b>이 크고, 손해가 드물지만 거대할 수 있어 <b>재보험 의존도</b>가 높다. 요율은 선령·선급·항로·화물종류·계절(악천후) 등에 따라 개별 평가된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 공동해손 분담</div><p class="q">폭풍 중 배를 구하려 일부 화물(가치 1억)을 바다에 버렸다. 구조된 선박·화물 총가치가 10억일 때 분담 원리는?</p><p style="margin-bottom:0"><b>공동해손</b>으로, 희생된 1억의 손해를 구조된 전체 이해관계자가 <b>가치 비율로 분담</b>한다. 버려진 화물 주인만 손해를 떠안지 않고, 덕을 본 모두가 나눠 부담한다. 각자의 해상보험이 이 분담금을 보상한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Property Insurance(재물보험) · Reinsurance(재보험) · Liability Insurance(배상책임보험) · Lloyd's</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>해상보험 (marine insurance)</b> — 선박·화물 등 해상위험을 담보.</li>
+<li><b>선박·적하보험 (hull / cargo)</b> — 배 자체 / 실린 화물의 보험.</li>
+<li><b>공동해손 (general average)</b> — 공동안전을 위한 희생손해를 모두가 분담.</li>
+<li><b>위부 (abandonment)</b> — 추정전손 시 잔존물을 넘기고 전손금 청구.</li>
+<li><b>협회적하약관 (ICC)</b> — 영국의 표준 적하보험 약관(A/B/C).</li>
+<li><b>P&amp;I</b> — 선주상호보험(배상책임 담보).</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>해상보험은 한국이 무역 의존도가 높아 실무적으로 중요한 기업성 종목이다. <b>적하보험(cargo)</b>은 수출입 화물 운송위험을, <b>선박보험(hull)</b>은 선박 자체의 위험을 담보하며, 약관은 영국 런던시장의 <b>협회적하약관(ICC)</b>·선박약관을 사실상 그대로 사용한다. 선주 배상책임은 국제 P&amp;I 클럽을 통해 부보한다.</p><p>해상보험은 거대·고액 위험이 많아 코리안리와 글로벌 재보험자에게 출재 비중이 크고, 요율은 국제 해상보험 시황과 동조한다. 본문이 설명한 공동해손·전손/분손 등 해상법 고유 개념도 국내 약관과 실무에 그대로 적용된다.</p><div class="note"><div class="head"><span class="tag">실무</span> ICC 약관과 기업성 인수</div><p style="margin-bottom:0">해상보험은 국제 표준약관(ICC)과 영국 해상보험법 전통 위에서 운영되는, 한국에서 가장 글로벌한 손해보험 종목이다. 인수·요율·클레임이 모두 국제 관행을 따르므로, 영문약관 해석과 재보험 배치 역량이 실무의 핵심이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

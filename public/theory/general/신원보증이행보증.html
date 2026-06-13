@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신원보증·이행보증 (Fidelity and Surety) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>신원보증·이행보증 (Fidelity and Surety)</h1>
+<div class="meta">Fidelity and Surety &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>신원보증·이행보증(fidelity and surety)</b>은 <b>‘사람의 정직성·의무이행’을 담보</b>하는 보증보험 계열이다. <b>신원보증(fidelity)</b>은 임직원의 <b>횡령·배임 같은 부정행위</b>로 고용주가 입은 손해를, <b>이행보증(surety)</b>은 계약자(주채무자)가 <b>계약상 의무를 이행하지 못할 때</b> 상대방(채권자)이 입는 손해를 보상한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 2자 보험 vs. 3자 보증</div><p style="margin-bottom:0">일반 보험은 <b>보험자–피보험자</b> 2자 관계다. 그러나 <b>이행보증(surety)</b>은 <b>3자</b> 관계다: ① 보증인(surety, 보험사), ② 주채무자(principal, 의무를 진 자), ③ 채권자(obligee, 의무이행을 받을 자). 보증인은 주채무자가 의무를 이행하지 못하면 채권자에게 대신 보상하고, <b>주채무자에게 구상(求償)</b>한다. 그래서 본질이 보험보다 <b>신용·보증</b>에 가깝다.</p></div>
+<h2>2. 종류 <span class="en">Types</span></h2>
+<ul>
+<li><b>신원보증보험(fidelity bond)</b> — 직원의 절도·횡령·사기로 인한 고용주 손해.</li>
+<li><b>계약이행보증(contract surety)</b> — 건설 등에서 입찰·계약이행·하자·지급 보증(bid/performance/payment bond).</li>
+<li><b>상업·법정보증(commercial/court bond)</b> — 인허가·관세·후견·공탁 등 법적·행정적 의무이행 보증.</li>
+</ul>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>이행보증은 <b>손해가 ‘우연’이라기보다 주채무자의 신용·역량에 좌우</b>되므로, 인수가 <b>신용심사(언더라이팅)</b>에 가깝고 손해가 <b>경기·신용사이클과 강하게 상관</b>된다. 기대손해율은 낮지만 불황기에 급증하는 꼬리위험이 있다. <b>구상(salvage/subrogation)</b>으로 손해를 상당 부분 회수하는 점, 손해가 드물고 거대한 점이 요율·준비금 산정의 특징이다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 이행보증의 3자 구조</div><p class="q">건설사 A가 발주처 B의 공사를 보증보험사 C의 이행보증으로 수주했다. A가 부도나면?</p><p style="margin-bottom:0">보증인 <b>C가 발주처 B에게</b> 공사 완성을 책임지거나 손해를 보상한다(대체 시공사 투입 또는 보상금 지급). 그 뒤 C는 부도난 <b>A(및 연대보증인)에게 구상</b>한다. 보험금이 ‘공돈’이 아니라 회수를 전제한 신용공여라는 점이 일반 보험과 다르다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Financial Insurance(금융보험) · Credit Insurance(신용보험) · Liability Insurance(배상책임보험) · Fraud in Insurance(보험사기)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>신원보증 (fidelity)</b> — 임직원 부정행위로 인한 고용주 손해 담보.</li>
+<li><b>이행보증 (surety)</b> — 주채무자의 의무 불이행 손해를 보증.</li>
+<li><b>3자 관계 (surety/principal/obligee)</b> — 보증인·주채무자·채권자.</li>
+<li><b>구상권 (subrogation)</b> — 보험금 지급 후 주채무자에게 회수하는 권리.</li>
+<li><b>이행·입찰·지급보증 (performance/bid/payment bond)</b> — 건설보증의 대표 유형.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 신원보증·이행보증은 <b>보증보험</b> 영역으로, <b>SGI서울보증</b>이 사실상 시장을 주도한다. 이행(계약)보증·입찰보증·하자보증·인허가보증 등 채무자의 의무이행을 담보하는 이행보증과, 임직원의 횡령·배임 손해를 보상하는 신원보증보험이 대표적이다. 건설 분야는 <b>건설공제조합 등 공제기관</b>이 이행보증의 큰 축을 담당한다.</p><p>본문대로 보증보험은 본질이 신용위험이어서 일반 손해보험과 가격·인수 논리가 다르다. 주채무자의 신용도 심사가 핵심이고, 손해 발생 시 보험자가 채권자에게 지급한 뒤 주채무자에게 <b>구상</b>한다는 점에서 일반 손해보험과 구별된다.</p><div class="note"><div class="head"><span class="tag">실무</span> SGI서울보증·공제조합 구도</div><p style="margin-bottom:0">한국 보증보험 시장은 SGI서울보증과 건설·전문 분야별 공제조합으로 이원화되어 있다. 신용위험을 다루므로 경기변동에 손해율이 민감하고, 구상권 회수율이 손익을 좌우한다. K-ICS에서도 보증보험은 신용리스크 성격이 강해 별도 위험계수로 다뤄진다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

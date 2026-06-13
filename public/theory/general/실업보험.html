@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>실업보험 (Unemployment Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 사회보험</div>
+<h1>실업보험 (Unemployment Insurance)</h1>
+<div class="meta">Unemployment Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>실업보험(unemployment insurance)</b>은 <b>근로자가 자기 의사와 무관하게 일자리를 잃었을 때 일정 기간 소득(실업급여)을 지급</b>하는 <b>사회보험</b>이다. 대개 국가가 운영하며, 사용자·근로자의 기여(보험료·조세)로 재원을 마련한다. 민영 손해보험과 달리 <b>강제가입·재분배</b> 성격이 강하다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 왜 민영보험이 어려운가</div><p style="margin-bottom:0">실업은 ① 경기침체 때 <b>한꺼번에</b> 발생하는 <b>체계적 위험</b>(분산 불가), ② 가입·근로유인에 영향을 주는 <b>도덕적 해이·역선택</b>이 크다. 이런 위험은 민영시장에서 보험화하기 어려워, 대부분 <b>국가의 사회보험</b>으로 운영된다.</p></div>
+<h2>2. 급부와 재원 <span class="en">Benefits and Financing</span></h2>
+<p>급부는 보통 <b>이전 임금의 일정 비율(소득대체율)</b>을 <b>제한된 기간</b> 지급하며, 구직활동·재취업 노력을 조건으로 한다. 재원은 임금에 부과되는 <b>실업보험 기여금/세</b>로 충당하고, 미국처럼 <b>경험요율(experience rating)</b>—해고를 많이 한 사용자에게 더 높은 세율—을 적용해 무분별한 해고를 억제하는 제도도 있다.</p>
+<h2>3. 계리·정책적 과제 <span class="en">Actuarial and Policy Issues</span></h2>
+<p>실업보험의 핵심 과제는 <b>경기변동에 따른 기금의 지속가능성</b>이다. 호황에 적립하고 불황에 지급하는 <b>경기대응적</b> 운영이 필요하며, 실업률·소득대체율·수급기간을 변수로 한 <b>기금 시뮬레이션·스트레스테스트</b>가 쓰인다. 정책적으로는 <b>충분한 보장</b>과 <b>근로유인 유지</b>(도덕적 해이 억제) 사이의 균형이 관건이다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 경험요율의 효과</div><p class="q">미국식으로, 해고가 잦은 기업에 더 높은 실업보험세율을 매기면?</p><p style="margin-bottom:0">기업은 해고비용이 커지므로 <b>불필요한 해고를 줄이고</b> 고용을 안정화할 유인을 갖는다. 동시에 실업급여 비용을 그 위험을 만든 기업에 더 부담시켜 <b>형평</b>을 높인다. 다만 경기충격에 따른 대량실업은 한 기업의 통제 밖이라 한계도 있다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Social Insurance(사회보험) · Experience-rating(경험요율) · Disability Insurance(소득보상보험) · Systematic Risk(체계적 위험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>실업보험 (unemployment insurance)</b> — 비자발적 실업 시 소득을 지급하는 사회보험.</li>
+<li><b>소득대체율 (replacement rate)</b> — 이전 임금 대비 급여 비율.</li>
+<li><b>체계적 위험 (systematic risk)</b> — 경기침체로 동시에 발생해 분산이 안 되는 위험.</li>
+<li><b>경험요율 (experience rating)</b> — 해고 실적에 따라 사용자 세율을 차등.</li>
+<li><b>도덕적 해이 (moral hazard)</b> — 보험으로 근로·구직 유인이 약해지는 현상.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 본문의 실업보험에 해당하는 제도는 <b>고용보험</b>(1995년 도입, 고용노동부 주관)이다. 사용자·근로자가 보험료를 분담하고 근로복지공단이 징수하며, 실직 시 구직급여(실업급여)와 함께 고용안정·직업능력개발 사업을 운영한다. 강제가입·소득재분배 성격이 강한 사회보험이라는 점이 본문과 같다.</p><p>민영보험은 실업 자체를 직접 담보하지 않고, 대출 상환을 보조하는 신용생명·상환유예 특약 등 보완적 형태에 머문다. 도덕적 해이·역선택 때문에 실업을 민영으로 인수하기 어렵다는 본문의 지적이 한국에서도 그대로 적용된다.</p><div class="note"><div class="head"><span class="tag">실무</span> 고용보험과 민영의 경계</div><p style="margin-bottom:0">실업위험은 경기와 강하게 연동된 체계적 위험이라 민영 인수가 사실상 불가능하고, 공적 고용보험이 핵심 안전망을 맡는다. 민영보험사는 실직 시 보험료 납입유예·대출보장 같은 부가서비스로 보완 역할에 집중한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

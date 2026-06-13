@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신뢰성 분석 (Reliability Analysis) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 확률·통계</div>
+<h1>신뢰성 분석 (Reliability Analysis)</h1>
+<div class="meta">Reliability Analysis &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>신뢰성 분석(reliability analysis)</b>은 어떤 대상이 <b>주어진 기간 동안 고장 없이 기능을 수행할 확률</b>을 다루는 이론이다. 원래 공학(부품·시스템의 수명)에서 발전했지만, 보험계리에서는 <b>수명·생존·고장 시간</b>을 같은 수학으로 다루기 때문에 생존분석·손해이론과 깊이 연결된다.</p>
+<p>수명을 양의 확률변수 T라 할 때, 핵심 함수는 다음과 같다.</p>
+<ul>
+<li><b>신뢰도함수(생존함수)</b> R(t) = P(T &gt; t) = 1 − F(t).</li>
+<li><b>고장률(위험률, hazard rate)</b> h(t) = f(t) / R(t). “지금까지 멀쩡한 것이 바로 다음 순간 고장날 순간고장강도”.</li>
+<li><b>누적고장률</b> H(t) = ∫₀ᵗ h(s) ds, 그리고 R(t) = exp(−H(t)).</li>
+<li><b>평균수명</b> MTTF = E[T] = ∫₀^∞ R(t) dt.</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 고장률 곡선(욕조곡선)</div><p style="margin-bottom:0">많은 제품의 고장률은 시간에 따라 <b>욕조(bathtub) 모양</b>을 그린다. 초기에는 불량품 때문에 고장률이 높다가(초기고장), 한동안 낮고 일정하다가(우발고장), 노후되면 다시 올라간다(마모고장). 보험의 사망률 곡선(영아·청년·고령)도 비슷한 직관을 공유한다.</p></div>
+<h2>2. 시스템 신뢰도 <span class="en">System Reliability</span></h2>
+<p>여러 부품으로 이루어진 시스템의 신뢰도는 <b>구조</b>에 따라 달라진다.</p>
+<ul>
+<li><b>직렬(series)</b> — 부품이 하나라도 고장나면 시스템 고장. R<sub>sys</sub> = ∏ R<sub>i</sub>. (가장 약한 고리)</li>
+<li><b>병렬(parallel)</b> — 부품이 모두 고장나야 시스템 고장(중복·redundancy). R<sub>sys</sub> = 1 − ∏(1 − R<sub>i</sub>).</li>
+<li><b>k-out-of-n</b> — n개 중 k개 이상 작동하면 시스템 작동.</li>
+</ul>
+<div class="ex"><div class="head"><span class="tag">예제</span> 직렬과 병렬</div><p class="q">신뢰도 0.9인 부품 2개. 직렬과 병렬 시스템의 신뢰도는?</p><p style="margin-bottom:0"><b>직렬</b>: 0.9 × 0.9 = <b>0.81</b> (둘 다 멀쩡해야 함). <b>병렬</b>: 1 − (1−0.9)(1−0.9) = 1 − 0.01 = <b>0.99</b> (하나만 살아도 됨). 중복설계가 신뢰도를 크게 높임을 보여 준다.</p></div>
+<h2>3. 보험계리 응용 <span class="en">Actuarial Applications</span></h2>
+<p>신뢰성 분석은 보험계리에서 (1) <b>생존분석·사망률 모형</b>(고장률 = 사력 force of mortality), (2) <b>보증(warranty)·기계보험</b>의 손해예측, (3) <b>지급준비금·유지율(persistency)</b> 모형, (4) 노화·열화를 반영한 <b>장기위험 평가</b>에 쓰인다. 동일한 수학(생존함수·위험률)을 공유하므로, 신뢰성에서 개발된 비모수추정(카플란–마이어)·가속수명모형 등이 보험에도 그대로 적용된다.</p>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Reliability Classifications(신뢰성 분류) · Survival Analysis(생존분석) · Hazard Rate(위험률) · Failure Rate(고장률)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>신뢰도함수 (reliability/survival function) R(t)</b> — 시점 t까지 고장(사망)하지 않을 확률.</li>
+<li><b>고장률·위험률 (hazard rate) h(t)</b> — 생존을 조건으로 한 순간 고장강도.</li>
+<li><b>욕조곡선 (bathtub curve)</b> — 초기·우발·마모 고장으로 이루어진 고장률 형태.</li>
+<li><b>직렬·병렬 (series / parallel)</b> — 약한 고리형 / 중복(redundancy)형 시스템 구조.</li>
+<li><b>MTTF</b> — 평균고장시간(평균수명) E[T].</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>신뢰성 분석(생존·고장시간 이론)은 한국 계리실무에서 <b>생존분석과 해지율·사망률 모형</b>으로 가장 널리 쓰인다. 생명·장기손보의 위험률·해지율 산출, 기계·보증보험의 고장모형, 그리고 제10회 경험생명표(2024.4 적용) 작성 같은 작업이 모두 생존함수·위험률의 언어로 이뤄진다.</p><p>본문의 직렬·병렬 시스템 신뢰도 개념은 보증·기술보험과 운영리스크 평가에 응용된다. 여러 부품·공정이 결합된 설비의 고장확률, 또는 복수 통제장치가 동시에 실패할 확률을 따질 때 같은 수학이 쓰인다.</p><div class="note"><div class="head"><span class="tag">실무</span> 해지율 모형과 무·저해지 가이드라인</div><p style="margin-bottom:0">신뢰성 분석의 생존·이탈 모형은 IFRS17 최선추정의 핵심 가정인 <b>해지율</b> 산출에 직결된다. 2024년 도입된 무·저해지 상품 해지율 가이드라인은 경과기간별 해지위험률을 보수적으로 잡도록 해, 해지율 과대가정에 따른 CSM 과대계상을 막는 장치다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>금융보험 (Financial Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>금융보험 (Financial Insurance)</h1>
+<div class="meta">Financial Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>금융보험(financial insurance)</b>은 <b>금융상 의무의 불이행·신용위험</b>으로 인한 손해를 담보하는 보험의 총칭이다. 전통적 재물·배상책임보험이 물적·인적 손해를 다루는 것과 달리, 금융보험은 <b>채무불이행·신용·시장 관련 손해</b>를 대상으로 한다. <b>신용보험·보증보험·금융보증(financial guaranty)</b> 등이 여기에 속한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 무엇이 다른가</div><p style="margin-bottom:0">금융보험의 손해는 ‘우연한 사고’보다 <b>차주·발행자의 신용</b>과 <b>경제환경</b>에 달려 있다. 그래서 ① 손해가 <b>경기와 강하게 상관</b>되고, ② <b>역선택·도덕적 해이</b>가 크며, ③ 보험이 사실상 <b>신용공여</b>에 가깝다. 인수가 보험계리뿐 아니라 <b>신용분석·금융공학</b>과 맞물린다.</p></div>
+<h2>2. 대표 종목 <span class="en">Main Lines</span></h2>
+<ul>
+<li><b>신용보험(credit insurance)</b> — 매출채권의 채무자 도산·미지급 손해를 담보(무역신용보험 등).</li>
+<li><b>금융보증보험(financial guaranty)</b> — 채권 원리금 지급을 보증(모노라인 보험사가 발행).</li>
+<li><b>모기지보험(mortgage insurance)</b> — 주택담보대출의 채무불이행 손해를 담보.</li>
+<li><b>보증보험(surety/bond)</b> — 계약·법적 의무 이행을 보증.</li>
+</ul>
+<h2>3. 계리적 과제 <span class="en">Actuarial Challenges</span></h2>
+<p>금융보험은 <b>저빈도·고심도·고상관</b>이라는 까다로운 위험구조를 가진다. 평상시 손해율은 낮지만 <b>금융위기 때 동시다발 손해</b>가 터진다(2008년 모노라인·모기지보험 사태가 대표적). 그래서 ① 신용손실의 <b>상관·꼬리</b> 모형, ② 경기시나리오·스트레스테스트, ③ 충분한 자본·재보험이 핵심이다. 일반 보험계리에 신용리스크·금융공학 기법이 결합된다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 상관위험의 위험성</div><p class="q">개별 대출의 부도확률이 각 1%로 ‘작아 보이는데’ 왜 금융보험이 위험한가?</p><p style="margin-bottom:0">부도가 <b>서로 독립이면</b> 분산효과로 안전하다. 그러나 경기침체 때는 부도가 <b>한꺼번에</b> 일어난다(상관↑). 그러면 보험사가 동시에 막대한 손해를 입어 자본이 무너질 수 있다. 금융보험의 핵심위험은 ‘평균’이 아니라 <b>상관과 꼬리</b>에 있다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Mortgage Insurance(모기지보험) · Fidelity and Surety(신원·이행보증) · Credit Risk(신용위험) · Catastrophe Risk(거대위험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>금융보험 (financial insurance)</b> — 금융의무 불이행·신용위험 손해를 담보.</li>
+<li><b>신용보험 (credit insurance)</b> — 매출채권 미회수 손해 담보.</li>
+<li><b>금융보증보험 (financial guaranty)</b> — 채권 원리금 지급 보증.</li>
+<li><b>모노라인 (monoline)</b> — 금융보증만 전업으로 하는 보험사.</li>
+<li><b>상관·꼬리위험 (correlation/tail risk)</b> — 손해가 동시에 크게 나는 위험.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 금융보험은 신용·보증·금융보증을 아우르는 영역으로, <b>보증보험(SGI서울보증)</b>과 정책금융기관이 중심을 이룬다. 기업·개인의 채무이행을 담보하는 보증보험·신용보험, 회사채·대출을 보강하는 금융보증이 대표적이며, <b>신용보증기금·기술보증기금·주택금융공사(HF)</b> 같은 공적 기관이 채권보증·모기지보험을 공급한다.</p><p>본문대로 금융보험은 물적·인적 손해가 아닌 <b>신용·채무불이행 위험</b>을 다루므로, 가격·인수가 신용평가에 기반하고 경기변동에 손해율이 민감하다. 2008년 글로벌 금융위기 때 금융보증(모노라인)이 무너진 교훈은 한국 감독에도 반영되어, 금융보증 인수는 보수적으로 관리된다.</p><div class="note"><div class="head"><span class="tag">실무</span> 보증보험·정책금융의 역할</div><p style="margin-bottom:0">금융보험은 신용위험을 사회적으로 분산·보강하는 인프라다. 한국은 민영(SGI)과 공적 보증기관이 역할을 나눠, 중소기업·서민금융의 신용보강을 담당한다. 신용리스크 집중·상관 때문에 K-ICS에서도 일반 손해보험과 다른 위험계수로 다뤄진다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

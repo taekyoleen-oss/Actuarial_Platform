@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>홍수위험 (Flood Risk) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>홍수위험 (Flood Risk)</h1>
+<div class="meta">Flood Risk &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>홍수위험(flood risk)</b>은 하천 범람·해일·집중호우 등으로 물에 잠겨 생기는 재산·생명 손해의 위험이다. 지진과 마찬가지로 <b>강한 공간적 상관·거대재해</b> 성격을 띠지만, 발생 메커니즘과 보장 구조가 달라 보험에서 별도로 다룬다. 많은 나라에서 표준 재물보험은 홍수를 <b>면책</b>하거나 제한 담보한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 홍수가 어려운 이유</div><p style="margin-bottom:0">① <b>역선택</b>: 침수 위험이 큰 저지대 거주자만 보험에 들려 한다. ② <b>상관위험</b>: 한 번의 큰 홍수로 한 지역 계약이 동시에 손해를 본다. ③ <b>인간개입</b>: 제방·댐·토지이용에 따라 위험이 변한다. 그래서 순수 민영시장만으로는 운영이 어렵고 <b>정부 개입·풀</b>이 흔하다.</p></div>
+<h2>2. 위험평가 <span class="en">Flood Modeling</span></h2>
+<p>홍수 요율은 <b>침수(hazard)모형</b>—강우·유출·하천수위·지형(DEM)을 결합한 침수심 지도—과 <b>건물 취약도</b>(침수심별 손해율)를 이용해 산정한다. 결과로 지역·표고별 <b>연간기대손해</b>와 재현주기(예: 100년 홍수)를 얻는다. 핵심 입력은 정밀한 <b>표고·하천·방재시설 자료</b>다.</p>
+<h2>3. 보험제도 <span class="en">Insurance Schemes</span></h2>
+<p>홍수보험은 나라마다 구조가 다르다. <b>미국 NFIP</b>(국가홍수보험), <b>영국 Flood Re</b>(고위험 주택 재보험 풀), <b>프랑스 CatNat</b>(자연재해 강제부가) 등은 민영시장의 한계를 정부·풀이 보완하는 예다. 핵심 정책과제는 <b>리스크기반 요율과 부담가능성(affordability)</b> 사이의 균형, 그리고 <b>방재투자·토지이용규제</b>를 통한 위험경감이다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 역선택의 결과</div><p class="q">위험이 높은 가구만 가입하면 보험요율은 어떻게 되나?</p><p style="margin-bottom:0">저위험 가구가 빠지면 평균손해가 올라 요율이 오르고, 그러면 더 안전한 가구가 추가로 이탈해 요율이 또 오르는 <b>역선택의 악순환</b>이 생긴다. 이를 막으려고 <b>강제가입·풀·정부보조</b>로 위험을 넓게 분산한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Earthquake Insurance(지진보험) · Catastrophe Risk(거대재해위험) · Property Insurance(재물보험) · Adverse Selection(역선택)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>홍수위험 (flood risk)</b> — 범람·침수로 인한 손해의 위험.</li>
+<li><b>역선택 (adverse selection)</b> — 위험 높은 자만 가입하려는 경향.</li>
+<li><b>상관위험 (correlated risk)</b> — 한 사건으로 다수 계약이 동시 손해.</li>
+<li><b>침수모형 (flood hazard model)</b> — 강우·지형으로 침수심을 추정하는 모형.</li>
+<li><b>NFIP·Flood Re·CatNat</b> — 미국·영국·프랑스의 홍수보험 제도.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 홍수·침수 위험은 <b>풍수해보험</b>(정책보험)과 일반 재물·자동차보험으로 분산 담보된다. 가계 주택·온실·소상공인 시설은 정부·지자체가 보험료를 보조하는 풍수해보험으로 태풍·홍수·호우 피해를 보장하고, 기업성 물건은 재물보험의 풍수재담보로, 침수 차량은 자동차보험 <b>자기차량손해</b>로 보상한다.</p><p>기후변화로 집중호우·도시침수 손해가 커지면서 홍수위험 평가의 중요성이 부각되고 있다. 본문처럼 한국도 표준 재물보험은 홍수를 제한·특약 담보하며, 하천 범람·내수침수의 공간적 상관 때문에 거대재해로 다뤄진다.</p><div class="note"><div class="head"><span class="tag">실무</span> 풍수해보험과 기후리스크</div><p style="margin-bottom:0">홍수는 저지대·하천변에 손해가 집중되는 역선택이 강해 민영 단독 인수가 어렵다. 그래서 정부 보조의 풍수해보험이 중심이 되고, 손보사는 침수차량·기업성 풍수재 손해를 부담한다. 기후변화로 손해 빈도·심도가 커지면서 침수위험지도·재보험 활용이 강화되고 있다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

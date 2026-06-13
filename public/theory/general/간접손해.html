@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>간접손해 (Consequential Damage) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>간접손해 (기업휴지손해)</h1>
+<div class="meta">Consequential Damage &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>간접손해(consequential damage)</b>는 사고로 인한 <b>물적 직접손해 그 자체가 아니라, 그 결과로 파생되는 손해</b>를 말한다. 대표적인 것이 화재·재해로 공장·점포가 멈춰 생기는 <b>기업휴지손해(business interruption)</b>다. 직접손해(불에 탄 설비)와 달리, 영업중단으로 잃은 <b>이익과 고정비</b>가 간접손해다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 직접손해 vs. 간접손해</div><p style="margin-bottom:0">화재로 공장이 탔다면, <b>직접손해</b>는 건물·기계의 손상액이고, <b>간접손해</b>는 그동안 물건을 못 팔아 잃은 영업이익과, 매출이 없어도 계속 나가는 임차료·인건비 같은 <b>고정비</b>다. 간접손해는 보통 <b>직접 물적손해가 담보되는 것</b>을 전제로 추가 담보된다.</p></div>
+<h2>2. 보상 구조 <span class="en">Coverage Structure</span></h2>
+<p>기업휴지보험은 보통 <b>‘상실이익 + 경상 고정비’</b>를 보상한다. 핵심 요소는 (1) <b>보상기간(indemnity period)</b>: 사고부터 영업이 정상으로 회복될 때까지(복구 완료 후에도 매출이 회복되는 기간 포함), (2) <b>대기기간(time deductible)</b>: 일정 시간(예: 72시간) 이하 중단은 면책, (3) <b>한도</b>다. 공급망 단절로 인한 <b>간접적 휴지</b>(contingent BI)는 별도 특약으로 담보한다.</p>
+<h2>3. 손해 산정 <span class="en">Loss Measurement</span></h2>
+<p>간접손해 산정은 “<b>사고가 없었다면 벌었을 이익</b>”을 추정하는 일이라 직접손해보다 복잡하다. 과거 매출·이익률, 추세, 복구 진행에 따른 부분가동을 반영하고, 절감된 비용(가동 안 해 덜 쓴 비용)을 차감한다. 그래서 손해사정에 <b>회계·계리적 추정</b>이 많이 개입한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 휴지손해 계산</div><p class="q">월 매출 1억, 변동비율 40%, 화재로 2개월 전면 휴업. 휴지손해(상실 총이익)는?</p><p style="margin-bottom:0">월 총이익(매출−변동비) = 1억×(1−0.40) = 6천만. 2개월 = <b>1.2억원</b>. 이것이 잃은 영업이익+고정비에 해당한다. 휴업 중 절감된 비용이 있으면 더 차감하고, 보상기간·한도를 적용한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Fire Insurance(화재보험) · Property Insurance(재물보험) · Commercial Multi-peril(영업용 종합보험) · Coverage(담보)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>간접손해 (consequential damage)</b> — 직접 물적손해에서 파생된 손해.</li>
+<li><b>기업휴지손해 (business interruption)</b> — 영업중단으로 잃은 이익·고정비.</li>
+<li><b>보상기간 (indemnity period)</b> — 휴지손해를 보상하는 기간.</li>
+<li><b>대기기간 (time deductible)</b> — 일정 시간 이하 중단은 면책.</li>
+<li><b>contingent BI</b> — 공급·납품처 사고로 인한 간접 휴지손해 담보.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 간접손해는 주로 <b>기업휴지보험(BI, Business Interruption)</b>으로 인수된다. 화재·재산종합보험(PAR)의 특약 형태로 가입하며, 화재·폭발·기계고장 등 직접손해가 보상되는 사고로 영업이 중단됐을 때 상실이익과 고정비(인건비 등)를 보상한다. 손해 산정 시 약관상 보상기간(indemnity period)과 표준영업이익을 기준으로 하는 점도 본문과 같다.</p><p>실무 쟁점은 인과관계와 면책이다. 코로나19 당시 감염병에 따른 영업중단이 "물적 직접손해"를 동반하지 않아 BI 담보 대상이 아니라는 점이 분쟁이 되었고, 이후 약관은 담보 트리거(물적손해 수반 여부)를 더 명확히 규정하는 방향으로 정비되었다.</p><div class="note"><div class="head"><span class="tag">실무</span> 기업휴지담보의 산정</div><p style="margin-bottom:0">간접손해는 직접손해보다 산정이 어렵고 분쟁이 잦다. 한국 실무에서는 손해사정 단계에서 회계장부·가동률·계절성을 분석해 "사고가 없었다면 얻었을 이익"을 추정하며, 보상기간 설정과 절감비용 공제가 보험금 규모를 좌우한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

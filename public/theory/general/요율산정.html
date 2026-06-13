@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>요율산정 (Ratemaking) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>요율산정 (Ratemaking)</h1>
+<div class="meta">Ratemaking &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>요율산정(ratemaking)</b>은 손해보험에서 <b>장래 위험을 보장하는 대가로 받을 보험료(요율)를 정하는</b> 보험계리 작업이다. 핵심 목표는 보험료가 장래의 <b>기대손해·사업비·자본비용(이윤)</b>을 충분히 충당하면서도 과도하지 않고, 위험에 따라 공정하게 차등화되도록 하는 것이다. 미국 보험감독에서 흔히 인용되는 원칙은 요율이 “<b>충분하되 과도하지 않고, 부당하게 차별적이지 않을 것</b>”이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 보험료의 기본 구조</div><p style="margin-bottom:0">영업보험료 = <b>순보험료</b>(기대손해 + 손해사정비) + <b>부가보험료</b>(사업비 + 이윤·자본비용). 요율산정은 결국 “장래 1단위(예: 차 1대·1년)당 손해가 얼마일지”를 추정한 뒤, 비용과 이윤을 더해 가격을 만드는 일이다.</p></div>
+<h2>2. 자료의 보정 <span class="en">Adjusting the Data</span></h2>
+<p>과거 실적을 장래 요율로 쓰려면 여러 보정이 필요하다.</p>
+<ul>
+<li><b>손해 전개(loss development)</b> — 아직 다 지급·보고되지 않은 손해를 궁극(ultimate)으로 키운다(예: 연쇄사다리법).</li>
+<li><b>추세(trend)</b> — 물가·임금·소송환경 변화로 손해와 노출이 시간에 따라 변하는 것을 장래 시점까지 반영한다.</li>
+<li><b>거대손해·재해 보정</b> — 우연히 큰 단일 손해나 재해를 평준화(장기 기대치로 대체)한다.</li>
+<li><b>노출·보험료의 현재화(on-level)</b> — 과거 보험료를 현재 요율 수준으로 환산한다.</li>
+</ul>
+<h2>3. 전반요율 산정: 두 가지 방법 <span class="en">Loss-ratio vs. Pure-premium</span></h2>
+<p>전체 요율 수준을 정하는 방법은 두 가지다.</p>
+<ul>
+<li><b>손해율법(loss ratio method)</b> — 실적 손해율을 예정손해율과 비교해 <b>변경률</b>을 구한다. 변경지표 = 실적손해율 / 예정손해율.</li>
+<li><b>순보험료법(pure premium method)</b> — 노출 1단위당 손해(순보험료)를 직접 추정한 뒤 사업비·이윤을 부가해 <b>요율 수준 자체</b>를 만든다.</li>
+</ul>
+<p>전반 수준을 정한 뒤에는 <b>요율 분류(classification)</b>로 위험특성(연령·지역·용도 등)에 따라 차등 요율을 정하고, <b>경험요율·신뢰도</b>로 개별 계약 실적을 반영한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 두 방법의 연결</div><p class="q">노출당 궁극손해(순보험료) 280원, 고정비 20원, 변동비·이윤 30%일 때 지시요율은?</p><p style="margin-bottom:0">지시요율 = (순보험료 + 고정비) / (1 − 변동비율) = (280 + 20) / (1 − 0.30) = 300 / 0.70 ≈ <b>429원</b>. 이것이 순보험료법. 손해율법은 같은 정보를 ‘현재요율 대비 변경률’로 표현할 뿐 본질은 같다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Loss Ratio(손해율) · Experience-rating(경험요율) · Exposure Rating(익스포저 요율) · Credibility(신뢰도) · Premium Principles(보험료 원리)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>요율산정 (ratemaking)</b> — 장래 보험료(요율)를 정하는 계리 작업.</li>
+<li><b>순보험료 (pure premium)</b> — 노출 1단위당 기대손해(+손해사정비).</li>
+<li><b>예정손해율 (permissible loss ratio)</b> — 사업비·이윤을 뺀, 손해에 배정한 목표 비율.</li>
+<li><b>손해 전개 (loss development)</b> — 미성숙 손해를 궁극값으로 추정.</li>
+<li><b>추세 (trend)</b> — 손해·노출의 시간적 변화 반영.</li>
+<li><b>현재화 (on-level)</b> — 과거 보험료를 현재 요율로 환산.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국의 손해보험 요율산정은 <b>보험개발원의 참조순보험요율</b>을 축으로 돌아간다. 2000년대 요율 자율화 이후 각사는 참조요율을 기초로 자사 경험과 사업비·이윤을 반영해 영업요율을 산출하고, 그 적정성을 보험계리사가 검증한다. 본문의 손해율법·순보험료법은 국내 실무에서도 그대로 쓰이며, 자동차·실손처럼 사회적 영향이 큰 종목은 감독당국과의 협의가 사실상 요율 결정에 개입한다.</p><p>"충분하되 과도하지 않고 부당하게 차별적이지 않을 것"이라는 본문 원칙은 국내 요율 검증의 기준과 일치한다. 다만 한국은 정치·사회적 고려로 자동차·실손 요율이 손해율 신호보다 늦게 조정되는 경향이 있어, 누적된 미반영분이 한꺼번에 인상되는 일이 반복된다.</p><div class="note"><div class="head"><span class="tag">실무</span> IFRS17·K-ICS와 이윤마진</div><p style="margin-bottom:0">요율의 이윤·자본비용 부분은 이제 K-ICS 요구자본과 직접 연결된다. 위험이 큰 종목일수록 요구자본이 커지고, 그만큼 자본비용(요구수익률)을 요율에 반영해야 한다. IFRS17의 CSM도 신계약 요율이 적정 마진을 담고 있는지를 보여 주는 사후 점검 지표로 쓰인다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

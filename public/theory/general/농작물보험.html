@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>농작물보험 (Crop Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>농작물보험 (Crop Insurance)</h1>
+<div class="meta">Crop Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>농작물보험(crop insurance)</b>은 <b>가뭄·홍수·우박·병충해·서리</b> 등으로 농작물의 <b>수확량이나 소득이 감소</b>했을 때 손해를 보상하는 보험이다. 농업위험이 <b>날씨에 강하게 의존</b>하고 한 지역 농가가 동시에 피해를 보는 <b>상관·체계적 위험</b>이어서, 대부분 <b>정부 보조·재보험</b>과 결합해 운영된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 두 가지 보상 방식</div><p style="margin-bottom:0">① <b>다위험 수확량보험(MPCI)</b>: 실제 수확량이 보장수확량보다 적으면 차액을 보상. ② <b>지수형보험(index/parametric)</b>: 강우량·기온·지역평균수확량 같은 <b>지수</b>가 기준을 벗어나면 손해 입증 없이 정액 지급. 지수형은 손해사정이 빠르고 도덕적 해이가 작지만, 실제 손해와 지급이 어긋나는 <b>베이시스 위험</b>이 있다.</p></div>
+<h2>2. 위험의 특성 <span class="en">Nature of Agricultural Risk</span></h2>
+<p>농업손해는 <b>체계적(systematic)</b>이다. 한 농가가 아니라 같은 기후권 전체가 동시에 흉작을 겪으므로 위험분산이 어렵다. 또 수확량·가격이 함께 움직여 소득위험이 증폭된다. 그래서 개별 통계보다 <b>기상·작황 데이터, 지역 단위 모형</b>이 중요하고, 거대손해는 <b>정부 재보험</b>이 떠받친다.</p>
+<h2>3. 제도와 계리 <span class="en">Schemes and Pricing</span></h2>
+<p>미국 <b>연방작물보험(FCIP)</b>, 인도·중국의 대규모 농작물보험처럼 정부가 보험료를 보조하고 민영보험사가 판매·사정을 맡는 <b>관민협력</b> 구조가 흔하다. 요율은 작물·지역·과거 수확량 변동성에 기반하며, 지수형은 기상지수 분포와 수확량 간 상관(베이시스 위험)을 함께 모형화한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 수확량보험 보상</div><p class="q">보장수확량 100, 보장수준 75%, 단가 1,000원. 실제 수확량이 60일 때 보상은?</p><p style="margin-bottom:0">보장기준 = 100×75% = 75. 부족분 = 75 − 60 = 15. 보상 = 15 × 1,000 = <b>15,000원</b>. 실제 수확량이 보장기준 아래로 떨어진 만큼만 보상한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Catastrophe Risk(거대재해위험) · Index/Parametric Insurance(지수형보험) · Reinsurance(재보험) · Flood Risk(홍수위험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>농작물보험 (crop insurance)</b> — 기상·병충해로 인한 농작물 손해를 보상.</li>
+<li><b>다위험수확량보험 (MPCI)</b> — 실제 수확량 부족분을 보상하는 방식.</li>
+<li><b>지수형보험 (index/parametric)</b> — 기상·지역지수로 정액 지급하는 방식.</li>
+<li><b>베이시스 위험 (basis risk)</b> — 지수와 실제 손해의 불일치 위험.</li>
+<li><b>체계적 위험 (systematic risk)</b> — 분산되지 않고 동시에 발생하는 위험.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국의 농작물보험은 <b>농작물재해보험</b>(2001년 도입)으로 운영되는 대표적 <b>정책보험</b>이다. <b>NH농협손해보험</b>이 지역 농·축협을 통해 단독 판매하며, 보험료는 정부가 50%, 지방자치단체가 15~40%를 보조해 농가 부담을 크게 낮춘다. 농업정책보험금융원이 사업을 관리하고, 거대재해 위험은 <b>국가재보험</b>으로 분담한다.</p><p>본문이 지적한 날씨 의존·체계적 위험 문제가 한국에서도 그대로 나타난다. 2024년에는 호우·폭염·가뭄으로 약 24.5만 농가에 1조 271억 원의 보험금이 지급되었다. 2025년에는 대상 품목 확대, 자연재해성 병충해 보장 강화, 개인별 위험도에 따른 할인·할증 세분화가 추진되었다.</p><div class="note"><div class="head"><span class="tag">실무</span> 정책보험·국가재보험 구조</div><p style="margin-bottom:0">농작물보험은 민영보험만으로는 인수가 불가능한 상관·거대 위험이어서, 정부 보험료 보조와 국가재보험이 필수다. 한 해 기상이변으로 손해율이 급등해도 국가재보험이 초과손해를 흡수해 제도를 지속시키는 구조이며, 이는 본문이 말한 "정부·재보험 결합 운영"의 전형이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

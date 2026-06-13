@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>재물보험 (Property Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>재물보험 (Property Insurance)</h1>
+<div class="meta">Property Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>재물보험(property insurance)</b>은 <b>물적 재산(건물·설비·재고·가재 등)에 생긴 손해</b>를 보상하는 손해보험의 큰 갈래다. 배상책임보험이 ‘남에게 끼친 손해’를 다룬다면, 재물보험은 ‘내 재산 자체의 손해’를 다룬다. 화재·풍수재·도난·파손·기계고장 등 다양한 위험을 담보한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 두 가지 담보 방식</div><p style="margin-bottom:0">재물보험은 <b>열거담보</b>(보상위험을 나열)와 <b>포괄담보</b>(면책 외 모든 우연한 손해 보상)로 나뉜다. 가정용 주택종합보험은 포괄에 가깝고, 특정 위험만 막는 단종보험은 열거형이다.</p></div>
+<h2>2. 보상 원리 <span class="en">Indemnity and Valuation</span></h2>
+<p>재물보험의 기본은 <b>실손보상</b>이다. 손해액은 <b>재조달가액(신가)</b>이나 <b>시가</b>로 평가하며, <b>보험가액·보험금액·일부보험(비례보상)</b>·자기부담금·보상한도 규정을 따른다. 거대재해 노출이 큰 종목은 <b>재해모형(catastrophe model)</b>으로 누적위험을 관리하고 <b>재보험</b>으로 꼬리위험을 넘긴다.</p>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>재물보험 손해는 보통 <b>고빈도·저심도(생활밀착형)</b>와 <b>저빈도·고심도(재해성)</b>가 섞여 있다. 그래서 손해분포의 <b>꼬리</b>가 중요하고, 빈도–심도 모형, 거대재해 시뮬레이션, 손해 추세(인플레이션) 반영이 핵심이다. 대체로 <b>숏테일(short-tail)</b>이어서 배상책임보다 준비금 전개가 빠르고 손익 인식이 이르다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 신가 vs. 시가</div><p class="q">10년 된 설비(신품가 1억, 감가 후 시가 4천만)가 전손됐다. 신가보험과 시가보험의 보상은?</p><p style="margin-bottom:0"><b>신가(재조달가액)보험</b>은 같은 새 설비 교체비 <b>1억</b>(약관상 실제 교체 조건). <b>시가보험</b>은 감가 반영 <b>4천만원</b>. 신가보험은 보상이 크지만 보험료도 비싸고 도덕적 해이 방지 장치가 따른다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Fire Insurance(화재보험) · Homeowners Insurance(주택종합보험) · Coverage(담보) · Catastrophe Risk(거대재해위험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>재물보험 (property insurance)</b> — 물적 재산 자체의 손해를 보상.</li>
+<li><b>열거·포괄담보 (named-perils / all-risks)</b> — 보상위험 나열형 / 면책 외 전부 보상형.</li>
+<li><b>보험가액·보험금액</b> — 피보험이익의 가치 / 약정한 보상한도.</li>
+<li><b>거대재해모형 (cat model)</b> — 태풍·지진 등 누적손해를 시뮬레이션하는 모형.</li>
+<li><b>숏테일 (short-tail)</b> — 손해 확정·지급이 빠른 종목.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국에서 재물보험은 화재보험을 기본으로 한 <b>재산종합보험(PAR)·패키지보험</b>으로 인수되는 경우가 많다. 기업성 물건은 면책 외 전부를 보상하는 포괄담보(all-risks)에 기계·전기위험·기업휴지를 결합하고, 가계성은 주택화재보험에 풍수재·도난 특약을 더하는 식이다. 보상은 본문과 같이 <b>이득금지(실손보상)·일부보험 비례보상</b> 원칙을 따른다.</p><p>기후변화로 풍수재(집중호우·태풍) 손해가 커지면서 재물보험의 자연재해 익스포저 관리가 중요해졌고, 대형 물건은 재보험으로 거대손해를 분산한다. 신가(재조달가액)보험 특약으로 감가 없이 복구비를 보상하는 형태도 보편화되었다.</p><div class="note"><div class="head"><span class="tag">실무</span> 기업성 재물과 K-ICS 대재해</div><p style="margin-bottom:0">재물보험의 누적 익스포저는 K-ICS 일반손해보험리스크의 대재해(Cat) 평가 대상이다. 동일 지역·업종에 집중된 보험가입금액이 태풍·홍수 시나리오에서 동시 손해를 일으킬 수 있으므로, 익스포저 관리와 재보험 배치가 자본 적정성과 직결된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

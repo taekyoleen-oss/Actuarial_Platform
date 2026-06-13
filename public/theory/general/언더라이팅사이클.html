@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>언더라이팅 사이클 (Underwriting Cycle) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>언더라이팅 사이클 (Underwriting Cycle)</h1>
+<div class="meta">Underwriting Cycle &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>언더라이팅 사이클(underwriting cycle)</b>은 손해보험 시장에서 <b>보험료율과 수익성이 주기적으로 오르내리는 현상</b>이다. 보험료가 싸고 인수가 느슨한 <b>연질시장(soft market)</b>과, 보험료가 비싸고 인수가 까다로운 <b>경질시장(hard market)</b>이 수년 주기로 번갈아 나타난다. ‘보험 사이클(insurance cycle)’이라고도 한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 사이클이 도는 모습</div><p style="margin-bottom:0">경질시장에서 수익이 좋아지면 → 자본이 몰리고 경쟁이 심해져 보험료가 내려간다 → 연질시장에서 손해율이 나빠지고 거대손해가 겹치면 자본이 줄어든다 → 공급이 줄어 보험료가 다시 오른다(경질시장). 이렇게 <b>가격·수익·자본</b>이 서로 밀고 당기며 순환한다.</p></div>
+<h2>2. 원인 <span class="en">Causes</span></h2>
+<p>사이클의 원인으로 여러 가설이 제시된다.</p>
+<ul>
+<li><b>자본(capacity) 가설</b> — 거대손해·투자손실로 자본이 줄면 공급이 줄어 가격이 오른다. 자본은 빠르게 보충되기 어렵다.</li>
+<li><b>가격경쟁·정보지연</b> — 손해는 시차를 두고 드러나므로(롱테일), 회사들이 손해 악화를 늦게 인식해 과당경쟁→급반전이 일어난다.</li>
+<li><b>이자율·금융환경</b> — 투자수익이 좋으면 보험료를 낮춰서라도 보험료를 모으려는 ‘현금흐름 언더라이팅’이 나타난다.</li>
+<li><b>회계·준비금</b> — 준비금 과소·과대 설정이 보고이익을 왜곡해 행동을 증폭한다.</li>
+</ul>
+<h2>3. 계리적 함의 <span class="en">Actuarial Implications</span></h2>
+<p>사이클은 요율산정과 사업계획에 큰 영향을 준다. 시계열 모형(예: 2차 자기회귀 AR(2))으로 합산비율·요율 변화를 모형화하려는 연구가 많다. 계리사는 <b>한 시점의 시장가격에 휩쓸리지 않고</b> 장기 기대손해에 기반한 ‘기술적 요율(technical rate)’을 유지하려 하며, 경질·연질 국면에 따라 보유·재보험 전략, 자본관리, 신규 인수속도를 조절한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 국면 판단</div><p class="q">업계 합산비율이 최근 2년 105%→110%로 악화되고 일부 회사가 철수하며 보험료가 급등하기 시작했다. 어느 국면인가?</p><p style="margin-bottom:0">손해 악화와 공급 위축으로 가격이 오르는 <b>경질시장(hard market)</b>으로의 전환 국면이다. 이때는 인수 확대·요율 인상 기회지만, 곧 자본 유입으로 다시 연질화될 수 있어 장기 관점이 필요하다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Combined Ratio(합산비율) · Ratemaking(요율산정) · Reinsurance(재보험) · Capital(자본)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>언더라이팅 사이클 (underwriting cycle)</b> — 보험료·수익성이 주기적으로 순환하는 현상.</li>
+<li><b>연질·경질시장 (soft / hard market)</b> — 보험료가 싸고 인수가 느슨한 시장 / 비싸고 까다로운 시장.</li>
+<li><b>자본(capacity)</b> — 보험을 인수할 수 있는 자본·공급 여력.</li>
+<li><b>현금흐름 언더라이팅 (cash-flow underwriting)</b> — 투자수익을 노려 손해율을 무릅쓰고 보험료를 낮추는 영업.</li>
+<li><b>기술적 요율 (technical rate)</b> — 시장가가 아닌 기대손해 기반의 적정 요율.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국 손해보험에도 언더라이팅 사이클이 뚜렷하다. <b>자동차보험</b>은 손해율이 좋아지면 경쟁적으로 요율을 내리고, 손해율이 악화되면 인상하는 주기를 반복한다. 4년 연속 인하 뒤 2024~2025년 손해율 악화로 다시 인상 압력이 커진 것이 전형적 사례다. 다만 자동차·실손은 정치·사회적 고려로 인상이 지연되어, 사이클이 시장 자율보다 규제에 의해 굴절되는 한국적 특징이 있다.</p><p>기업성 일반보험은 글로벌 재보험 시장과 동조한다. 대형 재해·금리 변동으로 국제 재보험료가 오르는 경질시장(2023년 전후)에는 국내 원수요율도 따라 오르고, 1월 1일 재보험 갱신(1.1 갱신) 결과가 그해 인수정책을 좌우한다.</p><div class="note"><div class="head"><span class="tag">실무</span> 사이클과 자본·준비금</div><p style="margin-bottom:0">연질시장의 무리한 인수는 몇 년 뒤 준비금 부족으로 드러난다. K-ICS·IFRS17 체제에서는 요구자본과 CSM이 사이클 국면을 비교적 빨리 신호로 보여 주므로, 경질·연질 판단을 자본효율 관점에서 규율하는 것이 실무의 과제다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

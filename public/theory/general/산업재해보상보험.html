@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>산업재해보상보험 (Workers' Compensation Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>산업재해보상보험 (Workers' Compensation)</h1>
+<div class="meta">Workers' Compensation Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>산업재해보상보험(workers’ compensation)</b>은 <b>근로자가 업무상 부상·질병·사망을 당했을 때 과실을 따지지 않고</b> 치료비·소득보상·유족급여 등을 지급하는 <b>무과실(no-fault)</b> 사회·손해보험 제도다. 근로자는 신속히 보상받는 대신 사용자에 대한 소송권을 일부 포기하고, 사용자는 예측가능한 비용으로 책임을 정리하는 <b>대타협(grand bargain)</b>에 기초한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 무과실의 거래</div><p style="margin-bottom:0">예전에는 다친 근로자가 사용자의 과실을 <b>입증해 소송</b>해야 했고, 결과가 불확실했다. 산재보상은 “과실을 묻지 않고 정해진 급부를 빠르게 준다. 대신 추가 소송은 제한한다”는 맞교환이다. 근로자는 확실성을, 사용자는 비용예측성을 얻는다.</p></div>
+<h2>2. 급부와 요율 <span class="en">Benefits and Rating</span></h2>
+<p>급부는 보통 <b>의료비(medical), 소득상실보상(indemnity: 일시·영구·부분·전부 장해), 재활, 유족급여</b>로 구성된다. 요율은 <b>임금총액(payroll) 100단위당</b> 산업·직무 위험등급별로 정하고, 개별 기업에는 <b>경험요율(experience modification, ‘mod’)</b>을 적용해 과거 재해실적이 보험료에 직접 반영된다. 대형 기업은 <b>후험요율(retrospective rating)</b>로 사후 정산한다.</p>
+<h2>3. 계리적 특징 <span class="en">Actuarial Features</span></h2>
+<p>산재는 <b>롱테일</b>의 대표다. 영구장해·평생의료비는 수십 년에 걸쳐 지급되어 <b>의료·임금 인플레이션, 생존(수명) 가정, 할인율</b>에 민감하다. 그래서 준비금이 막대하고, 연금형 장해급부에는 <b>생명계리(생존확률)</b>가 결합된다. 직업병의 잠복기, 사회적 인플레이션도 핵심 위험이다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 경험요율(mod)</div><p class="q">동종 업종 표준보험료가 1억인 두 회사 중, 재해가 적은 A는 mod 0.8, 많은 B는 mod 1.3이다. 실제 보험료는?</p><p style="margin-bottom:0">A = 1억×0.8 = <b>8천만원</b>, B = 1억×1.3 = <b>1.3억원</b>. 같은 업종이라도 안전관리로 재해를 줄인 기업은 보험료가 싸진다. mod는 안전투자를 유도하는 강력한 유인이다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Employer's Liability(사용자배상책임) · Experience-rating(경험요율) · Disability Insurance(소득보상보험) · Reserving(준비금)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>산업재해보상보험 (workers’ compensation)</b> — 업무상 재해를 무과실로 보상하는 제도.</li>
+<li><b>무과실보상 (no-fault)</b> — 과실 불문, 정해진 급부 지급.</li>
+<li><b>경험요율 mod (experience modification)</b> — 개별 재해실적을 보험료에 반영하는 계수.</li>
+<li><b>후험요율 (retrospective rating)</b> — 보험기간 후 실제 손해로 보험료를 정산.</li>
+<li><b>임금총액 (payroll)</b> — 산재 요율의 노출척도.</li>
+<li><b>영구장해급부 (permanent disability)</b> — 장기·평생 지급되는 소득보상.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국의 산업재해보상보험(산재보험)은 본문의 workers’ compensation에 해당하는 <b>국가 운영 사회보험</b>이다. <b>근로복지공단</b>이 1964년부터 독점 운영하며 보험료는 사용자가 전액 부담한다. 업무상 재해를 과실과 무관하게 보상하는 무과실(no-fault) 제도이며, 요양·휴업·장해·유족급여 등을 지급한다.</p><p>요율은 본문대로 업종별 위험도를 기본으로 하되, 개별 사업장의 재해실적을 반영하는 <b>개별실적요율</b>로 차등한다. 민영보험사는 산재로 충분히 보상되지 않는 부분을 근로자재해보장책임보험(근재보험)으로 보완한다.</p><div class="note"><div class="head"><span class="tag">실무</span> 근로복지공단·개별실적요율</div><p style="margin-bottom:0">산재보험은 민영이 아닌 공적 제도라 인수·요율·급부가 법령으로 정해진다. 다만 개별실적요율을 통해 재해예방 유인을 주는 구조는 민영 경험요율과 동일한 원리다. 산재(공적)+근재보험(민영)의 2층 구조가 한국 근로자 재해보장의 틀이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보험사기 (Fraud in Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 보험일반</div>
+<h1>보험사기 (Fraud in Insurance)</h1>
+<div class="meta">Fraud in Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>보험사기(fraud in insurance)</b>는 <b>부정한 방법으로 보험금을 받거나 보험료를 부당하게 줄이려는 행위</b>를 말한다. 사고를 <b>조작·과장</b>하거나, 가입 시 <b>중요사실을 숨기는</b> 것 등이 포함된다. 보험사기는 보험단체 전체의 손해율을 높여 <b>선량한 가입자의 보험료를 올리는</b> 사회적 비용을 낳는다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 경성사기와 연성사기</div><p style="margin-bottom:0"><b>경성사기(hard fraud)</b>는 사고를 <b>처음부터 꾸며내는</b> 계획적 범죄(허위사고·고의 방화·살인보험금). <b>연성사기(soft fraud)</b>는 실제 사고에서 <b>손해를 부풀리거나</b> 가입 시 사실을 살짝 숨기는 ‘기회적’ 부정이다. 연성사기는 흔하고 적발이 어려워 누적 비용이 크다.</p></div>
+<h2>2. 정보 비대칭과 유인 <span class="en">Asymmetric Information</span></h2>
+<p>보험사기는 보험자와 가입자 사이의 <b>정보 비대칭</b>에서 비롯된다. 가입 전 위험을 숨기는 <b>역선택(adverse selection)</b>, 가입 후 행동이 달라지는 <b>도덕적 해이(moral hazard)</b>가 그 토대다. 보험은 손해를 보상하므로 손해를 부풀리거나 예방을 게을리할 유인이 생긴다. <b>자기부담금·공동부담·보상한도</b>는 이런 유인을 줄이는 장치다.</p>
+<h2>3. 탐지와 계리적 접근 <span class="en">Detection and Analytics</span></h2>
+<p>현대 보험사기 대응은 <b>데이터·통계 기반</b>이다. 청구의 이상치를 찾는 <b>이상탐지(anomaly detection)</b>, 과거 사기사례로 학습한 <b>예측모형·기계학습</b>, 조직적 사기를 찾는 <b>네트워크(연결관계) 분석</b>이 쓰인다. 계리적으로는 사기로 인한 <b>손해율 상승분</b>을 추정해 요율·준비금에 반영하고, 탐지투자의 비용–편익을 평가한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 자기부담금과 연성사기</div><p class="q">손해를 부풀리는 연성사기를 줄이려면 보험설계를 어떻게 하나?</p><p style="margin-bottom:0">손해의 일부를 가입자가 지게 하는 <b>자기부담금·공동부담(coinsurance)</b>을 두면, 손해를 부풀려도 일부는 본인이 부담하므로 유인이 줄어든다. 또 <b>정직한 청구에 빠른 보상</b>, 과장청구에 대한 <b>정밀심사</b>를 병행해 비용을 관리한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Moral Hazard(도덕적 해이) · Adverse Selection(역선택) · Deductible(자기부담금) · Predictive Modeling(예측모형)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>보험사기 (insurance fraud)</b> — 부정한 방법으로 보험금·보험료 이득을 취하는 행위.</li>
+<li><b>경성·연성사기 (hard / soft fraud)</b> — 계획적 허위사고 / 손해 과장·은폐.</li>
+<li><b>역선택 (adverse selection)</b> — 위험을 숨기고 가입하는 정보비대칭 문제.</li>
+<li><b>도덕적 해이 (moral hazard)</b> — 가입 후 손해예방을 게을리하는 현상.</li>
+<li><b>이상탐지 (anomaly detection)</b> — 통계·기계학습으로 비정상 청구를 찾는 기법.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>보험사기는 한국 손해보험의 손해율을 끌어올리는 구조적 문제다. 금융감독원에 따르면 2024년 보험사기 적발금액은 <b>1조 1,502억 원</b>으로 역대 최대였고, 이 가운데 자동차 고의사고 등 자동차보험 관련이 약 절반을 차지했다. 입원·진단·수술을 과장하는 이른바 "나이롱환자"와 조직적 고의사고가 대표적 유형이다.</p><p>제도적으로는 <b>보험사기방지 특별법</b>(2016년 시행)이 근간이며, 2024년 개정으로 보험사기 <b>알선·유인·광고 행위까지 금지·처벌</b>(최대 10년 이하 징역 또는 5천만 원 이하 벌금)하도록 강화되었다. 업계는 보험사기 인지·조사 전담조직(SIU)과 보험개발원·건강보험심사평가원 자료를 연계한 이상징후 분석으로 대응한다.</p><div class="note"><div class="head"><span class="tag">실무</span> 애널리틱스 기반 탐지</div><p style="margin-bottom:0">본문이 강조한 정보 비대칭·탐지 문제는 한국에서 데이터 분석으로 풀린다. 다수 보험사 청구를 통합한 보험사기 인지시스템(IFAS), 의료기관·정비업체 네트워크 분석, 머신러닝 이상탐지가 보편화되었다. 적발은 곧 선량한 가입자의 보험료 부담을 줄이는 일이라는 점에서 사회적 의의가 크다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

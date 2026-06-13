@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경험요율 (Experience-rating) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>경험요율 (Experience-rating)</h1>
+<div class="meta">Experience-rating &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>경험요율(experience rating)</b>은 개별 계약자(또는 위험집단)의 <b>과거 손해실적</b>을 반영하여 보험료를 조정하는 방식이다. 같은 분류(class)에 속해도 실제 손해가 평균보다 좋았던 계약은 보험료를 깎아 주고, 나빴던 계약은 올린다. 분류요율(class rating)이 ‘집단 평균’을 정한다면, 경험요율은 ‘그 안에서 개별 차이’를 반영한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 왜 개별 실적을 반영하나</div><p style="margin-bottom:0">같은 분류라도 위험이 완전히 똑같지는 않다(이질성). 개별 실적은 그 ‘숨은 위험수준’의 단서다. 다만 실적이 짧으면 <b>우연</b>의 영향이 커서 그대로 믿기 어렵다. 그래서 실적에 <b>신뢰도(credibility) Z</b>만큼만 가중치를 주고 나머지는 집단평균을 따른다.</p></div>
+<h2>2. 신뢰도 가중 <span class="en">Credibility Weighting</span></h2>
+<p>경험요율의 핵심 공식은 다음과 같다.</p>
+<div class="eq">조정요율 = Z × (개별 실적) + (1 − Z) × (집단 평균),&nbsp; 0 ≤ Z ≤ 1</div>
+<p>신뢰도 Z는 실적자료가 <b>많고 안정적일수록 1에 가까워</b>진다. <b>뷜만(Bühlmann) 신뢰도</b>에서는 Z = n / (n + k)로, 관측 수 n이 클수록, 그리고 분산구조에서 나오는 상수 k(= 과정분산/가설분산)가 작을수록 Z가 커진다. 이렇게 개별 실적과 집단평균을 절충하면 추정의 <b>안정성과 공정성</b>을 동시에 얻는다.</p>
+<h2>3. 적용 형태 <span class="en">Forms in Practice</span></h2>
+<p>경험요율은 적용 시점·방식에 따라 나뉜다. <b>선험요율(prospective)</b>은 과거 실적으로 다음 기간 요율을 정한다(대부분의 단체상해·기업물건). <b>후험요율(retrospective)</b>은 보험기간이 끝난 뒤 실제 손해로 그 기간 보험료를 사후 정산한다(대형 산재보험에서 흔함). 둘 다 도덕적 해이를 줄이고 위험관리 유인을 준다는 공통점이 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 신뢰도 가중 보험료</div><p class="q">집단 평균손해 100, 개별 실적평균 70, 신뢰도 Z=0.4일 때 경험요율 손해추정치는?</p><p style="margin-bottom:0">추정 = 0.4×70 + 0.6×100 = 28 + 60 = <b>88</b>. 실적이 좋아(70) 평균(100)보다 낮춰 주되, 자료가 충분치 않아 절반도 안 되는 가중치(0.4)만 반영했다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Credibility Theory(신뢰도 이론) · Bühlmann Model(뷜만 모형) · Ratemaking(요율산정) · Bonus–Malus(상벌제)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>경험요율 (experience rating)</b> — 개별 손해실적으로 보험료를 조정.</li>
+<li><b>분류요율 (class rating)</b> — 위험특성별 집단 평균요율.</li>
+<li><b>신뢰도 (credibility) Z</b> — 개별 실적에 줄 가중치(0~1).</li>
+<li><b>선험·후험 (prospective / retrospective)</b> — 실적을 다음 기간에 반영 / 끝난 기간을 사후 정산.</li>
+<li><b>뷜만 신뢰도</b> — Z = n/(n+k) 형태의 최적 선형 신뢰도.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>경험요율은 한국에서 가장 정교하게 구현된 종목이 <b>자동차보험</b>이다. 우량할인·할증등급(보너스-말러스)과 사고건수요율로 개별 계약자의 과거 사고이력을 보험료에 반영하며, 무사고가 누적되면 등급이 올라 할인되고 사고가 나면 할증된다. 단체상해·기업성 화재처럼 규모가 큰 계약도 자체 손해경험과 분류요율을 신뢰도(Z)로 가중해 갱신요율을 정한다.</p><p>사회보험에서도 경험요율 원리가 쓰인다. <b>산재보험</b>은 업종별 요율을 기본으로 하되 개별 사업장의 재해실적을 반영하는 <b>개별실적요율</b>을 적용해, 재해예방 노력이 보험료 인하로 이어지도록 설계되어 있다.</p><div class="note"><div class="head"><span class="tag">실무</span> 신뢰도 가중의 실제</div><p style="margin-bottom:0">본문의 Z = n/(n+k) 형태 신뢰도는 자동차 할인할증, 단체계약 경험요율, 산재 개별실적요율에 변형되어 들어가 있다. 개별 경험이 충분히 쌓일수록(대형 계약·장기 무사고) 그 계약 고유 실적의 비중이 커지고, 자료가 부족하면 집단 평균(참조요율)에 가깝게 회귀한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

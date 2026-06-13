@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>합산비율 (Combined Ratio) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>합산비율 (Combined Ratio)</h1>
+<div class="meta">Combined Ratio &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>합산비율(combined ratio)</b>은 손해보험회사의 <b>보험영업 수익성</b>을 한눈에 보여 주는 핵심 지표다. 한 회계기간 동안 보험사가 부담한 <b>손해(보험금)와 사업비의 합계를 보험료로 나눈 비율</b>로 정의되며, 보통 백분율로 표시한다. 직관적으로는 “보험료 100원을 받아 손해와 비용으로 얼마를 썼는가”를 나타낸다.</p>
+<p>합산비율은 일반적으로 <b>손해율(loss ratio)</b>과 <b>사업비율(expense ratio)</b>을 더해 구한다. 즉</p>
+<div class="eq">합산비율 = 손해율 + 사업비율</div>
+<p>여기서 손해율은 발생손해(incurred losses)와 손해사정비를 보험료로 나눈 값, 사업비율은 인수·관리에 들어간 사업비를 보험료로 나눈 값이다. 합산비율이 <b>100%보다 작으면 보험영업에서 이익</b>(언더라이팅 이익), <b>100%보다 크면 손실</b>(언더라이팅 손실)이 발생했음을 뜻한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 합산비율 = 보험영업의 '원가율'</div><p style="margin-bottom:0">제조업의 원가율과 비슷하다. 보험료가 매출이라면, 손해와 사업비는 원가다. 합산비율 95%라면 보험료 100원으로 손해·비용 95원을 쓰고 5원이 영업이익으로 남는다. 110%라면 10원 적자다. 단 보험사는 보험료를 미리 받아 <b>투자수익</b>을 얻으므로, 합산비율이 100%를 약간 넘어도 투자수익을 합치면 전체적으로 흑자일 수 있다.</p></div>
+<h2>2. 손해율과 사업비율의 분모 <span class="en">Earned vs. Written Basis</span></h2>
+<p>합산비율을 계산할 때 <b>분모를 무엇으로 두느냐</b>에 따라 값이 달라질 수 있어 주의가 필요하다. 미국식 표기에서는 흔히 <b>손해율은 경과보험료(earned premium)</b>를 분모로, <b>사업비율은 수입보험료(written premium)</b>를 분모로 사용한다. 손해는 위험이 경과한 기간에 발생하므로 경과보험료와 대응시키고, 사업비(특히 모집수수료)는 계약 체결 시점에 지출되므로 수입보험료와 대응시키는 것이 논리적이기 때문이다. 그 결과 같은 회사라도 ‘영업(trade) 기준’과 ‘법정(statutory) 기준’ 합산비율이 다르게 나올 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 합산비율 계산</div><p class="q">경과보험료 1,000억, 발생손해 720억, 사업비 250억일 때 합산비율은?</p><p style="margin-bottom:0">손해율 = 720/1,000 = 72%, 사업비율 = 250/1,000 = 25%. 합산비율 = 72% + 25% = <b>97%</b>. 100% 미만이므로 보험영업에서 약 3%(30억)의 언더라이팅 이익이 났다.</p></div>
+<h2>3. 활용과 한계 <span class="en">Use and Limitations</span></h2>
+<p>합산비율은 회사·종목·연도 간 <b>비교가 쉽고 직관적</b>이어서 경영진·감독당국·투자자가 널리 사용한다. 다만 한계도 있다. (1) <b>투자수익을 반영하지 않으므로</b> 그 자체로 회사의 총수익성을 말해 주지는 못한다. 보험금 지급이 늦은 <b>롱테일(long-tail)</b> 종목은 그동안 투자수익이 크므로 합산비율이 100%를 넘어도 이익일 수 있다. (2) <b>준비금 추정 오차</b>에 민감하다. 발생손해에는 미래 지급 추정치(IBNR 등)가 들어가므로, 준비금을 적게 잡으면 합산비율이 좋아 보인다. (3) 우연한 <b>거대재해</b>가 있으면 특정 연도 값이 크게 튄다. 따라서 합산비율은 손해율·사업비율의 추세, 투자수익률과 함께 보아야 한다.</p>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Loss Ratio(손해율) · Expense Ratios(사업비율) · Ratemaking(요율산정) · Underwriting Cycle(언더라이팅 사이클) · Premium(보험료)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>합산비율 (combined ratio)</b> — 손해율과 사업비율의 합. 100% 미만이면 보험영업 흑자.</li>
+<li><b>손해율 (loss ratio)</b> — 발생손해(+손해사정비)를 보험료로 나눈 비율.</li>
+<li><b>사업비율 (expense ratio)</b> — 사업비를 보험료로 나눈 비율.</li>
+<li><b>경과보험료 (earned premium)</b> — 위험기간이 이미 경과한 만큼 수익으로 인식한 보험료.</li>
+<li><b>수입보험료 (written premium)</b> — 계약 체결로 인수한 보험료 총액.</li>
+<li><b>언더라이팅 손익 (underwriting result)</b> — 투자수익을 빼고 보험영업만으로 따진 손익.</li>
+<li><b>롱테일 (long-tail)</b> — 사고 후 보험금 확정·지급까지 오래 걸리는 종목.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>합산비율은 한국 손해보험 수익성 분석의 표준 지표로 널리 쓰인다. 2024년 자동차보험 합산비율은 100.1%로 손익분기(100%)를 넘어 보험영업 적자를 기록했고, 2025년 상반기에도 99.7%로 임계선에 머물렀다. 일반보험·장기보험은 종목별로 합산비율 구조가 달라, 통상 자동차·일반은 단기 손익을, 장기는 CSM을 함께 보아야 한다.</p><p>다만 IFRS17 이후 합산비율의 위상은 달라졌다. 과거 손보 손익의 대명사였던 "손해율+사업비율"은 이제 보험손익·CSM 상각과 병행해 읽는 <b>보조지표</b>가 되었고, 할인효과·위험조정(RA) 변동까지 고려해야 진정한 수익성이 드러난다.</p><div class="note"><div class="head"><span class="tag">실무</span> 100%의 의미와 투자손익</div><p style="margin-bottom:0">합산비율이 100%를 넘어도 회사 전체로는 흑자일 수 있다. 받은 보험료를 지급 시점까지 운용한 <b>투자손익</b>이 보험영업 적자를 메우기 때문이다. 자동차보험이 매년 합산비율 100% 부근에서 운영되는 것도 이런 구조 때문이며, 그래서 K-ICS는 보험·시장리스크를 통합해 자본 적정성을 본다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

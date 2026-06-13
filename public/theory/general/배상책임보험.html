@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>배상책임보험 (Liability Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>배상책임보험 (Liability Insurance)</h1>
+<div class="meta">Liability Insurance &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>배상책임보험(liability insurance)</b>은 피보험자가 <b>과실 등으로 타인의 신체·재산에 손해를 입혀 법적으로 배상책임을 지게 될 때</b>, 그 배상금과 방어비용(소송비)을 보상하는 보험이다. 재물보험이 ‘내 재산의 손해’를 다루는 것과 달리, 배상책임보험은 ‘<b>제3자에 대한 나의 법적 책임</b>’을 다룬다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 무엇을 지켜 주나</div><p style="margin-bottom:0">배상책임보험은 ① <b>손해배상금</b>(판결·합의금)과 ② <b>방어비용</b>(변호사·소송비)을 보상한다. 책임이 인정되지 않아도 방어비용이 들 수 있어, 보험자가 <b>방어의무</b>를 지는 경우가 많다. 종류로는 일반·제조물·전문직(의료과실)·임원(D&amp;O)·자동차 배상책임 등이 있다.</p></div>
+<h2>2. 담보 기준: 손해사고기준과 배상청구기준 <span class="en">Occurrence vs. Claims-made</span></h2>
+<p>배상책임보험은 “언제의 사고를 담보하는가”에 따라 두 방식이 있다.</p>
+<ul>
+<li><b>손해사고기준(occurrence)</b> — <b>보험기간 중 발생한 사고</b>를 담보. 청구가 나중에 들어와도 보상한다.</li>
+<li><b>배상청구기준(claims-made)</b> — <b>보험기간 중 제기된 청구</b>를 담보. 늦게 드러나는 손해(석면·환경)에서 보험자의 꼬리위험을 줄이려 도입됐다.</li>
+</ul>
+<div class="note adv"><div class="head"><span class="tag adv">심화</span> 롱테일과 준비금</div><p style="margin-bottom:0">배상책임은 사고부터 청구·판결·지급까지 수년~수십 년 걸리는 <b>롱테일(long-tail)</b>의 대표다. 그래서 <b>IBNR 준비금</b>이 크고, 손해전개·인플레이션(특히 소송·의료비)·법환경 변화에 매우 민감하다. 준비금 추정 오차가 손익을 크게 좌우한다.</p></div>
+<h2>3. 계리적 과제 <span class="en">Actuarial Challenges</span></h2>
+<p>핵심 과제는 (1) 긴 전개기간의 <b>궁극손해 추정</b>, (2) <b>거대·집단소송</b>(mass tort) 위험, (3) <b>사회적 인플레이션</b>(배상액 상승) 반영, (4) 한도·자기부담금 층별 가격(익스포저 요율)이다. 자료가 늦게 성숙하므로 신뢰도·벤치마크가 중요하다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 두 담보기준의 차이</div><p class="q">2020년 시공한 건물이 2025년 결함으로 사고를 냈다. occurrence와 claims-made 중 어느 2020년 증권이 보상하나?</p><p style="margin-bottom:0"><b>손해사고기준(occurrence)</b>이면 ‘사고발생’ 기준이 모호하지만 시공·사고 시점 증권이 다투어진다. <b>배상청구기준(claims-made)</b>이면 <b>청구가 제기된 2025년</b>에 유효한 증권이 보상한다. 그래서 claims-made는 과거 사고를 담보하는 <b>소급담보일자·연장보고기간(tail)</b> 설정이 중요하다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Employer's Liability(사용자배상책임) · Workers' Compensation(산재보상) · Reserving(준비금) · Exposure Rating(익스포저 요율)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>배상책임보험 (liability insurance)</b> — 제3자에 대한 법적 배상책임을 담보.</li>
+<li><b>손해사고기준·배상청구기준 (occurrence / claims-made)</b> — 사고발생 시점 / 청구제기 시점 기준 담보.</li>
+<li><b>방어비용 (defense cost)</b> — 소송 방어에 드는 변호사·법률비용.</li>
+<li><b>롱테일 (long-tail)</b> — 손해 확정·지급이 오래 걸리는 종목.</li>
+<li><b>사회적 인플레이션 (social inflation)</b> — 배상판결액이 물가 이상으로 오르는 현상.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2><p>한국의 배상책임보험은 영업·시설·생산물·전문직 배상책임 등으로 폭넓게 운영되며, <b>의무가입 종목이 빠르게 늘고 있다</b>. 자동차 대인배상Ⅰ, 다중이용업소 화재배상, 가스·체육시설·승강기·환경오염 등 분야별로 법령이 배상책임보험 가입을 강제해, 피해자 구제의 사회적 안전망 역할을 한다.</p><p>본문의 손해사고기준(occurrence)·배상청구기준(claims-made) 구분은 국내 약관에도 그대로 쓰인다. 전문직·생산물배상처럼 손해의 잠복기가 긴 종목은 배상청구기준과 소급담보일자·보고연장기간(ERP)을 두며, 준비금의 꼬리(IBNR)가 길어 산정이 까다롭다.</p><div class="note"><div class="head"><span class="tag">실무</span> 의무배상책임의 확대와 긴 꼬리</div><p style="margin-bottom:0">한국은 사회적 사고가 발생할 때마다 해당 분야 배상책임보험을 의무화하는 흐름이 강하다. 배상책임은 손해 확정까지 시간이 오래 걸리는 long-tail 종목이라, IFRS17 최선추정과 K-ICS 준비금리스크에서 꼬리 위험을 보수적으로 반영하는 것이 핵심 실무다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004). · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>
