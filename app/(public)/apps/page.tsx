@@ -70,7 +70,7 @@ const WORK_APPS: AppItem[] = [
       "특정 페이지 삭제",
       "빠르고 간편한 처리",
     ],
-    link: "https://pdf-master-8bzg.vercel.app/",
+    link: "https://pdf-master-lyart.vercel.app/",
   },
   {
     title: "Actuary Pro Calc",

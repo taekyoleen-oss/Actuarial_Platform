@@ -59,7 +59,7 @@ export interface DbProfile {
   sources: DbSource[];
 }
 
-export const DB_ORDER = ["nsc2", "nps", "hps"] as const;
+export const DB_ORDER = ["nsc2", "nps", "hps", "knhanes"] as const;
 
 export const PROFILES: Record<string, DbProfile> = {
   nsc2: {
@@ -206,6 +206,59 @@ export const PROFILES: Record<string, DbProfile> = {
       {
         label: "보건복지부 — 환자조사(승인통계)",
         url: "https://www.mohw.go.kr/",
+      },
+    ],
+  },
+  knhanes: {
+    id: "knhanes",
+    shortName: "국민건강영양조사",
+    fullName: "국민건강영양조사 제9기(2022-2024) 원시자료 (KNHANES)",
+    provider: "질병관리청(KDCA) · 국민건강영양조사 누리집(knhanes.kdca.go.kr)",
+    tagline:
+      "전국 가구 표본의 1세 이상 가구원을 대상으로 건강설문·검진·영양을 함께 조사하는 복합표본 조사 — 개인(ID)으로 기본 DB와 식품섭취 DB를 연계한다.",
+    structure: "횡단 복합표본조사(순환표본) · 가구→개인",
+    summary: [
+      "질병관리청이 매년 시행하는 국가 승인통계로, 인구주택총조사 기반 층화집락 표본(조사구→가구)에서 1세 이상 가구원을 대상으로 건강설문조사·검진조사·영양조사를 함께 수행한다. 2007년(제4기) 순환표본조사를 도입해 연중 조사하며, 목표모집단(대한민국 국민)으로 확대 해석하려면 복합표본설계 요소(가중치·층·집락)를 반영해 분석해야 한다.",
+      "원시자료는 개인당 1행인 기본 DB(HNYR_ALL, YR=연도 2자리)와, 24시간 회상법 식품섭취조사 DB(HNYR_24RC, 개인·끼니·음식·식품재료별 다행)로 구성된다. 두 파일은 개인고유번호(ID)로 연계하며, 검진(HE_*)·영양 요약(N_*) 변수는 기본 DB에 포함된다.",
+    ],
+    facts: [
+      { label: "자료 성격", value: "횡단 복합표본조사(순환표본·연중)" },
+      {
+        label: "표본",
+        value: "연간 약 1만 명(층화집락: 조사구→가구→1세 이상 가구원)",
+      },
+      { label: "기간(9기)", value: "2022 ~ 2024 (연도별 파일)" },
+      { label: "조사부문", value: "건강설문 · 검진 · 영양(식생활·식품섭취)" },
+      { label: "측정", value: "검진 HE_* · 영양 N_* · 식품섭취 24시간 회상" },
+      {
+        label: "복합표본",
+        value: "가중치(wt_itvex·wt_ntr·wt_tot) · 층(kstrata) · 집락(psu)",
+      },
+    ],
+    strengths: [
+      "검진 실측치(혈압·혈당·지질·체격) + 건강행태·이환 + 식이 섭취를 한 사람 단위로 동시 확보",
+      "24시간 회상 식품섭취조사로 영양소 1일 섭취량 산출 가능",
+      "국가 대표 표본 — 가중치 적용 시 전국민 단면 추정",
+    ],
+    cautions: [
+      "횡단 — 개인 추적 불가(코호트 아님), 발생률 산출에는 부적합",
+      "복합표본설계 분석 필수 — 가중치·층·집락 미반영 시 추정·표준오차 왜곡",
+      "식품섭취 DB(HNYR_24RC)는 개인당 다행(1:N) — 1인 1행 기본 DB와 분석 단위 구분",
+      "자가보고(건강설문)·1일 회상(식이)의 측정 한계",
+    ],
+    uses: [
+      "만성질환 유병률·위험요인(비만·고혈압·당뇨·이상지질) 단면 분석",
+      "식이·영양소 섭취와 건강지표 연관성 분석",
+      "국가·지역 건강지표 산출, 보험 위험요인 기초통계",
+    ],
+    sources: [
+      {
+        label: "국민건강영양조사 누리집 (질병관리청) — 원시자료·이용지침서",
+        url: "https://knhanes.kdca.go.kr/",
+      },
+      {
+        label: "국민건강통계 제9기 1차년도(2022) 주요 결과 (정책브리핑)",
+        url: "https://www.korea.kr/archive/expDocView.do?docId=40757",
       },
     ],
   },

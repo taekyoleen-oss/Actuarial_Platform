@@ -1424,5 +1424,306 @@
     "label": "기관(YID)"
    }
   ]
+ },
+ "knhanes": {
+  "source": "knhanes",
+  "display_name": "국민건강영양조사 제9기(2022-2024) 원시자료",
+  "code_system": "KNHANES 변수체계(HE_·N_)",
+  "keys": {
+   "개인": "ID"
+  },
+  "tables": [
+   {
+    "id": "all",
+    "name": "HNYR_ALL",
+    "label": "기본 DB (HNYR_ALL)",
+    "unit": "개인 1행",
+    "col": 1,
+    "group": "기본 DB · 식별·가중치(개인 1행)",
+    "columns": [
+     {
+      "name": "ID",
+      "key": true,
+      "desc": "개인고유번호(10자리: 가구+가구원) — 기본 DB와 식품섭취 DB(HNYR_24RC)를 잇는 연계키. 앞부분이 가구를 식별. SAS/SPSS에서 id 기준 MERGE."
+     },
+     {
+      "name": "year",
+      "key": false,
+      "desc": "조사연도 — YR=22·23·24(연도별 파일 HNYR_ALL). 다년도 통합 시 통합 가중치 사용."
+     },
+     {
+      "name": "sex",
+      "key": false,
+      "desc": "성별."
+     },
+     {
+      "name": "age",
+      "key": false,
+      "desc": "만 나이."
+     },
+     {
+      "name": "wt_itvex",
+      "key": false,
+      "desc": "건강설문·검진조사 가중치 — 해당 부문 분석 시 적용."
+     },
+     {
+      "name": "wt_ntr",
+      "key": false,
+      "desc": "영양조사 가중치 — 영양부문 분석 시 적용(대상자수 차이로 별도 구성)."
+     },
+     {
+      "name": "wt_tot",
+      "key": false,
+      "desc": "건강설문·검진 & 영양 통합 가중치 — 두 부문 결합 분석 시(예: 비만×영양)."
+     },
+     {
+      "name": "kstrata",
+      "key": false,
+      "desc": "분산추정 층 — 복합표본설계의 설계층 통합. 표준오차 추정에 사용."
+     },
+     {
+      "name": "psu",
+      "key": false,
+      "desc": "집락(1차 추출단위) — 표본설계의 1차 추출단위(조사구)."
+     }
+    ]
+   },
+   {
+    "id": "itv",
+    "name": "HN_INTERVIEW",
+    "label": "건강설문조사 영역",
+    "unit": "HNYR_ALL 내",
+    "col": 2,
+    "group": "HNYR_ALL 내 조사부문(동일 파일)",
+    "columns": [
+     {
+      "name": "가구조사",
+      "key": false,
+      "desc": "세대유형·가구소득·기초생활수급·민간보험 가입 등(19세 이상)."
+     },
+     {
+      "name": "이환",
+      "key": false,
+      "desc": "주관적 건강수준·만성질환별 이환(고혈압·당뇨 등 의사진단 여부)."
+     },
+     {
+      "name": "의료이용",
+      "key": false,
+      "desc": "미충족의료·외래/입원 이용·건강정보이해능력."
+     },
+     {
+      "name": "건강검진",
+      "key": false,
+      "desc": "건강검진·암검진 수진 여부, 예방접종."
+     },
+     {
+      "name": "활동제한·삶의질",
+      "key": false,
+      "desc": "활동제한·와병·결근결석, 삶의 질(EQ-5D 등)."
+     },
+     {
+      "name": "손상",
+      "key": false,
+      "desc": "사고·중독 발생, 손상 치료."
+     },
+     {
+      "name": "교육·경제활동",
+      "key": false,
+      "desc": "학력·경제활동·직업·근로시간."
+     },
+     {
+      "name": "건강행태",
+      "key": false,
+      "desc": "흡연·음주·신체활동(GPAQ)·수면·정신건강(PHQ-9·GAD-7)·안전의식."
+     }
+    ]
+   },
+   {
+    "id": "exam",
+    "name": "HN_EXAM",
+    "label": "검진조사 영역 (HE_*)",
+    "unit": "HNYR_ALL 내",
+    "col": 2,
+    "group": "HNYR_ALL 내 조사부문(동일 파일)",
+    "columns": [
+     {
+      "name": "HE_ht",
+      "key": false,
+      "desc": "신장(cm)."
+     },
+     {
+      "name": "HE_wt",
+      "key": false,
+      "desc": "체중(kg)."
+     },
+     {
+      "name": "HE_BMI",
+      "key": false,
+      "desc": "체질량지수(kg/m²)."
+     },
+     {
+      "name": "HE_sbp",
+      "key": false,
+      "desc": "수축기 혈압(mmHg)."
+     },
+     {
+      "name": "HE_glu",
+      "key": false,
+      "desc": "공복혈당(mg/dL) — 10세 이상 혈액검사."
+     },
+     {
+      "name": "HE_HbA1c",
+      "key": false,
+      "desc": "당화혈색소(%)."
+     },
+     {
+      "name": "HE_chol",
+      "key": false,
+      "desc": "총콜레스테롤(mg/dL)."
+     },
+     {
+      "name": "HE_HDL",
+      "key": false,
+      "desc": "HDL 콜레스테롤(mg/dL)."
+     },
+     {
+      "name": "HE_TG",
+      "key": false,
+      "desc": "중성지방(mg/dL)."
+     },
+     {
+      "name": "HE_LDL_drct",
+      "key": false,
+      "desc": "LDL 콜레스테롤(직접법, mg/dL)."
+     }
+    ]
+   },
+   {
+    "id": "nutr",
+    "name": "HN_NUTR",
+    "label": "영양 요약(개인 1일, N_*)",
+    "unit": "HNYR_ALL 내",
+    "col": 2,
+    "group": "HNYR_ALL 내 조사부문(동일 파일)",
+    "columns": [
+     {
+      "name": "N_DAY",
+      "key": false,
+      "desc": "영양조사 요일."
+     },
+     {
+      "name": "N_INTK",
+      "key": false,
+      "desc": "1일 식품섭취량(g) — 식품섭취조사에서 산출."
+     },
+     {
+      "name": "N_EN",
+      "key": false,
+      "desc": "1일 에너지 섭취량(kcal)."
+     },
+     {
+      "name": "N_PROT",
+      "key": false,
+      "desc": "1일 단백질 섭취량(g)."
+     },
+     {
+      "name": "N_FAT",
+      "key": false,
+      "desc": "1일 지방 섭취량(g)."
+     },
+     {
+      "name": "N_CHO",
+      "key": false,
+      "desc": "1일 탄수화물 섭취량(g)."
+     },
+     {
+      "name": "N_TDF",
+      "key": false,
+      "desc": "1일 식이섬유 섭취량(g)."
+     }
+    ]
+   },
+   {
+    "id": "rc",
+    "name": "HNYR_24RC",
+    "label": "식품섭취조사 DB (HNYR_24RC)",
+    "unit": "개인 N행",
+    "col": 3,
+    "group": "식품섭취조사 · 24시간 회상(개인당 다행)",
+    "columns": [
+     {
+      "name": "ID",
+      "key": true,
+      "desc": "개인고유번호 — 기본 DB(HNYR_ALL)와 동일 연계키. 개인당 여러 행(끼니·음식·식품재료)."
+     },
+     {
+      "name": "N_meal",
+      "key": false,
+      "desc": "끼니구분 — 1=아침 등(아침식사 빈도/끼니 분석에 사용)."
+     },
+     {
+      "name": "음식명",
+      "key": false,
+      "desc": "섭취한 음식명(예: 쌀밥, 된장국)."
+     },
+     {
+      "name": "식품재료",
+      "key": false,
+      "desc": "음식을 구성한 식품재료(예: 쌀, 냉이)."
+     },
+     {
+      "name": "섭취량(g)",
+      "key": false,
+      "desc": "식품재료별 섭취량(g) — 총부피·섭취부피로부터 환산."
+     },
+     {
+      "name": "에너지",
+      "key": false,
+      "desc": "식품재료별 에너지(kcal) — 행 단위 영양성분."
+     },
+     {
+      "name": "단백질",
+      "key": false,
+      "desc": "식품재료별 단백질(g)."
+     },
+     {
+      "name": "지방",
+      "key": false,
+      "desc": "식품재료별 지방(g)."
+     },
+     {
+      "name": "탄수화물",
+      "key": false,
+      "desc": "식품재료별 탄수화물(g)."
+     }
+    ]
+   }
+  ],
+  "relations": [
+   {
+    "from": "HNYR_ALL",
+    "to": "HN_INTERVIEW",
+    "via": "ID",
+    "label": "동일 파일·영역(1:1)"
+   },
+   {
+    "from": "HNYR_ALL",
+    "to": "HN_EXAM",
+    "via": "ID",
+    "label": "동일 파일·영역(1:1)"
+   },
+   {
+    "from": "HNYR_ALL",
+    "to": "HN_NUTR",
+    "via": "ID",
+    "label": "동일 파일·영역(1:1)"
+   },
+   {
+    "from": "HNYR_ALL",
+    "to": "HNYR_24RC",
+    "via": "ID",
+    "label": "개인(ID) 1:N — 별도 파일"
+   }
+  ]
  }
 }
