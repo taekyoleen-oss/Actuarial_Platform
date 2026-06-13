@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 확률과정시뮬레이션: 난수로 표본경로를 생성하는 몬테카를로 시뮬레이션 -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <rect x="55" y="120" width="80" height="64" rx="8" fill="#EAF2F9" stroke="#171A20" stroke-width="3"/><circle cx="80" cy="142" r="3" fill="#171A20"/><circle cx="110" cy="152" r="3" fill="#171A20"/><circle cx="92" cy="166" r="3" fill="#171A20"/><text x="70" y="200" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">U(0,1)</text><line x1="138.0" y1="152.0" x2="187.0" y2="152.0" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/><polygon points="196.0,152.0 187.9,155.9 187.9,148.1" fill="#4A90C2"/><path d="M 200 152 C 260 120 300 170 360 130 C 390 112 410 140 430 128" fill="none" stroke="#4A90C2" stroke-width="4"/><path d="M 200 152 C 260 180 300 150 360 185 C 390 200 410 180 430 192" fill="none" stroke="#171A20" stroke-width="2.5"/><path d="M 200 152 C 270 150 310 158 360 156 C 395 154 415 160 430 158" fill="none" stroke="#171A20" stroke-width="2.5" stroke-opacity=".5"/>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

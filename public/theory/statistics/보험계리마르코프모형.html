@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보험계리에서의 마르코프 모형 (Markov Models in Actuarial Science)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 확률과정</div>
+<h1>보험계리에서의 마르코프 모형 (Markov Models in Actuarial Science)</h1>
+<div class="meta">원저자: Hansjörg Albrecher · 출처: Encyclopedia of Actuarial Science (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원서 표제어의 내용을 충실히 옮긴 것입니다. 회색 <span class="tag">해설</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+<h2>1. 개요 <span class="en">Introduction</span></h2><p>이 글은 보험계리에서 마르코프 과정이 <b>계산·모형화 도구</b>로 어떻게 쓰이는지를 개관한다. 마르코프 과정은 ‘현재가 주어지면 과거와 미래가 독립’인 과정으로, 이산·연속 시간과 이산·연속 상태공간 모두에서 정의된다. 상태공간이 이산이면 보통 <b>마르코프 연쇄</b>라 부른다.</p><h2>2. 마르코프 과정의 성질 <span class="en">Properties</span></h2><p>마르코프 과정은 확률과정 이론의 중심에 있으며 다루기 쉬운 특수경우를 제공한다. 모든 마르코프 과정은 <b>준마팅게일(semimartingale)</b>이고 단거리 의존이다. 또한 여러 중요한 과정을 통합한다.</p><ul><li><b>브라운 운동</b>, <b>Ornstein–Uhlenbeck 과정</b>(유일한 정상 가우스 과정), <b>랜덤워크</b>, 정상·독립 증분 과정은 모두 마르코프 과정의 예다.</li><li>약한 정칙성 아래 모든 <b>확산(diffusion) 과정</b>은 마르코프다.</li><li>마르코프 연쇄는 초기분포와 전이확률만 있으면 <b>시뮬레이션이 매우 쉽다</b>. 정상분포로부터의 추출은 <b>커플링(coupling)</b>으로 완전표집(perfect sampling)할 수 있다.</li><li>기약·재귀 마르코프 연쇄는 <b>재생성 과정</b>에 속하고 이산 재생 과정과 강하게 연결된다.</li></ul><h2>3. 마르코프 가법과정과 확장 <span class="en">Markov Additive &amp; MCMC</span></h2><p><b>마르코프 가법과정</b>(<i>J</i><sub><i>t</i></sub>,<i>S</i><sub><i>t</i></sub>)은 환경 <i>J</i><sub><i>t</i></sub>가 증분을 지배하는 구조로, <b>마르코프 도착과정(MAP)</b>·<b>마르코프 재생 과정</b>·<b>은닉 마르코프 모형(HMM)</b>을 통합한다. 한편 에르고딕 마르코프 연쇄의 평형분포를 목표분포로 삼아 적분을 추정하는 기법이 <b>마르코프 연쇄 몬테카를로(MCMC)</b>이며 premium rating 등에서 쓰인다.</p><h2>4. 보험계리의 마르코프형 모형 <span class="en">Actuarial Models</span></h2><p>실제 많은 상황이 마르코프형이다. 대표적 응용은 다음과 같다.</p><ul><li>자동차보험의 <b>bonus-malus</b> 시스템</li><li>생명보험의 <b>탈퇴분석</b>(혼인상태에 따른 사망력 등)</li><li>소득보상·중대질병보험의 <b>다중상태(multi-state) 모형</b></li><li><b>신용평점</b>과 <b>이자율 모형</b>, claims reserving에서의 청구이력 추적</li><li><b>대기행렬</b> 모형 — 위험이론의 잉여과정과 <b>쌍대성(duality)</b>으로 연결</li><li>Markov-modulated 복합 포아송 등 <b>고전 Cramér–Lundberg 모형의 일반화</b> (Cramér–Lundberg 과정 자체가 마르코프 과정)</li></ul><div class="note"><div class="head"><span class="tag">해설</span> ‘마르코프 방법’의 힘</div><p style="margin-bottom:0">마르코프 구조는 명시적 해를 주거나 적어도 더 일반적 모형에 대한 직관을 준다. 또한 위상형 분포(phase-type)처럼 행렬 연산으로 닫힌 형태를 얻게 해주어 보험수리 계산에 특히 유용하다.</p></div><h2>참고 및 관련 표제어</h2><div class="xref"><b>관련 표제어.</b> Markov Chains and Markov Processes · Hidden Markov Models(은닉 마르코프 모형) · Phase-type Distributions(위상형 분포) · Coupling(커플링) · Disability Insurance(소득보상보험)</div><h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2><ul><li><b>준마팅게일</b> — 마팅게일과 유계변동 과정의 합으로 분해되는 과정.</li><li><b>다중상태 모형</b> — 건강·장해·사망 등 상태 간 전이로 보험을 기술.</li><li><b>커플링</b> — 두 과정을 같은 공간에서 결합해 수렴·정상성을 분석.</li><li><b>MAP</b> — 환경 마르코프 과정이 도착을 지배하는 점 과정.</li><li><b>쌍대성(duality)</b> — 대기행렬과 위험 잉여과정 사이의 대응.</li></ul><h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>보험계리에서 마르코프 모형은 생존·다중상태·전이 계산을 묶는 통합 도구다. 한국에서도 연금의 생존/사망, CI의 다중질병상태, 실손·간병의 이용상태 모형에 쓰이며, 연속시간 전이강도를 쓰면 준비금이 Thiele 형태의 미분방정식으로 전개된다.</p>
+<p>IFRS17의 상태별 현금흐름과 CSM 롤포워드를 펼치면 그 안에 마르코프 구조가 드러난다. 초기분포와 전이확률만 있으면 시뮬레이션이 쉬워, 확률론적 준비금·시나리오 분석에도 잘 맞는다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 신담보의 전이율과 재보험 경험</div><p>자사 경험이 적은 신담보는 전이율 추정의 신뢰도가 낮으므로 재보험사 경험·산업통계로 보완하고, K-ICS 모수충격으로 민감도를 점검한다. 마르코프 가정의 적합성(과거 의존성) 검증도 모형 위험 관리의 일부다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Markov Models in Actuarial Science”. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임. 수식은 원문 기준 복원.</div></div></body></html>
