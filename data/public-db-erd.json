@@ -1810,5 +1810,174 @@
     "label": "개인(ID) 1:N — 별도 파일"
    }
   ]
+ },
+ "knhanes_cod": {
+  "source": "knhanes_cod",
+  "display_name": "국민건강영양조사–사망원인통계 연계자료 (ver 2.2)",
+  "code_system": "KCD(사인) · KNHANES 변수체계",
+  "keys": {
+   "개인(연계)": "ID_New"
+  },
+  "tables": [
+   {
+    "id": "all",
+    "name": "HN_ALL(연계)",
+    "label": "연계 기본DB (HN07_ALL~HN18_ALL)",
+    "unit": "개인 1행",
+    "col": 1,
+    "group": "연계 기본DB · 개인 1행(2007-2018)",
+    "columns": [
+     {
+      "name": "ID_New",
+      "key": true,
+      "desc": "연계자료 분석용 개인 식별자 — 연계 시 새로 부여(기존 ID·가구ID 등은 제외). 사망원인통계·식품섭취조사를 잇는 연계키."
+     },
+     {
+      "name": "조사년",
+      "key": false,
+      "desc": "국민건강영양조사 조사 연도(2007~2018) — 추적기간(조사~사망) 계산의 시작점."
+     },
+     {
+      "name": "조사월",
+      "key": false,
+      "desc": "조사 월."
+     },
+     {
+      "name": "age_rrn",
+      "key": false,
+      "desc": "주민등록번호 기반 나이 — 연계 추가 제공(실제 생년월일 기반, KNHANES 조사나이와 차이 가능)."
+     },
+     {
+      "name": "sex",
+      "key": false,
+      "desc": "성별."
+     },
+     {
+      "name": "wt",
+      "key": false,
+      "desc": "가중치 — 복합표본설계(층화집락) 추정 시 적용."
+     },
+     {
+      "name": "HE_BMI",
+      "key": false,
+      "desc": "체질량지수 — 검진 실측(대표). KNHANES 원시 검진변수 일체 포함."
+     },
+     {
+      "name": "HE_sbp",
+      "key": false,
+      "desc": "수축기 혈압 — 검진 실측(대표)."
+     },
+     {
+      "name": "HE_glu",
+      "key": false,
+      "desc": "공복혈당 — 검진 실측(대표)."
+     },
+     {
+      "name": "HE_chol",
+      "key": false,
+      "desc": "총콜레스테롤 — 검진 실측(대표)."
+     },
+     {
+      "name": "N_EN",
+      "key": false,
+      "desc": "1일 에너지 섭취량 — 영양 요약(대표). 건강설문(이환·건강행태) 변수도 함께 포함."
+     }
+    ]
+   },
+   {
+    "id": "cod",
+    "name": "사망원인통계(연계)",
+    "label": "사망원인통계 연계변수",
+    "unit": "개인 1행",
+    "col": 2,
+    "group": "사망원인통계 연계 · 2007-2023(동일 파일)",
+    "columns": [
+     {
+      "name": "ID_New",
+      "key": true,
+      "desc": "연계키 — 동일 개인(기본DB와 1:1)."
+     },
+     {
+      "name": "사망여부",
+      "key": false,
+      "desc": "추적기간 내 사망 여부(생존/사망) — 생존분석의 사건(event) 지표."
+     },
+     {
+      "name": "사망원인",
+      "key": false,
+      "desc": "사인 — 한국표준질병사인분류(KCD) 코드. 사인별(암·순환기 등) 사망 분석."
+     },
+     {
+      "name": "사망년",
+      "key": false,
+      "desc": "사망 연도(2007~2023)."
+     },
+     {
+      "name": "사망월",
+      "key": false,
+      "desc": "사망 월 — 조사~사망 추적기간(생존시간) 산출에 사용."
+     },
+     {
+      "name": "사망장소",
+      "key": false,
+      "desc": "사망 장소 — 필요시 제공."
+     }
+    ]
+   },
+   {
+    "id": "rc",
+    "name": "HN_24RC(연계)",
+    "label": "식품섭취조사 (HN07_24RC~HN18_24RC)",
+    "unit": "개인 N행",
+    "col": 3,
+    "group": "식품섭취조사 · 24시간 회상(별도 파일, 개인당 다행)",
+    "columns": [
+     {
+      "name": "ID_New",
+      "key": true,
+      "desc": "연계키 — 기본DB와 동일. 개인당 여러 행(끼니·음식·식품재료)이라 별도 파일로 제공."
+     },
+     {
+      "name": "N_meal",
+      "key": false,
+      "desc": "끼니구분."
+     },
+     {
+      "name": "음식명",
+      "key": false,
+      "desc": "섭취한 음식명."
+     },
+     {
+      "name": "식품재료",
+      "key": false,
+      "desc": "음식 구성 식품재료."
+     },
+     {
+      "name": "섭취량(g)",
+      "key": false,
+      "desc": "식품재료별 섭취량(g)."
+     },
+     {
+      "name": "에너지",
+      "key": false,
+      "desc": "식품재료별 에너지(kcal) 등 영양성분."
+     }
+    ]
+   }
+  ],
+  "relations": [
+   {
+    "from": "HN_ALL(연계)",
+    "to": "사망원인통계(연계)",
+    "via": "ID_New",
+    "label": "동일 파일·사망 연계 (1:1)"
+   },
+   {
+    "from": "HN_ALL(연계)",
+    "to": "HN_24RC(연계)",
+    "via": "ID_New",
+    "label": "개인(ID_New) 1:N — 별도 파일"
+   }
+  ]
  }
 }

@@ -22,7 +22,7 @@ interface AppItem {
 
 const MODEL_APPS: AppItem[] = [
   {
-    title: "보험료 자동산출 시스템",
+    title: "생명보험 보험료 자동 산출",
     description:
       "생명보험 보험료 및 책임준비금을 모듈 형식으로 자동 산출하는 앱입니다. 간단한 클릭만으로 보험료를 산출할 수 있으며, 간결화된 방식으로 전체 흐름 및 산출결과를 파악할 수 있습니다.",
     features: [
@@ -31,10 +31,10 @@ const MODEL_APPS: AppItem[] = [
       "간결한 흐름 및 결과 조회",
       "클릭만으로 빠른 산출",
     ],
-    link: "https://life-matrix-flow-new.vercel.app/",
+    link: "https://life-matrix-flow-new-livid.vercel.app/",
   },
   {
-    title: "머신러닝 자동 플로우",
+    title: "머신러닝 자동분석",
     description:
       "머신러닝을 모듈화하고 이를 파이썬으로 구현하여 검증이 가능하고 다양한 모델을 조합하여 산출이 가능합니다.",
     features: [
