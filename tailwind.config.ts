@@ -32,14 +32,18 @@ const config: Config = {
         // 카드 엘리베이션 2단 — globals.css 변수가 단일 출처
         card: "var(--shadow-card)",
         "card-hover": "var(--shadow-card-hover)",
+        // v2: 스티키 바·플로팅 패널 한정
+        float: "var(--shadow-float)",
       },
       fontFamily: {
         sans: ["Pretendard", "Inter", "-apple-system", "system-ui", "sans-serif"],
       },
       fontWeight: {
-        // 400/500만 사용 (700·300 금지)
+        // v2(2026-06-13): 본문 400/500 + 헤딩 위계 600/700 허용 (300 금지 유지)
         normal: "400",
         medium: "500",
+        semibold: "600",
+        bold: "700",
       },
       borderRadius: {
         DEFAULT: "var(--radius)",

@@ -6,10 +6,19 @@ import { Menu, X } from "lucide-react";
 import { HeroIdent } from "@/components/feature/HeroIdent";
 
 // 상단 카테고리(ib_categories 시드와 일치). 카테고리 관리 UI는 v2.0.
+// 해외 자료는 네이티브 허브(/global)가 진입점 (2026-06-13 전환).
 const CATEGORIES = [
-  { slug: "exclusive-rights", name: "보험 배타적 사용권 분석" },
-  { slug: "global", name: "해외 주요 보험 정보·자료" },
-  { slug: "domestic", name: "국내 보험 정보·분석" },
+  {
+    slug: "exclusive-rights",
+    name: "보험 배타적 사용권 분석",
+    href: "/posts?category=exclusive-rights",
+  },
+  { slug: "global", name: "해외 주요 보험 정보·자료", href: "/global" },
+  {
+    slug: "domestic",
+    name: "국내 보험 정보·분석",
+    href: "/posts?category=domestic",
+  },
 ];
 
 const EXTRA = [
@@ -53,11 +62,7 @@ export function SiteNav() {
         {/* 데스크톱 — 메뉴 8개라 xl(1280px)부터 풀 메뉴, 그 아래는 햄버거 */}
         <div className="hidden items-center gap-4 text-sm font-medium xl:flex">
           {CATEGORIES.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/posts?category=${c.slug}`}
-              className={desktopLink}
-            >
+            <Link key={c.slug} href={c.href} className={desktopLink}>
               {c.name}
             </Link>
           ))}
@@ -87,7 +92,7 @@ export function SiteNav() {
             {CATEGORIES.map((c) => (
               <Link
                 key={c.slug}
-                href={`/posts?category=${c.slug}`}
+                href={c.href}
                 className={mobileLink}
                 onClick={() => setOpen(false)}
               >

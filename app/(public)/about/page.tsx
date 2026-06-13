@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Award, Quote } from "lucide-react";
+import { Reveal } from "@/components/feature/Reveal";
 
 // "만든이" — AI4Insurance 프로젝트의 소개(about) 콘텐츠만 이식해 보드 테마로 재구성.
 // 원본: AI4Insurance/app/about + content/{profile,research,site}.ts (2026-06-11)
@@ -166,8 +167,10 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       {/* 헤더 */}
-      <p className="text-sm font-medium text-brand-sky">About · 만든이</p>
-      <h1 className="mt-2 text-2xl font-medium text-foreground sm:text-3xl">
+      <p className="text-[12px] font-bold tracking-[0.14em] text-brand-sky">
+        ABOUT · 만든이
+      </p>
+      <h1 className="mt-2 text-[26px] font-bold tracking-tight text-foreground sm:text-[32px]">
         {PROFILE.name}
       </h1>
       <p className="mt-1.5 text-sm text-tertiary">{PROFILE.credentials}</p>
@@ -198,21 +201,25 @@ export default function AboutPage() {
       <section className="mt-16">
         <SectionTitle>경력 타임라인</SectionTitle>
         <ol className="ml-1 mt-8 max-w-3xl border-l border-border pl-8">
-          {TIMELINE.map((e) => (
+          {TIMELINE.map((e, i) => (
             <li key={e.period + e.title} className="relative pb-8 last:pb-0">
               <span
                 aria-hidden
                 className="absolute -left-[2.32rem] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-brand-sky bg-white"
               />
-              <p className="text-xs font-medium text-brand-sky">{e.period}</p>
-              <h3 className="mt-1 text-[15px] font-medium text-foreground">
-                {e.title}
-              </h3>
-              {e.detail && (
-                <p className="mt-1 text-sm leading-relaxed text-tertiary">
-                  {e.detail}
+              <Reveal delay={Math.min(i * 40, 240)}>
+                <p className="text-xs font-semibold text-brand-sky">
+                  {e.period}
                 </p>
-              )}
+                <h3 className="mt-1 text-[15px] font-medium text-foreground">
+                  {e.title}
+                </h3>
+                {e.detail && (
+                  <p className="mt-1 text-sm leading-relaxed text-tertiary">
+                    {e.detail}
+                  </p>
+                )}
+              </Reveal>
             </li>
           ))}
         </ol>

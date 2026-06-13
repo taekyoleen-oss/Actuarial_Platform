@@ -74,7 +74,10 @@ export default async function TheoryTopicPage({
           아직 등록된 자료가 없습니다.
         </p>
       ) : (
-        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          key={t.slug}
+          className="tab-fade-in mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+        >
           {items.map((item) => {
             const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
             return (

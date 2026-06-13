@@ -37,6 +37,36 @@
   --shadow-card-hover: 0 2px 4px rgba(23, 26, 32, 0.05),
     0 14px 36px rgba(23, 26, 32, 0.1);
 
+  /* ===== v2 깊이 토큰 (2026-06-13 사용자 승인 완화) =====
+     글래스 패널은 스티키 필터바·내비 한정, 워터마크는 히어로·섹션 헤더 한정,
+     칩 팔레트는 FSA 테마 칩·강조 마크 한정 스코프. */
+  --shadow-float: 0 1px 0 rgba(23, 26, 32, 0.03),
+    0 8px 24px rgba(23, 26, 32, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(23, 26, 32, 0.07);
+
+  /* 뮤트 칩 팔레트 8색 (bg/fg 쌍 — WCAG AA 대비) */
+  --chip-blue-bg: #e8eef9;
+  --chip-blue-fg: #2b4a8c;
+  --chip-teal-bg: #e3f1ef;
+  --chip-teal-fg: #1f6e64;
+  --chip-amber-bg: #f7eedc;
+  --chip-amber-fg: #7d5a14;
+  --chip-rose-bg: #f8e8e6;
+  --chip-rose-fg: #a03e33;
+  --chip-violet-bg: #eee9f7;
+  --chip-violet-fg: #5b4493;
+  --chip-green-bg: #e7f2e4;
+  --chip-green-fg: #3d6b2f;
+  --chip-slate-bg: #eaedf1;
+  --chip-slate-fg: #475266;
+  --chip-cyan-bg: #e2f0f6;
+  --chip-cyan-fg: #1d6486;
+
+  /* 본문 핵심 구절 하이라이트 (FSA 사례 본문 한정) */
+  --mark-bg: #fdf3cd;
+  --mark-fg: inherit;
+
   /* shadcn 호환 HSL 매핑 */
   --color-background: 0 0% 100%;
   --color-foreground: 220 16% 11%;
@@ -96,6 +126,81 @@
     transparent 1.5px
   );
   background-size: 56px 56px;
+}
+
+/* =========================================================
+   v2 깊이 유틸 (2026-06-13) — 글래스·워터마크·리빌·카운트업
+   ========================================================= */
+
+/* 글래스 패널 — 스티키 필터바·요약 바 한정 */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* 데이터 시각화 워터마크 — 정규분포 곡선 + 산점 (불투명도 ≤5%, 히어로·섹션 헤더 한정) */
+.bg-watermark-curve {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 260' fill='none'%3E%3Cpath d='M0 240 C 180 238 280 220 360 150 C 420 96 450 60 450 60 C 450 60 480 96 540 150 C 620 220 720 238 900 240' stroke='%23171a20' stroke-opacity='0.05' stroke-width='2'/%3E%3Cg fill='%23171a20' fill-opacity='0.045'%3E%3Ccircle cx='130' cy='205' r='3'/%3E%3Ccircle cx='235' cy='186' r='3'/%3E%3Ccircle cx='320' cy='150' r='3'/%3E%3Ccircle cx='402' cy='98' r='3'/%3E%3Ccircle cx='497' cy='105' r='3'/%3E%3Ccircle cx='575' cy='168' r='3'/%3E%3Ccircle cx='672' cy='199' r='3'/%3E%3Ccircle cx='790' cy='222' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right -40px bottom -10px;
+  background-size: 620px auto;
+}
+
+/* 본문 핵심 구절 하이라이트 (FSA 사례) */
+mark.key-phrase {
+  background: var(--mark-bg);
+  color: var(--mark-fg);
+  padding: 0 2px;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* 용어 점선 밑줄 (인라인 용어 팝오버 트리거) */
+.term-trigger {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--brand-sky);
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+/* 스크롤 진입 리빌 (IntersectionObserver가 .in 부여) */
+.reveal-fade {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.reveal-fade.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 탭 전환 페이드인 (이론 사전 주제 탭 등) */
+.tab-fade-in {
+  animation: tab-fade 0.45s var(--ease);
+}
+@keyframes tab-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .tab-fade-in {
+    animation: none !important;
+  }
 }
 
 /* =========================================================

@@ -107,18 +107,37 @@ const WORK_APPS: AppItem[] = [
   },
 ];
 
-function AppGrid({ apps }: { apps: AppItem[] }) {
+// featured: 모델분석 2종을 벤토 대형 타일로 (2026-06-13 입체화)
+function AppGrid({
+  apps,
+  featured = false,
+}: {
+  apps: AppItem[];
+  featured?: boolean;
+}) {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div
+      className={
+        featured
+          ? "grid grid-cols-1 gap-6 md:grid-cols-2"
+          : "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+      }
+    >
       {apps.map((app) => (
         <a
           key={app.title}
           href={app.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
+          className={`flex flex-col rounded-cover border border-border bg-white shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover ${
+            featured ? "p-7" : "p-6"
+          }`}
         >
-          <h3 className="text-[17px] font-semibold text-brand-sky">
+          <h3
+            className={`font-semibold text-brand-sky ${
+              featured ? "text-[19px]" : "text-[17px]"
+            }`}
+          >
             {app.title}
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-body">
@@ -168,7 +187,7 @@ export default function AppsPage() {
           <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
           모델분석
         </h2>
-        <AppGrid apps={MODEL_APPS} />
+        <AppGrid apps={MODEL_APPS} featured />
       </section>
 
       <section className="mt-16 pb-8">

@@ -29,12 +29,13 @@
 | 2026-06-11 | 모델선택 아이덴트(ModelSelectIdent) — /apps 헤더 하단 | components/feature/ModelSelectIdent.tsx, globals.css, app/(public)/apps, design/idents | tkleen-model-selection-animation.html 이식(노드 등장→펄스 3웨이브→AUC 카운트업→GBM 승자 강조→분포 출력→최적 경로 루프). PC(lg+) 전용 |
 | 2026-06-11 | 이론 사전 '재보험' 주제 추가 + 제목 추출 버그 수정 | lib/theory.ts(THEORY_TOPICS, titleFromHtml), public/theory/reinsurance, theory-publisher 스킬 | 주제 탭 4개: 생명/손해/재보험/통계. titleFromHtml은 "— 학습 해설서" 꼬리만 제거(제목 내 대시 보존) |
 | 2026-06-11 | 전 자료(41종) '한국보험시장 현황' 섹션 추가 + 스킬 필수 규칙화 | public/theory/**/*.html, theory-publisher 스킬 | 30년차 계리사 페르소나, 이론↔한국 시장 일치/차이 중심. 상품=국내 판매상품, 계리·통계=IFRS17·K-ICS, 재보험=국내 방식·공동재보험. 웹서치 앵커(5세대 실손 2026.5, K-ICS 130%/기본자본 2027, 10회 생명표 등) 스킬에 수록 |
+| 2026-06-13 | 디자인 v2(입체화) + 해외 자료 iframe→네이티브 전환 + 일본 FSA 심사사례 지식베이스화 | globals.css·tailwind, app/(public)/global/**, components/feature/{fsa,global}/**, data/japan-fsa·japan-life·japan-life-trends, lib/{japanFsa,global}, 홈·about·apps·theory, 테마 스킬 | 사용자 디자인 리뷰 반영: 벤토 그리드·스탯 카운트업·글래스 필터바·워터마크·칩 8색·헤딩 600/700(디자인 비협상 v2 완화). FSA 135건(15호) cases.html→cases.json 무손실 추출 후 테마 13종·용어집 91·한국KB 26항목·사례별 인리치먼트(tldr/keyPhrase/한국 맥락) 부가 레이어로 파셋 탐색기 구현. 동향2025(42도표·22표)·변천 가이드 네이티브화. 레거시 /global/[slug]는 redirect 보존 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
 - **DB 공존**: 기존 보험 뉴스 Supabase 프로젝트(`hkrxnkntapcychtbxpmv`)에 `ib_` 프리픽스로 additive 추가. 기존 객체 DROP/ALTER 금지. 합산 운영은 `output/integration_bridge_view.draft.sql`(분리+브리지 뷰) 참조 — 현재는 미연결.
 - **시크릿은 서버 전용**: `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`는 Route Handler/Server Action에서만 사용. 클라이언트 노출 금지. `.env`는 커밋 금지.
 - **테이블 프리픽스** `ib_`. 익명에게 테이블 UPDATE 권한 금지(조회수는 RPC `ib_increment_view`).
-- **디자인 비협상**: 그라데이션·세만틱 색상 없음, 강조는 `--primary`(#3E6AE1)만(브랜드 마크·카드 타이틀 한정 `--brand-sky`), 그림자는 카드 엘리베이션(`--shadow-card`/`-hover`)만, 트랜지션 색상 0.33s + 카드 hover lift 한정 예외, 폰트 Pretendard/Inter 400·500 + 카드 타이틀 고딕 600·`--brand-sky`. 페이지 캔버스 `--page-bg`(cream)·카드 화이트. 상세는 `tweakcn-tesla-theme` 스킬.
+- **디자인 비협상 (v2, 2026-06-13 사용자 승인 완화)**: 단일 주 강조색 `--primary`(#3E6AE1)+`--brand-sky` 유지, **그라데이션 금지**, 크림 캔버스(`--page-bg`)·카드 화이트, 그림자는 카드 엘리베이션(`--shadow-card`/`-hover`)+스티키 한정 `--shadow-float`. 색상 트랜지션 0.33s + 카드 hover lift 예외. **추가 허용**: ① 헤딩 600/700 무게 대비(본문은 400/500, 300 금지), ② 글래스 패널(`.glass-panel`, 스티키 필터바·내비 한정), ③ 데이터 워터마크(`.bg-watermark-curve`, ≤5% 불투명도, 히어로·섹션 헤더 한정), ④ 칩 뮤트 팔레트 8색(`--chip-*`, FSA 테마칩·차트·강조 한정 스코프), ⑤ 카운트업·리빌 마이크로모션(reduced-motion 존중). 상세는 `tweakcn-tesla-theme` 스킬.
 - **산출물 컨벤션**: 구조화 산출물(스키마·계약·리포트)은 `output/*.sql|json|md`, 중간물은 `_workspace/`. `output/*.sql`은 Supabase SQL Editor에서 실행하거나 자격증명 확보 시 `supabase-sync` 스킬로 적용.
 - TypeScript는 `async/await`.

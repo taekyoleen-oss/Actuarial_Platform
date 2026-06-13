@@ -61,28 +61,21 @@ export default async function PostDetailPage({
       ) : null}
 
       {viewer ? (
-        <div className="mt-8">
-          <div className="mb-2 flex justify-end">
-            <a
-              href={`/global/${viewerSlug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-medium text-primary"
-            >
-              ⤢ 큰 화면으로 보기 ↗
-            </a>
-          </div>
-          <div
-            className="overflow-hidden rounded-cover border border-border bg-white shadow-card"
-            style={{ height: "min(82vh, 1100px)" }}
-          >
-            <iframe
-              src={viewer.htmlPath}
-              title={viewer.title}
-              className="h-full w-full border-0"
-            />
-          </div>
-        </div>
+        /* 2026-06-13: iframe 임베드 → 사이트 일체형 네이티브 페이지 연결 */
+        <a
+          href={viewer.nativePath}
+          className="group mt-8 block rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+        >
+          <span className="text-[11.5px] font-semibold tracking-[0.12em] text-brand-sky">
+            전용 페이지에서 보기
+          </span>
+          <span className="mt-1.5 block text-[18px] font-semibold text-foreground group-hover:text-primary">
+            {viewer.title} →
+          </span>
+          <span className="mt-1 block text-[13.5px] leading-relaxed text-tertiary">
+            검색·분류·용어 해설을 갖춘 사이트 일체형 페이지로 이동합니다.
+          </span>
+        </a>
       ) : null}
 
       {pdfs.length > 0 && (
