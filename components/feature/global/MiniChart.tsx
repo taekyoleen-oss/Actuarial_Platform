@@ -120,7 +120,7 @@ function HorizontalStacked({ chart }: { chart: ChartData }) {
                 return (
                   <div
                     key={si}
-                    className="flex items-center justify-center text-[10px] text-white/95"
+                    className="flex items-center justify-center text-[11px] text-white/95"
                     style={{
                       width: `${pct}%`,
                       background: PALETTE[si % PALETTE.length],
@@ -177,7 +177,7 @@ function VerticalBars({ chart }: { chart: ChartData }) {
   return (
     <div>
       {(chart.unit || chart.unitRight) && (
-        <div className="mb-1 flex justify-between text-[11px] text-tertiary">
+        <div className="mb-1 flex justify-between text-[12px] text-tertiary">
           <span>{chart.unit}</span>
           <span>{chart.unitRight}</span>
         </div>
@@ -337,7 +337,7 @@ function LineChart({ chart }: { chart: ChartData }) {
   return (
     <div>
       {chart.unit && (
-        <div className="mb-1 text-[11px] text-tertiary">{chart.unit}</div>
+        <div className="mb-1 text-[12px] text-tertiary">{chart.unit}</div>
       )}
       <svg
         viewBox={`0 0 ${W} ${H}`}

@@ -54,7 +54,7 @@ export function Markdown({ text }: { text: string }) {
       blocks.push(
         <h3
           key={`h-${k++}`}
-          className="mt-4 mb-1 text-[15px] font-medium text-foreground first:mt-0"
+          className="mt-4 mb-1 text-[16px] font-medium text-foreground first:mt-0"
         >
           {renderInline(h[2], `h-${k}`)}
         </h3>

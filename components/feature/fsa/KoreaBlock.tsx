@@ -14,10 +14,10 @@ import {
 function RegRow({ reg }: { reg: KoreaReg }) {
   return (
     <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 py-1.5">
-      <span className="rounded bg-white px-2 py-0.5 text-[12px] font-semibold text-brand-sky ring-1 ring-border">
+      <span className="rounded bg-white px-2 py-0.5 text-[13px] font-semibold text-brand-sky ring-1 ring-border">
         {reg.name} {reg.ref}
       </span>
-      <span className="text-[13px] leading-relaxed text-body">{reg.point}</span>
+      <span className="text-[14px] leading-relaxed text-body">{reg.point}</span>
     </li>
   );
 }
@@ -38,10 +38,10 @@ export function KoreaBlock({ kr }: { kr: CaseKoreaContext }) {
       className="overflow-hidden rounded-cover border border-[#d7e4ee] bg-[#f3f8fb] shadow-card"
     >
       <header className="flex items-center gap-2.5 border-b border-[#d7e4ee] px-5 py-3.5 sm:px-6">
-        <span className="inline-flex h-6 items-center rounded bg-brand-sky px-2 text-[11px] font-semibold tracking-wide text-white">
+        <span className="inline-flex h-6 items-center rounded bg-brand-sky px-2 text-[12px] font-semibold tracking-wide text-white">
           KOREA
         </span>
-        <h3 className="text-[15px] font-semibold text-foreground">
+        <h3 className="text-[16px] font-semibold text-foreground">
           한국에서는 — 유사 사례·현황·규정
         </h3>
       </header>

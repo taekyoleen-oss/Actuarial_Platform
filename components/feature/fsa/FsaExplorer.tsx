@@ -166,7 +166,7 @@ export function FsaExplorer() {
               value={ym}
               onChange={(e) => setParams({ ym: e.target.value, case: null })}
               aria-label="공표 호 선택"
-              className="rounded-full border border-border bg-white px-3 py-2 text-[13px] text-body outline-none focus:border-primary"
+              className="rounded-full border border-border bg-white px-3 py-2 text-[14px] text-body outline-none focus:border-primary"
             >
               <option value="">전체 호</option>
               {FSA_PERIODS.map((p) => (
@@ -181,7 +181,7 @@ export function FsaExplorer() {
                 setParams({ field: e.target.value, case: null })
               }
               aria-label="분야 선택"
-              className="max-w-[220px] rounded-full border border-border bg-white px-3 py-2 text-[13px] text-body outline-none focus:border-primary"
+              className="max-w-[220px] rounded-full border border-border bg-white px-3 py-2 text-[14px] text-body outline-none focus:border-primary"
             >
               <option value="">전체 분야</option>
               {fields.map((f) => (
@@ -208,7 +208,7 @@ export function FsaExplorer() {
               <button
                 type="button"
                 onClick={() => setGlossaryOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-2 text-[13px] font-medium text-brand-sky hover:border-brand-sky"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-2 text-[14px] font-medium text-brand-sky hover:border-brand-sky"
               >
                 <BookOpen size={14} /> 용어집
               </button>
@@ -259,7 +259,7 @@ export function FsaExplorer() {
                 onClick={() =>
                   setParams({ q: null, ym: null, field: null, theme: null })
                 }
-                className="mt-2 block w-full text-[13px] font-medium text-primary"
+                className="mt-2 block w-full text-[14px] font-medium text-primary"
               >
                 필터 초기화
               </button>
@@ -294,7 +294,7 @@ export function FsaExplorer() {
                             >
                               <span className="flex items-start gap-2">
                                 <span
-                                  className="mt-0.5 shrink-0 rounded px-1.5 py-px text-[10px] font-semibold"
+                                  className="mt-0.5 shrink-0 rounded px-1.5 py-px text-[11px] font-semibold"
                                   style={{
                                     background: "var(--chip-slate-bg)",
                                     color: "var(--chip-slate-fg)",
@@ -331,7 +331,7 @@ export function FsaExplorer() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-2 text-[13px] font-medium text-foreground shadow-card lg:hidden"
+                className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-2 text-[14px] font-medium text-foreground shadow-card lg:hidden"
               >
                 <ArrowLeft size={14} /> 목록으로
               </button>
@@ -343,10 +343,10 @@ export function FsaExplorer() {
             </>
           ) : (
             <div className="flex min-h-[300px] flex-col items-center justify-center rounded-cover border border-dashed border-border bg-white/60 p-10 text-center">
-              <p className="text-[15px] font-medium text-foreground">
+              <p className="text-[16px] font-medium text-foreground">
                 왼쪽 목록에서 사례를 선택하세요
               </p>
-              <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-tertiary">
+              <p className="mt-1.5 max-w-sm text-[14px] leading-relaxed text-tertiary">
                 검색·호·분야·테마로 좁힐 수 있습니다. 각 사례는 신청 내용 →
                 금융청 판단 → 배경 → 한국 시장 맥락 순으로 정리되어 있습니다.
               </p>

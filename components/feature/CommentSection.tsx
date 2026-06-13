@@ -48,7 +48,7 @@ export function CommentSection({
 
   return (
     <section>
-      <h2 className="text-[17px] font-medium text-foreground">
+      <h2 className="text-[18px] font-medium text-foreground">
         댓글 {comments.length}
       </h2>
 

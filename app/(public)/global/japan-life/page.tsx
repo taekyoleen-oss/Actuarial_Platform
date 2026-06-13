@@ -38,10 +38,10 @@ export default function JapanLifePage() {
               일본 생명보험회사 변천 가이드
             </span>
           </nav>
-          <div className="text-[12px] font-bold tracking-[0.16em] text-brand-sky">
+          <div className="text-[13px] font-bold tracking-[0.16em] text-brand-sky">
             INDUSTRY HISTORY · {LIFE_HERO.eyebrow}
           </div>
-          <h1 className="mt-2 text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-[34px]">
+          <h1 className="mt-2 text-[28px] font-bold leading-tight tracking-tight text-foreground sm:text-[37px]">
             일본 생명보험회사 변천 가이드
           </h1>
           <p className="mt-3 max-w-2xl text-[14.5px] leading-[1.8] text-tertiary">
@@ -53,7 +53,7 @@ export default function JapanLifePage() {
                 <dt className="text-[11.5px] font-medium text-tertiary">
                   {k}
                 </dt>
-                <dd className="mt-0.5 text-[15px] font-semibold text-foreground">
+                <dd className="mt-0.5 text-[16px] font-semibold text-foreground">
                   {v}
                 </dd>
               </div>
@@ -65,10 +65,10 @@ export default function JapanLifePage() {
       {/* 보는 법 */}
       <section className="mx-auto max-w-container px-6 py-8">
         <div className="rounded-cover bg-white p-6 shadow-card">
-          <h2 className="text-[16px] font-semibold text-brand-sky">
+          <h2 className="text-[17px] font-semibold text-brand-sky">
             {LIFE_OVERVIEW.title}
           </h2>
-          <p className="mt-2 text-[14px] leading-[1.8] text-body">
+          <p className="mt-2 text-[15px] leading-[1.8] text-body">
             {LIFE_OVERVIEW.note.pre}
             <strong className="font-semibold text-foreground">
               {LIFE_OVERVIEW.note.strong}
@@ -81,10 +81,10 @@ export default function JapanLifePage() {
                 key={s.label}
                 className="rounded-lg bg-[var(--page-bg)] p-3.5"
               >
-                <dd className="text-[16px] font-semibold text-foreground">
+                <dd className="text-[17px] font-semibold text-foreground">
                   {s.value}
                 </dd>
-                <dt className="mt-1 text-[12px] leading-snug text-tertiary">
+                <dt className="mt-1 text-[13px] leading-snug text-tertiary">
                   {s.label}
                 </dt>
               </div>

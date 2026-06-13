@@ -40,7 +40,7 @@ export default async function PostDetailPage({
       <ViewCounter postId={id} />
 
       <Badge>{post.category?.name}</Badge>
-      <h1 className="mt-3 text-[28px] font-medium leading-snug text-foreground sm:text-[32px]">
+      <h1 className="mt-3 text-[30px] font-medium leading-snug text-foreground sm:text-[35px]">
         {post.title}
       </h1>
       <div className="mt-3 flex items-center gap-3 text-sm text-tertiary">
@@ -55,7 +55,7 @@ export default async function PostDetailPage({
       </div>
 
       {bodyText ? (
-        <div className="prose-tesla mt-8 whitespace-pre-wrap text-[15px] leading-relaxed text-body">
+        <div className="prose-tesla mt-8 whitespace-pre-wrap text-[16px] leading-relaxed text-body">
           {bodyText}
         </div>
       ) : null}
@@ -69,7 +69,7 @@ export default async function PostDetailPage({
           <span className="text-[11.5px] font-semibold tracking-[0.12em] text-brand-sky">
             전용 페이지에서 보기
           </span>
-          <span className="mt-1.5 block text-[18px] font-semibold text-foreground group-hover:text-primary">
+          <span className="mt-1.5 block text-[20px] font-semibold text-foreground group-hover:text-primary">
             {viewer.title} →
           </span>
           <span className="mt-1 block text-[13.5px] leading-relaxed text-tertiary">

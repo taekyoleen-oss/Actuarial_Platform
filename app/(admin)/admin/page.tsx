@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
 
       {/* 게시물 관리 */}
       <section className="mt-10">
-        <h2 className="text-[17px] font-medium text-foreground">게시물</h2>
+        <h2 className="text-[18px] font-medium text-foreground">게시물</h2>
         <ul className="mt-3 divide-y divide-border">
           {(posts ?? []).map((p) => (
             <li
@@ -84,7 +84,7 @@ export default async function AdminDashboard() {
 
       {/* 댓글 관리 (대시보드 내 탭/섹션) */}
       <section className="mt-12">
-        <h2 className="text-[17px] font-medium text-foreground">최근 댓글</h2>
+        <h2 className="text-[18px] font-medium text-foreground">최근 댓글</h2>
         <ul className="mt-3 divide-y divide-border">
           {(comments ?? []).map((c) => (
             <li
@@ -111,7 +111,7 @@ export default async function AdminDashboard() {
 
       {/* 계정 — 비밀번호 변경 */}
       <section className="mt-12">
-        <h2 className="text-[17px] font-medium text-foreground">계정</h2>
+        <h2 className="text-[18px] font-medium text-foreground">계정</h2>
         <p className="mt-1 text-sm text-tertiary">
           현재 로그인한 관리자 계정의 비밀번호를 변경합니다.
         </p>

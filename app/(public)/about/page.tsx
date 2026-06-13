@@ -176,10 +176,10 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       {/* 헤더 */}
-      <p className="text-[12px] font-bold tracking-[0.14em] text-brand-sky">
+      <p className="text-[13px] font-bold tracking-[0.14em] text-brand-sky">
         ABOUT · 만든이
       </p>
-      <h1 className="mt-2 text-[26px] font-bold tracking-tight text-foreground sm:text-[32px]">
+      <h1 className="mt-2 text-[28px] font-bold tracking-tight text-foreground sm:text-[35px]">
         {PROFILE.name}
       </h1>
       <p className="mt-1.5 text-sm text-tertiary">{PROFILE.credentials}</p>
@@ -200,7 +200,7 @@ export default function AboutPage() {
       </div>
 
       {/* 소개 */}
-      <div className="mt-12 max-w-3xl space-y-5 text-[15px] leading-relaxed text-body">
+      <div className="mt-12 max-w-3xl space-y-5 text-[16px] leading-relaxed text-body">
         {PROFILE.intro.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
@@ -220,7 +220,7 @@ export default function AboutPage() {
                 <p className="text-xs font-semibold text-brand-sky">
                   {e.period}
                 </p>
-                <h3 className="mt-1 text-[15px] font-medium text-foreground">
+                <h3 className="mt-1 text-[16px] font-medium text-foreground">
                   {e.title}
                 </h3>
                 {e.detail && (
@@ -274,7 +274,7 @@ export default function AboutPage() {
                     href={`/published/${encodeURIComponent(p.pdf)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-start gap-1.5 text-[15px] font-medium leading-snug text-foreground transition-colors hover:text-brand-sky"
+                    className="group inline-flex items-start gap-1.5 text-[16px] font-medium leading-snug text-foreground transition-colors hover:text-brand-sky"
                   >
                     <span className="underline decoration-border underline-offset-4 group-hover:decoration-brand-sky">
                       {p.title}
@@ -286,7 +286,7 @@ export default function AboutPage() {
                     />
                   </a>
                 ) : (
-                  <p className="text-[15px] font-medium leading-snug text-foreground">
+                  <p className="text-[16px] font-medium leading-snug text-foreground">
                     {p.title}
                   </p>
                 )}

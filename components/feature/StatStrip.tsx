@@ -63,10 +63,10 @@ export function StatStrip({ items }: { items: StatItem[] }) {
     <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-cover border border-border bg-border shadow-card sm:grid-cols-4">
       {items.map((s) => (
         <div key={s.label} className="bg-white px-5 py-5 text-center sm:py-6">
-          <dd className="text-[24px] font-bold tracking-tight text-foreground sm:text-[28px]">
+          <dd className="text-[26px] font-bold tracking-tight text-foreground sm:text-[30px]">
             {s.text ?? <CountUp to={s.value} suffix={s.suffix} />}
           </dd>
-          <dt className="mt-1 text-[12px] font-medium text-tertiary">
+          <dt className="mt-1 text-[13px] font-medium text-tertiary">
             {s.label}
           </dt>
         </div>

@@ -26,14 +26,14 @@ export function TrendsToc({ items }: { items: TocItem[] }) {
   }, [items]);
 
   const list = (
-    <nav aria-label="목차" className="text-[13px]">
+    <nav aria-label="목차" className="text-[14px]">
       <ul className="space-y-0.5">
         {items.map((it) => {
           const isActive = active === it.id;
           return (
             <li key={it.id}>
               {it.chapter && (
-                <div className="mt-3 px-2 pb-1 text-[11px] font-bold tracking-wide text-brand-sky first:mt-0">
+                <div className="mt-3 px-2 pb-1 text-[12px] font-bold tracking-wide text-brand-sky first:mt-0">
                   {it.chapter}
                 </div>
               )}
@@ -71,7 +71,7 @@ export function TrendsToc({ items }: { items: TocItem[] }) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="glass-panel sticky top-14 z-20 flex w-full items-center justify-between rounded-cover px-4 py-3 text-[14px] font-medium text-foreground shadow-float"
+          className="glass-panel sticky top-14 z-20 flex w-full items-center justify-between rounded-cover px-4 py-3 text-[15px] font-medium text-foreground shadow-float"
         >
           목차
           <span className={`transition-transform ${open ? "rotate-180" : ""}`}>

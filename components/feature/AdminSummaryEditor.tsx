@@ -76,7 +76,7 @@ export function AdminSummaryEditor({
   return (
     <div className="border-t border-border pt-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-[15px] font-medium text-foreground">AI 요약</h3>
+        <h3 className="text-[16px] font-medium text-foreground">AI 요약</h3>
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
@@ -115,7 +115,7 @@ export function AdminSummaryEditor({
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="AI 생성 또는 직접 작성한 개조식 요약"
-        className="mt-3 min-h-48 font-mono text-[13px]"
+        className="mt-3 min-h-48 font-mono text-[14px]"
       />
 
       {msg && (

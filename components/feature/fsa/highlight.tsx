@@ -92,7 +92,7 @@ function TermTrigger({ text, term }: { text: string; term: GlossaryTerm }) {
               </span>
             )}
           </span>
-          <span className="mt-1.5 block text-[13px] leading-relaxed text-body">
+          <span className="mt-1.5 block text-[14px] leading-relaxed text-body">
             {term.definition}
           </span>
           {term.koreanEquivalent && (

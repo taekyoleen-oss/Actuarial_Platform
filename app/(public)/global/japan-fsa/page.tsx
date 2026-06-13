@@ -15,7 +15,7 @@ function IntroCards() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <div className="rounded-cover bg-white p-5 shadow-card">
-        <div className="text-[11px] font-bold tracking-[0.12em] text-brand-sky">
+        <div className="text-[12px] font-bold tracking-[0.12em] text-brand-sky">
           01 · 왜 공개하는가
         </div>
         <p className="mt-2 text-[13.5px] leading-[1.8] text-body">
@@ -27,7 +27,7 @@ function IntroCards() {
         </p>
       </div>
       <div className="rounded-cover bg-white p-5 shadow-card">
-        <div className="text-[11px] font-bold tracking-[0.12em] text-brand-sky">
+        <div className="text-[12px] font-bold tracking-[0.12em] text-brand-sky">
           02 · 읽을 때 유의할 점
         </div>
         <p className="mt-2 text-[13.5px] leading-[1.8] text-body">
@@ -40,7 +40,7 @@ function IntroCards() {
         </p>
       </div>
       <div className="rounded-cover bg-white p-5 shadow-card">
-        <div className="text-[11px] font-bold tracking-[0.12em] text-brand-sky">
+        <div className="text-[12px] font-bold tracking-[0.12em] text-brand-sky">
           03 · 사례를 나누는 기준
         </div>
         <p className="mt-2 text-[13.5px] leading-[1.8] text-body">
@@ -73,10 +73,10 @@ export default function JapanFsaPage() {
               일본 금융청 심사사례
             </span>
           </nav>
-          <div className="text-[12px] font-bold tracking-[0.16em] text-brand-sky">
+          <div className="text-[13px] font-bold tracking-[0.16em] text-brand-sky">
             JAPAN FSA · 보험상품 심사사례집 한국어판
           </div>
-          <h1 className="mt-2 text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-[34px]">
+          <h1 className="mt-2 text-[28px] font-bold leading-tight tracking-tight text-foreground sm:text-[37px]">
             일본 금융청 보험상품 심사사례
           </h1>
           <p className="mt-3 max-w-2xl text-[14.5px] leading-[1.8] text-tertiary">
@@ -100,7 +100,7 @@ export default function JapanFsaPage() {
                 <dt className="text-[11.5px] font-medium text-tertiary">
                   {k}
                 </dt>
-                <dd className="mt-0.5 text-[15px] font-semibold text-foreground">
+                <dd className="mt-0.5 text-[16px] font-semibold text-foreground">
                   {v}
                 </dd>
               </div>

@@ -24,13 +24,13 @@ export default function GlobalHubPage() {
       {/* 히어로 */}
       <section className="bg-actuarial-dots bg-watermark-curve border-b border-border">
         <div className="mx-auto max-w-container px-6 pb-10 pt-12 sm:pt-16">
-          <div className="text-[12px] font-bold tracking-[0.16em] text-brand-sky">
+          <div className="text-[13px] font-bold tracking-[0.16em] text-brand-sky">
             GLOBAL INSURANCE INSIGHTS
           </div>
-          <h1 className="mt-2 text-[28px] font-bold leading-tight tracking-tight text-foreground sm:text-[36px]">
+          <h1 className="mt-2 text-[30px] font-bold leading-tight tracking-tight text-foreground sm:text-[39px]">
             해외 주요 보험 정보·자료
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-[1.8] text-tertiary">
+          <p className="mt-3 max-w-2xl text-[16px] leading-[1.8] text-tertiary">
             일본 금융청의 상품 심사사례부터 생명보험 시장의 동향·변천까지 —
             번역·구조화하고 한국 시장 맥락을 더해, 각 자료를 검색·분류가 가능한
             전용 페이지로 제공합니다.
@@ -54,10 +54,10 @@ export default function GlobalHubPage() {
                 JAPAN FSA · 심사사례집 한국어판
               </span>
             </div>
-            <h2 className="mt-4 text-[22px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[25px]">
+            <h2 className="mt-4 text-[24px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[27px]">
               일본 금융청 보험상품 심사사례
             </h2>
-            <p className="mt-2 text-[14px] leading-[1.8] text-body">
+            <p className="mt-2 text-[15px] leading-[1.8] text-body">
               실제 상품 심사에서 금융청과 보험회사가 공유한 문제의식과 조치를
               사례별로 정리했습니다. 신청 내용 → 금융청 판단 → 배경 → 한국
               시장 맥락(유사 사례·현황·규정)의 흐름으로 읽고, 테마·기간·분야로
@@ -70,10 +70,10 @@ export default function GlobalHubPage() {
                 ["기간", `${FSA_STATS.from}~${FSA_STATS.to}`],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <dt className="text-[11px] font-medium text-tertiary">
+                  <dt className="text-[12px] font-medium text-tertiary">
                     {k}
                   </dt>
-                  <dd className="text-[16px] font-semibold text-foreground">
+                  <dd className="text-[17px] font-semibold text-foreground">
                     {v}
                   </dd>
                 </div>
@@ -103,7 +103,7 @@ export default function GlobalHubPage() {
                 MARKET TRENDS
               </span>
             </div>
-            <h2 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+            <h2 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
               일본 생명보험의 동향 (2025년판)
             </h2>
             <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -129,7 +129,7 @@ export default function GlobalHubPage() {
                 INDUSTRY HISTORY
               </span>
             </div>
-            <h2 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+            <h2 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
               일본 생명보험회사 변천 가이드
             </h2>
             <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -158,13 +158,13 @@ export default function GlobalHubPage() {
                 BOARD
               </span>
             </div>
-            <h2 className="mt-4 text-[16px] font-semibold leading-snug text-foreground group-hover:text-primary">
+            <h2 className="mt-4 text-[17px] font-semibold leading-snug text-foreground group-hover:text-primary">
               해외 자료 게시판
             </h2>
-            <p className="mt-2 text-[13px] leading-[1.7] text-body">
+            <p className="mt-2 text-[14px] leading-[1.7] text-body">
               게시 카드 형식으로 전체 해외 자료 목록을 봅니다.
             </p>
-            <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[13px] font-semibold text-primary">
+            <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[14px] font-semibold text-primary">
               게시판으로{" "}
               <ArrowRight
                 size={14}

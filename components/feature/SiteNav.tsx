@@ -54,7 +54,7 @@ export function SiteNav() {
             height={28}
             className="hidden h-7 w-7 shrink-0 lg:block"
           />
-          <span className="text-[15px] font-medium text-foreground">
+          <span className="text-[16px] font-medium text-foreground">
             Insurance Insights
           </span>
         </Link>

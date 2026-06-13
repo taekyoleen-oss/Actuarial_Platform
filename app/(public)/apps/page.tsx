@@ -135,7 +135,7 @@ function AppGrid({
         >
           <h3
             className={`font-semibold text-brand-sky ${
-              featured ? "text-[19px]" : "text-[17px]"
+              featured ? "text-[21px]" : "text-[18px]"
             }`}
           >
             {app.title}
@@ -147,7 +147,7 @@ function AppGrid({
             {app.features.map((f) => (
               <li
                 key={f}
-                className="flex items-start gap-2 text-[13px] leading-snug text-tertiary"
+                className="flex items-start gap-2 text-[14px] leading-snug text-tertiary"
               >
                 <span
                   aria-hidden

@@ -87,7 +87,7 @@ export function AdminPostForm({
 
       {isEdit && (
         <div className="border-t border-border pt-6">
-          <h3 className="text-[15px] font-medium text-foreground">첨부 파일</h3>
+          <h3 className="text-[16px] font-medium text-foreground">첨부 파일</h3>
           <ul className="mt-2 space-y-1 text-sm text-tertiary">
             {uploads.map((a) => (
               <li key={a.id}>{a.file_name}</li>

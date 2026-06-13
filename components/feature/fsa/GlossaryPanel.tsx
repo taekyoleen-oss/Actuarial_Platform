@@ -49,7 +49,7 @@ export function GlossaryPanel({ onClose }: { onClose: () => void }) {
       >
         <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-[16px] font-semibold text-foreground">
+            <h2 className="text-[17px] font-semibold text-foreground">
               일본 보험용어 사전
             </h2>
             <p className="mt-0.5 text-[12.5px] text-tertiary">
@@ -90,7 +90,7 @@ export function GlossaryPanel({ onClose }: { onClose: () => void }) {
                   <dt className="text-[14.5px] font-semibold text-brand-sky">
                     {t.term}
                     {t.original && (
-                      <span className="ml-2 text-[13px] font-normal text-tertiary">
+                      <span className="ml-2 text-[14px] font-normal text-tertiary">
                         {t.original}
                       </span>
                     )}

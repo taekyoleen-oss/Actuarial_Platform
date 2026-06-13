@@ -50,7 +50,7 @@ const KIND_STEP_BORDER: Record<ChangeKind, string> = {
 function KindChip({ label, kind }: { label: string; kind: ChangeKind }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${KIND_CHIP[kind]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium ${KIND_CHIP[kind]}`}
     >
       {label}
     </span>
@@ -74,13 +74,13 @@ function SectionHead({
     <div className="mb-6">
       <h2
         className={`font-semibold text-brand-sky ${
-          small ? "text-[18px]" : "text-[21px] sm:text-[24px]"
+          small ? "text-[20px]" : "text-[23px] sm:text-[26px]"
         }`}
       >
         {title}
       </h2>
       {description && (
-        <p className="mt-2 max-w-2xl text-[14px] leading-[1.8] text-tertiary">
+        <p className="mt-2 max-w-2xl text-[15px] leading-[1.8] text-tertiary">
           {description}
         </p>
       )}
@@ -96,7 +96,7 @@ function EventCard({ event }: { event: LifeEvent }) {
   return (
     <div className="rounded-cover bg-white p-5 shadow-card transition-all duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover sm:p-6">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="text-[19px] font-semibold tabular-nums text-primary">
+        <span className="text-[21px] font-semibold tabular-nums text-primary">
           {event.years}
         </span>
         <div className="flex flex-wrap gap-1.5">
@@ -142,7 +142,7 @@ function EraMarker({ label, period }: { label: string; period: string }) {
         className="absolute left-[5px] top-[18px] h-[18px] w-[18px] -translate-x-1/2 rounded-full border-[3px] border-primary bg-white sm:left-[7px]"
       />
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="text-[15px] font-semibold text-foreground">
+        <span className="text-[16px] font-semibold text-foreground">
           {label}
         </span>
         <span className="text-[12.5px] font-medium tabular-nums text-tertiary">
@@ -161,17 +161,17 @@ function CompanyCard({ company }: { company: LifeCompany }) {
   return (
     <LifeReveal className="h-full">
       <article className="flex h-full flex-col rounded-cover bg-white p-5 shadow-card transition-all duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover sm:p-6">
-        <h3 className="text-[16px] font-semibold text-brand-sky">
+        <h3 className="text-[17px] font-semibold text-brand-sky">
           {company.name}
         </h3>
-        <p className="mt-1.5 text-[13px] leading-[1.8] text-tertiary">
+        <p className="mt-1.5 text-[14px] leading-[1.8] text-tertiary">
           {company.intro}
         </p>
         <ol className="mt-4 space-y-1.5">
           {company.route.map((step) => (
             <li
               key={step.text}
-              className={`rounded-r-md border-l-[3px] bg-[var(--page-bg)] px-3 py-2 text-[13px] leading-[1.7] text-body ${
+              className={`rounded-r-md border-l-[3px] bg-[var(--page-bg)] px-3 py-2 text-[14px] leading-[1.7] text-body ${
                 step.kind ? KIND_STEP_BORDER[step.kind] : "border-l-border"
               }`}
             >
@@ -192,7 +192,7 @@ function InfoCard({ card }: { card: LifeInfoCard }) {
   return (
     <LifeReveal className="h-full">
       <article className="h-full rounded-cover bg-white p-5 shadow-card transition-all duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover sm:p-6">
-        <h3 className="text-[15px] font-semibold text-foreground">
+        <h3 className="text-[16px] font-semibold text-foreground">
           {card.title}
         </h3>
         <ul className="mt-3 space-y-2.5">
@@ -216,7 +216,7 @@ function InfoCard({ card }: { card: LifeInfoCard }) {
 function DetailBox({ detail }: { detail: LifeDetail }) {
   return (
     <details className="group rounded-cover border border-border bg-white px-5 py-4">
-      <summary className="cursor-pointer list-none text-[14px] font-semibold text-foreground">
+      <summary className="cursor-pointer list-none text-[15px] font-semibold text-foreground">
         <span
           aria-hidden
           className="mr-2 inline-block text-primary transition-transform duration-tesla ease-tesla group-open:rotate-90"
@@ -263,14 +263,14 @@ function BankruptcyTable() {
                   {row.company}
                 </th>
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center rounded-full bg-[var(--chip-rose-bg)] px-2.5 py-0.5 text-[12px] font-medium tabular-nums text-[var(--chip-rose-fg)]">
+                  <span className="inline-flex items-center rounded-full bg-[var(--chip-rose-bg)] px-2.5 py-0.5 text-[13px] font-medium tabular-nums text-[var(--chip-rose-fg)]">
                     {row.start}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-[13.5px] text-body">
                   {row.successor}
                 </td>
-                <td className="px-4 py-3 text-[13px] leading-[1.7] text-body">
+                <td className="px-4 py-3 text-[14px] leading-[1.7] text-body">
                   {row.note}
                 </td>
               </tr>
@@ -305,7 +305,7 @@ export function LifeTimeline() {
               <span
                 key={item.label}
                 role="listitem"
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-[12px] text-body"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-[13px] text-body"
               >
                 <span
                   aria-hidden

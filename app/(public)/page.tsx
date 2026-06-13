@@ -38,7 +38,7 @@ const RELATED_LINKS = [
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2.5 text-[20px] font-semibold text-foreground">
+    <h2 className="flex items-center gap-2.5 text-[22px] font-semibold text-foreground">
       <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
       {children}
     </h2>
@@ -108,11 +108,11 @@ export default async function HomePage() {
                   </span>
                   GLOBAL · 해외 주요 보험 정보·자료
                 </div>
-                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[22px]">
+                <h3 className="mt-4 text-[22px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[24px]">
                   일본 금융청 심사사례 {FSA_STATS.cases}건, 테마·기간·분야로
                   탐색
                 </h3>
-                <p className="mt-2 text-[14px] leading-[1.8] text-body">
+                <p className="mt-2 text-[15px] leading-[1.8] text-body">
                   금융청 심사사례집({FSA_STATS.periods}개 호)·생명보험
                   동향·변천 가이드를 사이트 일체형 페이지로 — 용어 해설과 한국
                   시장 맥락(유사 사례·현황·규정)까지 함께 제공합니다.
@@ -147,7 +147,7 @@ export default async function HomePage() {
                   </span>
                   THEORY · 보험이론 사전
                 </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   생명·손해·재보험·통계 {theoryCount}편 해설서
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -179,7 +179,7 @@ export default async function HomePage() {
                   </span>
                   EXCLUSIVE · 배타적 사용권
                 </div>
-                <h3 className="mt-4 text-[17px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   {exclusive?.name ?? "보험 배타적 사용권 분석"}
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -211,7 +211,7 @@ export default async function HomePage() {
                   </span>
                   DOMESTIC · 국내 자료
                 </div>
-                <h3 className="mt-4 text-[17px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   {domestic?.name ?? "국내 보험 정보·분석"}
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -243,7 +243,7 @@ export default async function HomePage() {
                   </span>
                   NEWS · 보험 뉴스
                 </div>
-                <h3 className="mt-4 text-[17px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   보험 뉴스 대시보드
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -274,7 +274,7 @@ export default async function HomePage() {
                   </span>
                   APPS · 모델분석/업무지원
                 </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   보험료 자동산출·머신러닝 플로우 등 실무 앱 7종
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -306,7 +306,7 @@ export default async function HomePage() {
                   </span>
                   ABOUT · 만든이
                 </div>
-                <h3 className="mt-4 text-[17px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
                   보험계리사 · 경영학 박사
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
@@ -350,7 +350,7 @@ export default async function HomePage() {
                 rel="noopener noreferrer"
                 className="rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
               >
-                <h3 className="text-[17px] font-semibold text-brand-sky">
+                <h3 className="text-[18px] font-semibold text-brand-sky">
                   {l.title}
                 </h3>
                 <p className="mt-2 text-sm text-tertiary">{l.description}</p>

@@ -6,7 +6,7 @@ import { MiniChart } from "./MiniChart";
 
 function FigureCaption({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-2 text-[13px] font-semibold text-brand-sky">
+    <div className="mb-2 text-[14px] font-semibold text-brand-sky">
       {children}
     </div>
   );
@@ -29,7 +29,7 @@ function BlockView({ block }: { block: Block }) {
   switch (block.kind) {
     case "h":
       return (
-        <h3 className="mt-6 text-[16px] font-semibold text-foreground">
+        <h3 className="mt-6 text-[17px] font-semibold text-foreground">
           <InlineMarkup text={block.text} />
         </h3>
       );
@@ -43,7 +43,7 @@ function BlockView({ block }: { block: Block }) {
       return (
         <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {block.paragraphs.map((p, i) => (
-            <p key={i} className="text-[14px] leading-[1.85] text-body">
+            <p key={i} className="text-[15px] leading-[1.85] text-body">
               <InlineMarkup text={p} />
             </p>
           ))}
@@ -56,20 +56,20 @@ function BlockView({ block }: { block: Block }) {
             aria-hidden
             className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
           />
-          <p className="text-[14px] leading-[1.85] text-body">
+          <p className="text-[15px] leading-[1.85] text-body">
             <InlineMarkup text={block.text} />
           </p>
         </div>
       );
     case "ref":
       return (
-        <p className="text-[12px] text-tertiary">
+        <p className="text-[13px] text-tertiary">
           <InlineMarkup text={block.text} />
         </p>
       );
     case "note":
       return (
-        <p className="text-[12px] leading-relaxed text-tertiary">
+        <p className="text-[13px] leading-relaxed text-tertiary">
           <InlineMarkup text={block.text} />
         </p>
       );
@@ -92,7 +92,7 @@ function BlockView({ block }: { block: Block }) {
     case "box":
       return (
         <div className="rounded-cover border border-border bg-white p-5 shadow-card">
-          <div className="text-[14px] font-semibold text-brand-sky">
+          <div className="text-[15px] font-semibold text-brand-sky">
             <InlineMarkup text={block.title} />
           </div>
           <div className="mt-2 space-y-2">
@@ -123,20 +123,20 @@ function SectionView({ section }: { section: TrendsSection }) {
   return (
     <section id={section.id} className="scroll-mt-28">
       {section.chapter && (
-        <div className="mb-1 mt-4 text-[12px] font-bold tracking-[0.12em] text-brand-sky">
+        <div className="mb-1 mt-4 text-[13px] font-bold tracking-[0.12em] text-brand-sky">
           {section.chapter}
         </div>
       )}
       {section.group && (
-        <h2 className="text-[19px] font-bold text-foreground">
+        <h2 className="text-[21px] font-bold text-foreground">
           <InlineMarkup text={section.group} />
         </h2>
       )}
       <h2
         className={`${
           section.level === 1
-            ? "text-[20px] font-bold text-foreground"
-            : "text-[17px] font-semibold text-foreground"
+            ? "text-[22px] font-bold text-foreground"
+            : "text-[18px] font-semibold text-foreground"
         } ${section.group ? "mt-1" : ""}`}
       >
         <InlineMarkup text={section.title} />

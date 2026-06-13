@@ -24,10 +24,10 @@ function SectionLabel({
 }) {
   return (
     <div className="mb-3 flex items-center gap-2">
-      <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-white">
+      <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-foreground text-[12px] font-semibold text-white">
         {no}
       </span>
-      <span className="text-[13px] font-semibold tracking-wide text-foreground">
+      <span className="text-[14px] font-semibold tracking-wide text-foreground">
         {children}
       </span>
     </div>
@@ -60,7 +60,7 @@ export function CaseDetail({
           <span className="text-tertiary">·</span>
           <span className="text-tertiary">{fc.fieldTitle}</span>
         </div>
-        <h2 className="mt-2 text-[22px] font-semibold leading-snug tracking-tight text-foreground sm:text-[26px]">
+        <h2 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight text-foreground sm:text-[28px]">
           {c.title}
         </h2>
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -88,7 +88,7 @@ export function CaseDetail({
       {/* Q — 신청·조회 내용 */}
       <section className="rounded-cover bg-white p-5 shadow-card sm:p-6">
         <SectionLabel no="❶">신청·조회 내용</SectionLabel>
-        <p className="text-[15px] leading-[1.9] text-body">
+        <p className="text-[16px] leading-[1.9] text-body">
           <HighlightedText
             text={c.case}
             keyPhrases={keyPhrases}
@@ -106,7 +106,7 @@ export function CaseDetail({
         }}
       >
         <SectionLabel no="❷">금융청 판단·조치</SectionLabel>
-        <p className="text-[15px] font-medium leading-[1.9] text-foreground">
+        <p className="text-[16px] font-medium leading-[1.9] text-foreground">
           <HighlightedText text={c.act} keyPhrases={keyPhrases} terms={terms} />
         </p>
       </section>
@@ -140,7 +140,7 @@ export function CaseDetail({
             </ol>
           )}
           {c.bg.note && (
-            <p className="mt-3 border-t border-border pt-3 text-[13px] leading-[1.8] text-tertiary">
+            <p className="mt-3 border-t border-border pt-3 text-[14px] leading-[1.8] text-tertiary">
               <HighlightedText
                 text={c.bg.note}
                 keyPhrases={keyPhrases}
@@ -157,7 +157,7 @@ export function CaseDetail({
       {/* 이 사례의 용어 */}
       {terms.length > 0 && (
         <section className="rounded-cover bg-white p-5 shadow-card sm:p-6">
-          <h3 className="mb-3 text-[13px] font-semibold tracking-wide text-foreground">
+          <h3 className="mb-3 text-[14px] font-semibold tracking-wide text-foreground">
             이 사례의 용어
           </h3>
           <dl className="space-y-3">
@@ -174,7 +174,7 @@ export function CaseDetail({
                     </span>
                   )}
                 </dt>
-                <dd className="mt-1 text-[13px] leading-relaxed text-body">
+                <dd className="mt-1 text-[14px] leading-relaxed text-body">
                   {t.definition}
                   {t.koreanEquivalent && (
                     <span className="mt-0.5 block text-tertiary">
@@ -194,7 +194,7 @@ export function CaseDetail({
       {/* 관련 사례 */}
       {related.length > 0 && (
         <section>
-          <h3 className="mb-3 text-[13px] font-semibold tracking-wide text-foreground">
+          <h3 className="mb-3 text-[14px] font-semibold tracking-wide text-foreground">
             같은 테마의 관련 사례
           </h3>
           <ul className="grid gap-2 sm:grid-cols-2">

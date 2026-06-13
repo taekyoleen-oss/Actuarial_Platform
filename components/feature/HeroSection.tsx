@@ -7,7 +7,7 @@ export function HeroSection() {
     <section className="border-b border-border bg-actuarial-dots bg-watermark-curve">
       <div className="mx-auto flex max-w-container items-center justify-between gap-8 px-6 py-8 sm:py-10">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-foreground sm:text-[26px]">
+          <h1 className="text-[24px] font-bold tracking-tight text-foreground sm:text-[28px]">
             보험 배타적 사용권 · 국내외 보험 정보 자료실
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-tertiary">

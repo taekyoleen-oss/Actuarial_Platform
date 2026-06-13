@@ -30,10 +30,10 @@ export default function JapanLifeTrendsPage() {
               일본 생명보험의 동향
             </span>
           </nav>
-          <div className="text-[12px] font-bold tracking-[0.16em] text-brand-sky">
+          <div className="text-[13px] font-bold tracking-[0.16em] text-brand-sky">
             MARKET TRENDS · {TRENDS_META.edition}
           </div>
-          <h1 className="mt-2 text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-[34px]">
+          <h1 className="mt-2 text-[28px] font-bold leading-tight tracking-tight text-foreground sm:text-[37px]">
             {TRENDS_META.title}
           </h1>
           <p className="mt-3 max-w-2xl text-[14.5px] leading-[1.8] text-tertiary">
@@ -47,7 +47,7 @@ export default function JapanLifeTrendsPage() {
                 <dt className="text-[11.5px] font-medium text-tertiary">
                   {k}
                 </dt>
-                <dd className="mt-0.5 text-[14px] font-semibold text-foreground">
+                <dd className="mt-0.5 text-[15px] font-semibold text-foreground">
                   {v}
                 </dd>
               </div>
@@ -65,7 +65,7 @@ export default function JapanLifeTrendsPage() {
           <div className="min-w-0">
             <TrendsArticle />
             {/* 출처 */}
-            <footer className="mt-12 rounded-cover border border-border bg-white/60 px-5 py-4 text-[12px] leading-relaxed text-tertiary">
+            <footer className="mt-12 rounded-cover border border-border bg-white/60 px-5 py-4 text-[13px] leading-relaxed text-tertiary">
               <span className="font-medium text-foreground">고지</span>{" "}
               {TRENDS_META.disclaimer}
             </footer>

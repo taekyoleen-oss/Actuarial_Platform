@@ -24,7 +24,7 @@ export function DataTable({ table }: { table: TableData }) {
                   colSpan={cell.colSpan}
                   rowSpan={cell.rowSpan}
                   scope="col"
-                  className="px-3.5 py-2.5 text-[12px] font-semibold text-foreground"
+                  className="px-3.5 py-2.5 text-[13px] font-semibold text-foreground"
                 >
                   <InlineMarkup text={cell.label} />
                 </th>
@@ -43,7 +43,7 @@ export function DataTable({ table }: { table: TableData }) {
               {row.map((cell, ci) => (
                 <td
                   key={ci}
-                  className={`px-3.5 py-2.5 text-[13px] ${
+                  className={`px-3.5 py-2.5 text-[14px] ${
                     ci === 0 || table.plain
                       ? "text-left text-body"
                       : "text-right tabular-nums text-body"

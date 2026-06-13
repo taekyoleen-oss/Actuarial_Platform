@@ -8,7 +8,7 @@ export function SummaryPanel({ summary }: { summary: string | null }) {
   if (!summary) return null;
   return (
     <section className="rounded-cover border border-border bg-white p-6 shadow-card">
-      <h2 className="mb-2 text-[17px] font-medium text-foreground">AI 요약</h2>
+      <h2 className="mb-2 text-[18px] font-medium text-foreground">AI 요약</h2>
       <Markdown text={summary} />
     </section>
   );
