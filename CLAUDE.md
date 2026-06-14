@@ -36,6 +36,7 @@
 | 2026-06-14 | /apps 헤더 아이덴트 교체: ModelSelectIdent → 모듈러 빌드 애니메이션 | app/(public)/apps/page.tsx, public/idents/tkleen-modular-build-animation.html | 사용자 요청: 제목 바로 아래 아이덴트를 tkleen-modular-build-animation.html로 변경. iframe 임베드(흰 카드로 감싸 크림 캔버스에 자연스럽게), PC(lg+) 전용 유지. ModelSelectIdent import/사용 제거(컴포넌트 파일은 보존). 콘솔 에러 0 |
 | 2026-06-14 | /apps ML카드 좌측 애니메이션 교체 + 아이덴트 배경 정리 | app/(public)/apps/page.tsx, public/idents/tkleen-ml-training-pipeline.html | 머신러닝 자동분석 카드 왼쪽을 tkleen-ml-training-pipeline.html(데이터 적재→평가)로 교체. PipelineIdentCell에 src/title/heightClass prop화(와이드형은 h-340). ml-training progress rect width 음수 버그 Math.max(0,…) 클램프 |
 | 2026-06-14 | /theory·/apps 카드+아이덴트 파란 파스텔 배경 | lib/utils.ts(bluePastelFor), app/(public)/theory/[topic]·apps/page.tsx, public/idents/*.html(3종) | 사용자 요청: 카드마다 파란 계통 파스텔(6음영) 자동배정. 아이덴트는 body background:transparent로 바꿔 감싼 카드의 파란 배경이 비치게(흰 모듈 타일이 대비로 돋보임). 이론 카드·앱 카드·공공DB 카드·헤더/파이프라인 아이덴트 일괄 적용 |
+| 2026-06-14 | /apps 아이덴트 3종 페이지 배경(크림) 일치 + 상단 아이덴트 텍스트 제거 | app/(public)/apps/page.tsx, public/idents/tkleen-modular-build-animation.html | 사용자 요청: 아이덴트 카드 테두리·그림자·파란배경 제거→투명(페이지 cream 비침), 그래픽만 페이지에 녹아듦(콘텐츠 카드는 파란 파스텔 유지). 상단 모듈빌드 아이덴트는 .head/.caption/.concept-note/버튼 display:none으로 위·아래 텍스트 제거(그래픽만). 헤더 높이 420 |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 

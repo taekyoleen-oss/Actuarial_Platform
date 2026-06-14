@@ -180,12 +180,9 @@ function PipelineIdentCell({
   /** 애니메이션 종횡비에 맞춘 iframe 높이 (와이드형은 낮게) */
   heightClass?: string;
 }) {
-  const c = bluePastelFor(src);
+  // 카드 없이 페이지 배경(크림)에 녹아드는 아이덴트 (2026-06-14 사용자 요청)
   return (
-    <div
-      style={{ backgroundColor: c.bg, borderColor: c.border }}
-      className="flex h-full flex-col overflow-hidden rounded-cover border shadow-card"
-    >
+    <div className="flex h-full flex-col">
       <iframe
         src={src}
         title={title}
@@ -193,10 +190,7 @@ function PipelineIdentCell({
         scrolling="no"
         className={`w-full flex-1 border-0 bg-transparent ${heightClass}`}
       />
-      <p
-        style={{ borderColor: c.border }}
-        className="border-t px-5 py-3 text-[13px] leading-relaxed text-tertiary"
-      >
+      <p className="px-1 pt-3 text-[13px] leading-relaxed text-tertiary">
         {caption}
       </p>
     </div>
@@ -204,7 +198,6 @@ function PipelineIdentCell({
 }
 
 export default function AppsPage() {
-  const headerC = bluePastelFor("modular-build");
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       <h1 className="text-2xl font-medium text-foreground">
@@ -215,20 +208,15 @@ export default function AppsPage() {
         탭에서 앱이 열립니다.
       </p>
 
-      {/* 모듈러 빌드 아이덴트 — 모듈을 조립해 하나의 모델 완성 (PC 전용) */}
+      {/* 모듈러 빌드 아이덴트 — 그래픽만, 페이지 배경에 녹아들게 (PC 전용) */}
       <div className="mt-10 hidden lg:block">
-        <div
-          style={{ backgroundColor: headerC.bg, borderColor: headerC.border }}
-          className="mx-auto max-w-2xl overflow-hidden rounded-cover border shadow-card"
-        >
-          <iframe
-            src="/idents/tkleen-modular-build-animation.html"
-            title="모듈을 조립해 하나의 모델을 완성합니다"
-            loading="lazy"
-            scrolling="no"
-            className="block h-[500px] w-full border-0 bg-transparent"
-          />
-        </div>
+        <iframe
+          src="/idents/tkleen-modular-build-animation.html"
+          title="모듈 조립 아이덴트"
+          loading="lazy"
+          scrolling="no"
+          className="mx-auto block h-[420px] w-full max-w-2xl border-0 bg-transparent"
+        />
       </div>
 
       <section className="mt-10">
