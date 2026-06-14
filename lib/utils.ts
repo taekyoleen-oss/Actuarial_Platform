@@ -41,6 +41,24 @@ export function pastelFor(seed: string): { bg: string; border: string } {
   return CARD_PASTELS[Math.abs(h) % CARD_PASTELS.length];
 }
 
+/** 파란색 계통 파스텔 팔레트 — 카드마다 살짝 다른 음영(블루·스카이·시안·인디고).
+ *  보험이론 사전·앱 페이지 카드/애니메이션 배경 전용(2026-06-14 사용자 요청). */
+const BLUE_PASTELS = [
+  { bg: "#EEF4FF", border: "#DBE6FB" }, // blue
+  { bg: "#E6F1FD", border: "#CFE2F8" }, // sky
+  { bg: "#EAF7FC", border: "#D2EBF4" }, // cyan
+  { bg: "#EFF0FE", border: "#DEE0FB" }, // periwinkle
+  { bg: "#F1F6FF", border: "#DEEAFC" }, // light blue
+  { bg: "#E8F3FA", border: "#D3E6F2" }, // steel
+] as const;
+
+/** 시드 문자열로 파란 계통 파스텔을 자동·일관 배정한다. */
+export function bluePastelFor(seed: string): { bg: string; border: string } {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return BLUE_PASTELS[Math.abs(h) % BLUE_PASTELS.length];
+}
+
 /** 네이버 뉴스 제목의 <b> 태그·HTML 엔티티 정리 (뉴스 연동용) */
 export function cleanNewsText(text: string | null): string {
   if (!text) return "";

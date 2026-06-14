@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tkLeen — Modular Build Ident</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root, [data-theme="light"] {
+    --bg: #FFFFFF;
+    --bg-soft: #F5F7FA;
+    --text: #0A0A0A;
+    --text-soft: rgba(10,10,10,0.55);
+    --accent: #4A90C2;
+    --accent-strong: #2E6E9E;
+    --navy: #1B2845;
+    --tile: #FFFFFF;
+    --tile-stroke: rgba(10,10,10,0.12);
+    --tile-shadow: rgba(27,40,69,0.10);
+    --grid-line: rgba(10,10,10,0.05);
+    --joint: #4A90C2;
+    --btn-border: rgba(10,10,10,0.18);
+  }
+  [data-theme="dark"] {
+    --bg: #10182B;
+    --bg-soft: #1B2845;
+    --text: #FAFAF7;
+    --text-soft: rgba(250,250,247,0.6);
+    --accent: #6FB3E0;
+    --accent-strong: #6FB3E0;
+    --navy: #1B2845;
+    --tile: #1B2845;
+    --tile-stroke: rgba(250,250,247,0.14);
+    --tile-shadow: rgba(0,0,0,0.4);
+    --grid-line: rgba(250,250,247,0.05);
+    --joint: #6FB3E0;
+    --btn-border: rgba(250,250,247,0.25);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    /* 투명 배경 — 임베드한 카드의 파란 파스텔 배경이 비치도록 (2026-06-14) */
+    background: transparent;
+    color: var(--text);
+    font-family: 'Pretendard', 'Inter', sans-serif;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.5s, color 0.5s;
+  }
+  .stage {
+    position: relative;
+    width: min(720px, 92vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+  }
+  .head { text-align: center; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.2s forwards;
+  }
+  .title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(24px, 4vw, 38px);
+    line-height: 1.15;
+    opacity: 0;
+    animation: fadeIn 0.9s ease 0.4s forwards;
+  }
+  .title em { font-style: normal; color: var(--accent-strong); font-weight: 400; }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* ── 빌드 캔버스 ───────────── */
+  .canvas-wrap {
+    position: relative;
+    width: 360px; height: 360px;
+  }
+  svg.build { width: 100%; height: 100%; overflow: visible; }
+
+  .frame {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 6;
+    opacity: 0;
+    rx: 22;
+  }
+  .frame.show { animation: frameIn 0.8s ease forwards; }
+  @keyframes frameIn { to { opacity: 0.4; } }
+
+  .tile-shadow { fill: var(--tile-shadow); opacity: 0; }
+  .tile-body {
+    fill: var(--tile);
+    stroke: var(--tile-stroke);
+    stroke-width: 1.2;
+  }
+  .tile-accent { fill: var(--accent); opacity: 0.9; }
+  .tile-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    fill: var(--text);
+  }
+  .tile-dot { fill: var(--accent); }
+
+  .tile { opacity: 0; }
+
+  .joint {
+    fill: none;
+    stroke: var(--joint);
+    stroke-width: 2;
+    opacity: 0;
+    stroke-linecap: round;
+  }
+  .joint-node { fill: var(--joint); opacity: 0; }
+
+  .scan {
+    fill: var(--accent);
+    opacity: 0;
+  }
+
+  .badge {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .badge.show { animation: badgePop 0.6s cubic-bezier(0.18,1.3,0.4,1) forwards; }
+  @keyframes badgePop { from { opacity:0; transform: scale(0.5);} to { opacity:1; transform: scale(1);} }
+  .badge rect { fill: var(--accent); rx: 13; }
+  .badge text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    fill: #FFFFFF;
+    font-weight: 500;
+  }
+
+  .caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--text-soft);
+    min-height: 18px;
+    transition: opacity 0.3s;
+  }
+
+  .ctrl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    background: none; border: 1px solid var(--btn-border); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; cursor: pointer;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .ctrl:hover { border-color: var(--accent); color: var(--accent-strong); }
+  .ctrl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .replay { position: absolute; bottom: -54px; right: 0; }
+  .theme-toggle { position: absolute; top: -6px; right: 0; padding: 8px 14px; }
+  .concept-note {
+    position: absolute; bottom: -54px; left: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text); opacity: 0.32; line-height: 1.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile, .joint, .joint-node, .frame, .badge, .eyebrow, .title {
+      animation: none !important; opacity: 1 !important; transform: none !important;
+    }
+    .frame { opacity: 0.4 !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="head">
+    <div class="eyebrow">Modular Development</div>
+    <div class="title">모듈을 조립해 <em>하나의 모델</em>을 완성합니다</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <svg class="build" id="svg" viewBox="0 0 360 360"
+      aria-label="개별 개발 모듈 블록들이 사방에서 날아와 격자 프레임에 끼워지고, 인접한 모듈끼리 연결되어 하나의 완성된 모델로 조립되는 애니메이션">
+      <rect class="frame" id="frame" x="36" y="36" width="288" height="288" rx="22"/>
+      <g id="joints"></g>
+      <g id="tiles"></g>
+      <g id="fx"></g>
+      <g id="badge" class="badge">
+        <rect x="118" y="166" width="124" height="28"/>
+        <text x="180" y="184" text-anchor="middle">BUILD COMPLETE</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="caption" id="caption">모듈 로딩 중…</div>
+
+  <button class="ctrl theme-toggle" id="themeBtn" type="button" aria-label="라이트/다크 모드 전환">☾ Dark</button>
+  <div class="concept-note">Concept 07 · Light/Dark<br>Compose Modules → Model</div>
+  <button class="ctrl replay" id="replayBtn" type="button">다시 빌드 ↻</button>
+</div>
+
+<script>
+(function () {
+  const ns = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let theme = 'light';
+  function applyTheme(t) {
+    theme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    $('themeBtn').textContent = t === 'light' ? '☾ Dark' : '☀ Light';
+  }
+
+  /* ── 3×3 모듈 그리드 ───────────── */
+  const CELL = 88, GAP = 8, ORIGIN = 44;
+  const T = CELL - GAP;                 // 타일 변
+  const modules = [
+    { c:0, r:0, label:'DATA'  }, { c:1, r:0, label:'CLEAN' }, { c:2, r:0, label:'FEAT'  },
+    { c:0, r:1, label:'TRAIN' }, { c:1, r:1, label:'MODEL', core:true }, { c:2, r:1, label:'TUNE' },
+    { c:0, r:2, label:'EVAL'  }, { c:1, r:2, label:'API'   }, { c:2, r:2, label:'DEPLOY'},
+  ];
+  // 조립 순서: 가운데(MODEL) → 안쪽 → 바깥, 나선형 느낌
+  const ORDER = [4, 1, 5, 7, 3, 0, 2, 8, 6];
+
+  const tileX = m => ORIGIN + m.c * CELL;
+  const tileY = m => ORIGIN + m.r * CELL;
+  const tileCX = m => tileX(m) + T/2;
+  const tileCY = m => tileY(m) + T/2;
+
+  let timers = [], loopId = null;
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  function build() {
+    $('tiles').innerHTML = ''; $('joints').innerHTML = ''; $('fx').innerHTML = '';
+    $('frame').classList.remove('show');
+    $('badge').classList.remove('show');
+
+    // 인접(가로·세로) 조인트 미리 생성 (숨김)
+    const idx = (c, r) => modules.findIndex(m => m.c === c && m.r === r);
+    const joints = [];
+    modules.forEach(m => {
+      [[1,0],[0,1]].forEach(([dc, dr]) => {
+        const j = idx(m.c + dc, m.r + dr);
+        if (j !== -1) joints.push([modules.indexOf(m), j]);
+      });
+    });
+    joints.forEach(([a, b], i) => {
+      const A = modules[a], B = modules[b];
+      const x1 = tileCX(A), y1 = tileCY(A), x2 = tileCX(B), y2 = tileCY(B);
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      line.setAttribute('class', 'joint');
+      line.setAttribute('id', 'J' + i);
+      line.dataset.a = a; line.dataset.b = b;
+      $('joints').appendChild(line);
+    });
+    // 조인트 노드(교차점) — 타일 중앙
+    modules.forEach((m, i) => {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', tileCX(m)); dot.setAttribute('cy', tileCY(m));
+      dot.setAttribute('r', 3.5);
+      dot.setAttribute('class', 'joint-node');
+      dot.setAttribute('id', 'JN' + i);
+      $('joints').appendChild(dot);
+    });
+
+    // 타일
+    modules.forEach((m, i) => {
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'tile');
+      g.setAttribute('id', 'T' + i);
+      const x = tileX(m), y = tileY(m);
+      g.innerHTML =
+        `<rect class="tile-shadow" x="${x+2}" y="${y+4}" width="${T}" height="${T}" rx="12"/>` +
+        `<rect class="tile-body" x="${x}" y="${y}" width="${T}" height="${T}" rx="12"/>` +
+        `<rect class="tile-accent" x="${x+12}" y="${y+12}" width="${m.core?22:16}" height="${m.core?22:16}" rx="4" opacity="${m.core?0.95:0.85}"/>` +
+        `<circle class="tile-dot" cx="${x+T-14}" cy="${y+14}" r="2.6"/>` +
+        `<text class="tile-label" x="${x+12}" y="${y+T-13}">${m.label}</text>`;
+      $('tiles').appendChild(g);
+    });
+  }
+
+  function placeTile(i, fromAngle) {
+    const m = modules[i];
+    const g = $('T' + i);
+    const cx0 = tileCX(m), cy0 = tileCY(m);
+    // 시작: 프레임 밖 먼 곳 + 회전 + 축소
+    const dist = 230;
+    const sx = Math.cos(fromAngle) * dist;
+    const sy = Math.sin(fromAngle) * dist;
+    g.style.transformBox = 'fill-box';
+    g.style.transformOrigin = `${cx0}px ${cy0}px`;
+    g.style.transition = 'none';
+    g.style.opacity = '0';
+    g.style.transform = `translate(${sx}px, ${sy}px) rotate(${(Math.random()-0.5)*120}deg) scale(0.5)`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      g.style.transition = 'transform 0.62s cubic-bezier(0.34,1.4,0.5,1), opacity 0.4s ease';
+      g.style.opacity = '1';
+      g.style.transform = 'translate(0,0) rotate(0deg) scale(1)';
+    }));
+    // 스냅 순간: 그림자 + 짧은 링
+    setTimeout(() => {
+      g.querySelector('.tile-shadow').style.transition = 'opacity 0.4s';
+      g.querySelector('.tile-shadow').style.opacity = '1';
+      snapRing(cx0, cy0);
+    }, 560);
+  }
+
+  function snapRing(cx, cy) {
+    const ring = document.createElementNS(ns, 'circle');
+    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', theme === 'light' ? '#4A90C2' : '#6FB3E0');
+    ring.setAttribute('stroke-width', '2');
+    $('fx').appendChild(ring);
+    const start = performance.now();
+    (function frame() {
+      const u = (performance.now() - start) / 480;
+      if (u >= 1) { ring.remove(); return; }
+      ring.setAttribute('r', 8 + 46 * u);
+      ring.setAttribute('stroke-width', 2.2 * (1 - u));
+      ring.style.opacity = 0.7 * (1 - u);
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  // 두 타일이 모두 놓이면 그 사이 조인트 점등
+  function lightJoints(placedSet) {
+    document.querySelectorAll('.joint').forEach(j => {
+      const a = +j.dataset.a, b = +j.dataset.b;
+      if (placedSet.has(a) && placedSet.has(b) && !j.classList.contains('on')) {
+        j.classList.add('on');
+        // 그리기 애니메이션
+        const len = j.getTotalLength();
+        j.style.strokeDasharray = len; j.style.strokeDashoffset = len;
+        j.style.opacity = '0.85';
+        j.style.transition = 'stroke-dashoffset 0.4s ease';
+        requestAnimationFrame(() => j.style.strokeDashoffset = '0');
+      }
+    });
+    placedSet.forEach(i => {
+      const jn = $('JN' + i);
+      if (jn) { jn.style.transition = 'opacity 0.4s'; jn.style.opacity = '0.9'; }
+    });
+  }
+
+  function setCaption(txt) { $('caption').textContent = txt; }
+
+  const CAPTIONS = [
+    'MODEL 코어 초기화', 'CLEAN 모듈 연결', 'TUNE 모듈 연결', 'API 모듈 연결',
+    'TRAIN 모듈 연결', 'DATA 모듈 연결', 'FEAT 모듈 연결', 'DEPLOY 모듈 연결', 'EVAL 모듈 연결',
+  ];
+
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    if (loopId) { clearInterval(loopId); loopId = null; }
+  }
+
+  function play() {
+    reset(); build();
+    const placed = new Set();
+
+    if (reduceMotion) {
+      $('frame').classList.add('show');
+      modules.forEach((m, i) => {
+        const g = $('T' + i); g.style.opacity = '1';
+        g.querySelector('.tile-shadow').style.opacity = '1';
+        placed.add(i);
+      });
+      lightJoints(placed);
+      $('badge').classList.add('show');
+      setCaption('빌드 완료 · 9개 모듈 통합');
+      return;
+    }
+
+    later(() => $('frame').classList.add('show'), 200);
+
+    const STEP = 360, t0 = 600;
+    ORDER.forEach((idx, k) => {
+      later(() => {
+        const ang = (Math.PI * 2 * k) / ORDER.length + 0.6;  // 사방에서 진입
+        placeTile(idx, ang);
+        setCaption(CAPTIONS[k] || '');
+      }, t0 + k * STEP);
+      later(() => { placed.add(idx); lightJoints(placed); }, t0 + k * STEP + 580);
+    });
+
+    const tEnd = t0 + ORDER.length * STEP + 700;
+    later(() => {
+      $('badge').classList.add('show');
+      setCaption('빌드 완료 · 9개 모듈 통합');
+      finalGlow();
+    }, tEnd);
+
+    // 루프: 조인트 위로 신호 펄스가 순환 (살아있는 시스템)
+    later(() => {
+      loopId = setInterval(pulseSweep, 2600);
+      pulseSweep();
+    }, tEnd + 800);
+  }
+
+  function finalGlow() {
+    // 프레임이 한번 밝게 숨쉼
+    const f = $('frame');
+    f.style.transition = 'stroke-width 0.6s, opacity 0.6s';
+    f.style.strokeWidth = '2.5'; f.style.opacity = '0.7';
+    setTimeout(() => { f.style.strokeWidth = '1.5'; f.style.opacity = '0.4'; }, 700);
+  }
+
+  function pulseSweep() {
+    const joints = [...document.querySelectorAll('.joint.on')];
+    joints.forEach((j, i) => {
+      setTimeout(() => {
+        const len = j.getTotalLength();
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('r', 3);
+        dot.setAttribute('fill', theme === 'light' ? '#2E6E9E' : '#6FB3E0');
+        $('fx').appendChild(dot);
+        const start = performance.now();
+        (function frame() {
+          const u = (performance.now() - start) / 520;
+          if (u >= 1) { dot.remove(); return; }
+          const p = j.getPointAtLength(len * u);
+          dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+          dot.style.opacity = u < 0.15 ? u/0.15 : (u > 0.85 ? (1-u)/0.15 : 1);
+          requestAnimationFrame(frame);
+        })();
+      }, i * 60);
+    });
+  }
+
+  $('themeBtn').addEventListener('click', () => applyTheme(theme === 'light' ? 'dark' : 'light'));
+  $('replayBtn').addEventListener('click', play);
+
+  applyTheme('light');
+  play();
+})();
+</script>
+</body>
+</html>

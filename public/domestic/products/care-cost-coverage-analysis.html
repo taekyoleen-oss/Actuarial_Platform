@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간병비 보장 담보 분석 — 보장 방법별 비교 · 대표 판매사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --m-day:#3E6FB0; --m-fund:#8E5BA8; --m-lump:#C25E4A; --m-acc:#574B90; --m-svc:#2F8597; --m-pub:#6B6A64;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.62;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+
+  header{padding:58px 0 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;
+    letter-spacing:-.01em;margin-bottom:8px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--m-fund);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:24px;}
+  .lead{max-width:820px;font-size:1.0rem;color:#33322E;margin-bottom:6px;}
+  .lead b{color:var(--ink);}
+
+  .ctx{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:24px 0 6px;}
+  @media(max-width:680px){.ctx{grid-template-columns:1fr;}}
+  .ctxbox{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:#fff;}
+  .ctxbox .big{font-family:var(--serif);font-weight:600;font-size:1.5rem;color:var(--m-fund);line-height:1;}
+  .ctxbox .lab{font-size:.84rem;color:var(--muted);margin-top:7px;line-height:1.45;}
+  .ctxbox .lab b{color:var(--ink);}
+
+  .methodbox{margin:22px 0 4px;background:#F6F2F8;border:1px solid #E0D2E6;border-radius:12px;padding:16px 18px;}
+  .methodbox h3{font-family:var(--serif);font-size:1.06rem;font-weight:600;margin-bottom:6px;color:#5A3A6B;}
+  .methodbox p{font-size:.88rem;color:#4A3A52;line-height:1.55;}
+  .methodbox b{color:#3E2748;}
+
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px;}
+  .nav a{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:5px 12px;background:#fff;
+    display:inline-flex;align-items:center;gap:6px;transition:transform .12s,box-shadow .12s;}
+  .nav a:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(0,0,0,.06);}
+  .nav a:focus-visible{outline:2px solid var(--m-day);outline-offset:2px;}
+  .nav a .d{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .msec{padding:42px 0 6px;scroll-margin-top:12px;}
+  .m-head{display:flex;align-items:baseline;gap:13px;margin-bottom:5px;flex-wrap:wrap;border-left:5px solid var(--mc);padding-left:14px;}
+  .m-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mc);font-weight:500;}
+  .m-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,1.95rem);letter-spacing:-.01em;}
+  .m-mech{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#fff;background:var(--mc);padding:3px 9px;border-radius:5px;text-transform:uppercase;}
+  .m-intro{font-size:.92rem;color:var(--muted);max-width:880px;margin:6px 0 18px;padding-left:19px;line-height:1.55;}
+  .m-intro b{color:#403F3A;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-left:4px solid var(--mc);border-radius:11px;background:#fff;padding:15px 16px 14px;display:flex;flex-direction:column;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.05rem;line-height:1.25;margin-bottom:3px;}
+  .card-name .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;color:#fff;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+  .tag-trig{background:var(--mc);} .tag-new{background:var(--gold);}
+  .card-trig{font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--mc);margin-bottom:8px;}
+  .card-def{font-size:.875rem;color:#33322E;line-height:1.52;margin-bottom:8px;}
+  .card-def b{color:var(--ink);}
+  .card-spec{display:flex;flex-direction:column;gap:5px;}
+  .card-spec .row{display:flex;gap:8px;font-size:.8rem;line-height:1.4;}
+  .card-spec .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--mc);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .card-spec .v{color:#403F3A;}
+  .card-spec .v b{color:var(--ink);}
+  .card-ins{margin-top:10px;display:flex;gap:9px;align-items:baseline;border-top:1px dashed var(--line);padding-top:9px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.81rem;color:#403F3A;line-height:1.45;}
+  .card-ins .v b{color:var(--ink);}
+
+  .cmpsec{margin:50px 0 6px;}
+  .cmpsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--m-fund);}
+  .cmpsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 4px;}
+  .cmpsec .desc{font-size:.92rem;color:var(--muted);max-width:880px;margin-bottom:18px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:1140px;font-size:.82rem;background:#fff;}
+  table.cmp thead th{background:var(--navy);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.03em;
+    text-transform:uppercase;text-align:left;padding:11px 12px;font-weight:500;position:sticky;top:0;}
+  table.cmp td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.45;color:#33322E;}
+  table.cmp tbody tr:nth-child(even){background:#FBFBF8;}
+  .cm-name{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--ink);min-width:135px;}
+  .cm-name .pip{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .cm-pay{min-width:78px;} .cm-trig{min-width:150px;} .cm-who{min-width:80px;}
+  .cm-limit{min-width:110px;} .cm-fixed{min-width:72px;}
+  .cm-ins{min-width:175px;font-size:.79rem;color:#403F3A;}
+  .cm-ins b{color:var(--ink);}
+  .yes{color:#2E7D52;font-weight:600;} .no{color:#B0432C;font-weight:600;} .partial{color:#B8862F;font-weight:600;}
+
+  .pvsec{margin:50px 0 6px;border:1.5px solid var(--m-pub);border-radius:16px;overflow:hidden;background:#fff;}
+  .pv-head{padding:20px 24px;border-bottom:1px solid var(--line);}
+  .pv-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--m-pub);}
+  .pv-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.2vw,1.95rem);margin-top:5px;}
+  .pv-head p{font-size:.9rem;color:var(--muted);margin-top:6px;max-width:820px;}
+  .pv-cols{display:grid;grid-template-columns:1fr 1fr;}
+  @media(max-width:680px){.pv-cols{grid-template-columns:1fr;}}
+  .pv-col{padding:20px 24px;border-right:1px solid var(--line);}
+  .pv-col:last-child{border-right:none;}
+  @media(max-width:680px){.pv-col{border-right:none;border-bottom:1px solid var(--line);}.pv-col:last-child{border-bottom:none;}}
+  .pv-col h3{font-family:var(--serif);font-size:1.12rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+  .pv-col h3 .sw{width:11px;height:11px;border-radius:3px;}
+  .pv-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .pv-col li{font-size:.86rem;color:#33322E;line-height:1.5;padding-left:13px;position:relative;}
+  .pv-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .pv-col li b{color:var(--ink);}
+
+  .cautsec{margin:50px 0 6px;}
+  .cautsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+  .cautsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 16px;}
+  .cauts{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:680px){.cauts{grid-template-columns:1fr;}}
+  .caut{border:1px solid #E8D9BE;background:#FBF7EE;border-radius:12px;padding:15px 17px;}
+  .caut h4{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin-bottom:5px;color:#7A5A1E;}
+  .caut p{font-size:.86rem;color:#5A4A2E;line-height:1.52;}
+  .caut p b{color:#3E2C10;}
+
+  footer{margin:48px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav a{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage-Mechanism Lens · 보장 방법별 횡단 분석 / 간병비</div>
+    <h1>간병비, <em>어떻게</em> 보장받는가</h1>
+    <div class="subtitle">같은 '간병비'라도 지급 방법이 다르면 전혀 다른 담보다 — 6가지 방식 · 대표 판매사 비교</div>
+    <p class="lead">
+      이 자료는 질병 여정이 아니라 <b>하나의 니즈(간병비)</b>를 고정하고, 그것을 충족하는 담보를 <b>질병을 가로질러 모은 뒤
+      지급 방법(메커니즘)으로 묶어 비교</b>한다. 핵심 질문은 "무슨 병이냐"가 아니라 <b>"무엇이 보험금을 발생시키고(트리거),
+      어떻게 지급되며, 누가 간병인을 책임지는가"</b>다. 각 담보에 <b>검증된 대표 판매사</b>를 함께 표기해 실제 판매를 확인한다.
+    </p>
+
+    <div class="ctx">
+      <div class="ctxbox"><div class="big">월 200~400만</div><div class="lab">전문 간병인 평균 비용 — <b>일당 약 12만원</b>(월 약 360만)</div></div>
+      <div class="ctxbox"><div class="big">최대 2.4억</div><div class="lab">월 200~400만 × <b>5년</b> 누적 — 자녀 세대 부담</div></div>
+      <div class="ctxbox"><div class="big">본인 15~20%</div><div class="lab">공적 노인장기요양 본인부담 — <b>민간 보완 필요</b></div></div>
+    </div>
+
+    <div class="methodbox">
+      <h3>이 분석의 방법 — 보장 방법별 횡단 렌즈 (지침 §12)</h3>
+      <p>① 니즈를 <b>'간병비' 하나로 고정</b> → ② 암·치매·뇌졸중·노쇠 등 <b>질병을 가로질러</b> 간병 담보를 모음 → ③ <b>지급 메커니즘 6유형</b>으로 분류 → ④ 트리거·지급방식·주체·장소·한도·정액여부·<b>대표 판매사</b>를 <b>한 매트릭스로 대조</b>.</p>
+    </div>
+
+    <nav class="nav" aria-label="유형 이동">
+      <a href="#m1"><span class="d" style="background:var(--m-day)"></span>① 일당형</a>
+      <a href="#m2"><span class="d" style="background:var(--m-fund)"></span>② 생활비·자금형</a>
+      <a href="#m3"><span class="d" style="background:var(--m-lump)"></span>③ 진단·등급 일시금</a>
+      <a href="#m4"><span class="d" style="background:var(--m-acc)"></span>④ 선지급형</a>
+      <a href="#m5"><span class="d" style="background:var(--m-svc)"></span>⑤ 서비스·현물형</a>
+      <a href="#m6"><span class="d" style="background:var(--m-pub)"></span>⑥ 공적 제도</a>
+      <a href="#cmp"><span class="d" style="background:var(--navy)"></span>★ 차이 매트릭스</a>
+    </nav>
+  </header>
+
+  <!-- ============ ① 일당형 ============ -->
+  <section class="msec" id="m1" style="--mc:var(--m-day)">
+    <div class="m-head"><span class="m-num">유형 ①</span><h2>일당형 — 입원 중 간병</h2><span class="m-mech">트리거 = 입원</span></div>
+    <p class="m-intro">입원해 있는 동안 <b>하루 단위</b>로 지급한다. 핵심 갈림길은 <b>간병인을 누가 책임지는가</b> — 가입자가 고용하고 영수증을 내면 받는 '사용일당'과, 보험사가 간병인을 직접 붙여주는 '지원일당'은 전혀 다르다. 2024~2025년 한도 축소(20만→10~15만)가 진행됐다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">간병인사용 입원일당 <span class="tag tag-trig">사용→청구</span></div>
+        <div class="card-trig">트리거: 입원 + 간병인 실제 고용·비용 지불</div>
+        <p class="card-def"><b>가입자가 직접</b> 간병인을 고용하고 비용을 낸 뒤, 사업자등록 업체 영수증을 제출하면 일당을 받는다. 실제 사용을 증빙해야 지급된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">한도</span><span class="v">통상 <b>1회 입원당 180일</b> · 한도 10~20만(축소 추세)</span></div>
+          <div class="row"><span class="k">변형</span><span class="v">물가·최저임금 대비 <b>체증형</b> 존재</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v"><b>삼성화재·KB손해보험</b>(점유율 1·2위)·DB손보·메리츠화재·현대해상 등 5대 손보 + NH농협·흥국·푸본현대 일부</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">간병인지원 입원일당 <span class="tag tag-trig">보험사 지원</span></div>
+        <div class="card-trig">트리거: 입원 + 보험사가 간병인 지원</div>
+        <p class="card-def"><b>보험사가 간병인을 직접 연결·지원</b>한다(유급휴가·식대까지 처리하기도). 가입자가 따로 고용·청구하는 구조가 아니다. 사용일당과 보장내용이 다르므로 유의(금감원 안내).</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">주체</span><span class="v"><b>보험사</b>가 간병인 제공</span></div>
+          <div class="row"><span class="k">주의</span><span class="v">'사용일당'과 별개 담보 — 구분 필요</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">간병인 직접지원형 운영 손보·생보(상품별 명칭 상이) · 치매·간병보험에 부가</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">요양병원 입원일당</div>
+        <div class="card-trig">트리거: 요양병원 입원</div>
+        <p class="card-def">장기 입원이 잦은 <b>요양병원 입원</b>에 특화해 일당을 지급한다. 70대 이상·장기 입원 상황을 겨냥한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">장소</span><span class="v"><b>요양병원</b> 한정</span></div>
+          <div class="row"><span class="k">대상</span><span class="v">장기 입원·고령에 유리</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 공통(요양병원 입원일당 특약) · KB손보(골든케어) 등</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">상급종합·중환자실 간병일당</div>
+        <div class="card-trig">트리거: 상급종합·중환자실 입원</div>
+        <p class="card-def">간병 강도가 높은 <b>상급종합병원·중환자실</b> 입원 시 가산 또는 별도 일당을 지급한다. 장소별로 일당이 차등된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">장소</span><span class="v">상급종합 2·3인실, <b>중환자실</b></span></div>
+          <div class="row"><span class="k">특징</span><span class="v">장소별 일당 차등(가산)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 공통(간병인사용일당 장소별 가산)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ② 생활비·자금형 ============ -->
+  <section class="msec" id="m2" style="--mc:var(--m-fund)">
+    <div class="m-head"><span class="m-num">유형 ②</span><h2>생활비 · 자금형 — 매월/종신</h2><span class="m-mech">트리거 = 상태 지속</span></div>
+    <p class="m-intro">입원 여부와 무관하게, <b>중증 상태가 지속되는 한 매월</b> 지급한다(종신형 많음). 재가·시설·집 어디서 돌보든 현금이 들어와 <b>돌봄 기간 전체의 생활비</b>를 메운다 — 일당형의 '입원 중'이라는 한계를 넘는다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">중증치매 간병생활자금 <span class="tag tag-trig">CDR 3↑·종신</span></div>
+        <div class="card-trig">트리거: 중증치매(CDR 3 이상) 진단 + 지속</div>
+        <p class="card-def">CDR 척도 중증(3 이상) 진단 후 <b>매월·종신</b> 생활자금을 지급한다. 입원이 아니라 <b>상태</b>가 트리거라, 집에서 돌봐도 받는다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>매월 · 종신</b> · 면책 질병 1년/상해 계약일</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v"><b>KB라이프</b>(든든한약속·행복한약속)·삼성생명·신한라이프·동양생명</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">장기요양 간병생활자금 <span class="tag tag-trig">등급·종신</span></div>
+        <div class="card-trig">트리거: 공적 장기요양 등급 + 지속</div>
+        <p class="card-def">공적 장기요양 등급을 받으면 <b>매월·종신</b> 생활자금을 지급한다. 중증(1~2등급) 한정인지 전등급인지가 보장 폭을 가른다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>매월 · 종신</b> · 중증 한정 vs 전등급 확인</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KDB생명·동양생명·KB라이프·KB손보(골든케어)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">일상생활장해(ADL) 간병자금</div>
+        <div class="card-trig">트리거: 일상생활 수행능력 상실(ADL)</div>
+        <p class="card-def">중증치매가 아니어도 <b>일상생활 수행능력(이동·식사·배변 등)</b>이 무너지면 매월 지급한다. '중증치매 또는 ADL'을 함께 두는 설계가 많다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">매월 · (종신형 존재)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(실버널싱케어)·생보 LTC 특약 전반</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">질병별 간병생활비 (암·뇌 등)</div>
+        <div class="card-trig">트리거: 특정 질병 진단 후 생활비</div>
+        <p class="card-def">암·뇌졸중 등 특정 질병 진단 후 회복·돌봄기에 매월 생활비를 지급한다. 질병 진단을 입구로 한 생활비형으로, 횡단으로 보면 간병 니즈와 겹친다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">매월(기간형/종신형)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상·메리츠화재 등(암 생활비)·전 생·손보</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 진단·등급 일시금형 ============ -->
+  <section class="msec" id="m3" style="--mc:var(--m-lump)">
+    <div class="m-head"><span class="m-num">유형 ③</span><h2>진단 · 등급 일시금형</h2><span class="m-mech">트리거 = 진단·등급</span></div>
+    <p class="m-intro">상태가 확정되는 <b>그 시점에 목돈</b>을 한 번에 준다. 초기 간병 환경 구축(시설 계약금·개호용품·집 개조)에 쓰인다. 일당·매월형이 '흐름'이라면 이건 '한 방울의 목돈'이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">장기요양등급 진단비 <span class="tag tag-trig">일시금</span></div>
+        <div class="card-trig">트리거: 공적 장기요양 등급 판정</div>
+        <p class="card-def">공적 등급(1~5/인지지원) 판정 시 <b>일시금</b>을 지급한다. 등급별 차등 지급이 일반적이며, 초기 돌봄 셋업 비용에 쓰인다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>일시금</b>(등급별 차등)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB손보(골든케어)·KDB생명·동양생명·KB라이프</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">중증치매 진단비 <span class="tag tag-trig">CDR·일시금</span></div>
+        <div class="card-trig">트리거: 치매 진단(CDR 단계)</div>
+        <p class="card-def">CDR 단계별(경증·중등도·중증) 치매 진단 시 <b>일시금</b>을 지급한다. 중증(CDR 3↑) 고액 설계가 핵심이며, 생활자금(②)과 병행한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>일시금</b>(단계별) · 90일 지속</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프·삼성생명·신한라이프(ONE더케어 — MCI 포함)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">일상생활장해 진단비</div>
+        <div class="card-trig">트리거: ADL 상실 진단</div>
+        <p class="card-def">일상생활 수행능력 상실 상태 진단 시 일시금을 지급한다. 치매가 아닌 와상·중증 장해에도 작동한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">일시금</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보 LTC 특약 전반(KB라이프·삼성생명 등)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">간병 유발 사건 일시금 (골절 등)</div>
+        <div class="card-trig">트리거: 낙상·골절 등 간병 유발 사건</div>
+        <p class="card-def">간병 진입의 방아쇠가 되는 대퇴골 골절 등 진단 시 일시금. 직접 '간병' 명칭은 아니나 횡단으로 보면 간병 니즈의 입구를 보장한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">일시금(5대골절 등)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(참좋은행복플러스)·롯데손보(힐링케어) 등 5대골절</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 선지급형 ============ -->
+  <section class="msec" id="m4" style="--mc:var(--m-acc)">
+    <div class="m-head"><span class="m-num">유형 ④</span><h2>선지급형 — 사망보험금을 당겨쓰다</h2><span class="m-mech">트리거 = 장기간병상태</span></div>
+    <p class="m-intro">새 보험금이 아니라, <b>이미 가진 사망보험금을 생전에 당겨</b> 간병에 쓴다. 종신보험에 간병특약을 붙여, 장기간병상태가 되면 사망보험금의 상당 부분을 미리 지급한다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">장기간병 선지급 (종신 특약) <span class="tag tag-trig">최고 80% 선지급</span></div>
+        <div class="card-trig">트리거: 장기간병상태(중증치매 또는 ADL)</div>
+        <p class="card-def">장기간병상태(중증치매 또는 일상생활장해)가 되면 <b>사망보험금의 상당 부분(예: 최고 80%)</b>을 생전에 당겨 돌봄 자금으로 쓴다. 선지급분만큼 사망보험금이 줄어든다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>사망보험금 선지급</b>(차감) · 새 자금 아님</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v"><b>KB라이프</b>(변액종신 '약속' — 실버널싱케어특약, 최고 80% 선지급)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">CI(중대질병) 선지급 활용</div>
+        <div class="card-trig">트리거: 중대질병 진단</div>
+        <p class="card-def">CI 종신에서 중대질병 진단 시 사망보험금을 선지급받아 치료·간병에 쓸 수 있다. 간병 전용은 아니나 자금 출구로 활용된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">사망보험금 선지급 · CI '중대한' 정의</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보 CI/GI종신(삼성·한화·교보생명 등)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 서비스·현물형 ============ -->
+  <section class="msec" id="m5" style="--mc:var(--m-svc)">
+    <div class="m-head"><span class="m-num">유형 ⑤</span><h2>서비스 · 현물형 — 돈 대신 돌봄</h2><span class="m-mech">트리거 = 상태·이용</span></div>
+    <p class="m-intro">현금이 아니라 <b>간병 서비스 자체</b>를 제공한다. 간병인 파견·연결, 돌봄·안전 서비스 등. 가입자가 간병인을 구하는 수고를 덜어준다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">간병인 직접 파견·연결 서비스</div>
+        <div class="card-trig">트리거: 입원·돌봄 필요 발생</div>
+        <p class="card-def">보험사·제휴업체가 <b>간병인을 직접 매칭·파견</b>한다. ①지원일당과 결합되기도 하며, 간병인 수급난을 덜어준다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">형태</span><span class="v"><b>현물</b>(간병인 제공) · 지원일당과 연계</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">간병인 직접지원형 운영 손보·생보(치매·간병보험 부가)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">돌봄·안전 헬스케어 서비스</div>
+        <div class="card-trig">트리거: 가입·상태 조건</div>
+        <p class="card-def">방문 건강관리, 안부확인, 인지훈련 등 부가 <b>돌봄 서비스</b>를 제공한다. 정액 보장이 아닌 서비스 부가로 표준화 이전 영역이 많다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">형태</span><span class="v">현물(서비스) · 정액 아님</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 헬스케어 자회사·제휴(표준화 이전, 추가 확인 필요)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑥ 공적 제도 ============ -->
+  <section class="msec" id="m6" style="--mc:var(--m-pub)">
+    <div class="m-head"><span class="m-num">유형 ⑥</span><h2>공적 제도 — 민간이 보완하는 baseline</h2><span class="m-mech">국가 제도</span></div>
+    <p class="m-intro">민간 간병 담보는 모두 <b>이 공적 baseline 위에서</b> 작동한다. 공적 제도가 어디까지 주는지를 알아야 민간으로 어디를 메울지 보인다. 본인부담(15~20%)과 등급 문턱이 민간 보완의 이유다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">노인장기요양 — 재가급여</div>
+        <div class="card-trig">트리거: 공적 등급 판정 + 재가 이용</div>
+        <p class="card-def">집에서 받는 돌봄 — <b>방문요양·방문목욕·방문간호·주야간보호·단기보호·복지용구</b>. 2024년 통합재가서비스 신설. 등급별 월 이용한도 내 지원.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">본인부담</span><span class="v"><b>15~20%</b>(감경 대상 존재) · 등급별 월한도</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v"><b>국민건강보험공단</b>(장기요양) · 노인장기요양보험법</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">노인장기요양 — 시설급여</div>
+        <div class="card-trig">트리거: 공적 등급 + 시설 입소</div>
+        <p class="card-def">요양원·노인요양공동생활가정 <b>입소</b> 돌봄. 재가급여 서비스 + 시설 입소를 포함한다. 본인부담·비급여(식대 등) 별도.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">본인부담</span><span class="v">20% + 비급여(식대 등) · 주로 중증 등급</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v">국민건강보험공단 · 노인요양시설(요양원)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">특별현금급여 (가족요양비)</div>
+        <div class="card-trig">트리거: 도서벽지 등 예외 사유</div>
+        <p class="card-def">시설·재가 이용이 어려운 예외적 경우 <b>현금(가족요양비)</b>을 지급한다. 가족 돌봄 보상의 공적 형태이나 대상이 제한적이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">형태</span><span class="v">현금(제한적) · 도서벽지 등 예외</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v">국민건강보험공단 · 특별현금급여</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">간호·간병통합서비스 (건강보험)</div>
+        <div class="card-trig">트리거: 통합병동 입원</div>
+        <p class="card-def">병원 <b>간호인력이 24시간 돌봄</b>, 보호자·간병인 상주 불필요. 건강보험으로 저렴하다. <b>이 병동을 쓰면 사적 간병인이 불필요</b>해 간병인일당과 상호 관계가 생긴다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">주체</span><span class="v"><b>병원 간호인력</b> · 이용 시 사적 간병인 불요</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v">국민건강보험(간호·간병통합서비스) · 지정 병원</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ★ 차이 매트릭스 ===================== -->
+  <section class="cmpsec" id="cmp">
+    <div class="e">★ Difference Matrix · 보장내용 차이 + 판매사</div>
+    <h2>한 표로 보는 간병 담보의 차이</h2>
+    <p class="desc">같은 '간병비'라도 <b>트리거·지급방식·간병인 주체·장소·한도·정액여부·대표 판매사</b>가 다르다. 이 표가 이 분석의 핵심 — 담보명이 아니라 <b>이 축들</b>로 비교해야 실제로 무엇을 받는지 보인다. 판매사는 검증된 예시다.</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr>
+        <th>담보 (유형)</th><th>지급방식</th><th>트리거</th><th>간병인 주체</th><th>한도</th><th>정액/실손</th><th>대표 판매사(예시)</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-day)"></span>간병인사용 입원일당</td>
+          <td class="cm-pay">일당</td>
+          <td class="cm-trig">입원 + 간병인 고용·지불</td>
+          <td class="cm-who"><b>가입자</b></td>
+          <td class="cm-limit">1회 입원당 180일</td>
+          <td class="cm-fixed">정액(증빙)</td>
+          <td class="cm-ins"><b>삼성화재·KB손보</b>(1·2위)·DB·메리츠·현대해상</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-day)"></span>간병인지원 입원일당</td>
+          <td class="cm-pay">일당+현물</td>
+          <td class="cm-trig">입원 + 보험사 간병인 지원</td>
+          <td class="cm-who"><b>보험사</b></td>
+          <td class="cm-limit">상품별</td>
+          <td class="cm-fixed">현물/정액</td>
+          <td class="cm-ins">간병인 직접지원형 운영 손보·생보</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-day)"></span>요양병원 입원일당</td>
+          <td class="cm-pay">일당</td>
+          <td class="cm-trig">요양병원 입원</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">상품별</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">전 손보 공통 · KB손보(골든케어)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-fund)"></span>중증치매 간병생활자금</td>
+          <td class="cm-pay"><b>매월·종신</b></td>
+          <td class="cm-trig">CDR 3↑ + 90일 지속</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">종신</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins"><b>KB라이프</b>(든든한약속)·삼성생명·신한라이프</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-fund)"></span>장기요양 간병생활자금</td>
+          <td class="cm-pay"><b>매월·종신</b></td>
+          <td class="cm-trig">공적 등급 판정</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">종신</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">KDB생명·동양생명·KB라이프</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-fund)"></span>일상생활장해(ADL) 자금</td>
+          <td class="cm-pay">매월</td>
+          <td class="cm-trig">ADL 상실(와상 등)</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">상품별·종신형</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">KB라이프(실버널싱케어)·생보 LTC 전반</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-lump)"></span>장기요양등급 진단비</td>
+          <td class="cm-pay"><b>일시금</b></td>
+          <td class="cm-trig">공적 등급 판정</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">1회(등급별)</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">KB손보(골든케어)·KDB생명·동양생명</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-lump)"></span>중증치매 진단비</td>
+          <td class="cm-pay"><b>일시금</b></td>
+          <td class="cm-trig">CDR 단계 + 90일 지속</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">단계별 1회</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">KB라이프·삼성생명·신한라이프(ONE더케어)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-acc)"></span>장기간병 선지급</td>
+          <td class="cm-pay"><b>선지급</b></td>
+          <td class="cm-trig">장기간병상태(치매/ADL)</td>
+          <td class="cm-who">무관</td>
+          <td class="cm-limit">사망금 최고 80%</td>
+          <td class="cm-fixed">정액(차감)</td>
+          <td class="cm-ins">KB라이프(변액종신 '약속'·실버널싱케어)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-svc)"></span>간병인 파견 서비스</td>
+          <td class="cm-pay"><b>현물</b></td>
+          <td class="cm-trig">입원·돌봄 필요</td>
+          <td class="cm-who"><b>보험사/제휴</b></td>
+          <td class="cm-limit">상품별</td>
+          <td class="cm-fixed">현물</td>
+          <td class="cm-ins">간병인 직접지원형 운영 손보·생보</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-pub)"></span>공적 재가/시설급여</td>
+          <td class="cm-pay">현물(급여)</td>
+          <td class="cm-trig">공적 등급 판정</td>
+          <td class="cm-who"><b>공단·기관</b></td>
+          <td class="cm-limit">등급별 월한도</td>
+          <td class="cm-fixed">본인 15~20%</td>
+          <td class="cm-ins"><b>국민건강보험공단</b>(노인장기요양)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-pub)"></span>간호간병통합서비스</td>
+          <td class="cm-pay">현물</td>
+          <td class="cm-trig">통합병동 입원</td>
+          <td class="cm-who"><b>병원 간호인력</b></td>
+          <td class="cm-limit">입원 기간</td>
+          <td class="cm-fixed">건강보험</td>
+          <td class="cm-ins"><b>국민건강보험</b>(지정 병원)</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* <b>판매사 표기 —</b> 검색으로 확인된 예시이며, 동일 명칭이라도 보장·금액·조건은 상품·약관별로 다르다. 간병인사용일당 점유율은 삼성화재·KB손보가 1·2위(2024년 말 기준), 한도는 2024~2025년 축소(20만→10~15만). 2024.11 금감원 간병보험 약관 개선으로 조건 변동 가능. <b>가족간병</b>은 '간병비보험' 일부만 가능(증빙 요구).</p>
+  </section>
+
+  <!-- ===================== 공적 vs 민간 ===================== -->
+  <section class="pvsec">
+    <div class="pv-head">
+      <div class="e">Public vs Private · 공적 ↔ 민간</div>
+      <h2>공적이 baseline, 민간이 보완</h2>
+      <p>두 제도는 <b>지급 방식과 보장 범위가 완전히 다르다.</b> 공적은 등급 심사 후 서비스 비용 일부를 비용비례로 지원하고, 민간은 진단·등급·상태 시 정액(일시금·일당·매월)을 지급한다. 둘은 대체가 아니라 보완 관계다.</p>
+    </div>
+    <div class="pv-cols">
+      <div class="pv-col" style="color:var(--m-pub)">
+        <h3><span class="sw" style="background:var(--m-pub)"></span>공적 노인장기요양</h3>
+        <ul style="color:#33322E">
+          <li><b>지급:</b> 서비스(현물) 비용 일부 — 재가·시설급여. <b>본인부담 15~20%</b>.</li>
+          <li><b>트리거:</b> 공단 <b>등급 판정</b>(1~5/인지지원). 문턱이 까다로움.</li>
+          <li><b>한계:</b> 등급 못 받으면 0. 본인부담·비급여(식대·상급병실) 존재.</li>
+          <li><b>운영:</b> 국민건강보험공단 · 65세 이상 또는 노인성 질병.</li>
+        </ul>
+      </div>
+      <div class="pv-col" style="color:var(--m-fund)">
+        <h3><span class="sw" style="background:var(--m-fund)"></span>민간 간병 담보</h3>
+        <ul style="color:#33322E">
+          <li><b>지급:</b> <b>정액</b> — 일시금·일당·매월·선지급·현물. 현금 유동성.</li>
+          <li><b>트리거:</b> 진단(CDR)·공적 등급·상태(ADL)·입원 등 <b>선택 가능</b>.</li>
+          <li><b>강점:</b> 공적 본인부담·비급여·소득공백을 메움. 장소 무관 생활비형이 핵심.</li>
+          <li><b>판매:</b> 손보(간병인일당)·생보(생활자금·선지급) 모두 활발 — 삼성·KB·DB·메리츠·현대해상·KB라이프 등.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 주의사항 ===================== -->
+  <section class="cautsec">
+    <div class="e">Cautions · 핵심 주의점</div>
+    <h2>간병 담보, 이것부터 확인</h2>
+    <div class="cauts">
+      <div class="caut">
+        <h4>① '사용일당' vs '지원일당'은 다른 담보</h4>
+        <p>간병인을 <b>가입자가 고용(사용일당)</b>하느냐 <b>보험사가 지원(지원일당)</b>하느냐는 전혀 다르다. 금감원도 구분 유의를 안내한다. 가입 전 어느 쪽인지 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>② 입원 중에만? 상태 지속이면?</h4>
+        <p>일당형은 <b>입원해야</b> 나온다. 집에서 오래 돌보는 상황엔 <b>생활자금형(매월·종신)</b>이 맞다. 트리거가 '입원'인지 '상태'인지 구분이 핵심.</p>
+      </div>
+      <div class="caut">
+        <h4>③ 1회 입원당 180일 한도·한도 축소</h4>
+        <p>간병인사용일당은 <b>1회 입원당 일수 한도</b>(예: 180일)가 흔하고, 2024~2025년 손해율 급증으로 일당 <b>한도가 20만→10~15만</b>으로 축소됐다.</p>
+      </div>
+      <div class="caut">
+        <h4>④ 통합병동이면 간병인 불필요</h4>
+        <p>간호·간병통합서비스 병동은 <b>사적 간병인이 필요 없어</b> 간병인일당이 작동하지 않을 수 있다. 이용 병원·병동 형태를 함께 고려.</p>
+      </div>
+      <div class="caut">
+        <h4>⑤ 가족간병은 보험사별 상이</h4>
+        <p>가족을 간병인으로 인정하는지는 <b>'간병비보험' 일부</b>만 가능하고 증빙(계좌이체 등)을 요구하기도 한다. 2024.11 금감원 약관 개선으로 변동 가능.</p>
+      </div>
+      <div class="caut">
+        <h4>⑥ 등급·진단 트리거의 문턱</h4>
+        <p>공적 등급 연계형은 <b>등급을 못 받으면 0</b>이다. CDR·ADL 등 진단·상태형과 병행해 트리거를 분산하는 설계가 안전하다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 간병비를 보장하는 담보를 <b>지급 방법(보장 메커니즘)별로 묶어 차이를 비교</b>하기 위한 교육·기획용 참고 자료이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보의 트리거·지급방식·간병인 주체·장소·한도(예: 1회 입원당 180일)·정액/실손·가족간병 인정 여부·면책·감액·금액·<b>판매사</b>는 <b>상품·약관·가입 시점·제도 변경</b>에 따라 달라진다. <b>판매사는 검색으로 확인된 예시</b>일 뿐 보장 동일성을 뜻하지 않으며, 표준화 담보는 "전 손보 공통" 등으로 표기했다. 특히 '간병인사용 입원일당'과 '간병인지원 입원일당'은 별개 담보이며, 2024.11 금융감독원의 간병보험 약관 개선·일당 한도 축소(2024~2025)에 따라 조건이 변동될 수 있다. 공적 노인장기요양·간호간병통합서비스의 급여·본인부담·등급 기준은 보건복지부·국민건강보험공단 고시를 따른다. 가입·청구 판단 시 반드시 <b>약관 원문과 상품설명서, 공적 제도 안내를 확인</b>해야 한다. 약관 원문은 복제하지 않고 요약·재서술했다. 치매·장기요양 담보 상세는 「치매·LTC 보장 여정 지도」를 함께 참고하라.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">CARE-COST COVERAGE ANALYSIS · 보장 방법별 횡단 렌즈(지침 §12) · 6 메커니즘 + 차이 매트릭스(축 7개·판매사 포함) · 공적↔민간 비교</span>
+  </footer>
+
+</div>
+</body>
+</html>

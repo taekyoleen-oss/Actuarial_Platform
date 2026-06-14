@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PoolIdent } from "@/components/feature/PoolIdent";
-import { cn } from "@/lib/utils";
+import { bluePastelFor, cn } from "@/lib/utils";
 import {
   THEORY_TOPICS,
   getTheoryTopic,
@@ -80,10 +80,12 @@ export default async function TheoryTopicPage({
         >
           {items.map((item) => {
             const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
+            const c = bluePastelFor(item.base);
             return (
               <article
                 key={item.base}
-                className="flex flex-col overflow-hidden rounded-cover border border-border bg-white shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+                style={{ backgroundColor: c.bg, borderColor: c.border }}
+                className="flex flex-col overflow-hidden rounded-cover border shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
               >
                 {/* 제목(상단) → 커버(하단). 제목·그림 클릭 = 본문 열람. 보조 링크 없음 */}
                 <div className="p-5">
@@ -98,7 +100,8 @@ export default async function TheoryTopicPage({
                     href={viewerHref}
                     tabIndex={-1}
                     aria-hidden="true"
-                    className="mt-auto block border-t border-border"
+                    style={{ borderColor: c.border }}
+                    className="mt-auto block border-t"
                   >
                     <img
                       src={item.coverPath}

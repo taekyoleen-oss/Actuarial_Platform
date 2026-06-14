@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tkLeen — ML Training Pipeline Ident (Light/Dark)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root, [data-theme="light"] {
+    --bg: #FFFFFF;
+    --bg-grad: radial-gradient(1200px 700px at 50% 30%, #FFFFFF 0%, #F5F7FA 75%);
+    --text: #0A0A0A;
+    --accent: #4A90C2;
+    --accent-strong: #2E6E9E;
+    --navy: #1B2845;
+    --box-fill: #FFFFFF;
+    --box-stroke: rgba(10,10,10,0.28);
+    --box-active-fill: #EEF5FB;
+    --box-active-stroke: #4A90C2;
+    --box-done-stroke: rgba(74,144,194,0.85);
+    --box-done-fill: #F7FAFD;
+    --box-start-fill: #E9F6EE;
+    --box-start-stroke: #2FA876;
+    --link-idle: rgba(10,10,10,0.22);
+    --val-color: #2E6E9E;
+    --dot-idle: rgba(10,10,10,0.22);
+    --dot-done: #2FA876;
+    --result-fill: rgba(74,144,194,0.07);
+    --result-num: #0A0A0A;
+    --btn-border: rgba(10,10,10,0.18);
+    --glow-color: rgba(74,144,194,0.35);
+    --glow-strong: rgba(74,144,194,0.5);
+    --pending: rgba(10,10,10,0.32);
+  }
+  [data-theme="dark"] {
+    --bg: #10182B;
+    --bg-grad: radial-gradient(1200px 700px at 50% 30%, #1B2845 0%, #10182B 70%);
+    --text: #FAFAF7;
+    --accent: #6FB3E0;
+    --accent-strong: #6FB3E0;
+    --navy: #1B2845;
+    --box-fill: rgba(250,250,247,0.045);
+    --box-stroke: rgba(250,250,247,0.28);
+    --box-active-fill: rgba(74,144,194,0.14);
+    --box-active-stroke: #6FB3E0;
+    --box-done-stroke: rgba(111,179,224,0.75);
+    --box-done-fill: rgba(74,144,194,0.07);
+    --box-start-fill: rgba(47,168,118,0.14);
+    --box-start-stroke: #5BD6A0;
+    --link-idle: rgba(250,250,247,0.18);
+    --val-color: #6FB3E0;
+    --dot-idle: rgba(250,250,247,0.25);
+    --dot-done: #5BD6A0;
+    --result-fill: rgba(74,144,194,0.10);
+    --result-num: #FAFAF7;
+    --btn-border: rgba(250,250,247,0.25);
+    --glow-color: rgba(111,179,224,0.4);
+    --glow-strong: rgba(111,179,224,0.6);
+    --pending: rgba(250,250,247,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    /* 투명 배경 — 임베드한 카드의 파란 파스텔 배경이 비치도록 (2026-06-14) */
+    background: transparent;
+    color: var(--text);
+    font-family: 'Pretendard', 'Inter', sans-serif;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.5s, color 0.5s;
+  }
+  .scene {
+    position: relative;
+    width: min(1180px, 97vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+  .headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(22px, 3.4vw, 32px);
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .headline em { font-style: normal; color: var(--accent-strong); font-weight: 400; }
+
+  .diagram { width: 100%; }
+
+  .node { opacity: 0; transform: translateY(12px); transform-box: fill-box; }
+  .node.go { animation: nodeIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes nodeIn { to { opacity: 1; transform: translateY(0); } }
+
+  .node rect.box {
+    fill: var(--box-fill);
+    stroke: var(--box-stroke);
+    stroke-width: 1;
+    transition: stroke 0.35s, fill 0.35s;
+  }
+  .node.start rect.box { fill: var(--box-start-fill); stroke: var(--box-start-stroke); stroke-width: 1.4; }
+  .node.active rect.box {
+    stroke: var(--box-active-stroke);
+    stroke-width: 1.8;
+    fill: var(--box-active-fill);
+    filter: drop-shadow(0 0 8px var(--glow-color));
+  }
+  .node.done rect.box { stroke: var(--box-done-stroke); stroke-width: 1.3; fill: var(--box-done-fill); }
+
+  .node text.title {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--text);
+  }
+  .play-icon { fill: none; stroke: var(--pending); stroke-width: 1.3; transition: stroke 0.35s; }
+  .node.done .play-icon, .node.active .play-icon, .node.start .play-icon { stroke: var(--accent); }
+  .play-tri { fill: var(--pending); transition: fill 0.35s; }
+  .node.done .play-tri, .node.active .play-tri { fill: var(--accent); }
+  .node.start .play-tri { fill: var(--box-start-stroke); }
+  .node.start .play-icon { stroke: var(--box-start-stroke); }
+
+  .node text.status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    fill: var(--text);
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+  .node.done text.status, .node.active text.status { opacity: 0; }
+  .node text.val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    fill: var(--val-color);
+    opacity: 0;
+    transition: opacity 0.45s;
+  }
+  .node text.val.show { opacity: 1; }
+
+  .status-dot { fill: var(--dot-idle); transition: fill 0.4s; }
+  .node.done .status-dot { fill: var(--dot-done); }
+  .node.active .status-dot { fill: var(--accent); }
+  .node.start .status-dot { fill: var(--box-start-stroke); }
+
+  .progress { fill: var(--accent); }
+
+  .link {
+    fill: none;
+    stroke: var(--link-idle);
+    stroke-width: 1.4;
+    stroke-dasharray: 700;
+    stroke-dashoffset: 700;
+    transition: stroke 0.5s, stroke-width 0.5s;
+  }
+  .link.go { animation: drawLink 0.8s ease-out forwards; }
+  @keyframes drawLink { to { stroke-dashoffset: 0; } }
+  .link.lit {
+    stroke: url(#linkGrad);
+    stroke-width: 2.2;
+    stroke-dasharray: 7 7;
+    stroke-dashoffset: 0;
+    animation: marchFlow 0.7s linear infinite;
+  }
+  @keyframes marchFlow { to { stroke-dashoffset: -14; } }
+  .pulse-dot { opacity: 0; }
+
+  .result-card { opacity: 0; transform: scale(0.86); transform-box: fill-box; transform-origin: center; }
+  .result-card.go { animation: resultIn 0.8s cubic-bezier(0.18, 1.2, 0.3, 1) forwards; }
+  @keyframes resultIn { to { opacity: 1; transform: scale(1); } }
+  .result-card rect.rbox { fill: var(--result-fill); stroke: var(--accent); stroke-width: 1.6; }
+  .result-num { font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 500; fill: var(--result-num); }
+  .result-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; fill: var(--accent-strong); }
+  .result-title { font-family: 'Pretendard', sans-serif; font-size: 14px; font-weight: 600; fill: var(--text); }
+  .result-sub { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; fill: var(--text); opacity: 0; transition: opacity 0.6s; }
+  .result-sub.show { opacity: 0.65; }
+  .result-card.breathing { animation: breathe 3.2s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { filter: drop-shadow(0 0 3px var(--glow-color)); }
+    50% { filter: drop-shadow(0 0 18px var(--glow-strong)); }
+  }
+  .burst-ring { fill: none; opacity: 0; }
+  .sparkle { stroke-width: 1.6; stroke-linecap: round; opacity: 0; }
+
+  .principle { margin-top: 8px; font-size: 13px; color: var(--text); opacity: 0; letter-spacing: 0.01em; }
+  .principle.go { animation: fade65 0.9s ease forwards; }
+  @keyframes fade65 { to { opacity: 0.65; } }
+  .principle b { color: var(--accent-strong); font-weight: 600; }
+
+  .ctrl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    background: none; border: 1px solid var(--btn-border); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; cursor: pointer;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .ctrl:hover { border-color: var(--accent); color: var(--accent-strong); }
+  .ctrl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .replay { position: absolute; bottom: -50px; right: 0; }
+  .theme-toggle { position: absolute; top: -8px; right: 0; padding: 8px 14px; }
+  .concept-note {
+    position: absolute; bottom: -50px; left: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text); opacity: 0.35; line-height: 1.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .node, .link, .principle, .result-card {
+      animation: none !important; opacity: 1 !important;
+      transform: none !important; stroke-dashoffset: 0 !important;
+    }
+    .link.lit { animation: none !important; stroke-dasharray: none; }
+    .result-card.breathing { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="eyebrow">ML Training Pipeline · 보험 예측 모델 학습</div>
+  <div class="headline">데이터 적재부터 <em>모델 평가</em>까지, 학습 파이프라인이 자동으로 흐릅니다</div>
+
+  <svg class="diagram" id="svg" viewBox="0 0 1340 320"
+    aria-label="데이터 로드, 결측치 처리, 데이터 스케일링, 데이터 분할을 거쳐 선형회귀 모델이 학습·예측되고 최종 평가 지표가 산출되는 머신러닝 파이프라인 애니메이션">
+    <defs>
+      <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop id="grad0" offset="0%"/>
+        <stop id="grad1" offset="50%"/>
+        <stop id="grad2" offset="100%"/>
+      </linearGradient>
+    </defs>
+    <g id="links"></g>
+    <g id="nodes"></g>
+    <g id="pulses"></g>
+    <g id="fx"></g>
+  </svg>
+
+  <div class="principle" id="principle">
+    <b>전처리 → 분할 → 학습 → 예측 → 평가</b> — 데이터가 흐르며 보험 위험 예측 모델이 완성됩니다
+  </div>
+
+  <button class="ctrl theme-toggle" id="themeBtn" type="button" aria-label="라이트/다크 모드 전환">☾ Dark</button>
+  <div class="concept-note">Concept 06 · Light/Dark<br>ML Pipeline → Model Eval</div>
+  <button class="ctrl replay" id="replayBtn" type="button">전체 실행 ↻</button>
+</div>
+
+<script>
+(function () {
+  const ns = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const PALETTES = {
+    light: { pulseCore: '#1B2845', pulseTail: '#4A90C2',
+             gradStops: ['#4A90C2','#2E6E9E','#1B2845'], ring: '#4A90C2', sparkle: '#2E6E9E' },
+    dark:  { pulseCore: '#FAFAF7', pulseTail: '#6FB3E0',
+             gradStops: ['#4A90C2','#6FB3E0','#FAFAF7'], ring: '#6FB3E0', sparkle: '#FAFAF7' },
+  };
+  let theme = 'light';
+  const pal = () => PALETTES[theme];
+  function applyTheme(t) {
+    theme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    pal().gradStops.forEach((c, i) => $('grad' + i).setAttribute('stop-color', c));
+    $('themeBtn').textContent = t === 'light' ? '☾ Dark' : '☀ Light';
+  }
+
+  /* ── 노드 좌표 (스크린샷 레이아웃 재현, 평가 카드는 우측 끝) ───────────── */
+  const W = 150, H = 72;
+  const MAIN = 200;   // 메인 행 중심 y
+  const TOP = 50;     // 선형회귀 행
+  const UP  = 125;    // 모델 학습 행 (살짝 위)
+  const N = {
+    load:    { id:'load',    title:'데이터 로드',    x: 20,   y: MAIN, val:'8,000 rows · 12 cols', start:true },
+    impute:  { id:'impute',  title:'결측치 처리',    x: 205,  y: MAIN, val:'결측 142건 보정' },
+    scale:   { id:'scale',   title:'데이터 스케일링', x: 390,  y: MAIN, val:'StandardScaler 적용' },
+    split:   { id:'split',   title:'데이터 분할',    x: 575,  y: MAIN, val:'train 80 / test 20' },
+    linreg:  { id:'linreg',  title:'선형회귀',       x: 605,  y: TOP,  val:'OLS 추정' },
+    train:   { id:'train',   title:'모델 학습',      x: 785,  y: UP,   val:'fit 완료 · R² 0.91' },
+    predict: { id:'predict', title:'모델 예측',      x: 785,  y: MAIN, val:'ŷ 1,600건 생성' },
+  };
+  const RESULT = { x: 990, y: MAIN - 66, w: 332, h: 132 };  // 메인 행 오른쪽, 세로 중앙 정렬
+  const METRIC = 0.913;  // 최종 R² (카운트업 대상)
+
+  /* 실행 순서 + 연결 (from → to) */
+  const EDGES = [
+    ['load','impute'], ['impute','scale'], ['scale','split'],
+    ['linreg','train'], ['split','train'],
+    ['split','predict'], ['train','predict'],
+    ['predict','result'],
+  ];
+  /* 모듈 점등 순서 */
+  const ORDER = ['load','impute','scale','split','linreg','train','predict'];
+
+  let links = {}, timers = [], loopId = null;
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  const cx = n => n.x + W / 2;
+  function edgePath(a, b) {
+    // 출력 포트(우측 중앙) → 입력 포트(좌측 중앙) 기본,
+    // 세로 차가 크면 포트를 상/하단으로 조정
+    let x1 = a.x + W, y1 = a.y, x2 = b.x, y2 = b.y;
+    if (b.y < a.y - 40) { y2 = b.y + H/2; x2 = b.x + W*0.4; }      // 위로 들어감
+    if (b.y > a.y + 40) { y1 = a.y + H/2; x1 = a.x + W*0.6; }      // 아래로 나감
+    const dx = Math.max(60, Math.abs(x2 - x1) * 0.5);
+    return `M ${x1},${y1} C ${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
+  }
+
+  function build() {
+    $('links').innerHTML=''; $('nodes').innerHTML='';
+    $('pulses').innerHTML=''; $('fx').innerHTML='';
+    links = {};
+
+    EDGES.forEach(([a, b]) => {
+      const A = N[a];
+      const B = b === 'result'
+        ? { x: RESULT.x, y: RESULT.y + RESULT.h/2, _isResult:true }
+        : N[b];
+      let x1 = A.x + W, y1 = A.y, x2 = B.x, y2 = B.y;
+      if (!B._isResult) {
+        if (B.y < A.y - 40) { y2 = B.y + H/2; x2 = B.x + W*0.4; }
+        if (B.y > A.y + 40) { y1 = A.y + H/2; x1 = A.x + W*0.6; }
+      } else { y2 = B.y; x2 = B.x; }   // 결과 카드: 좌측 중앙으로 가로 진입
+      const dx = Math.max(60, Math.abs(x2 - x1) * 0.5);
+      const d = `M ${x1},${y1} C ${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
+      const p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d); p.setAttribute('class', 'link');
+      p.setAttribute('id', `L-${a}-${b}`);
+      $('links').appendChild(p);
+      links[`${a}->${b}`] = p;
+    });
+
+    Object.values(N).forEach(d => {
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'node' + (d.start ? ' start' : ''));
+      g.setAttribute('id', 'N-' + d.id);
+      const top = d.y - H/2;
+      g.innerHTML =
+        `<rect class="box" x="${d.x}" y="${top}" width="${W}" height="${H}" rx="10"/>` +
+        `<circle class="status-dot" cx="${d.x+16}" cy="${top+16}" r="4"/>` +
+        `<text class="title" x="${d.x+28}" y="${top+20}">${d.title}</text>` +
+        `<circle class="play-icon" cx="${d.x+26}" cy="${top+48}" r="13"/>` +
+        `<path class="play-tri" d="M ${d.x+22},${top+43} L ${d.x+22},${top+53} L ${d.x+31},${top+48} Z"/>` +
+        `<text class="status" x="${d.x+48}" y="${top+52}">Pending</text>` +
+        `<text class="val" id="V-${d.id}" x="${d.x+48}" y="${top+52}">${d.val}</text>` +
+        `<rect class="progress" id="P-${d.id}" x="${d.x}" y="${top+H-3}" width="0" height="3" rx="1.5"/>`;
+      $('nodes').appendChild(g);
+    });
+
+    const r = RESULT;
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'result-card');
+    g.setAttribute('id', 'resultCard');
+    g.innerHTML =
+      `<rect class="rbox" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="14"/>` +
+      `<text class="result-label" x="${r.x+22}" y="${r.y+28}">EVALUATION · 모델 평가</text>` +
+      `<text class="result-title" x="${r.x+22}" y="${r.y+52}">결정계수 R²</text>` +
+      `<text class="result-num" id="resNum" x="${r.x+22}" y="${r.y+98}">0.000</text>` +
+      `<text class="result-sub" id="resSub1" x="${r.x+r.w-22}" y="${r.y+56}" text-anchor="end">RMSE  0.247</text>` +
+      `<text class="result-sub" id="resSub2" x="${r.x+r.w-22}" y="${r.y+76}" text-anchor="end">MAE   0.183</text>` +
+      `<text class="result-sub" id="resSub3" x="${r.x+r.w-22}" y="${r.y+96}" text-anchor="end">test n = 1,600</text>`;
+    $('nodes').appendChild(g);
+  }
+
+  function sendPulse(pathEl, dur) {
+    const len = pathEl.getTotalLength();
+    const p = pal(), dots = [];
+    for (let k = 0; k < 4; k++) {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('r', k === 0 ? 5 : 4 - k);
+      dot.setAttribute('fill', k === 0 ? p.pulseCore : p.pulseTail);
+      dot.setAttribute('class', 'pulse-dot');
+      if (k === 0) dot.style.filter = `drop-shadow(0 0 4px ${p.pulseTail})`;
+      $('pulses').appendChild(dot);
+      dots.push({ el: dot, lag: k * 0.045 });
+    }
+    const start = performance.now();
+    (function frame(now) {
+      const u = Math.min((now - start) / dur, 1);
+      dots.forEach(d => {
+        const v = Math.max(0, Math.min(u - d.lag, 1));
+        const pt = pathEl.getPointAtLength(len * v);
+        d.el.setAttribute('cx', pt.x); d.el.setAttribute('cy', pt.y);
+        d.el.style.opacity = (v <= 0 || u >= 1) ? 0 : (0.95 - d.lag * 4);
+      });
+      if (u < 1) requestAnimationFrame(frame); else dots.forEach(d => d.el.remove());
+    })(start);
+  }
+
+  function fillProgress(id, dur) {
+    const bar = $('P-' + id), start = performance.now();
+    (function frame(now) {
+      const u = Math.max(0, Math.min((now - start) / dur, 1));
+      bar.setAttribute('width', W * u);
+      if (u < 1) requestAnimationFrame(frame);
+      else setTimeout(() => bar.setAttribute('width', 0), 350);
+    })(start);
+  }
+
+  function countUp(el, target, dur, dec) {
+    const start = performance.now();
+    (function frame(now) {
+      const u = Math.min((now - start) / dur, 1);
+      const e = 1 - Math.pow(1 - u, 3);
+      el.textContent = (target * e).toFixed(dec);
+      if (u < 1) requestAnimationFrame(frame);
+    })(start);
+  }
+
+  function burst(cx0, cy0) {
+    const p = pal();
+    for (let k = 0; k < 3; k++) {
+      const ring = document.createElementNS(ns, 'circle');
+      ring.setAttribute('cx', cx0); ring.setAttribute('cy', cy0);
+      ring.setAttribute('class', 'burst-ring'); ring.setAttribute('stroke', p.ring);
+      $('fx').appendChild(ring);
+      const start = performance.now() + k * 180;
+      (function frame() {
+        const u = (performance.now() - start) / 1100;
+        if (u < 0) { requestAnimationFrame(frame); return; }
+        if (u >= 1) { ring.remove(); return; }
+        ring.setAttribute('r', 18 + 180 * u);
+        ring.setAttribute('stroke-width', 2.5 * (1 - u));
+        ring.style.opacity = 0.55 * (1 - u);
+        requestAnimationFrame(frame);
+      })();
+    }
+    for (let k = 0; k < 8; k++) {
+      const ang = (Math.PI*2*k)/8 + Math.random()*0.4;
+      const sp = document.createElementNS(ns, 'line');
+      sp.setAttribute('class', 'sparkle'); sp.setAttribute('stroke', p.sparkle);
+      $('fx').appendChild(sp);
+      const start = performance.now();
+      (function frame() {
+        const u = (performance.now() - start) / 800;
+        if (u >= 1) { sp.remove(); return; }
+        const d1 = 26 + 120 * u, d2 = d1 + 14 * (1 - u);
+        sp.setAttribute('x1', cx0 + Math.cos(ang)*d1); sp.setAttribute('y1', cy0 + Math.sin(ang)*d1);
+        sp.setAttribute('x2', cx0 + Math.cos(ang)*d2); sp.setAttribute('y2', cy0 + Math.sin(ang)*d2);
+        sp.style.opacity = 0.85 * (1 - u);
+        requestAnimationFrame(frame);
+      })();
+    }
+  }
+
+  function litTo(id) {
+    Object.entries(links).forEach(([k, el]) => {
+      if (k.endsWith('->' + id)) { el.classList.add('lit'); sendPulse(el, 650); }
+    });
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    if (loopId) { clearInterval(loopId); loopId = null; }
+    $('principle').classList.remove('go');
+  }
+
+  function play() {
+    reset(); build();
+
+    if (reduceMotion) {
+      ORDER.forEach(id => {
+        const n = $('N-' + id);
+        n.classList.add('go', id === 'load' ? 'start' : 'done');
+        $('V-' + id).classList.add('show');
+      });
+      Object.values(links).forEach(l => l.classList.add('go'));
+      $('resultCard').classList.add('go','breathing');
+      $('resNum').textContent = METRIC.toFixed(3);
+      ['resSub1','resSub2','resSub3'].forEach(id => $(id).classList.add('show'));
+      $('principle').classList.add('go');
+      return;
+    }
+
+    // 1) 노드 등장 + 연결선 드로잉
+    ORDER.forEach((id, i) => later(() => $('N-' + id).classList.add('go'), 100 + i * 110));
+    Object.values(links).forEach((l, i) => later(() => l.classList.add('go'), 1000 + i * 90));
+
+    // 2) 순차 실행
+    const STEP = 700, t0 = 2300;
+    ORDER.forEach((id, i) => {
+      later(() => {
+        const node = $('N-' + id);
+        node.classList.remove('start');
+        node.classList.add('active');
+        fillProgress(id, 480);
+        setTimeout(() => {
+          $('V-' + id).classList.add('show');
+          node.classList.remove('active');
+          node.classList.add('done');
+          // 이 노드에서 나가는 간선 점등
+          Object.entries(links).forEach(([k, el]) => {
+            if (k.startsWith(id + '->')) { el.classList.add('lit'); sendPulse(el, 700); }
+          });
+        }, 500);
+      }, t0 + i * STEP);
+    });
+
+    // 3) 예측 → 평가 결과
+    const tEnd = t0 + ORDER.length * STEP + 300;
+    later(() => {
+      links['predict->result'].classList.add('lit');
+      sendPulse(links['predict->result'], 800);
+    }, tEnd);
+    later(() => {
+      $('resultCard').classList.add('go');
+      burst(RESULT.x + RESULT.w/2, RESULT.y + RESULT.h/2);
+      countUp($('resNum'), METRIC, 1700, 3);
+    }, tEnd + 600);
+    later(() => {
+      ['resSub1','resSub2','resSub3'].forEach((id, i) =>
+        setTimeout(() => $(id).classList.add('show'), i * 200));
+      $('resultCard').classList.add('breathing');
+    }, tEnd + 2100);
+    later(() => $('principle').classList.add('go'), tEnd + 2700);
+
+    // 4) 루프 펄스
+    later(() => {
+      const flow = ['load->impute','impute->scale','scale->split','linreg->train',
+                    'split->train','train->predict','predict->result'];
+      loopId = setInterval(() => {
+        flow.forEach((k, i) => setTimeout(() => { if (links[k]) sendPulse(links[k], 600); }, i * 320));
+      }, flow.length * 320 + 1400);
+    }, tEnd + 3000);
+  }
+
+  $('themeBtn').addEventListener('click', () => applyTheme(theme === 'light' ? 'dark' : 'light'));
+  $('replayBtn').addEventListener('click', play);
+
+  applyTheme('light');
+  play();
+})();
+</script>
+</body>
+</html>

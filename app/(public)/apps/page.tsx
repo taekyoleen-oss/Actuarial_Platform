@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Database, ArrowRight } from "lucide-react";
-import { ModelSelectIdent } from "@/components/feature/ModelSelectIdent";
 import { listDbs } from "@/lib/publicDb";
+import { bluePastelFor } from "@/lib/utils";
 
 // 모델분석·업무지원 앱 모음 — App Collecter 프로젝트의 카드 데이터 중
 // 사용자가 지정한 7종만 이식(2026-06-11). 카드는 보드 공통 카드 시스템과 동일.
@@ -110,14 +110,47 @@ const WORK_APPS: AppItem[] = [
   },
 ];
 
-// featured: 모델분석 2종을 벤토 대형 타일로 (2026-06-13 입체화)
-function AppGrid({
-  apps,
-  featured = false,
-}: {
-  apps: AppItem[];
-  featured?: boolean;
-}) {
+// featured: 모델분석 카드를 벤토 대형 타일로 (2026-06-13 입체화)
+function AppCard({ app, featured = false }: { app: AppItem; featured?: boolean }) {
+  const c = bluePastelFor(app.title);
+  return (
+    <a
+      href={app.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ backgroundColor: c.bg, borderColor: c.border }}
+      className={`flex h-full flex-col rounded-cover border shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover ${
+        featured ? "p-7" : "p-6"
+      }`}
+    >
+      <h3
+        className={`font-semibold text-brand-sky ${
+          featured ? "text-[21px]" : "text-[18px]"
+        }`}
+      >
+        {app.title}
+      </h3>
+      <p className="mt-2 text-sm leading-relaxed text-body">{app.description}</p>
+      <ul className="mt-3 flex-1 space-y-1.5">
+        {app.features.map((f) => (
+          <li
+            key={f}
+            className="flex items-start gap-2 text-[14px] leading-snug text-tertiary"
+          >
+            <span
+              aria-hidden
+              className="mt-[5px] h-1.5 w-1.5 shrink-0 bg-brand-sky"
+            />
+            {f}
+          </li>
+        ))}
+      </ul>
+      <span className="mt-4 text-sm font-medium text-primary">앱 열기 ↗</span>
+    </a>
+  );
+}
+
+function AppGrid({ apps, featured = false }: { apps: AppItem[]; featured?: boolean }) {
   return (
     <div
       className={
@@ -127,49 +160,51 @@ function AppGrid({
       }
     >
       {apps.map((app) => (
-        <a
-          key={app.title}
-          href={app.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`flex flex-col rounded-cover border border-border bg-white shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover ${
-            featured ? "p-7" : "p-6"
-          }`}
-        >
-          <h3
-            className={`font-semibold text-brand-sky ${
-              featured ? "text-[21px]" : "text-[18px]"
-            }`}
-          >
-            {app.title}
-          </h3>
-          <p className="mt-2 text-sm leading-relaxed text-body">
-            {app.description}
-          </p>
-          <ul className="mt-3 flex-1 space-y-1.5">
-            {app.features.map((f) => (
-              <li
-                key={f}
-                className="flex items-start gap-2 text-[14px] leading-snug text-tertiary"
-              >
-                <span
-                  aria-hidden
-                  className="mt-[5px] h-1.5 w-1.5 shrink-0 bg-brand-sky"
-                />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <span className="mt-4 text-sm font-medium text-primary">
-            앱 열기 ↗
-          </span>
-        </a>
+        <AppCard key={app.title} app={app} featured={featured} />
       ))}
     </div>
   );
 }
 
+// 모델 파이프라인 아이덴트 — 애니메이션 파일을 카드 옆에 임베드.
+// 애니메이션을 크게(위주) 보여주고 하단에 간단한 설명을 둔다(2026-06-14 사용자 요청).
+function PipelineIdentCell({
+  src,
+  title,
+  caption,
+  heightClass = "h-[360px] md:h-[440px]",
+}: {
+  src: string;
+  title: string;
+  caption: string;
+  /** 애니메이션 종횡비에 맞춘 iframe 높이 (와이드형은 낮게) */
+  heightClass?: string;
+}) {
+  const c = bluePastelFor(src);
+  return (
+    <div
+      style={{ backgroundColor: c.bg, borderColor: c.border }}
+      className="flex h-full flex-col overflow-hidden rounded-cover border shadow-card"
+    >
+      <iframe
+        src={src}
+        title={title}
+        loading="lazy"
+        scrolling="no"
+        className={`w-full flex-1 border-0 bg-transparent ${heightClass}`}
+      />
+      <p
+        style={{ borderColor: c.border }}
+        className="border-t px-5 py-3 text-[13px] leading-relaxed text-tertiary"
+      >
+        {caption}
+      </p>
+    </div>
+  );
+}
+
 export default function AppsPage() {
+  const headerC = bluePastelFor("modular-build");
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       <h1 className="text-2xl font-medium text-foreground">
@@ -180,9 +215,20 @@ export default function AppsPage() {
         탭에서 앱이 열립니다.
       </p>
 
-      {/* 모델선택 아이덴트 — 데이터 흐름 → 최적 분류기 선택 (PC 전용) */}
+      {/* 모듈러 빌드 아이덴트 — 모듈을 조립해 하나의 모델 완성 (PC 전용) */}
       <div className="mt-10 hidden lg:block">
-        <ModelSelectIdent className="mx-auto max-w-4xl" />
+        <div
+          style={{ backgroundColor: headerC.bg, borderColor: headerC.border }}
+          className="mx-auto max-w-2xl overflow-hidden rounded-cover border shadow-card"
+        >
+          <iframe
+            src="/idents/tkleen-modular-build-animation.html"
+            title="모듈을 조립해 하나의 모델을 완성합니다"
+            loading="lazy"
+            scrolling="no"
+            className="block h-[500px] w-full border-0 bg-transparent"
+          />
+        </div>
       </div>
 
       <section className="mt-10">
@@ -190,7 +236,22 @@ export default function AppsPage() {
           <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
           모델분석
         </h2>
-        <AppGrid apps={MODEL_APPS} featured />
+        {/* 지그재그 배치(md+): 보험료 카드 ↔ 파이프라인 / 파이프라인 ↔ ML 카드 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch">
+          <AppCard app={MODEL_APPS[0]} featured />
+          <PipelineIdentCell
+            src="/idents/tkleen-lifematrix-pipeline-theme.html"
+            title="보험료 자동산출 파이프라인 아이덴트"
+            caption="보험료 자동산출 파이프라인 — 계약정보·위험률·생존/사망·계산기수·순/영업보험료·준비금까지 13개 모듈이 순차 점등되며 월납 보험료가 산출됩니다."
+          />
+          <PipelineIdentCell
+            src="/idents/tkleen-ml-training-pipeline.html"
+            title="머신러닝 학습 파이프라인 아이덴트"
+            caption="머신러닝 학습 파이프라인 — 데이터 적재·전처리·학습·평가까지 보험 예측 모델의 학습 과정이 자동으로 흐릅니다."
+            heightClass="h-[300px] md:h-[340px]"
+          />
+          <AppCard app={MODEL_APPS[1]} featured />
+        </div>
       </section>
 
       <section className="mt-16">
@@ -212,11 +273,14 @@ export default function AppsPage() {
           DB 특성과 테이블 구조(ERD)를 볼 수 있습니다.
         </p>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {listDbs().map((db) => (
+          {listDbs().map((db) => {
+            const c = bluePastelFor(db.id);
+            return (
             <Link
               key={db.id}
               href={`/apps/db/${db.id}`}
-              className="flex flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
+              style={{ backgroundColor: c.bg, borderColor: c.border }}
+              className="flex flex-col rounded-cover border p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
             >
               <Database size={20} className="text-brand-sky" />
               <h3 className="mt-3 text-[18px] font-semibold text-brand-sky">
@@ -235,7 +299,8 @@ export default function AppsPage() {
                 DB 구조 보기 <ArrowRight size={15} />
               </span>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

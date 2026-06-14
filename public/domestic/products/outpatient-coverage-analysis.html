@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통원 담보 보장 분석 — 보장 방법별 비교 · 대표 판매사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --m-sil:#3E6FB0;    /* 실손형 */
+    --m-day:#8E5BA8;    /* 통원일당 정액 */
+    --m-tx:#C25E4A;     /* 질병별 통원치료비 */
+    --m-sx:#C99A2E;     /* 통원수술비 */
+    --m-test:#2F8597;   /* 검사·진단 */
+    --m-pub:#6B6A64;    /* 공적 제도 */
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.62;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+
+  header{padding:58px 0 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;
+    letter-spacing:-.01em;margin-bottom:8px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--m-sil);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:24px;}
+  .lead{max-width:830px;font-size:1.0rem;color:#33322E;margin-bottom:6px;}
+  .lead b{color:var(--ink);}
+
+  .ctx{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:24px 0 6px;}
+  @media(max-width:680px){.ctx{grid-template-columns:1fr;}}
+  .ctxbox{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:#fff;}
+  .ctxbox .big{font-family:var(--serif);font-weight:600;font-size:1.35rem;color:var(--m-sil);line-height:1.05;}
+  .ctxbox .lab{font-size:.84rem;color:var(--muted);margin-top:7px;line-height:1.45;}
+  .ctxbox .lab b{color:var(--ink);}
+
+  .methodbox{margin:22px 0 4px;background:#EEF3F8;border:1px solid #CFDEEB;border-radius:12px;padding:16px 18px;}
+  .methodbox h3{font-family:var(--serif);font-size:1.06rem;font-weight:600;margin-bottom:6px;color:#264A6B;}
+  .methodbox p{font-size:.88rem;color:#2E3F4F;line-height:1.55;}
+  .methodbox b{color:#15293B;}
+
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px;}
+  .nav a{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:5px 12px;background:#fff;
+    display:inline-flex;align-items:center;gap:6px;transition:transform .12s,box-shadow .12s;}
+  .nav a:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(0,0,0,.06);}
+  .nav a:focus-visible{outline:2px solid var(--m-sil);outline-offset:2px;}
+  .nav a .d{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .msec{padding:42px 0 6px;scroll-margin-top:12px;}
+  .m-head{display:flex;align-items:baseline;gap:13px;margin-bottom:5px;flex-wrap:wrap;border-left:5px solid var(--mc);padding-left:14px;}
+  .m-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mc);font-weight:500;}
+  .m-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,1.95rem);letter-spacing:-.01em;}
+  .m-mech{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#fff;background:var(--mc);padding:3px 9px;border-radius:5px;text-transform:uppercase;}
+  .m-intro{font-size:.92rem;color:var(--muted);max-width:880px;margin:6px 0 18px;padding-left:19px;line-height:1.55;}
+  .m-intro b{color:#403F3A;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-left:4px solid var(--mc);border-radius:11px;background:#fff;padding:15px 16px 14px;display:flex;flex-direction:column;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.05rem;line-height:1.25;margin-bottom:3px;}
+  .card-name .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;color:#fff;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+  .tag-trig{background:var(--mc);} .tag-new{background:var(--gold);}
+  .card-trig{font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--mc);margin-bottom:8px;}
+  .card-def{font-size:.875rem;color:#33322E;line-height:1.52;margin-bottom:8px;}
+  .card-def b{color:var(--ink);}
+  .card-spec{display:flex;flex-direction:column;gap:5px;}
+  .card-spec .row{display:flex;gap:8px;font-size:.8rem;line-height:1.4;}
+  .card-spec .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--mc);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .card-spec .v{color:#403F3A;}
+  .card-spec .v b{color:var(--ink);}
+  .card-ins{margin-top:10px;display:flex;gap:9px;align-items:baseline;border-top:1px dashed var(--line);padding-top:9px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.81rem;color:#403F3A;line-height:1.45;}
+  .card-ins .v b{color:var(--ink);}
+
+  .cmpsec{margin:50px 0 6px;}
+  .cmpsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--m-sil);}
+  .cmpsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 4px;}
+  .cmpsec .desc{font-size:.92rem;color:var(--muted);max-width:880px;margin-bottom:18px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:1140px;font-size:.82rem;background:#fff;}
+  table.cmp thead th{background:var(--navy);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.03em;
+    text-transform:uppercase;text-align:left;padding:11px 12px;font-weight:500;position:sticky;top:0;}
+  table.cmp td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.45;color:#33322E;}
+  table.cmp tbody tr:nth-child(even){background:#FBFBF8;}
+  .cm-name{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--ink);min-width:140px;}
+  .cm-name .pip{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .cm-pay{min-width:90px;} .cm-trig{min-width:150px;} .cm-limit{min-width:130px;}
+  .cm-ded{min-width:120px;} .cm-fixed{min-width:74px;}
+  .cm-ins{min-width:180px;font-size:.79rem;color:#403F3A;}
+  .cm-ins b{color:var(--ink);}
+  .yes{color:#2E7D52;font-weight:600;} .no{color:#B0432C;font-weight:600;} .partial{color:#B8862F;font-weight:600;}
+
+  .pvsec{margin:50px 0 6px;border:1.5px solid var(--m-pub);border-radius:16px;overflow:hidden;background:#fff;}
+  .pv-head{padding:20px 24px;border-bottom:1px solid var(--line);}
+  .pv-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--m-pub);}
+  .pv-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.2vw,1.95rem);margin-top:5px;}
+  .pv-head p{font-size:.9rem;color:var(--muted);margin-top:6px;max-width:820px;}
+  .pv-cols{display:grid;grid-template-columns:1fr 1fr;}
+  @media(max-width:680px){.pv-cols{grid-template-columns:1fr;}}
+  .pv-col{padding:20px 24px;border-right:1px solid var(--line);}
+  .pv-col:last-child{border-right:none;}
+  @media(max-width:680px){.pv-col{border-right:none;border-bottom:1px solid var(--line);}.pv-col:last-child{border-bottom:none;}}
+  .pv-col h3{font-family:var(--serif);font-size:1.12rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+  .pv-col h3 .sw{width:11px;height:11px;border-radius:3px;}
+  .pv-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .pv-col li{font-size:.86rem;color:#33322E;line-height:1.5;padding-left:13px;position:relative;}
+  .pv-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .pv-col li b{color:var(--ink);}
+
+  .cautsec{margin:50px 0 6px;}
+  .cautsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+  .cautsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 16px;}
+  .cauts{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:680px){.cauts{grid-template-columns:1fr;}}
+  .caut{border:1px solid #E8D9BE;background:#FBF7EE;border-radius:12px;padding:15px 17px;}
+  .caut h4{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin-bottom:5px;color:#7A5A1E;}
+  .caut p{font-size:.86rem;color:#5A4A2E;line-height:1.52;}
+  .caut p b{color:#3E2C10;}
+
+  footer{margin:48px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav a{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage-Mechanism Lens · 보장 방법별 횡단 분석 / 통원</div>
+    <h1>통원, <em>어떻게</em> 보장받는가</h1>
+    <div class="subtitle">같은 '통원비'라도 실손이냐 정액이냐에 따라 전혀 다른 담보 — 6가지 방식 · 대표 판매사 비교</div>
+    <p class="lead">
+      이 자료는 질병 여정이 아니라 <b>하나의 니즈(통원 의료비)</b>를 고정하고, 그것을 충족하는 담보를 <b>질병을 가로질러 모은 뒤
+      지급 방법(메커니즘)으로 묶어 비교</b>한다. 통원 보장의 큰 두 축은 <b>실손(비용비례·실비)</b>과 <b>정액(통원일당·치료비·수술비)</b>이며,
+      둘은 <b>중복 가입해도 각각 받을 수 있다</b>(실손은 비례보상, 정액은 중복수령). 2026년 5월 <b>5세대 실손</b> 출시로 통원 구조가
+      크게 바뀌어, 정액형 담보의 보완 가치가 커졌다. 각 담보에 <b>검증된 대표 판매사</b>를 함께 표기한다.
+    </p>
+
+    <div class="ctx">
+      <div class="ctxbox"><div class="big">5세대 실손<br>2026.5.6 출시</div><div class="lab">급여 통원 본인부담률 <b>건강보험 연동</b>(최소 20%, 상급종합 최대 60%)</div></div>
+      <div class="ctxbox"><div class="big">비중증 비급여<br>자부담 50%+5만</div><div class="lab">도수·체외충격파·주사 — 연한도 <b>5천만→1,000만원</b> 축소·일부 면책</div></div>
+      <div class="ctxbox"><div class="big">중증 비급여<br>상한 500만원</div><div class="lab">산정특례 등 중증은 <b>본인부담 상한 신설</b> — 보장 강화</div></div>
+    </div>
+
+    <div class="methodbox">
+      <h3>이 분석의 방법 — 보장 방법별 횡단 렌즈 (지침 §12)</h3>
+      <p>① 니즈를 <b>'통원 의료비' 하나로 고정</b> → ② 암·뇌·심·근골격 등 <b>질병을 가로질러</b> 통원 담보를 모음 → ③ <b>지급 메커니즘 6유형</b>으로 분류 → ④ 트리거·지급방식·한도·자기부담·정액여부·<b>대표 판매사</b>를 <b>한 매트릭스로 대조</b>.</p>
+    </div>
+
+    <nav class="nav" aria-label="유형 이동">
+      <a href="#m1"><span class="d" style="background:var(--m-sil)"></span>① 실손형</a>
+      <a href="#m2"><span class="d" style="background:var(--m-day)"></span>② 통원일당 정액</a>
+      <a href="#m3"><span class="d" style="background:var(--m-tx)"></span>③ 질병별 통원치료비</a>
+      <a href="#m4"><span class="d" style="background:var(--m-sx)"></span>④ 통원수술비</a>
+      <a href="#m5"><span class="d" style="background:var(--m-test)"></span>⑤ 검사·진단비</a>
+      <a href="#m6"><span class="d" style="background:var(--m-pub)"></span>⑥ 공적 제도</a>
+      <a href="#cmp"><span class="d" style="background:var(--navy)"></span>★ 차이 매트릭스</a>
+    </nav>
+  </header>
+
+  <!-- ============ ① 실손형 ============ -->
+  <section class="msec" id="m1" style="--mc:var(--m-sil)">
+    <div class="m-head"><span class="m-num">유형 ①</span><h2>실손형 — 실제 쓴 만큼 비례보상</h2><span class="m-mech">비용비례 · 실비</span></div>
+    <p class="m-intro">통원 보장의 <b>기본 뼈대</b>. 실제 부담한 의료비를 <b>비례보상</b>한다(공제·한도·횟수 적용). 한 사람당 <b>하나만</b> 실효되며 중복가입해도 비례분담. 2026.5.6 <b>5세대</b>로 급여 통원은 건강보험 본인부담률에 연동되고, 비급여는 중증/비중증으로 갈렸다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">실손 통원 — 급여 <span class="tag tag-new">5세대 변경</span></div>
+        <div class="card-trig">트리거: 통원(외래+처방조제) + 급여 발생</div>
+        <p class="card-def">외래(외래제비용+외래수술비)와 처방조제비를 보상한다. 5세대는 <b>건강보험 본인부담률에 연동</b>(최소 20%) — 상급종합 외래일수록 자기부담이 커진다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">공제</span><span class="v">의원 1만/상급·종합 2만 등 · <b>본인부담 연동</b></span></div>
+          <div class="row"><span class="k">횟수</span><span class="v">연 통원 횟수 한도(약관별)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 실손 취급사 — 삼성화재·DB·현대해상·KB손보·메리츠·흥국 등(5세대 2026.5.6 출시)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">실손 통원 — 비급여(비중증) <span class="tag tag-new">5세대 축소</span></div>
+        <div class="card-trig">트리거: 비중증 비급여 통원치료</div>
+        <p class="card-def">도수치료·체외충격파·비급여 주사 등 <b>남용 우려 항목(특약2)</b>. 5세대에서 자기부담 <b>50%+최소 5만원</b>, 연한도 5천만→<b>1,000만원</b>으로 축소, 일부 면책.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">자부담</span><span class="v"><b>50% + 5만원</b>(통원)</span></div>
+          <div class="row"><span class="k">한도</span><span class="v">연 <b>1,000만원</b>(축소)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 실손(특약2 분리) · 도수치료 잦으면 1~4세대 유지 유리</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">실손 통원 — 비급여(중증) <span class="tag tag-new">5세대 강화</span></div>
+        <div class="card-trig">트리거: 산정특례 등 중증질환 비급여</div>
+        <p class="card-def">암·뇌혈관·심장 등 <b>산정특례 대상 중증</b> 비급여는 보장을 강화 — <b>본인부담 상한(상급·종합 500만원)</b> 신설로 고액 치료 부담을 낮췄다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">자부담</span><span class="v">30% + <b>상한 500만원</b></span></div>
+          <div class="row"><span class="k">대상</span><span class="v">산정특례 등록 중증</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 실손(중증 비급여 강화)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">비급여 MRI·주사 통원 (특약)</div>
+        <div class="card-trig">트리거: 비급여 MRI/특정 주사 통원</div>
+        <p class="card-def">비급여 MRI·주사료는 별도 특약으로 분리되는 추세. 중증은 특약1, <b>비중증은 특약2(자부담 50%)</b>로 갈린다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">분리</span><span class="v">중증 특약1 / 비중증 특약2</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 실손(비급여 특약 분리)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ② 통원일당 정액형 ============ -->
+  <section class="msec" id="m2" style="--mc:var(--m-day)">
+    <div class="m-head"><span class="m-num">유형 ②</span><h2>통원일당 정액형 — 통원 하루당 정액</h2><span class="m-mech">트리거 = 통원 사실</span></div>
+    <p class="m-intro">실제 비용과 무관하게 <b>통원 1회(하루)당 정해진 금액</b>을 준다. 실손과 <b>중복 수령</b>이 되고 증빙이 단순하다. 실손 비례보상이 축소되며 <b>정액 통원일당의 보완 가치</b>가 커졌다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">질병/상해 통원일당 <span class="tag tag-trig">통원 1회당</span></div>
+        <div class="card-trig">트리거: 질병·상해로 통원(외래) 1회</div>
+        <p class="card-def">질병·상해로 통원할 때마다 <b>하루당 정액</b>을 지급한다. 실손과 별개로 중복 수령되며, 소액·고빈도 통원의 자기부담을 메운다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>통원 1회당 정액</b> · 연 횟수 한도</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 공통(건강·종합보험 통원일당 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">암 통원일당 <span class="tag tag-trig">암 통원당</span></div>
+        <div class="card-trig">트리거: 암 진단 후 통원치료(항암 등)</div>
+        <p class="card-def">암 통원치료(항암·방사선 등)를 위해 통원할 때 <b>하루당 정액</b>을 지급한다. 실손 축소·정액 강화 흐름 속에 한도가 <b>30~40만원대에서 70만원대까지</b> 올랐다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>암 통원 1일당 정액</b>(고액화 추세)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·DB손보·현대해상 · 흥국생명·미래에셋생명 등</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">항암 통원일당 (방사선·약물)</div>
+        <div class="card-trig">트리거: 항암 방사선·약물 통원 투여</div>
+        <p class="card-def">항암 방사선·약물치료를 통원으로 받을 때 일당을 지급한다. 입원 중심에서 <b>통원 항암이 늘어난 현실</b>을 반영한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">통원 항암일당(치료일 기준)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·일부 생보(암 통원치료 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">특정질환 통원일당 (뇌·심 등)</div>
+        <div class="card-trig">트리거: 특정질환 통원치료</div>
+        <p class="card-def">뇌혈관·심장 등 특정질환 통원치료 시 일당을 지급한다. 회복기 외래 추적·재활 통원의 자기부담을 보완한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">특정질환 통원당 정액</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 손보(특정질환 통원 특약, 상품별 상이)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 질병별 통원치료비형 ============ -->
+  <section class="msec" id="m3" style="--mc:var(--m-tx)">
+    <div class="m-head"><span class="m-num">유형 ③</span><h2>질병별 통원치료비형 — 치료당/특정치료</h2><span class="m-mech">트리거 = 특정 치료</span></div>
+    <p class="m-intro">특정 질병의 <b>특정 치료를 통원으로 받을 때</b> 정액을 준다. 통원 항암(방사선·약물)·표적치료 등 고가 치료가 핵심. 실손 비례 축소로 <b>정액 치료비</b> 설계가 확산됐다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">항암방사선·약물치료비 <span class="tag tag-trig">치료당</span></div>
+        <div class="card-trig">트리거: 항암 방사선·약물치료 시행</div>
+        <p class="card-def">항암 <b>방사선·약물 2대 치료</b>를 받을 때 <b>치료당</b> 정액 지급(수술 제외). 통원·입원 무관하게 치료 횟수 기준으로 반복 지급된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>치료당</b> 정액(반복)</span></div>
+          <div class="row"><span class="k">범위</span><span class="v">방사선+약물(수술 제외)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 공통(암 치료비 핵심 담보)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">표적항암약물허가치료비 <span class="tag tag-trig">통원 투여</span></div>
+        <div class="card-trig">트리거: 식약처 허가 표적·면역항암제 투여</div>
+        <p class="card-def">키트루다·옵디보 등 <b>고가 표적·면역항암제</b>를 통원 투여할 때 정액 지급. 비급여 고가 신약의 자금 공백을 메우는 핵심 담보다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">투여 기준 정액(고액)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">AIG손해보험(표적항암약물허가치료비) 등 · 전 손보 확산</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">암주요치료비 (수술+방사선+약물)</div>
+        <div class="card-trig">트리거: 3대 치료 중 시행</div>
+        <p class="card-def">수술·방사선·약물 <b>3대 치료</b>를 묶어 <b>연 1회</b>(진단 후 N년) 정액 지급. 항암방사선·약물치료비(치료당)와 <b>별개 담보</b>로 병행 설계된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">연 1회(예: 2,000만 · 5년 1억)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 · <b>비례형은 2024년 말 판매중단</b>, 정액형 위주</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">암 치료비 선지급 <span class="tag tag-new">신설 확산</span></div>
+        <div class="card-trig">트리거: 암 치료 일정 확정 시점</div>
+        <p class="card-def">치료를 받은 뒤 청구하는 대신, <b>치료 일정이 확정된 시점에 먼저</b> 지급해 통원치료 준비 자금을 확보한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>선지급</b>(치료 전 자금)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v"><b>메리츠화재(최초)</b>·DB손보·KB손보·현대해상 → 한화생명·미래에셋생명·하나생명</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 통원수술비형 ============ -->
+  <section class="msec" id="m4" style="--mc:var(--m-sx)">
+    <div class="m-head"><span class="m-num">유형 ④</span><h2>통원수술비형 — 수술 정액</h2><span class="m-mech">트리거 = 수술</span></div>
+    <p class="m-intro">입원하지 않고 <b>통원(당일)으로 받는 수술</b>도 보장한다. 수술 난이도(1~5종)별 정액 지급이 일반적. 백내장·용종절제 등 외래수술 빈도가 높다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">수술비 (1~5종) <span class="tag tag-trig">수술 분류별</span></div>
+        <div class="card-trig">트리거: 약관 수술분류표상 수술 시행</div>
+        <p class="card-def">수술을 난이도·종류에 따라 <b>1~5종으로 분류</b>해 종별 정액을 지급한다. <b>통원(당일) 수술도 포함</b>되며 입원 여부와 무관하다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v"><b>종별 정액</b>(1~5종)</span></div>
+          <div class="row"><span class="k">포함</span><span class="v">통원·당일 수술 포함</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 공통(질병·상해 수술비)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">질병/상해 수술비</div>
+        <div class="card-trig">트리거: 질병·상해 수술</div>
+        <p class="card-def">질병 또는 상해로 수술 시 정액 지급. 통원수술도 대상이며, 특정 수술(관혈/비관혈)별 가산을 두기도 한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">수술당 정액</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">특정 통원수술 (백내장·용종 등)</div>
+        <div class="card-trig">트리거: 특정 외래수술 시행</div>
+        <p class="card-def">백내장(수정체) ·대장용종 절제 등 빈도 높은 <b>외래수술</b>을 보장한다. 백내장 다초점렌즈 등 비급여는 실손 한계·분쟁이 잦다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">수술 정액 + 실손 병행</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보(수술비 특약 + 실손)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">N대 질환 수술비 (암·뇌·심 등)</div>
+        <div class="card-trig">트리거: 특정질환 수술</div>
+        <p class="card-def">암·뇌혈관·심장 등 특정질환 수술 시 고액 정액 지급. 통원 시술(스텐트·색전술 등)을 포함하는 설계도 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">특정질환 수술 고액 정액</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보(2·3대 질환 수술비 특약)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 검사·진단비형 ============ -->
+  <section class="msec" id="m5" style="--mc:var(--m-test)">
+    <div class="m-head"><span class="m-num">유형 ⑤</span><h2>검사·진단비형 — 통원 중 검사</h2><span class="m-mech">트리거 = 검사 시행</span></div>
+    <p class="m-intro">통원 과정의 <b>고가 검사</b>를 정액으로 보장한다. MRI·PET 등 영상검사, 표적치료 전 유전자검사 등. 실손 비급여 검사 축소를 정액으로 보완한다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">통원 영상검사비 (MRI·CT·PET)</div>
+        <div class="card-trig">트리거: 통원 중 MRI/CT/PET 시행</div>
+        <p class="card-def">질병 진단·추적을 위한 <b>MRI·CT·PET</b> 통원 검사에 정액 지급. 5세대 실손에서 비급여 MRI가 중증/비중증으로 갈려 정액 보완 가치가 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">검사당 정액 · 연 횟수 한도</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 손보(질병별 검사비 특약) · 실손 병행</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">암 정밀·표적 유전자검사비 <span class="tag tag-new">신규</span></div>
+        <div class="card-trig">트리거: 표적치료 전 유전자·바이오마커 검사</div>
+        <p class="card-def">표적·면역항암 치료 적합성을 보는 <b>유전자·바이오마커 검사</b> 비용을 정액 지급. 정밀의료 확산으로 신설되는 영역이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">검사 정액(통원)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화손해보험(유방암예후예측검사비 — 배타적사용권) 등 일부 손보</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">암 진단 확정 검사비 (조직검사 등)</div>
+        <div class="card-trig">트리거: 통원 조직·병리 검사</div>
+        <p class="card-def">암 진단확정을 위한 <b>조직검사·생검</b> 등 통원 검사 비용을 보장. 진단비와 별개로 검사 단계의 자기부담을 메운다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">지급</span><span class="v">검사 정액(통원)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(두배받는암보험 — 특정생검조직병리검사) 등</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">건강검진·감시 지원</div>
+        <div class="card-trig">트리거: 정기 검진·추적관찰</div>
+        <p class="card-def">정기 검진·추적 통원을 지원하는 부가 보장. 정액 보장보다 <b>서비스·할인 형태</b>가 많아 표준화 이전 영역이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">형태</span><span class="v">정액/서비스 혼재(상품별 상이)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 건강관리 서비스(표준화 이전, 추가 확인 필요)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑥ 공적 제도 ============ -->
+  <section class="msec" id="m6" style="--mc:var(--m-pub)">
+    <div class="m-head"><span class="m-num">유형 ⑥</span><h2>공적 제도 — 민간이 보완하는 baseline</h2><span class="m-mech">국가 제도</span></div>
+    <p class="m-intro">민간 통원 담보는 모두 <b>건강보험 외래 본인부담 위에서</b> 작동한다. 외래는 의료기관 종별로 본인부담률이 다르고, 중증은 산정특례·상한제가 받쳐준다. 이 baseline을 알아야 실손·정액으로 어디를 메울지 보인다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">건강보험 외래 본인부담</div>
+        <div class="card-trig">트리거: 외래 진료(종별)</div>
+        <p class="card-def">외래는 <b>의료기관 종별로 본인부담률</b>이 다르다 — 의원 30% · 병원 40% · 종합병원 50% · 상급종합 60%. 5세대 실손이 이 부담률에 연동된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">부담</span><span class="v">의원30/병원40/종합50/<b>상급60%</b></span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v"><b>국민건강보험</b>(외래 본인일부부담)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">산정특례 (중증질환)</div>
+        <div class="card-trig">트리거: 암·중증 등록</div>
+        <p class="card-def">암 등 중증질환 등록 시 <b>본인부담 5%</b>(통상 5년) 등 대폭 경감. 5세대 실손의 중증 비급여 강화도 이 산정특례 대상과 연동된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">경감</span><span class="v"><b>본인부담 5%</b>(암 등, 5년)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v">국민건강보험(중증질환 산정특례)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">본인부담상한제</div>
+        <div class="card-trig">트리거: 연간 본인부담 누적</div>
+        <p class="card-def">연간 <b>급여 본인부담이 소득분위별 상한</b>을 넘으면 초과분을 돌려준다. 통원·입원 합산 보호장치이나 <b>비급여는 제외</b>된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">대상</span><span class="v">급여 본인부담(비급여 제외)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">운영</span><span class="v">국민건강보험(본인부담상한제)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">급여 외 보완 — 실손·정액의 자리</div>
+        <div class="card-trig">트리거: 본인부담·비급여 공백</div>
+        <p class="card-def">공적이 막지 못하는 <b>본인부담·비급여(특히 비중증)</b>가 민간의 자리다. 5세대로 비중증 비급여가 축소돼 <b>정액 통원 담보의 보완</b>이 더 중요해졌다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">공백</span><span class="v">비급여·비중증·고빈도 통원</span></div>
+        </div>
+        <div class="card-ins"><span class="k">보완</span><span class="v">민간 실손(비례) + 정액 통원일당·치료비(중복수령)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ★ 차이 매트릭스 ===================== -->
+  <section class="cmpsec" id="cmp">
+    <div class="e">★ Difference Matrix · 보장내용 차이 + 판매사</div>
+    <h2>한 표로 보는 통원 담보의 차이</h2>
+    <p class="desc">같은 '통원'이라도 <b>지급방식·트리거·한도·자기부담·정액여부·대표 판매사</b>가 다르다. 이 표가 이 분석의 핵심 — <b>실손(비례)이냐 정액이냐</b>가 가장 큰 갈림길이고, 정액은 실손과 <b>중복 수령</b>된다. 판매사는 검증된 예시다.</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr>
+        <th>담보 (유형)</th><th>지급방식</th><th>트리거</th><th>한도</th><th>자기부담</th><th>정액/실손</th><th>대표 판매사(예시)</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-sil)"></span>실손 통원(급여) 5세대</td>
+          <td class="cm-pay">비례보상</td>
+          <td class="cm-trig">통원(외래+조제)</td>
+          <td class="cm-limit">연 횟수·금액 한도</td>
+          <td class="cm-ded">건보 연동(최소20%)</td>
+          <td class="cm-fixed">실손</td>
+          <td class="cm-ins">전 손보·생보 실손(삼성·DB·현대·KB·메리츠·흥국)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-sil)"></span>실손 통원(비급여·비중증)</td>
+          <td class="cm-pay">비례보상</td>
+          <td class="cm-trig">도수·체외충격파·주사</td>
+          <td class="cm-limit"><b>연 1,000만</b>(축소)</td>
+          <td class="cm-ded"><b>50%+5만원</b></td>
+          <td class="cm-fixed">실손</td>
+          <td class="cm-ins">전 손보·생보 실손(특약2)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-sil)"></span>실손 통원(비급여·중증)</td>
+          <td class="cm-pay">비례보상</td>
+          <td class="cm-trig">산정특례 중증 비급여</td>
+          <td class="cm-limit">상한 500만(상급·종합)</td>
+          <td class="cm-ded">30% + 상한</td>
+          <td class="cm-fixed">실손</td>
+          <td class="cm-ins">전 손보·생보 실손(중증 강화)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-day)"></span>질병/상해 통원일당</td>
+          <td class="cm-pay"><b>정액(일당)</b></td>
+          <td class="cm-trig">통원 1회</td>
+          <td class="cm-limit">연 통원 횟수</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">전 손보 공통(건강·종합보험)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-day)"></span>암 통원일당</td>
+          <td class="cm-pay"><b>정액(일당)</b></td>
+          <td class="cm-trig">암 통원치료(항암 등)</td>
+          <td class="cm-limit">통원당(30~70만대)</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins"><b>삼성화재·DB·현대해상</b>·흥국생명·미래에셋생명</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-tx)"></span>항암방사선·약물치료비</td>
+          <td class="cm-pay"><b>정액(치료당)</b></td>
+          <td class="cm-trig">방사선·약물치료 시행</td>
+          <td class="cm-limit">치료당 반복</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">전 손보·생보 공통(암 치료비 핵심)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-tx)"></span>표적항암약물허가치료비</td>
+          <td class="cm-pay"><b>정액(투여당)</b></td>
+          <td class="cm-trig">표적·면역항암제 투여</td>
+          <td class="cm-limit">고액(투여 기준)</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">AIG손해보험 등 · 전 손보 확산</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-tx)"></span>암 치료비 선지급</td>
+          <td class="cm-pay"><b>선지급</b></td>
+          <td class="cm-trig">치료 일정 확정</td>
+          <td class="cm-limit">치료비 일부 선지급</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins"><b>메리츠화재(최초)</b>·DB·KB·현대→한화생명·미래에셋</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-sx)"></span>수술비(1~5종)</td>
+          <td class="cm-pay"><b>정액(종별)</b></td>
+          <td class="cm-trig">수술(통원 포함)</td>
+          <td class="cm-limit">종별 1회</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">전 손보·생보 공통</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-test)"></span>통원 영상검사비(MRI 등)</td>
+          <td class="cm-pay">정액</td>
+          <td class="cm-trig">MRI/CT/PET 통원</td>
+          <td class="cm-limit">검사당·연 횟수</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">일부 손보(질병별 검사비) · 실손 병행</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-test)"></span>암 정밀·유전자검사비</td>
+          <td class="cm-pay">정액</td>
+          <td class="cm-trig">표적치료 전 유전자검사</td>
+          <td class="cm-limit">검사당</td>
+          <td class="cm-ded">없음</td>
+          <td class="cm-fixed">정액</td>
+          <td class="cm-ins">한화손보(유방암예후예측·배타적사용권) 등</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--m-pub)"></span>건강보험 외래(공적)</td>
+          <td class="cm-pay">현물(급여)</td>
+          <td class="cm-trig">외래 진료</td>
+          <td class="cm-limit">상한제·산정특례</td>
+          <td class="cm-ded">종별 30~60%</td>
+          <td class="cm-fixed">비용비례</td>
+          <td class="cm-ins"><b>국민건강보험</b>(외래 본인부담)</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* <b>판매사 표기 —</b> 검색으로 확인된 예시이며, 동일 명칭이라도 보장·금액·조건은 상품·약관별로 다르다. 5세대 실손은 2026.5.6 순차 출시(NH농협 5.1 → 삼성·DB 5.4 → 현대·KB·메리츠·흥국 5.6 → 한화 5.7), 1~4세대→5세대 전환은 2026.7~2036.6. 암주요치료비 <b>비례형은 2024년 말 판매중단</b>되고 정액형 위주로 재편됐다. 실손(비례)과 정액 담보는 <b>중복 수령</b>된다.</p>
+  </section>
+
+  <!-- ===================== 공적 vs 민간 ===================== -->
+  <section class="pvsec">
+    <div class="pv-head">
+      <div class="e">Public vs Private · 실손 ↔ 정액</div>
+      <h2>실손(비례)과 정액, 그리고 공적 baseline</h2>
+      <p>통원 보장의 두 축은 <b>실손(실제 쓴 만큼 비례보상)</b>과 <b>정액(통원일당·치료비·수술비)</b>이다. 실손은 한 사람당 하나만 실효되고 공제·한도가 있는 반면, 정액은 <b>여러 개 가입해도 각각 받는다</b>. 둘은 대체가 아니라 보완이며, 그 아래에 건강보험 외래 본인부담이라는 공적 baseline이 있다.</p>
+    </div>
+    <div class="pv-cols">
+      <div class="pv-col" style="color:var(--m-sil)">
+        <h3><span class="sw" style="background:var(--m-sil)"></span>실손형 (비례·실비)</h3>
+        <ul style="color:#33322E">
+          <li><b>지급:</b> 실제 부담액을 <b>비례보상</b>(공제·한도·횟수).</li>
+          <li><b>중복:</b> 한 사람당 <b>하나만 실효</b> — 중복가입해도 비례분담.</li>
+          <li><b>5세대(2026.5.6):</b> 급여 통원 건보 연동, 비중증 비급여 <b>50%+5만·연 1,000만</b>으로 축소.</li>
+          <li><b>강점:</b> 폭넓은 실비 보장 / <b>약점:</b> 비중증 비급여 보장 축소.</li>
+        </ul>
+      </div>
+      <div class="pv-col" style="color:var(--m-day)">
+        <h3><span class="sw" style="background:var(--m-day)"></span>정액형 (일당·치료비·수술비)</h3>
+        <ul style="color:#33322E">
+          <li><b>지급:</b> <b>정액</b> — 통원당·치료당·수술당·선지급. 증빙 단순.</li>
+          <li><b>중복:</b> 실손과 <b>중복 수령</b>, 여러 정액 담보도 각각 수령.</li>
+          <li><b>흐름:</b> 실손 비례 축소로 <b>정액 치료비·통원일당 확산</b>(암 통원일당 고액화).</li>
+          <li><b>판매:</b> 삼성·DB·현대해상·메리츠·KB·흥국·미래에셋 등 손보·생보 전반.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 주의사항 ===================== -->
+  <section class="cautsec">
+    <div class="e">Cautions · 핵심 주의점</div>
+    <h2>통원 담보, 이것부터 확인</h2>
+    <div class="cauts">
+      <div class="caut">
+        <h4>① 실손 vs 정액 — 중복 수령 여부</h4>
+        <p>실손은 <b>비례보상</b>(중복가입해도 분담), 정액은 <b>중복 수령</b>(실손+정액 각각, 정액끼리도 각각). 둘을 섞어 설계하면 자기부담 공백을 효율적으로 메운다.</p>
+      </div>
+      <div class="caut">
+        <h4>② 5세대 비중증 비급여 축소</h4>
+        <p>도수치료·체외충격파·비급여 주사는 5세대에서 <b>자부담 50%+5만원·연 1,000만</b>으로 줄고 일부 면책. 이런 치료가 잦다면 <b>1~4세대 유지</b>가 유리할 수 있다.</p>
+      </div>
+      <div class="caut">
+        <h4>③ 급여 통원 본인부담 연동</h4>
+        <p>5세대 급여 통원은 <b>건강보험 본인부담률에 연동</b>돼, <b>상급종합병원 외래일수록 자기부담이 커진다</b>(최대 60%). 경증은 의원 이용이 유리.</p>
+      </div>
+      <div class="caut">
+        <h4>④ 통원 항암·표적치료 보장 확인</h4>
+        <p>입원 중심에서 <b>통원 항암·표적치료</b>가 늘었다. 항암방사선·약물치료비(치료당), 표적항암약물치료비, 암 통원일당이 통원을 커버하는지 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>⑤ 같은 이름, 다른 담보</h4>
+        <p>'암주요치료비'(3대 치료·연1회)와 '항암방사선·약물치료비'(치료당)는 <b>별개</b>다. 비례형 암치료비는 2024년 말 판매중단돼 정액형 위주로 재편됐다.</p>
+      </div>
+      <div class="caut">
+        <h4>⑥ 비급여는 상한제 밖</h4>
+        <p>공적 <b>본인부담상한제는 급여만</b> 보호하고 비급여는 제외된다. 비급여 통원(특히 비중증) 공백은 민간 실손·정액으로 메워야 한다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 통원(외래) 의료비를 보장하는 담보를 <b>지급 방법(보장 메커니즘)별로 묶어 차이를 비교</b>하기 위한 교육·기획용 참고 자료이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보의 트리거·지급방식·한도·자기부담·공제·정액/실손·면책·금액·<b>판매사</b>는 <b>상품·약관·가입 시점·제도 변경</b>에 따라 달라진다. <b>판매사는 검색으로 확인된 예시</b>일 뿐 보장 동일성을 뜻하지 않으며, 표준화 담보는 "전 손보 공통" 등으로 표기했다. 5세대 실손의료보험은 2026.5.6 순차 출시됐고(급여 통원 본인부담률 연동, 비중증 비급여 자기부담 50%+5만원·연 1,000만원 축소·일부 면책, 중증 비급여 본인부담 상한 500만원 신설, 임신·출산·발달장애 급여 신규 보장), 1~4세대→5세대 전환은 2026.7~2036.6에 진행된다. 실손은 비례보상(중복가입 분담), 정액은 중복 수령된다. 급여 외래 본인부담률·산정특례·본인부담상한제는 국민건강보험 기준을 따른다. 가입·청구 판단 시 반드시 <b>약관 원문과 상품설명서, 공적 제도 안내를 확인</b>해야 한다. 약관 원문은 복제하지 않고 요약·재서술했다. 질병별 보장 구조 상세는 질병별 보장 여정 지도를, 진단 담보는 「진단 담보 전수 카탈로그」를 함께 참고하라.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">OUTPATIENT COVERAGE ANALYSIS · 보장 방법별 횡단 렌즈(지침 §12) · 6 메커니즘 + 차이 매트릭스(축 7개·판매사 포함) · 실손↔정액 비교 · 5세대 실손 2026.5.6 기준</span>
+  </footer>
+
+</div>
+</body>
+</html>

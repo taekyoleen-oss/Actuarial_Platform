@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대사질환 보장 여정 지도 — Metabolic Syndrome Coverage Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --p1:#7A9A8E; --p2:#C25E4A; --p3:#3E6FB0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+    /* track colors */
+    --track-root:#2F8597;   /* 비만·대사 근본 */
+    --track-comp:#3E6FB0;   /* 구성질환(혈압·혈당·지질) */
+    --track-organ:#C2454A;  /* 표적장기(심뇌·신·간) */
+    --track-common:#6B6A64;
+    --demo-sex:#8E5BA8; --demo-age:#B8862F; --demo-child:#2E8B6E; --gap:#2E8B6E;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  header{padding:60px 0 30px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,5.4vw,3.7rem);line-height:1.04;
+    letter-spacing:-.01em;margin-bottom:6px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--track-organ);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:26px;}
+  .lead{max-width:780px;font-size:1.02rem;color:#33322E;margin-bottom:8px;}
+  .lead b{color:var(--ink);}
+  .trackkey{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0 4px;}
+  .trackkey span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#403F3A;
+    display:inline-flex;align-items:center;gap:7px;}
+  .trackkey i{width:14px;height:4px;border-radius:3px;display:inline-block;}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 8px;}
+  @media(max-width:680px){.axes{grid-template-columns:1fr;}}
+  .axis{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;}
+  .axis .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--track-organ);text-transform:uppercase;}
+  .axis h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin:5px 0 4px;}
+  .axis p{font-size:.9rem;color:var(--muted);line-height:1.55;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .legend a{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 13px;background:#fff;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,box-shadow .12s ease;}
+  .legend a:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .legend a:focus-visible{outline:2px solid var(--p3);outline-offset:2px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  .spinewrap{padding:40px 0 6px;}
+  .spine{height:8px;border-radius:8px;width:100%;
+    background:linear-gradient(90deg,var(--p1),var(--p2) 22%,var(--p3) 42%,var(--p4) 62%,var(--p5) 82%,var(--p6));}
+  .nodes{display:grid;grid-template-columns:repeat(6,1fr);margin-top:-22px;}
+  .node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .node .bead{width:30px;height:30px;border-radius:50%;border:4px solid var(--cream);
+    box-shadow:0 0 0 1.5px rgba(0,0,0,.08);}
+  .node .lab{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--muted);}
+  .node .lab b{display:block;font-family:var(--sans);font-weight:600;font-size:11.5px;color:var(--ink);letter-spacing:0;margin-top:2px;}
+  @media(max-width:680px){.node .lab b{font-size:9.5px;}.node .bead{width:22px;height:22px;}}
+
+  .phase{padding:46px 0 8px;scroll-margin-top:14px;}
+  .phase-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;
+    padding:4px 11px;border-radius:6px;text-transform:uppercase;}
+  .phase-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.6vw,2.2rem);letter-spacing:-.01em;}
+  .phase-sub{font-size:.96rem;color:var(--muted);max-width:760px;margin:4px 0 22px;}
+
+  .subgroup{margin:18px 0 6px;}
+  .subgroup-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--track-comp);
+    text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .subgroup-label::before{content:"";width:18px;height:1px;background:currentColor;display:inline-block;}
+  .subgroup-label.organ{color:var(--track-organ);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .card{border:1px solid var(--line);border-left:4px solid var(--oc,var(--p3));border-radius:11px;
+    background:#fff;padding:16px 17px 15px;display:flex;flex-direction:column;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.08rem;line-height:1.25;}
+  .card-type{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);
+    text-align:right;white-space:nowrap;padding-top:4px;}
+  .card-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--track-comp);margin-bottom:8px;}
+  .card-def{font-size:.9rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .card-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-bottom:11px;}
+  .card-note b{color:var(--ink);}
+  .card-ins{margin-top:auto;display:flex;gap:9px;align-items:baseline;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.82rem;color:#403F3A;line-height:1.45;}
+
+  .pill{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle;white-space:nowrap;}
+  .new-pill{background:var(--gold);}
+  .link-pill{background:var(--track-organ);font-family:var(--mono);}
+  .link-pill.comp{background:var(--track-comp);}
+  .crit-pill{background:var(--track-comp);font-family:var(--mono);}
+  .tag-sex,.tag-age,.tag-child{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px;white-space:nowrap;}
+  .tag-sex{background:var(--demo-sex);} .tag-age{background:var(--demo-age);} .tag-child{background:var(--demo-child);}
+
+  /* ---------- Signature: 5-criteria cluster + fan-out ---------- */
+  .sig{margin:54px 0 10px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
+  .sig-head{background:var(--ink);color:var(--cream);padding:22px 26px;}
+  .sig-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#B9B6AD;}
+  .sig-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:6px;}
+  .sig-head p{font-size:.92rem;color:#C9C6BD;margin-top:6px;max-width:740px;}
+  .sig-body{padding:26px;}
+  .sig-axis-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--track-comp);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .sig-axis-label::before{content:"";width:16px;height:1px;background:currentColor;}
+  .sig-axis-label.organ{color:var(--track-organ);}
+  /* 5 criteria chips */
+  .criteria{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:6px;}
+  @media(max-width:760px){.criteria{grid-template-columns:repeat(2,1fr);}}
+  .crit-chip{border:1.5px solid var(--track-comp);border-radius:12px;padding:14px 12px;text-align:center;background:#F4F7FB;}
+  .crit-chip .ico{font-family:var(--serif);font-weight:600;font-size:1.5rem;color:var(--track-comp);line-height:1;}
+  .crit-chip .cn{font-family:var(--serif);font-weight:600;font-size:.98rem;margin:8px 0 3px;}
+  .crit-chip .cv{font-family:var(--mono);font-size:9.5px;color:var(--muted);line-height:1.4;}
+  .threshold{margin:18px 0 8px;text-align:center;background:#FBF2F1;border:1px dashed var(--track-organ);
+    border-radius:10px;padding:13px 16px;font-size:.96rem;color:#7A3122;}
+  .threshold b{font-family:var(--serif);color:var(--track-organ);font-size:1.1rem;}
+  /* fan-out to downstream diseases */
+  .fanout{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px;}
+  .fan-chip{font-size:.84rem;color:#fff;background:var(--track-organ);border-radius:8px;padding:8px 14px;font-weight:500;}
+  .fan-chip small{font-family:var(--mono);font-size:8.5px;opacity:.85;display:block;letter-spacing:.02em;}
+  .sig-note{font-size:.84rem;color:var(--muted);margin-top:22px;line-height:1.55;border-top:1px solid var(--line);padding-top:14px;}
+  .sig-note b{color:var(--ink);}
+
+  /* ---------- Demographics ---------- */
+  .demosec{margin:54px 0 10px;border:1.5px solid var(--demo-sex);border-radius:16px;background:#fff;overflow:hidden;}
+  .demosec-head{padding:22px 26px;border-bottom:1px solid var(--line);}
+  .demosec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--demo-sex);}
+  .demosec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .demosec-head p{font-size:.92rem;color:var(--muted);margin-top:6px;max-width:760px;}
+  .demo-cols{display:grid;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.demo-cols{grid-template-columns:1fr;}}
+  .demo-col{padding:22px 24px;border-right:1px solid var(--line);}
+  .demo-col:last-child{border-right:none;}
+  @media(max-width:760px){.demo-col{border-right:none;border-bottom:1px solid var(--line);}.demo-col:last-child{border-bottom:none;}}
+  .demo-col h3{font-family:var(--serif);font-size:1.16rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .demo-col h3 .swatch{width:11px;height:11px;border-radius:3px;}
+  .demo-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .demo-col li{font-size:.875rem;color:#33322E;line-height:1.5;padding-left:14px;position:relative;}
+  .demo-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .demo-col li b{color:var(--ink);}
+  .warn{margin:0 24px 22px;background:#FBF3F1;border:1px solid #E8C9C0;border-radius:10px;padding:13px 16px;
+    font-size:.85rem;color:#8A3220;line-height:1.55;}
+  .warn b{color:#6E2415;}
+
+  /* ---------- Verification table ---------- */
+  .refsec{margin:54px 0 10px;}
+  .refsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .refsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:5px 0 4px;}
+  .refsec .desc{font-size:.92rem;color:var(--muted);max-width:760px;margin-bottom:20px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.reftable{border-collapse:collapse;width:100%;min-width:900px;font-size:.84rem;background:#fff;}
+  table.reftable thead th{background:var(--navy);color:var(--cream);font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:12px 14px;font-weight:500;}
+  table.reftable td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:#33322E;}
+  table.reftable tbody tr:nth-child(even){background:#FBFBF8;}
+  .c-dam{font-family:var(--serif);font-weight:600;font-size:.94rem;color:var(--ink);min-width:150px;}
+  .c-crit{min-width:210px;}
+  .c-ins{min-width:160px;}
+  .c-amt{min-width:120px;font-family:var(--mono);font-size:11px;}
+  .c-feat{min-width:190px;color:var(--muted);}
+  .reffoot{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:14px;padding:14px 16px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .reffoot b{color:var(--gold);}
+
+  /* ---------- Gap section ---------- */
+  .gapsec{margin:54px 0 10px;border:1.5px solid var(--gap);border-radius:16px;background:#fff;overflow:hidden;}
+  .gapsec-head{padding:22px 26px;background:#F2F8F5;border-bottom:1px solid #CFE6DB;}
+  .gapsec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gapsec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .gapsec-head p{font-size:.92rem;color:#3A6655;margin-top:6px;max-width:780px;}
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{padding:20px 24px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  @media(max-width:680px){.gap-item{border-right:none;}}
+  .gap-item h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .gap-item .lens{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gap);margin-bottom:9px;}
+  .gap-item p{font-size:.86rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .gap-item .meta{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .gap-item .meta b{color:var(--ink);}
+  .gap-status{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    padding:2px 8px;border-radius:5px;margin-top:8px;}
+  .st-none{background:#FBEFEC;color:#B0432C;} .st-some{background:#EAF4EE;color:#2E7D52;}
+
+  .closing{margin:54px 0 10px;background:var(--navy);color:var(--cream);border-radius:16px;padding:34px 30px;}
+  .closing .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#9DA8BF;}
+  .closing h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:6px 0 22px;}
+  .points{display:grid;grid-template-columns:1fr 1fr;gap:20px 30px;}
+  @media(max-width:680px){.points{grid-template-columns:1fr;}}
+  .point{display:flex;gap:13px;}
+  .point .num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--p4);line-height:1;flex-shrink:0;}
+  .point h4{font-size:.98rem;font-weight:600;margin-bottom:3px;}
+  .point p{font-size:.86rem;color:#C9CDD8;line-height:1.55;}
+
+  footer{margin:50px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .legend a{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage Journey Map · 보장 여정 지도 / 06 — 상류(뿌리) 질환</div>
+    <h1>대사질환, <em>한 뿌리</em>에서 여러 병으로</h1>
+    <div class="subtitle">다섯 가지가 뭉치면 증후군 — 모든 만성병의 상류에서 보장을 읽다</div>
+    <p class="lead">
+      대사증후군은 하나의 병이 아니라 <b>다섯 위험요인이 뭉친 상태</b>다. 복부비만·고혈압·고혈당·고중성지방·낮은 HDL —
+      이 중 <b>3가지 이상</b>이면 진단된다. 핵심은 이것이 <b>모든 만성병의 상류(上流)</b>라는 점이다. 인슐린 저항성을
+      공통 뿌리로, 여기서 <b>당뇨·심뇌혈관·신장·지방간, 나아가 암</b>으로 가지가 뻗는다. 그래서 이 지도는 앞선 지도들의
+      <b>출발점</b>에 해당한다. 다만 대사증후군은 단일 질병코드가 아니어서 보험은 증후군 자체보다 <b>구성질환(혈압·혈당·지질)과
+      표적장기 질환</b>으로 보장한다 — 이 구조를 정직하게 펼친다.
+    </p>
+
+    <div class="trackkey">
+      <span><i style="background:var(--track-root)"></i>비만·대사 근본 (위험요인·관리)</span>
+      <span><i style="background:var(--track-comp)"></i>구성질환 (고혈압·당뇨·이상지질혈증)</span>
+      <span><i style="background:var(--track-organ)"></i>표적장기 (심뇌·신장·지방간)</span>
+    </div>
+
+    <div class="axes">
+      <div class="axis">
+        <div class="n">Axis 1 — 5중 3 (클러스터)</div>
+        <h3>몇 개가 겹쳤는가</h3>
+        <p>다섯 위험요인 중 3개 이상이 모이면 증후군. 개별 수치보다 '겹침'이 위험을 키운다는 것이 핵심.</p>
+      </div>
+      <div class="axis">
+        <div class="n">Axis 2 — 상류 → 하류</div>
+        <h3>뿌리에서 가지로</h3>
+        <p>대사증후군은 당뇨·심뇌·신장·지방간·암의 공통 뿌리. 상류를 잡으면 여러 하류 질병을 동시에 줄인다.</p>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="단계 이동">
+      <a href="#p1"><span class="dot" style="background:var(--p1)"></span>① 위험·전단계</a>
+      <a href="#p2"><span class="dot" style="background:var(--p2)"></span>② 진단(5중3)</a>
+      <a href="#p3"><span class="dot" style="background:var(--p3)"></span>③ 구성질환 관리</a>
+      <a href="#p4"><span class="dot" style="background:var(--p4)"></span>④ 표적장기 손상</a>
+      <a href="#p5"><span class="dot" style="background:var(--p5)"></span>⑤ 중증·사건</a>
+      <a href="#p6"><span class="dot" style="background:var(--p6)"></span>⑥ 사망</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <div class="spinewrap" aria-hidden="true">
+    <div class="spine"></div>
+    <div class="nodes">
+      <div class="node"><div class="bead" style="background:var(--p1)"></div><div class="lab">PHASE 01<b>위험·전단계</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p2)"></div><div class="lab">PHASE 02<b>진단(5중3)</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p3)"></div><div class="lab">PHASE 03<b>구성질환</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p4)"></div><div class="lab">PHASE 04<b>표적장기</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p5)"></div><div class="lab">PHASE 05<b>중증·사건</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p6)"></div><div class="lab">PHASE 06<b>사망</b></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== PHASE 1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p1)">Phase 01</span>
+      <h2>위험요인 · 전단계 (비만·내장지방)</h2>
+    </div>
+    <p class="phase-sub">증후군이 성립하기 전, 뿌리가 자라는 구간. 내장지방·복부비만과 인슐린 저항성이 쌓인다. 겉으로 드러나지 않아(복부비만 외 무증상) 검진으로만 잡힌다. 정액 보장은 가장 얇고, 관리·검진 서비스가 중심이다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-root)">
+        <div class="card-top">
+          <div class="card-name">비만·고도비만 관리</div>
+          <div class="card-type">검사·서비스형</div>
+        </div>
+        <div class="card-sub">BMI·허리둘레·내장지방 (비만의 뿌리)</div>
+        <p class="card-def">대사증후군의 출발점인 비만을 관리. 체중감량은 다섯 위험요인을 동시에 낮추는 가장 근본적 개입이라, 비만 치료(GLP-1, ③단계)와 직접 연결된다.</p>
+        <p class="card-note">비고: 비만 자체 정액 진단비는 드뭄. 건강검진·헬스케어 부가서비스 중심.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 건강관리 서비스 부가(표준화 이전, 추가 확인 필요)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-root)">
+        <div class="card-top">
+          <div class="card-name">대사증후군 관리·건강관리자금</div>
+          <div class="card-type">서비스·환급형</div>
+        </div>
+        <div class="card-sub">위험요인 관리 + 건강관리자금 지급</div>
+        <p class="card-def">대사 위험을 관리하도록 돕고, 일정 기간 유지 시 건강관리자금을 환급하는 설계. 공적으로도 위험요인 3개 이상 보유자 대상 관리사업이 운영된다.</p>
+        <p class="card-note">비고: 예) 2년 경과 후 매년 건강관리자금 10만원 지급. 증후군 자체 '진단비'는 드뭄.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(당뇨고혈압OK — 건강관리자금)·국민건강보험 대사증후군 관리사업(공적)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p2)">Phase 02</span>
+      <h2>진단 — 다섯 중 셋</h2>
+    </div>
+    <p class="phase-sub">트리거는 <b>다섯 기준 중 3가지 이상</b> 충족이다. 그러나 대사증후군은 단일 질병코드가 아니라 증후군이어서, 보험은 증후군 자체가 아니라 <b>겹친 구성질환(고혈압·당뇨·이상지질혈증)을 각각 진단비로</b> 보장한다. 건강할 때 가입해야 면책·고지 문제를 피한다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-comp)">
+        <div class="card-top">
+          <div class="card-name">고혈압 진단비 <span class="crit-pill">130/85</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">수축기 130 / 이완기 85 이상 또는 약물</div>
+        <p class="card-def">다섯 기준의 하나이자 가장 흔한 구성요소(검진 수검자 약 43.6%). 무증상으로 혈관을 손상시켜 심뇌혈관의 신호가 된다. 진단비+실손으로 대비한다.</p>
+        <p class="card-note">비고: 만성질환 없는 건강 유병자 대상 진단비 상품 등장. 고지 의무 유의.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB손보(KB 고당지 맞춤 간편건강보험)·ABL생명 등 — 고혈압 진단비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-comp)">
+        <div class="card-top">
+          <div class="card-name">당뇨병 진단비 <span class="link-pill comp">당뇨 지도 03</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">공복혈당 100↑(기준) / HbA1c 6.5%↑(진단비)</div>
+        <p class="card-def">고혈당은 대사증후군 기준(공복혈당 100↑)이자, 진행하면 당뇨병(HbA1c 6.5%↑)으로 확정된다. 합병증 갈래는 「03 당뇨 지도」가 상세히 다룬다.</p>
+        <p class="card-note">비고: 대사증후군 기준 혈당(100)과 당뇨 진단비 트리거(HbA1c 6.5%)는 다름에 유의.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상·삼성화재·KB손보(고당지) 등 — 당뇨병 진단비(상세: 지도 03)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-comp)">
+        <div class="card-top">
+          <div class="card-name">이상지질혈증(고지혈) 진단비 <span class="crit-pill">TG·HDL</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">중성지방 150↑ / HDL 남40·여50 미만</div>
+        <p class="card-def">다섯 기준 중 둘(고중성지방·낮은 HDL)을 포괄한다. 혈관에 기름이 쌓여 동맥경화·심뇌혈관으로 이어지는 핵심 고리다. 진단비로 별도 보장한다.</p>
+        <p class="card-note">비고: '고당지(고혈압·당뇨·고지혈)'를 묶어 보장하는 간편건강보험 등장.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB손보(KB 고당지 맞춤 간편건강보험)·전 손보 — 이상지질혈증 진단비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-root)">
+        <div class="card-top">
+          <div class="card-name">유병자 간편심사 가입 <span class="tag-age">고령</span></div>
+          <div class="card-type">종합·진단형</div>
+        </div>
+        <div class="card-sub">고혈압·당뇨·고지혈 있어도 가입</div>
+        <p class="card-def">대사질환이 이미 있으면 일반 가입이 어렵다. 만성질환 고지를 추가하거나 줄인 간편심사형으로 구성질환 진단비·심뇌혈관·사망까지 묶어 설계한다.</p>
+        <p class="card-note">비고: 만성질환 '없는' 건강 유병자용 맞춤형도 등장(보험료 절감형).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB손보(고당지)·메리츠화재·삼성화재(Smart 유병자)·ABL생명</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p3)">Phase 03</span>
+      <h2>구성질환 관리 · 치료</h2>
+    </div>
+    <p class="phase-sub">"단일 치료법은 없고 구성요소를 각각 관리한다"는 것이 대사증후군의 원칙. 평생 약물·생활습관 관리가 이어지고, 최근 <b>비만 자체를 겨냥한 GLP-1 신약</b>이 판을 바꾸고 있다 — 체중을 줄이면 다섯 요인이 함께 내려간다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-root)">
+        <div class="card-top">
+          <div class="card-name">비만 치료(GLP-1·위고비) <span class="new-pill">신약</span></div>
+          <div class="card-type">치료형 · 정액/한도</div>
+        </div>
+        <div class="card-sub">GLP-1 비만치료제(위고비·마운자로) 투약</div>
+        <p class="card-def">세마글루타이드(위고비)·터제파타이드(마운자로) 등 GLP-1 비만치료제. 체중·혈당·혈압을 함께 낮추고 심혈관 위험(MACE)도 줄여, 대사증후군의 '뿌리'를 직접 친다.</p>
+        <p class="card-note">비고: 비만 목적은 <b>비급여</b>. 위고비 특약 <b>연 최대 100만</b> 보장 등장(상급종합 처방·비만 진단 조건).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 — 위고비/GLP-1 비만치료 특약(연 최대 100만, 신규)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-root)">
+        <div class="card-top">
+          <div class="card-name">비만대사수술 (고도비만)</div>
+          <div class="card-type">치료형(수술)</div>
+        </div>
+        <div class="card-sub">고도비만 → 위 절제·우회 등 대사수술</div>
+        <p class="card-def">약물·생활관리로 조절되지 않는 고도비만은 위 용적을 줄이는 비만대사수술을 고려한다. 당뇨·고혈압 동반 시 일부 급여가 적용되며 수술비 특약으로 보조한다.</p>
+        <p class="card-note">비고: 적응증(BMI 기준·동반질환) 충족 시 일부 급여. 수술비 특약 보장 범위 확인.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 수술비 특약 + 국민건강보험 일부 급여(적응증 충족 시)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-comp)">
+        <div class="card-top">
+          <div class="card-name">당뇨·고혈압·고지혈 약물·실손</div>
+          <div class="card-type">치료·실손형</div>
+        </div>
+        <div class="card-sub">구성질환 약물치료 + 외래·검사 실손</div>
+        <p class="card-def">구성질환을 각각 약물로 관리한다. 진료비·약제비를 실손으로 보조하되, 만성질환 평생 관리라 진단비(일시금)와 실손(반복)을 함께 갖춰야 한다.</p>
+        <p class="card-note">비고: 약물로 수치가 정상화돼도 관리는 지속. 유병자 실손은 약제비 제외 유의.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">실손의료보험(1~5세대) + 구성질환 약물관리 · 상품별 상이</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-comp)">
+        <div class="card-top">
+          <div class="card-name">당뇨 인슐린·합병증 관리 <span class="link-pill comp">당뇨 지도 03</span></div>
+          <div class="card-type">치료·진단형</div>
+        </div>
+        <div class="card-sub">고혈당 진행 → 인슐린치료·합병증 갈래</div>
+        <p class="card-def">대사증후군의 혈당 축이 당뇨로 진행하면 인슐린치료·미세/대혈관 합병증으로 갈라진다. 이 갈래의 상세 보장은 「03 당뇨 지도」를 참조한다.</p>
+        <p class="card-note">비고: 당뇨는 대사증후군의 가장 직접적 하류 질환. 갈래 지도와 연계.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명·현대해상 등 — 당뇨 인슐린치료·합병증 진단비(지도 03)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p4)">Phase 04</span>
+      <h2>표적장기 손상 — 가지로 번지다</h2>
+    </div>
+    <p class="phase-sub">관리하지 못한 대사 이상이 장기를 갉아먹는 구간. 한 뿌리에서 <b>심뇌혈관·신장·간(지방간)</b>으로 가지가 뻗고, 암 위험도 높아진다. 이 단계의 보장은 진단비에서 <b>표적장기별 진단·치료</b>로 옮겨간다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label organ">표적장기로 가는 가지</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-organ)">
+          <div class="card-top">
+            <div class="card-name">심뇌혈관 (대혈관) <span class="link-pill">뇌심 지도 02</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">허혈성심장(I20–I25)·뇌혈관(I60–I69)</div>
+          <p class="card-def">대사증후군의 가장 치명적 하류. 동맥경화가 심장·뇌의 굵은 혈관을 막아 협심증·심근경색·뇌졸중으로 이어진다. 상세 구조는 「02 뇌·심혈관 지도」.</p>
+          <p class="card-note">비고: 대사증후군은 심뇌혈관·당뇨·뇌졸중 위험을 크게 높인다. 코드 범위가 보장 가름.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·KB손보·한화생명 등 — 심뇌혈관 진단비(상세: 지도 02)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-organ)">
+          <div class="card-top">
+            <div class="card-name">당뇨병성 신증·만성신장병 <span class="link-pill">당뇨 지도 03</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">고혈압·고혈당 → 신장 미세혈관 손상</div>
+          <p class="card-def">고혈압·고혈당이 콩팥의 작은 혈관을 망가뜨려 단백뇨·신기능 저하를 부른다. 진행하면 투석·이식으로 이어져 비용이 급증한다(⑤단계 연계).</p>
+          <p class="card-note">비고: 투석 21배·이식 23배 비용. 만성당뇨합병증진단비로 보장(지도 03).</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명·손보 전반 — 만성당뇨합병증·신부전 진단비(지도 03)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-organ)">
+          <div class="card-top">
+            <div class="card-name">대사이상 지방간(MASLD/MASH) <span class="new-pill">신약</span></div>
+            <div class="card-type">진단·치료형</div>
+          </div>
+          <div class="card-sub">간에 지방 축적 → 지방간염·간섬유화</div>
+          <p class="card-def">대사 이상으로 간에 지방이 쌓이는 지방간(MASLD)은 흔히 간과되지만, 염증(MASH)·섬유화로 진행하면 간경변·간암으로 간다. 최근 표적 신약(레즈디프라 등)이 등장했다.</p>
+          <p class="card-note">비고: 간질환 진단비·지방간 보장은 얇음. MASH 신약은 <b>신규·고가</b>로 정액 보장 공백(⑥ Gap).</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">간질환 진단비 일부 생·손보 · MASH 신약 정액은 신규 영역(추가 확인 필요)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-organ)">
+          <div class="card-top">
+            <div class="card-name">암 위험 증가 <span class="link-pill">암 지도 01</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">비만·대사이상 관련 암 위험 상승</div>
+          <p class="card-def">대사증후군·비만은 대장·간·췌장 등 일부 암 위험을 높인다. 대사 이상이 만성 염증을 통해 발암에 관여하는 것으로 본다. 상세는 「01 암 지도」.</p>
+          <p class="card-note">비고: 대사증후군은 심혈관·당뇨뿐 아니라 암 위험과도 연관. 암 진단비로 대비.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 암보험 — 비만 관련 암 포함(상세: 지도 01)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p5)">Phase 05</span>
+      <h2>중증 · 급성 사건</h2>
+    </div>
+    <p class="phase-sub">상류의 방치가 하류의 사건으로 터지는 구간. 심근경색·뇌졸중 같은 급성 사건과, 투석·간경변 같은 비가역적 중증으로 진행한다. 보장은 진단·수술·후유장해와 회복기 생활비까지 넓어진다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">심근경색·뇌졸중 (급성 사건) <span class="link-pill">뇌심 지도 02</span></div>
+          <div class="card-type">진단·치료형</div>
+        </div>
+        <div class="card-sub">급성심근경색·뇌경색 → 응급·시술·수술</div>
+        <p class="card-def">대사 이상이 누적된 끝의 급성 사건. 골든타임 응급 시술(스텐트·혈전용해)과 후유장해·재활로 이어진다. 진단 시 납입면제도 작동한다. 상세는 「02」.</p>
+        <p class="card-note">비고: 계약일부터 보장(감액). 발병 후 가입 불가 — 상류 단계에서 미리 확보.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화생명·삼성화재·교보라이프플래닛 등 — 뇌·심장 진단·수술(지도 02)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">만성신부전 투석·이식 <span class="link-pill">당뇨 지도 03</span></div>
+          <div class="card-type">치료형 · 정액/반복</div>
+        </div>
+        <div class="card-sub">신증 말기 → 투석·신장이식</div>
+        <p class="card-def">신장 손상이 말기로 진행하면 평생 투석 또는 이식이 필요하다. 투석은 주기적·반복 비용이라 정액·반복 보장의 가치가 크다. 상세는 「03」.</p>
+        <p class="card-note">비고: 투석 21배·이식 23배 의료비. 인공신장투석치료비·이식수술비로 대응.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 전반 — 만성신부전·인공신장투석치료비·5대장기이식(지도 03)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">간경변·간부전 (지방간 진행)</div>
+          <div class="card-type">진단·치료형</div>
+        </div>
+        <div class="card-sub">지방간염(MASH) → 간섬유화 → 간경변·간암</div>
+        <p class="card-def">방치된 대사이상 지방간이 간경변·간부전·간암으로 진행한 단계. 간이식까지 필요할 수 있다. 간질환·간경변 진단비, 이식수술비로 대비한다.</p>
+        <p class="card-note">비고: 지방간 단계의 보장이 얇아 중증 진행 시 부담. 간질환 진단비 확인.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 — 간질환·간경변 진단비·5대장기이식수술비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">후유장해·회복기 생활비</div>
+          <div class="card-type">장해·생활비형</div>
+        </div>
+        <div class="card-sub">사건 후 장해 + 소득 공백 보조</div>
+        <p class="card-def">심뇌혈관 사건·투석 등은 후유장해와 장기 치료·휴직을 부른다. 후유장해 일시금과 회복기 생활비로 '치료비+소득공백'을 함께 메운다.</p>
+        <p class="card-note">비고: 장해지급률 기준. 매월 생활비는 상품별 차이 큼.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 — 후유장해·진단 후 생활비 특약</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 6 ===================== -->
+  <section class="phase" id="p6">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p6)">Phase 06</span>
+      <h2>사망</h2>
+    </div>
+    <p class="phase-sub">여정의 끝. 대사질환은 그 자체보다 <b>심뇌혈관·신장·간·암 등 하류 질병을 통해</b> 사망 위험을 높인다. 흥미롭게도 GLP-1 신약 확산으로 사망·질병 위험 가정이 재조정될 만큼, 상류 관리가 생존에 영향을 준다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">질병사망보험금</div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">심뇌혈관·신장·간·암 등 하류 질병 사망</div>
+        <p class="card-def">대사질환에서 비롯된 합병증 사망 시 유가족의 생활자금을 보조한다. 종합건강보험의 정기특약·종신보험으로 사망보장을 결합한다.</p>
+        <p class="card-note">비고: 대사질환 직접사망보다 <b>하류 질병을 통한 사망</b>이 일반적. 사인 인과가 보장에 영향.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생·손보 종합건강보험 정기특약(사망보험금 설계)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">상류 관리의 가치 (예방 효과) <span class="tag-child">소아 포함</span></div>
+          <div class="card-type">관점 · 예방</div>
+        </div>
+        <div class="card-sub">상류를 잡으면 여러 하류 사망을 함께 줄인다</div>
+        <p class="card-def">GLP-1 신약 임상에서 심혈관 위험(MACE)이 약 20% 감소했고, 보험업계는 이를 사망 위험 가정 재조정 요인으로 본다. 비만·대사 관리가 곧 생존 전략임을 보여준다.</p>
+        <p class="card-note">비고: 소아비만 증가로 <b>15세 미만 사망보장은 무효</b>(상법 732조), 소아 대사 보장은 진단·관리 중심.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">보험연구 — GLP-1 확산에 따른 사망률 개선 추정(스위스리 등)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNATURE: 5-criteria cluster + fan-out ===================== -->
+  <section class="sig">
+    <div class="sig-head">
+      <div class="e">Signature Axis · 대사질환의 자(尺)</div>
+      <h2>다섯 중 셋, 그리고 갈라지는 가지</h2>
+      <p>대사증후군의 핵심은 <b style="color:#fff">개별 수치가 아니라 '몇 개가 겹쳤는가'</b>다. 다섯 위험요인 중 3가지 이상이 모이면 증후군으로 진단되고, 이 뿌리에서 여러 만성병으로 가지가 뻗는다. 상류 하나를 잡으면 하류 여럿이 함께 줄어든다.</p>
+    </div>
+    <div class="sig-body">
+      <div class="sig-axis-label">자 1 — 다섯 진단 기준 (한국 기준)</div>
+      <div class="criteria">
+        <div class="crit-chip">
+          <div class="ico">①</div><div class="cn">복부비만</div>
+          <div class="cv">허리둘레<br>남 90 / 여 85㎝↑</div>
+        </div>
+        <div class="crit-chip">
+          <div class="ico">②</div><div class="cn">높은 혈압</div>
+          <div class="cv">130 / 85 mmHg↑<br>또는 약물</div>
+        </div>
+        <div class="crit-chip">
+          <div class="ico">③</div><div class="cn">높은 혈당</div>
+          <div class="cv">공복혈당<br>100 mg/dL↑</div>
+        </div>
+        <div class="crit-chip">
+          <div class="ico">④</div><div class="cn">중성지방↑</div>
+          <div class="cv">150 mg/dL↑<br>또는 약물</div>
+        </div>
+        <div class="crit-chip">
+          <div class="ico">⑤</div><div class="cn">HDL 낮음</div>
+          <div class="cv">남 40 / 여 50<br>mg/dL 미만</div>
+        </div>
+      </div>
+      <div class="threshold">
+        이 다섯 중 <b>3가지 이상</b> = 대사증후군 · 건강검진 수검자 약 <b>26%</b> 해당, 위험요인 1개 이상은 약 73%
+      </div>
+
+      <div class="sig-axis-label organ" style="margin-top:24px">자 2 — 한 뿌리에서 갈라지는 하류 질병</div>
+      <div class="fanout">
+        <div class="fan-chip">당뇨병<small>지도 03</small></div>
+        <div class="fan-chip">심뇌혈관<small>지도 02</small></div>
+        <div class="fan-chip">만성신장병<small>신증→투석</small></div>
+        <div class="fan-chip">지방간(MASH)<small>→간경변</small></div>
+        <div class="fan-chip">일부 암<small>지도 01</small></div>
+      </div>
+
+      <p class="sig-note">
+        <b>읽는 법:</b> 대사증후군 보장의 본질은 두 가지다. 첫째, 진단은 <b>'5중 3'</b>이라는 겹침의 문제 — 개별 수치가 정상 경계라도 셋이 겹치면 위험이 비선형으로 커진다. 둘째, 이것이 <b>여러 병의 공통 뿌리</b>라는 점 — 그래서 대사질환 보장은 단일 담보가 아니라 구성질환(혈압·혈당·지질)과 표적장기 질환(심뇌·신·간·암)을 <b>함께</b> 갖추는 일이다. 다만 대사증후군 자체는 단일 질병코드가 아니어서 '대사증후군 진단비'는 드물고, 보험은 겹친 구성질환과 하류 질병으로 보장한다 — 이 점을 정직하게 인식해야 한다. 진단 기준 수치(허리둘레·HDL)는 성별로 다르고, 발표 기관·기준에 따라 차이가 있을 수 있다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== DEMOGRAPHICS ===================== -->
+  <section class="demosec">
+    <div class="demosec-head">
+      <div class="e">Population Lens · 인구집단 렌즈</div>
+      <h2>누구의 대사인가</h2>
+      <p>진단 기준 자체가 성별로 다르고(허리둘레·HDL), 노화·폐경·소아비만에 따라 양상이 갈린다. 성별·연령·소아를 함께 본다.</p>
+    </div>
+    <div class="demo-cols">
+      <div class="demo-col" style="color:var(--demo-sex)">
+        <h3><span class="swatch" style="background:var(--demo-sex)"></span>성별 (남성·여성)</h3>
+        <ul style="color:#33322E">
+          <li><b>진단 기준이 성별로 다름:</b> 허리둘레(남 90/여 85㎝), HDL(남 40/여 50 미만) 기준이 갈린다.</li>
+          <li><b>남성:</b> 중장년 복부비만·고혈압·고지혈 유병이 높고, 대사증후군이 더 일찍 온다. 비만 유병률도 높음(남 48.8%).</li>
+          <li><b>여성:</b> <b>폐경 이후</b> 대사증후군이 급증한다(에스트로겐 감소). 임신성 당뇨 경험은 향후 대사증후군 위험을 높인다.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-age)">
+        <h3><span class="swatch" style="background:var(--demo-age)"></span>고령·연령</h3>
+        <ul style="color:#33322E">
+          <li><b>노화로 급증:</b> 나이가 들수록 인슐린 저항성·내장지방이 늘어 대사증후군 유병률이 가파르게 오른다.</li>
+          <li><b>유병자·간편심사:</b> 이미 고혈압·당뇨·고지혈이 있으면 간편심사형이 현실적 대안.</li>
+          <li>대사증후군은 노년 3대질환·치매(혈관성)의 상류 — 생애 지도(05)의 40대 출발점과 연결.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-child)">
+        <h3><span class="swatch" style="background:var(--demo-child)"></span>어린이 (소아비만)</h3>
+        <ul style="color:#33322E">
+          <li><b>소아비만 증가:</b> 어린이·청소년 비만이 늘며 <b>소아 대사증후군</b>이 신규 우려로 부상.</li>
+          <li>소아 1형/2형 당뇨, 소아 지방간 등 조기 발현 위험. 어린이보험에서 비만 관련 관리·진단 일부 대비.</li>
+          <li><b>15세 미만 사망보장은 무효</b>(상법 732조) → 소아 대사 보장은 진단·관리 중심.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn">
+      <b>⚠ 법적 한계 —</b> 상법 제732조에 따라 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>다. 소아비만·소아 대사증후군이 늘어도, 어린이 담보는 진단·관리·치료 중심으로 구성되며 사망보장은 제외된다.
+    </div>
+  </section>
+
+  <!-- ===================== VERIFICATION TABLE ===================== -->
+  <section class="refsec">
+    <div class="e">Verification · 교차검증</div>
+    <h2>담보별 지급기준 · 판매사 · 금액 · 특징</h2>
+    <p class="desc">여정 카드가 '존재·판매사·구성/표적·연계'를 보여준다면, 이 표는 <b>가입금액과 세부 조건(면책·기준 수치·연계)</b>을 깊이로 보완한다. 금액은 검증된 예시·범위이며 상품·연령별로 다르다. 하류 질병 상세는 연계 지도(01~03)를 함께 본다.</p>
+    <div class="tablescroll">
+      <table class="reftable">
+        <thead>
+          <tr>
+            <th>담보</th>
+            <th>지급기준(트리거·기준)</th>
+            <th>대표 판매사(상품 예시)</th>
+            <th>가입금액 예시·범위</th>
+            <th>주요 특징(면책·연계·공백)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c-dam">대사증후군 관리·건강관리자금</td>
+            <td class="c-crit">위험요인 관리 / 유지 기간 충족</td>
+            <td class="c-ins">ABL생명·공적 관리사업</td>
+            <td class="c-amt">예) 연 10만원</td>
+            <td class="c-feat">증후군 자체 '진단비'는 드뭄 · 서비스·환급형 중심</td>
+          </tr>
+          <tr>
+            <td class="c-dam">고혈압 진단비</td>
+            <td class="c-crit">130/85↑ 또는 고혈압약 복용</td>
+            <td class="c-ins">KB손보(고당지)·ABL생명</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">건강 유병자 대상 진단비 등장 · 고지 의무 유의 · 심뇌 신호</td>
+          </tr>
+          <tr>
+            <td class="c-dam">당뇨병 진단비</td>
+            <td class="c-crit">HbA1c 6.5%↑ + E10–E14(진단비)</td>
+            <td class="c-ins">현대·삼성·KB손보 / 지도 03</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">통상 1년 면책 · 대사 기준 혈당(100)과 진단비 트리거 다름</td>
+          </tr>
+          <tr>
+            <td class="c-dam">이상지질혈증(고지혈) 진단비</td>
+            <td class="c-crit">중성지방 150↑ / HDL 남40·여50 미만</td>
+            <td class="c-ins">KB손보(고당지)·전 손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">고당지(고혈압·당뇨·고지혈) 묶음 보장 등장 · 동맥경화 고리</td>
+          </tr>
+          <tr>
+            <td class="c-dam">비만 치료(GLP-1·위고비)</td>
+            <td class="c-crit">상급종합 처방 + 비만/대사질환 진단</td>
+            <td class="c-ins">일부 생·손보(위고비 특약, 신규)</td>
+            <td class="c-amt">연 최대 100만</td>
+            <td class="c-feat">비만 목적 비급여 · 위고비/마운자로 · MACE 20%↓ · 신규 영역</td>
+          </tr>
+          <tr>
+            <td class="c-dam">비만대사수술</td>
+            <td class="c-crit">고도비만(BMI·동반질환) → 대사수술</td>
+            <td class="c-ins">손보 수술비 특약 + 공적 일부 급여</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">적응증 충족 시 일부 급여 · 수술비 특약 보장범위 확인</td>
+          </tr>
+          <tr>
+            <td class="c-dam">심뇌혈관 진단·수술</td>
+            <td class="c-crit">I20–I25 / I60–I69 진단확정 + 시술</td>
+            <td class="c-ins">삼성·KB·한화 / 지도 02</td>
+            <td class="c-amt">심근경색 ~5천만</td>
+            <td class="c-feat">계약일부터(감액) · 납입면제 · 대사증후군 핵심 하류</td>
+          </tr>
+          <tr>
+            <td class="c-dam">만성신장병·신증</td>
+            <td class="c-crit">고혈압·고혈당 → 단백뇨·신기능 저하</td>
+            <td class="c-ins">ABL·손보 전반 / 지도 03</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">투석 21배·이식 23배 · 만성당뇨합병증진단비로 보장</td>
+          </tr>
+          <tr>
+            <td class="c-dam">대사이상 지방간(MASLD/MASH)</td>
+            <td class="c-crit">간 지방 축적 → 지방간염·섬유화</td>
+            <td class="c-ins">간질환 진단비 일부 / 신약 신규</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">지방간 단계 보장 얇음 · MASH 신약(레즈디프라) 정액 공백</td>
+          </tr>
+          <tr>
+            <td class="c-dam">간경변·간부전·이식</td>
+            <td class="c-crit">간경변 진단확정 / 간이식</td>
+            <td class="c-ins">일부 생·손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">지방간 진행의 종착 · 간질환 진단비·이식수술비</td>
+          </tr>
+          <tr>
+            <td class="c-dam">비만 관련 암</td>
+            <td class="c-crit">암 진단확정(분류표)</td>
+            <td class="c-ins">전 생·손보 / 지도 01</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">90일 면책·1년 50% 감액 · 대사이상이 일부 암 위험↑</td>
+          </tr>
+          <tr>
+            <td class="c-dam">유병자 간편심사 종합</td>
+            <td class="c-crit">고혈압·당뇨·고지혈 있어도 간편고지</td>
+            <td class="c-ins">KB손보(고당지)·메리츠·삼성화재</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">건강 유병자 맞춤형도 등장 · 일반형 대비 보험료 상이</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reffoot">
+      <b>공통 단서 —</b> 대사증후군은 단일 질병코드가 아니라 증후군이므로, 보험은 구성질환·표적장기 질환으로 보장한다. 동일 명칭이라도 트리거(기준 수치)·금액·면책은 상품·약관별로 다르고, 하류 질병의 상세 구조는 연계 지도(01 암 · 02 뇌·심혈관 · 03 당뇨)를 함께 확인해야 한다. 금액은 검증된 예시·범위이며 추측하지 않았다. 가입 판단 전 반드시 약관 원문과 상품설명서를 확인할 것.
+    </p>
+  </section>
+
+  <!-- ===================== GAP & PROPOSALS ===================== -->
+  <section class="gapsec">
+    <div class="gapsec-head">
+      <div class="e">Coverage Gap & Proposals · 미보장 담보 제안</div>
+      <h2>상류 보장의 빈 칸</h2>
+      <p>대사질환은 '뿌리'를 잡는 것이 가장 비용효과적이지만, 보험은 하류 질병 위주라 <b>상류 통합·예방·신약</b>에서 공백이 크다. 3개 렌즈(치료 과정 공백 · 암 기준선 대비 · 신기술)로 도출했다.</p>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>대사증후군 통합 진단·관리</h3>
+        <p>증후군이 단일 질병코드가 아니라는 이유로 '대사증후군 진단비'가 사실상 없다. 5중 3 충족이나 위험요인 개수를 트리거로 한 <b>통합 진단·관리 담보</b>가 비어 있다.</p>
+        <div class="meta"><b>기준선:</b> 가장 상류이자 개입 효과가 큰 지점인데 정액 보장 부재.</div>
+        <span class="gap-status st-none">현황: 미보장(증후군 자체)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>생활습관 개선·체중감량 인센티브</h3>
+        <p>식이·운동·체중감량이 다섯 요인을 동시에 낮추지만, 이를 보험료·보장과 연결하는 인센티브(목표 달성 환급 등)는 초기 단계다.</p>
+        <div class="meta"><b>기준선:</b> 상류 관리 행동을 보상으로 유도(건강관리자금 일부 외 미진).</div>
+        <span class="gap-status st-some">현황: 일부 환급형 / 본격 인센티브 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>위험요인 단계별·누적 보장</h3>
+        <p>암은 단계(상피내암→침윤암)별 보장이 정교하나, 대사질환은 위험요인 1개→3개(증후군)→표적장기 손상으로 <b>진행 단계별 보장</b>이 없다. 누적 위험을 단계로 보장할 여지가 크다.</p>
+        <div class="meta"><b>기준선:</b> 암의 단계별·재진단 구조를 대사 진행에 적용.</div>
+        <span class="gap-status st-none">현황: 단계 보장 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>매월 관리비 정액</h3>
+        <p>암은 매월 생활비가 발달했으나, 평생 관리하는 대사질환은 약값·검사 등 <b>매월 관리비용</b>을 정액으로 보조하는 담보가 얇다.</p>
+        <div class="meta"><b>기준선:</b> 암의 매월 생활비에 대응하는 대사 관리비 담보.</div>
+        <span class="gap-status st-none">현황: 신규 영역(월지급형 미약)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>비만 GLP-1 정액 확대</h3>
+        <p>위고비·마운자로 등 GLP-1은 비만 목적 비급여로 부담이 크다. 위고비 특약(연 100만)이 등장했으나 한도·대상이 제한적이라 확대 여지가 크다.</p>
+        <div class="meta"><b>기준선:</b> 암 표적항암제 정액 담보에 대응하는 비만·대사 신약 담보.</div>
+        <span class="gap-status st-some">현황: 일부 출시(위고비 특약) / 한도·대상 제한</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>지방간(MASH) 신약 보장</h3>
+        <p>대사이상 지방간염(MASH)의 첫 표적 신약(레즈디프라/레스메티롬 등)이 등장했으나, 고가 비급여를 정조준한 정액 담보는 사실상 없다.</p>
+        <div class="meta"><b>기준선:</b> 치매 레켐비처럼, 새 표적 신약의 보장 공백.</div>
+        <span class="gap-status st-none">현황: 미보장(신규 영역)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESIGN NOTES ===================== -->
+  <section class="closing">
+    <div class="e">Design Notes · 설계 핵심</div>
+    <h2>이 지도를 읽는 6가지 관점</h2>
+    <div class="points">
+      <div class="point"><div class="num">1</div><div><h4>겹침이 위험이다</h4><p>개별 수치가 아니라 다섯 중 셋이 겹치는 것이 진단. '5중 3' 클러스터가 핵심.</p></div></div>
+      <div class="point"><div class="num">2</div><div><h4>모든 만성병의 상류</h4><p>당뇨·심뇌·신장·지방간·암의 공통 뿌리. 상류를 잡으면 하류 여럿이 함께 줄어든다.</p></div></div>
+      <div class="point"><div class="num">3</div><div><h4>증후군엔 단일 담보가 없다</h4><p>단일 질병코드가 아니라 '대사증후군 진단비'는 드뭄. 구성질환·표적장기로 보장한다.</p></div></div>
+      <div class="point"><div class="num">4</div><div><h4>건강할 때 미리</h4><p>심뇌·당뇨는 발병 후 가입이 불리. 상류(위험·진단) 단계에서 미리 확보해야 작동한다.</p></div></div>
+      <div class="point"><div class="num">5</div><div><h4>비만 신약이 판을 바꾼다</h4><p>GLP-1이 체중·혈당·혈압·심혈관 위험을 함께 낮춰 뿌리를 직접 친다. 정액 보장은 이제 시작.</p></div></div>
+      <div class="point"><div class="num">6</div><div><h4>통합·예방이 가장 비어 있다</h4><p>증후군 통합 보장, 매월 관리비, 단계별·예방 인센티브, MASH 신약 — 보완 여지가 크다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 대사질환(대사증후군) 및 그 구성·하류 질환의 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 대사증후군은 단일 질병코드가 아니라 진단 기준의 집합이며, 진단 기준 수치(허리둘레·혈압·혈당·지질)·통계·판매사·금액은 발표 기관·회사·약관 및 제도 변경에 따라 달라질 수 있다. 가입·보장 판단 시 <b>약관 원문과 상품설명서 확인이 전제</b>다. 하류 질병의 상세 보장 구조는 연계 지도(01 암 · 02 뇌·심혈관 · 03 당뇨)를 함께 참고하라. 판매사·상품명·금액은 공개 정보를 바탕으로 검증한 예시이며, 약관 원문은 복제하지 않고 요약·재서술했다.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">METABOLIC SYNDROME COVERAGE JOURNEY MAP · v3 · 5중 3 클러스터 + 상류→하류 갈래 시그니처 · 지도 01·02·03 연계</span>
+  </footer>
+
+</div>
+</body>
+</html>

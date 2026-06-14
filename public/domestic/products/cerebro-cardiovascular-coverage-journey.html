@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>뇌·심혈관 보장 여정 지도 — Cerebro-Cardiovascular Coverage Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    /* phase colors (journey) */
+    --p1:#7A9A8E; --p2:#C25E4A; --p3:#3E6FB0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+    /* track colors (장기) — 직교 2축 */
+    --track-brain:#3D5A80; --track-heart:#C2454A; --track-common:#6B6A64;
+    --demo-sex:#8E5BA8; --demo-age:#B8862F; --demo-child:#2E8B6E; --gap:#2E8B6E;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  /* ---------- Header ---------- */
+  header{padding:60px 0 30px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,5.6vw,3.7rem);line-height:1.04;
+    letter-spacing:-.01em;margin-bottom:6px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--track-heart);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:26px;}
+  .lead{max-width:760px;font-size:1.02rem;color:#33322E;margin-bottom:8px;}
+  .lead b{color:var(--ink);}
+  .trackkey{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0 4px;}
+  .trackkey span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#403F3A;
+    display:inline-flex;align-items:center;gap:7px;}
+  .trackkey i{width:14px;height:4px;border-radius:3px;display:inline-block;}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 8px;}
+  @media(max-width:680px){.axes{grid-template-columns:1fr;}}
+  .axis{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;}
+  .axis .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--track-heart);text-transform:uppercase;}
+  .axis h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin:5px 0 4px;}
+  .axis p{font-size:.9rem;color:var(--muted);line-height:1.55;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .legend a{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 13px;background:#fff;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,box-shadow .12s ease;}
+  .legend a:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .legend a:focus-visible{outline:2px solid var(--p3);outline-offset:2px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* ---------- Timeline spine ---------- */
+  .spinewrap{padding:40px 0 6px;}
+  .spine{height:8px;border-radius:8px;width:100%;
+    background:linear-gradient(90deg,var(--p1),var(--p2) 22%,var(--p3) 42%,var(--p4) 62%,var(--p5) 82%,var(--p6));}
+  .nodes{display:grid;grid-template-columns:repeat(6,1fr);margin-top:-22px;}
+  .node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .node .bead{width:30px;height:30px;border-radius:50%;border:4px solid var(--cream);
+    box-shadow:0 0 0 1.5px rgba(0,0,0,.08);}
+  .node .lab{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);}
+  .node .lab b{display:block;font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink);letter-spacing:0;margin-top:2px;}
+  @media(max-width:680px){.node .lab b{font-size:10.5px;}.node .bead{width:22px;height:22px;}}
+
+  /* ---------- Phase sections ---------- */
+  .phase{padding:46px 0 8px;scroll-margin-top:14px;}
+  .phase-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;
+    padding:4px 11px;border-radius:6px;text-transform:uppercase;}
+  .phase-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.6vw,2.2rem);letter-spacing:-.01em;}
+  .phase-sub{font-size:.96rem;color:var(--muted);max-width:760px;margin:4px 0 22px;}
+
+  .subgroup{margin:18px 0 6px;}
+  .subgroup-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--track-heart);
+    text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .subgroup-label::before{content:"";width:18px;height:1px;background:currentColor;display:inline-block;}
+  .subgroup-label.brain{color:var(--track-brain);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .card{border:1px solid var(--line);border-left:4px solid var(--oc,var(--p3));border-radius:11px;
+    background:#fff;padding:16px 17px 15px;display:flex;flex-direction:column;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.1rem;line-height:1.25;}
+  .card-type{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);
+    text-align:right;white-space:nowrap;padding-top:4px;}
+  .card-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--p3);margin-bottom:8px;}
+  .card-def{font-size:.9rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .card-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-bottom:11px;}
+  .card-note b{color:var(--ink);}
+  .card-ins{margin-top:auto;display:flex;gap:9px;align-items:baseline;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.82rem;color:#403F3A;line-height:1.45;}
+
+  .pill{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle;white-space:nowrap;}
+  .new-pill{background:var(--gold);}
+  .rep-pill{background:var(--p3);}
+  .code-pill{background:var(--track-brain);font-family:var(--mono);}
+  .tag-sex,.tag-age,.tag-child{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px;white-space:nowrap;}
+  .tag-sex{background:var(--demo-sex);} .tag-age{background:var(--demo-age);} .tag-child{background:var(--demo-child);}
+
+  /* ---------- Signature: dual code ladders ---------- */
+  .sig{margin:54px 0 10px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
+  .sig-head{background:var(--ink);color:var(--cream);padding:22px 26px;}
+  .sig-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#B9B6AD;}
+  .sig-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:6px;}
+  .sig-head p{font-size:.92rem;color:#C9C6BD;margin-top:6px;max-width:720px;}
+  .sig-body{padding:26px;}
+  .laddercols{display:grid;grid-template-columns:1fr 1fr;gap:30px;}
+  @media(max-width:760px){.laddercols{grid-template-columns:1fr;gap:34px;}}
+  .ladder h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:9px;}
+  .ladder h3 .sw{width:11px;height:11px;border-radius:3px;}
+  .tiers{display:flex;flex-direction:column;gap:8px;}
+  .tier{display:grid;grid-template-columns:1fr 96px;align-items:center;gap:12px;}
+  .tier-bar{height:auto;min-height:40px;border-radius:8px;padding:8px 13px;color:#fff;display:flex;flex-direction:column;justify-content:center;}
+  .tier-bar .tn{font-family:var(--sans);font-weight:600;font-size:.92rem;line-height:1.2;}
+  .tier-bar .tc{font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;opacity:.92;margin-top:2px;}
+  .tier .scope{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;line-height:1.3;}
+  .sig-note{font-size:.84rem;color:var(--muted);margin-top:22px;line-height:1.55;border-top:1px solid var(--line);padding-top:14px;}
+  .sig-note b{color:var(--ink);}
+
+  /* ---------- Demographics ---------- */
+  .demosec{margin:54px 0 10px;border:1.5px solid var(--demo-sex);border-radius:16px;background:#fff;overflow:hidden;}
+  .demosec-head{padding:22px 26px;border-bottom:1px solid var(--line);}
+  .demosec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--demo-sex);}
+  .demosec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .demosec-head p{font-size:.92rem;color:var(--muted);margin-top:6px;max-width:760px;}
+  .demo-cols{display:grid;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.demo-cols{grid-template-columns:1fr;}}
+  .demo-col{padding:22px 24px;border-right:1px solid var(--line);}
+  .demo-col:last-child{border-right:none;}
+  @media(max-width:760px){.demo-col{border-right:none;border-bottom:1px solid var(--line);}.demo-col:last-child{border-bottom:none;}}
+  .demo-col h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .demo-col h3 .swatch{width:11px;height:11px;border-radius:3px;}
+  .demo-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .demo-col li{font-size:.875rem;color:#33322E;line-height:1.5;padding-left:14px;position:relative;}
+  .demo-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .demo-col li b{color:var(--ink);}
+  .warn{margin:0 24px 22px;background:#FBF3F1;border:1px solid #E8C9C0;border-radius:10px;padding:13px 16px;
+    font-size:.85rem;color:#8A3220;line-height:1.55;}
+  .warn b{color:#6E2415;}
+
+  /* ---------- Verification table ---------- */
+  .refsec{margin:54px 0 10px;}
+  .refsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .refsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:5px 0 4px;}
+  .refsec .desc{font-size:.92rem;color:var(--muted);max-width:760px;margin-bottom:20px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.reftable{border-collapse:collapse;width:100%;min-width:880px;font-size:.84rem;background:#fff;}
+  table.reftable thead th{background:var(--navy);color:var(--cream);font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:12px 14px;font-weight:500;}
+  table.reftable td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:#33322E;}
+  table.reftable tbody tr:nth-child(even){background:#FBFBF8;}
+  .c-dam{font-family:var(--serif);font-weight:600;font-size:.94rem;color:var(--ink);min-width:150px;}
+  .c-crit{min-width:210px;}
+  .c-ins{min-width:160px;}
+  .c-amt{min-width:130px;font-family:var(--mono);font-size:11px;}
+  .c-feat{min-width:200px;color:var(--muted);}
+  .reffoot{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:14px;padding:14px 16px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .reffoot b{color:var(--gold);}
+
+  /* ---------- Gap section ---------- */
+  .gapsec{margin:54px 0 10px;border:1.5px solid var(--gap);border-radius:16px;background:#fff;overflow:hidden;}
+  .gapsec-head{padding:22px 26px;background:#F2F8F5;border-bottom:1px solid #CFE6DB;}
+  .gapsec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gapsec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .gapsec-head p{font-size:.92rem;color:#3A6655;margin-top:6px;max-width:780px;}
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{padding:20px 24px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  @media(max-width:680px){.gap-item{border-right:none;}}
+  .gap-item h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .gap-item .lens{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gap);margin-bottom:9px;}
+  .gap-item p{font-size:.86rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .gap-item .meta{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .gap-item .meta b{color:var(--ink);}
+  .gap-status{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    padding:2px 8px;border-radius:5px;margin-top:8px;}
+  .st-none{background:#FBEFEC;color:#B0432C;} .st-some{background:#EAF4EE;color:#2E7D52;}
+
+  /* ---------- Design notes ---------- */
+  .closing{margin:54px 0 10px;background:var(--navy);color:var(--cream);border-radius:16px;padding:34px 30px;}
+  .closing .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#9DA8BF;}
+  .closing h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:6px 0 22px;}
+  .points{display:grid;grid-template-columns:1fr 1fr;gap:20px 30px;}
+  @media(max-width:680px){.points{grid-template-columns:1fr;}}
+  .point{display:flex;gap:13px;}
+  .point .num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--p4);line-height:1;flex-shrink:0;}
+  .point h4{font-size:.98rem;font-weight:600;margin-bottom:3px;}
+  .point p{font-size:.86rem;color:#C9CDD8;line-height:1.55;}
+
+  footer{margin:50px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .legend a{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage Journey Map · 보장 여정 지도 / 02</div>
+    <h1>뇌·심혈관, <em>코드</em>의 지도</h1>
+    <div class="subtitle">한순간의 발병과 평생의 후유 — 2대 질환 보장을 코드로 읽다</div>
+    <p class="lead">
+      뇌혈관질환과 심장질환은 흔히 한 증권에 묶이는 <b>2대 질환</b>이다. 이 지도는 두 축으로 읽는다.
+      첫째 <b>정의의 넓이 = ICD 코드 범위</b> — 같은 '진단비'라도 <b>뇌출혈(I60–I62) ⊂ 뇌졸중 ⊂ 뇌혈관질환(I60–I69)</b>,
+      <b>급성심근경색(I21–I23) ⊂ 허혈성심장질환(I20–I25)</b>처럼 보장 코드 범위가 보험금을 가른다.
+      둘째 <b>급성의 충격과 후유의 길이</b> — 골든타임(심근경색 2~3시간·뇌졸중 3시간)의 응급 비용과, 발병 후 남는
+      반신마비·언어장애 등 장기 후유·재활 비용을 함께 본다.
+    </p>
+
+    <div class="trackkey">
+      <span><i style="background:var(--track-brain)"></i>뇌혈관 트랙 (I60–I69)</span>
+      <span><i style="background:var(--track-heart)"></i>심장 트랙 (I20–I25, I47–I50)</span>
+      <span><i style="background:var(--track-common)"></i>공통 / 2대 통합</span>
+    </div>
+
+    <div class="axes">
+      <div class="axis">
+        <div class="n">Axis 1 — 정의의 넓이(코드)</div>
+        <h3>좁은 코드 vs 넓은 코드</h3>
+        <p>뇌출혈만 보장하면 환자의 다수인 뇌경색을 놓친다. 급성심근경색만 보장하면 환자의 다수인 협심증(I20)을 놓친다. 코드 범위가 곧 보장의 실효성이다.</p>
+      </div>
+      <div class="axis">
+        <div class="n">Axis 2 — 급성과 후유</div>
+        <h3>응급에서 재활까지</h3>
+        <p>면책 없이 계약일부터 보장(감액만)되는 점이 암과 다르다. 진단 일시금을 넘어 후유장해·재활·간병으로 보장이 길어진다.</p>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="단계 이동">
+      <a href="#p1"><span class="dot" style="background:var(--p1)"></span>① 예방·검진</a>
+      <a href="#p2"><span class="dot" style="background:var(--p2)"></span>② 진단·발병</a>
+      <a href="#p3"><span class="dot" style="background:var(--p3)"></span>③ 치료</a>
+      <a href="#p4"><span class="dot" style="background:var(--p4)"></span>④ 회복·생활</a>
+      <a href="#p5"><span class="dot" style="background:var(--p5)"></span>⑤ 재발·후유</a>
+      <a href="#p6"><span class="dot" style="background:var(--p6)"></span>⑥ 사망</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <div class="spinewrap" aria-hidden="true">
+    <div class="spine"></div>
+    <div class="nodes">
+      <div class="node"><div class="bead" style="background:var(--p1)"></div><div class="lab">PHASE 01<b>예방·검진</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p2)"></div><div class="lab">PHASE 02<b>진단·발병</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p3)"></div><div class="lab">PHASE 03<b>치료</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p4)"></div><div class="lab">PHASE 04<b>회복·생활</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p5)"></div><div class="lab">PHASE 05<b>재발·후유</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p6)"></div><div class="lab">PHASE 06<b>사망</b></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== PHASE 1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p1)">Phase 01</span>
+      <h2>예방·검진</h2>
+    </div>
+    <p class="phase-sub">2대 질환 보장의 가장 얇은 구간. 대부분의 담보는 '진단 확정'을 트리거로 하므로, 발병 전 정밀검사·위험관리의 정액 보장은 제한적이다. 검진·서비스형 담보가 일부 존재한다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">뇌·심혈관 정밀검사 지원</div>
+          <div class="card-type">검사·검진형</div>
+        </div>
+        <div class="card-sub">경동맥초음파·뇌혈관조영술·관상동맥CT 등</div>
+        <p class="card-def">발병 위험 평가를 위한 고가 정밀검사 비용을 보조. 조기 발견이 후유를 줄이는 질환 특성상 검사 접근성을 높이려는 담보다.</p>
+        <p class="card-note">비고: 독립 정액 담보는 드문 <b>신규 영역</b>. 종합건강보험 부가서비스로 제공되는 경우가 많다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 종합건강보험 부가 · 표준화 이전(추가 확인 필요)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">건강관리·안전지원 서비스</div>
+          <div class="card-type">서비스형(헬스케어)</div>
+        </div>
+        <div class="card-sub">혈압·혈당 관리, 걷기미션 등 위험요인 관리</div>
+        <p class="card-def">고혈압·고지혈 등 위험요인을 관리하도록 돕는 헬스케어 서비스. 일부 상품은 걷기 적립 포인트로 보험료를 충당하게 한다.</p>
+        <p class="card-note">비고: 보험금이 아닌 <b>서비스성</b> 혜택. 발병 예방 효과는 간접적.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">교보라이프플래닛(뇌·심장질환 종합보험 — 라플레이 걷기미션 포인트) 등</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p2)">Phase 02</span>
+      <h2>진단 · 발병</h2>
+    </div>
+    <p class="phase-sub">보장의 핵심 기둥. 진단 확정(뇌영상·CT·MRI / 심전도·효소·조영술)이 트리거다. 무엇보다 <b>증권에 적힌 코드 범위</b>가 보험금을 결정한다 — 같은 '진단비'도 좁은 코드면 흔한 병형을 놓친다. <b>암과 달리 90일 면책이 없고 계약일부터 보장</b>(감액만)되는 점이 특징이다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label brain">ⓐ 뇌혈관 진단비 (코드 사다리)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-brain)">
+          <div class="card-top">
+            <div class="card-name">뇌출혈 진단비 <span class="code-pill">I60–I62</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">지주막하출혈·뇌내출혈·기타 비외상성 두개내출혈</div>
+          <p class="card-def">뇌혈관이 '터져' 생기는 출혈만 보장. 사망률·후유장해율이 높지만 발생 빈도는 뇌경색의 약 1/5로, 가장 <b>좁은 범위</b>다.</p>
+          <p class="card-note">비고: 막혀 생기는 <b>뇌경색은 미보장</b>. 생보사는 최근 뇌출혈 단독 담보를 주로 판매.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">한화생명(e건강보험(뇌심) — 뇌출혈 최대 8천만)·생보 전반</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-brain)">
+          <div class="card-top">
+            <div class="card-name">뇌졸중 진단비 <span class="code-pill">+I63·I65·I66</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">뇌출혈 + 뇌경색(I63)·전동맥/대뇌동맥 폐쇄·협착</div>
+          <p class="card-def">출혈과 막힘(경색)을 모두 보장. 전 세계 뇌졸중의 약 85%가 뇌경색이므로 뇌출혈 단독보다 실효성이 크게 높다.</p>
+          <p class="card-note">비고: 손보사 통용 담보. I60~I63(±I65·I66) 포함 여부를 약관에서 확인.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어)·DB손보·KB손보·현대해상 등 손보 전반</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-brain)">
+          <div class="card-top">
+            <div class="card-name">뇌혈관질환 진단비 <span class="code-pill">I60–I69</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">+ I64·I67·I68 + 후유증(I69)까지</div>
+          <p class="card-def">출혈·경색은 물론 뇌동맥류, 명시되지 않은 뇌졸중, 이차성 뇌혈관장애와 <b>후유증(I69)</b>까지 포함하는 <b>가장 넓은 범위</b>. 추세적으로 가장 권장된다.</p>
+          <p class="card-note">비고: I69가 포함돼도 일부 후유증(특히 뇌경색 관련)은 제외될 수 있어 약관 확인 필수.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·KB손보·현대해상·메리츠화재 등 · 통상 2천만~3천만</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓑ 심장 진단비 (코드 사다리)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-heart)">
+          <div class="card-top">
+            <div class="card-name">급성심근경색 진단비 <span class="code-pill">I21–I23</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">급성심근경색·후속심근경색·합병증</div>
+          <p class="card-def">관상동맥이 '완전히 막혀' 심근이 괴사하는 응급 질환. 충격은 크지만 환자 수는 협심증보다 적어, 가장 <b>좁은 범위</b>다.</p>
+          <p class="card-note">비고: 협심증(I20)은 <b>미보장</b>. 1년 미만 50% 감액(상품별).</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">한화생명(e건강보험(뇌심) — 급성심근경색 최대 5천만)·전 사</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-heart)">
+          <div class="card-top">
+            <div class="card-name">허혈성심장질환 진단비 <span class="code-pill">I20–I25</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">협심증(I20) + 급성심근경색 + 만성허혈(I25)</div>
+          <p class="card-def">관상동맥이 좁아지거나 막혀 생기는 질환 전체를 보장. 국내 심장질환자의 약 60%가 협심증 등 허혈성이라 실효성이 크다.</p>
+          <p class="card-note">비고: 협심증 단계에서 스텐트 시술로 이어지는 사례가 많아 <b>I20 포함</b>이 핵심.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어)·KB손보·현대해상·DB손보 등 · 통상 3천만</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-heart)">
+          <div class="card-top">
+            <div class="card-name">(확대)심장질환 진단비 <span class="code-pill">+I47–I50</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">+ 부정맥·심방세동·심부전 등 (2·5대 심장질환)</div>
+          <p class="card-def">허혈성을 넘어 부정맥(I47–I49)·심부전(I50)·판막질환까지 포괄. 최근 '2대·5대 심장질환' 형태로 보장 범위를 넓힌 상품이 늘고 있다.</p>
+          <p class="card-note">비고: 부정맥 등 특정심장병은 별도 낮은 가입금액 설계(예: 1천만)되기도 함.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(2·5대 심장질환)·교보라이프플래닛(특정심장병 최대 1천만)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓒ 어린이·태아 진단</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-common)">
+          <div class="card-top">
+            <div class="card-name">선천성 심장질환 진단·수술 <span class="tag-child">어린이·태아</span></div>
+            <div class="card-type">진단·치료형</div>
+          </div>
+          <div class="card-sub">선천성 심기형 진단 / 어린이심장 개흉수술</div>
+          <p class="card-def">출생아 1,000명당 약 8명에 발생하는 선천성 심장기형을 진단·수술로 보장. 태아·신생아기 개흉수술비가 핵심 담보다.</p>
+          <p class="card-note">비고: <b>태아특약</b>(임신 22주 이내)으로 선천이상수술·인큐베이터까지 보장.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(자녀보험 — 어린이심장 개흉수술비)·현대해상·KB손보·우체국</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-common)">
+          <div class="card-top">
+            <div class="card-name">신생아뇌출혈·모야모야병 <span class="tag-child">어린이·태아</span></div>
+            <div class="card-type">진단·수술형</div>
+          </div>
+          <div class="card-sub">신생아뇌출혈 진단 / 모야모야병 개두수술</div>
+          <p class="card-def">소아 뇌혈관 위험을 보장. 신생아뇌출혈 진단비, 소아 호발 뇌혈관질환인 모야모야병의 개두수술비 등이 어린이보험에 탑재된다.</p>
+          <p class="card-note">비고: 뇌혈관질환진단비에서 <b>신생아뇌출혈은 가입금액의 일부(예: 20%)</b> 지급 설계 존재.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(자녀보험 — 모야모야병 개두수술비)·현대해상(굿앤굿어린이)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p3)">Phase 03</span>
+      <h2>치료 · 응급 · 시술</h2>
+    </div>
+    <p class="phase-sub">진단형에서 <b>치료형</b>으로 무게가 이동하는 구간. 개두·개흉 수술과, 카테터 기반의 비개흉 <b>시술(스텐트·혈전용해)</b>이 핵심이다. 시술은 수술과 별개 담보이며 명칭·코드(ARDG 등)로 보장 여부가 갈린다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓐ 수술</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-common)">
+          <div class="card-top">
+            <div class="card-name">2대주요기관 수술비(뇌·심장) <span class="rep-pill">수술당</span></div>
+            <div class="card-type">치료형(수술) · 수술당</div>
+          </div>
+          <div class="card-sub">뇌·심장 질환의 직접 치료 목적 수술</div>
+          <p class="card-def">개두술(뇌)·관상동맥우회술(CABG, 심장) 등 직접치료 수술 시 정액 지급. 진단비가 1회로 끝나는 것과 달리 <b>수술 시마다 반복</b> 지급되어 재수술 위험을 흡수한다.</p>
+          <p class="card-note">비고: 약관상 KCD 진단코드·수술코드 충족이 조건. 손보 통용 '2대 주요기관 질병 수술비'.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어 — 2대 주요기관 질병 수술비)·KB손보·현대해상 등</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓑ 시술 (비개흉·카테터)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-heart)">
+          <div class="card-top">
+            <div class="card-name">스텐트삽입술·풍선혈관성형수술비 <span class="rep-pill">연1회</span></div>
+            <div class="card-type">치료형(시술) · 연간1회</div>
+          </div>
+          <div class="card-sub">좁아진 혈관에 스텐트 삽입/풍선 확장</div>
+          <p class="card-def">막히거나 좁아진 뇌·심장 혈관을 카테터로 넓히는 시술. 개흉 없이 회복이 빠른 표준 치료로, 협심증 단계에서 빈번하다. 급여 기준 시술 시 정액 보장.</p>
+          <p class="card-note">비고: 통상 <b>연간 1회한</b>. 2대주요기관(뇌·심장) 묶음 담보로 제공.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·DB손보·KB손보 등 — 2대주요기관 스텐트삽입술·풍선혈관성형수술비(급여)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-brain)">
+          <div class="card-top">
+            <div class="card-name">혈전용해치료비</div>
+            <div class="card-type">치료형 · 치료당</div>
+          </div>
+          <div class="card-sub">뇌경색 급성기 혈전용해(t-PA 등) 시행</div>
+          <p class="card-def">뇌경색 골든타임에 혈전을 녹이는 치료를 받으면 정액 지급. 보험료 대비 보장 효과가 높아 효율적인 담보로 꼽힌다.</p>
+          <p class="card-note">비고: 골든타임(약 3시간) 내 시행이 관건. 저렴한 보험료로 실질 보장.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">KB손보·현대해상 등 손보 — 뇌혈관 혈전용해치료비 특약</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓒ 입원</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-common)">
+          <div class="card-top">
+            <div class="card-name">뇌·심장 직접치료 입원일당</div>
+            <div class="card-type">일당형(입원) · 1일당</div>
+          </div>
+          <div class="card-sub">2대 질환 직접치료 목적 입원 1일당</div>
+          <p class="card-def">뇌·심장질환의 직접 치료를 위해 입원하면 입원 1일당 정액 지급. 치료가 길어질수록 누적 보장이 커진다.</p>
+          <p class="card-note">비고: 평균 설계 1일 30만~50만 예시(상품별). '직접치료' 목적이 쟁점.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·DB손보·KB손보 등 — 2대질병 입원일당(상급종합병원 가산형 포함)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-common)">
+          <div class="card-top">
+            <div class="card-name">중환자실 입원일당 <span class="new-pill">신규</span></div>
+            <div class="card-type">일당형(입원) · 1일당</div>
+          </div>
+          <div class="card-sub">발병 직후 중환자실(ICU) 집중치료 입원</div>
+          <p class="card-def">뇌·심장 응급 발병 직후 중환자실 입원 시 별도 일당을 보장. 고비용 집중치료 구간의 부담을 메우는 신담보.</p>
+          <p class="card-note">비고: 일반 입원일당과 별도 가산. <b>신규 영역</b>으로 확산 중.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">DB손보·삼성화재 등 — 중환자실 입원일당 특약</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p4)">Phase 04</span>
+      <h2>회복 · 생활</h2>
+    </div>
+    <p class="phase-sub">급성기 치료 후 소득 공백·통원·간병을 메우는 구간. 2대 질환은 입원치료 후에도 <b>장기 재활·약물치료</b>가 이어지므로 회복기 보장의 비중이 크다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">2대 질병 통원일당</div>
+          <div class="card-type">일당형(통원) · 1일당</div>
+        </div>
+        <div class="card-sub">뇌·심장 직접치료 목적 통원 1일당</div>
+        <p class="card-def">퇴원 후 외래로 약물·재활 치료를 이어가는 경우 통원 1일당 정액 지급. 상급종합병원 통원은 더 높게 설계되기도 한다.</p>
+        <p class="card-note">비고: 1년 미만 50% 감액 적용 상품 존재. 입원일당과 별도 누적.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어 — 2대 질병 통원일당(상급종합병원))·손보 전반</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">간병인 사용일당 <span class="tag-age">고령</span></div>
+          <div class="card-type">일당형(간병) · 1일당</div>
+        </div>
+        <div class="card-sub">입원 중 간병인 고용 1일당</div>
+        <p class="card-def">반신마비 등으로 간병이 필요한 입원 기간에 간병인을 고용하면 1일당 정액 지급. 고령·중증 환자의 간병 부담을 보조한다.</p>
+        <p class="card-note">비고: 2025년 손보사 일제히 <b>일당 한도 축소</b>. 가입 시점 한도 확인.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보·삼성화재·KB손보·한화손보 — 상급종합병원 간병인사용일당</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">보험료 납입면제 <span class="new-pill">진단 시</span></div>
+          <div class="card-type">서비스형 · 진단 시</div>
+        </div>
+        <div class="card-sub">뇌출혈 또는 급성심근경색 진단확정 시</div>
+        <p class="card-def">중대 진단(뇌출혈·급성심근경색 등)이 확정되면 차회 이후 보험료 납입을 면제하고 보장은 만기까지 유지. 치료 중 보험료 부담까지 덜어준다.</p>
+        <p class="card-note">비고: <b>보장개시일 이후 진단</b>이 조건. 면제 트리거 질환 범위가 상품별로 다름.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">교보라이프플래닛·한화생명·삼성화재 등 — 뇌출혈·급성심근경색 진단 시 면제</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">회복기 생활비·소득보장</div>
+          <div class="card-type">생활비형 · 매월/일시</div>
+        </div>
+        <div class="card-sub">중대 진단 후 생활자금 보조</div>
+        <p class="card-def">발병으로 인한 휴직·소득 공백을 메우기 위한 생활자금. 암 대비 매월·생존형 구조가 아직 얇아, 진단비를 생활비로 활용하는 설계가 일반적이다.</p>
+        <p class="card-note">비고: 2대 질환 전용 <b>매월 지급형</b>은 신규 영역. 진단비+납입면제 조합으로 대체되는 경우가 많다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 — 2대 질환 생활자금/소득보장형(표준화 이전, 추가 확인 필요)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p5)">Phase 05</span>
+      <h2>재발 · 후유</h2>
+    </div>
+    <p class="phase-sub">2대 질환의 핵심 리스크가 모이는 구간. 스텐트 재시술 등 <b>재발 위험</b>과, 반신마비·언어장애 등 영구적 <b>후유장해</b>, 그로 인한 장기 돌봄을 보장한다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">후유장해 진단비 <span class="rep-pill">장해율</span></div>
+          <div class="card-type">장해형 · 일시금</div>
+        </div>
+        <div class="card-sub">반신마비·언어장애·시각손실 등 장해 확정</div>
+        <p class="card-def">뇌·심장 발병 후 남은 영구적 신경학적 결손을 장해분류표상 지급률에 따라 보장. 장해 정도가 클수록 보험금이 커지고 납입면제 트리거가 되기도 한다.</p>
+        <p class="card-note">비고: 장해지급률 <b>50% 이상</b> 시 고액 지급·납입면제 연계 설계 존재.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어 — 사망·후유장해)·손보 전반 후유장해 특약</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">재발·반복 시술/수술비 <span class="rep-pill">반복</span></div>
+          <div class="card-type">치료형 · 시술/수술당</div>
+        </div>
+        <div class="card-sub">재협착·재발 시 재시술·재수술</div>
+        <p class="card-def">스텐트 시술 후 재협착으로 재시술하는 사례가 적지 않다. 수술/시술비 담보를 <b>매 시술 시 반복 지급</b> 구조로 가져가면 재발 위험을 흡수할 수 있다.</p>
+        <p class="card-note">비고: 진단비는 통상 최초 1회 소멸 → 반복지급 담보는 수술/시술비로 보완.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 전반 — 2대주요기관 수술비·스텐트삽입술(연간1회) 반복 활용</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">장기요양·간병 연계 <span class="tag-age">고령</span></div>
+          <div class="card-type">서비스·생활비형</div>
+        </div>
+        <div class="card-sub">뇌졸중 후유로 ADL 저하 → 장기 돌봄</div>
+        <p class="card-def">뇌졸중은 노인장기요양보험상 <b>노인성 질병</b>으로, 65세 미만이라도 후유로 일상생활(ADL)이 저하되면 공적 장기요양 등급 대상이 될 수 있다. 사적 간병·요양 담보와 연계된다.</p>
+        <p class="card-note">비고: 공적 등급(1~5·인지지원)과 사적 LTC 보험을 함께 보는 영역. 치매·LTC 지도와 연결.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">노인장기요양보험(공적) + 생·손보 간병·요양 특약(상품별 상이)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 6 ===================== -->
+  <section class="phase" id="p6">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p6)">Phase 06</span>
+      <h2>사망</h2>
+    </div>
+    <p class="phase-sub">여정의 마지막 단계. 뇌출혈·급성심근경색 등 질병사망 또는 중대질병(CI) 선지급을 보장한다. 다만 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>이므로, 어린이 담보는 진단·치료·수술 중심이다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">질병사망보험금</div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">뇌출혈·급성심근경색 등 질병으로 인한 사망</div>
+        <p class="card-def">2대 질환은 갑작스러운 사망 위험이 큰 급성 질환이다. 질병사망보험금은 유가족의 경제적 충격과 생활자금을 보조한다.</p>
+        <p class="card-note">비고: 종합건강보험에서 진단·수술·입원과 함께 사망보장을 결합하는 구조가 일반적.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(365안심케어 — 사망 보장)·생보 종신/정기 특약</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">중대질병(CI) 선지급 <span class="tag-child">어린이 제외</span></div>
+          <div class="card-type">사망형 · 선지급</div>
+        </div>
+        <div class="card-sub">중대한 뇌졸중·급성심근경색 진단 시</div>
+        <p class="card-def">'중대한 뇌졸중'(영구적 신경학적 결손)·'중대한 급성심근경색' 진단 시 사망보험금의 일부를 미리 지급하는 CI 구조. 생전 치료자금으로 활용된다.</p>
+        <p class="card-note">비고: CI는 '중대한' 정의·진단확정 기준이 엄격. <b>15세 미만 사망보장은 상법상 무효</b>.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보사 CI·종신보험 특약(중대한뇌졸중·중대한급성심근경색)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNATURE: dual ladders ===================== -->
+  <section class="sig">
+    <div class="sig-head">
+      <div class="e">Signature Axis · 2대 질환의 자(尺)</div>
+      <h2>코드 범위가 보장을 정한다</h2>
+      <p>뇌·심혈관 보장의 핵심 변수는 <b style="color:#fff">증권에 적힌 ICD 코드 범위</b>다. 같은 '진단비'라도 좁은 코드는 흔한 병형을 빠뜨린다. 두 질환 모두 <b style="color:#fff">좁은 코드 ⊂ 넓은 코드</b>의 사다리 구조를 가진다.</p>
+    </div>
+    <div class="sig-body">
+      <div class="laddercols">
+        <div class="ladder">
+          <h3><span class="sw" style="background:var(--track-brain)"></span>뇌혈관 — 좁은 코드 → 넓은 코드</h3>
+          <div class="tiers">
+            <div class="tier">
+              <div class="tier-bar" style="background:#8FA6C2"><span class="tn">뇌출혈 진단비</span><span class="tc">I60 · I61 · I62</span></div>
+              <div class="scope">출혈만<br>(가장 좁음)</div>
+            </div>
+            <div class="tier">
+              <div class="tier-bar" style="background:#5A7BA6"><span class="tn">뇌졸중 진단비</span><span class="tc">+ I63 · I65 · I66</span></div>
+              <div class="scope">출혈+경색<br>(뇌경색 85%)</div>
+            </div>
+            <div class="tier">
+              <div class="tier-bar" style="background:var(--track-brain)"><span class="tn">뇌혈관질환 진단비</span><span class="tc">+ I64 · I67 · I68 · I69</span></div>
+              <div class="scope">후유증까지<br>(가장 넓음)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ladder">
+          <h3><span class="sw" style="background:var(--track-heart)"></span>심장 — 좁은 코드 → 넓은 코드</h3>
+          <div class="tiers">
+            <div class="tier">
+              <div class="tier-bar" style="background:#D88A8D"><span class="tn">급성심근경색 진단비</span><span class="tc">I21 · I22 · I23</span></div>
+              <div class="scope">경색만<br>(가장 좁음)</div>
+            </div>
+            <div class="tier">
+              <div class="tier-bar" style="background:#CC6166"><span class="tn">허혈성심장질환 진단비</span><span class="tc">I20 ~ I25 (협심증 포함)</span></div>
+              <div class="scope">허혈성 전체<br>(환자 ~60%)</div>
+            </div>
+            <div class="tier">
+              <div class="tier-bar" style="background:var(--track-heart)"><span class="tn">(확대)심장질환 진단비</span><span class="tc">+ I47~I50 부정맥·심부전</span></div>
+              <div class="scope">2·5대 심장<br>(가장 넓음)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="sig-note">
+        <b>읽는 법:</b> 두 사다리에서 위 칸은 아래 칸을 포함한다. "뇌출혈 진단비"는 막혀 생기는 <b>뇌경색을 보장하지 않고</b>, "급성심근경색 진단비"는 환자가 더 많은 <b>협심증(I20)을 보장하지 않는다.</b> 같은 명칭이라도 반드시 <b>대상 KCD 코드 범위</b>를 약관에서 확인해야 한다. 한편 암과 달리 2대 질환 진단비는 대체로 <b>90일 면책이 없고 계약일부터 보장</b>(1~2년 미만 50% 감액)되며, 뇌출혈·급성심근경색 진단 시 <b>납입면제</b>가 함께 작동하는 경우가 많다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== DEMOGRAPHICS ===================== -->
+  <section class="demosec">
+    <div class="demosec-head">
+      <div class="e">Population Lens · 인구집단 렌즈</div>
+      <h2>누구를 대상으로 하는가</h2>
+      <p>2대 질환은 성별 특이 담보는 적은 편이나, 연령(고령·유병자)과 어린이·태아(선천성)에서 보장 설계가 크게 갈린다.</p>
+    </div>
+    <div class="demo-cols">
+      <div class="demo-col" style="color:var(--demo-sex)">
+        <h3><span class="swatch" style="background:var(--demo-sex)"></span>성별 (남성·여성)</h3>
+        <ul style="color:#33322E">
+          <li><b>해당 적음:</b> 암과 달리 성별 전용 진단 담보는 드물다. 다만 위험 양상에 차이가 있다.</li>
+          <li><b>남성:</b> 중장년 급성심근경색 발생이 상대적으로 높아 응급·수술 보장 수요가 크다.</li>
+          <li><b>여성:</b> 폐경 후 심혈관 위험이 상승하고, 뇌동맥류 등 일부 뇌혈관 위험이 보고된다. 임신·출산기 혈압질환(임신중독증)이 위험요인.</li>
+          <li>성별 타깃 상품보다 <b>코드 범위·후유장해</b> 보장 설계가 더 중요한 영역.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-age)">
+        <h3><span class="swatch" style="background:var(--demo-age)"></span>고령·연령</h3>
+        <ul style="color:#33322E">
+          <li><b>40대 이후 급증</b> — 환자수가 본격적으로 늘어 가입 수요가 집중되는 연령대.</li>
+          <li><b>유병자형:</b> 고혈압·당뇨 등 기왕력자를 위한 <b>간편심사(고지 축소)형</b> 뇌·심혈관 상품이 확대.</li>
+          <li><b>갱신형 주의:</b> 초기 보험료는 낮으나 갱신 시 인상. 장기 유지 시 비갱신형이 유리.</li>
+          <li>뇌졸중 후유는 <b>노인성 질병</b>으로 분류돼 65세 미만도 장기요양 등급 대상이 될 수 있다.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-child)">
+        <h3><span class="swatch" style="background:var(--demo-child)"></span>어린이·태아</h3>
+        <ul style="color:#33322E">
+          <li><b>선천성 심장질환</b>(출생아 1,000명당 8명) 진단·개흉수술비가 핵심. 태아·신생아기 수술 대비.</li>
+          <li><b>가와사키병</b>(소아 후천성, 관상동맥 합병증)·<b>모야모야병</b>(소아 뇌혈관, 개두수술) 담보.</li>
+          <li><b>태아보험</b> = 어린이보험 + 태아특약(선천이상수술·인큐베이터). 통상 <b>임신 22주 이내</b> 가입.</li>
+          <li>대표: 삼성화재·현대해상(굿앤굿어린이)·KB손보·우체국 어린이·태아보험.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn">
+      <b>⚠ 법적 한계 —</b> 상법 제732조에 따라 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>다. 따라서 어린이 2대 질환 담보는 <b>진단·수술·치료 중심</b>으로 구성되며 사망보장은 제외된다(어린이는 15세 미만 진단 시 보장개시일을 계약일로 두는 등 면책 완화 설계도 있다).
+    </div>
+  </section>
+
+  <!-- ===================== VERIFICATION TABLE ===================== -->
+  <section class="refsec">
+    <div class="e">Verification · 교차검증</div>
+    <h2>담보별 지급기준 · 판매사 · 금액 · 특징</h2>
+    <p class="desc">여정 카드가 '존재·판매사·코드·대상'을 보여준다면, 이 표는 여정에 담기 어려운 <b>가입금액과 세부 조건(면책·감액·반복·코드범위·연령)</b>을 깊이로 보완한다. 금액은 검증된 예시·범위이며 상품·특약·연령별로 다르다.</p>
+    <div class="tablescroll">
+      <table class="reftable">
+        <thead>
+          <tr>
+            <th>담보</th>
+            <th>지급기준(트리거·코드)</th>
+            <th>대표 판매사(상품 예시)</th>
+            <th>가입금액 예시·범위</th>
+            <th>주요 특징(면책·감액·반복·범위)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c-dam">뇌출혈 진단비</td>
+            <td class="c-crit">뇌출혈(I60–I62) 진단확정</td>
+            <td class="c-ins">한화생명(e건강보험 뇌심)·생보 전반</td>
+            <td class="c-amt">최대 5천만~8천만</td>
+            <td class="c-feat">90일 면책 없음(계약일부터) · 1~2년 미만 50% 감액 · 뇌경색 미보장</td>
+          </tr>
+          <tr>
+            <td class="c-dam">뇌졸중 진단비</td>
+            <td class="c-crit">뇌출혈+뇌경색(I60–I63±I65·I66)</td>
+            <td class="c-ins">삼성화재·DB손보·KB손보·현대해상</td>
+            <td class="c-amt">통상 1천만~3천만</td>
+            <td class="c-feat">손보 통용 · 1년 미만 50% 감액 · I65·I66 포함 여부 확인</td>
+          </tr>
+          <tr>
+            <td class="c-dam">뇌혈관질환 진단비</td>
+            <td class="c-crit">I60–I69(후유증 I69 포함, 가장 넓음)</td>
+            <td class="c-ins">삼성화재·KB손보·현대해상·메리츠</td>
+            <td class="c-amt">통상 2천만~3천만</td>
+            <td class="c-feat">가장 넓은 범위 · I69 일부 후유증 제외 가능 · 1년 50% 감액</td>
+          </tr>
+          <tr>
+            <td class="c-dam">급성심근경색 진단비</td>
+            <td class="c-crit">급성심근경색(I21–I23) 진단확정</td>
+            <td class="c-ins">한화생명(e건강보험 뇌심)·전 사</td>
+            <td class="c-amt">최대 5천만</td>
+            <td class="c-feat">협심증(I20) 미보장 · 1년 미만 50% 감액 · 납입면제 트리거</td>
+          </tr>
+          <tr>
+            <td class="c-dam">허혈성심장질환 진단비</td>
+            <td class="c-crit">허혈성심장질환(I20–I25, 협심증 포함)</td>
+            <td class="c-ins">삼성화재·KB손보·현대해상·DB손보</td>
+            <td class="c-amt">통상 3천만</td>
+            <td class="c-feat">협심증 포함이 핵심 · 환자 다수 보장 · 1년 50% 감액</td>
+          </tr>
+          <tr>
+            <td class="c-dam">(확대)심장질환 진단비</td>
+            <td class="c-crit">+ 부정맥·심부전(I47–I50) 등 2·5대 심장</td>
+            <td class="c-ins">삼성화재·교보라이프플래닛</td>
+            <td class="c-amt">특정심장병 최대 1천만</td>
+            <td class="c-feat">부정맥 등은 별도 낮은 한도 설계 · 범위·코드 확인 필수</td>
+          </tr>
+          <tr>
+            <td class="c-dam">2대주요기관 수술비</td>
+            <td class="c-crit">뇌·심장 직접치료 수술(개두술·CABG 등)</td>
+            <td class="c-ins">삼성화재·KB손보·현대해상</td>
+            <td class="c-amt">통상 1천만대</td>
+            <td class="c-feat">수술 시마다 반복 지급 · KCD·수술코드 충족 조건</td>
+          </tr>
+          <tr>
+            <td class="c-dam">스텐트삽입술·풍선혈관성형</td>
+            <td class="c-crit">뇌·심장 혈관 스텐트/풍선 시술(급여)</td>
+            <td class="c-ins">삼성화재·DB손보·KB손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">연간 1회한 · 2대주요기관 묶음 · 재시술 시 반복 활용</td>
+          </tr>
+          <tr>
+            <td class="c-dam">혈전용해치료비</td>
+            <td class="c-crit">뇌경색 급성기 혈전용해(t-PA 등) 시행</td>
+            <td class="c-ins">KB손보·현대해상 등 손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">골든타임(~3시간) 내 시행 · 보험료 대비 보장효과 높음</td>
+          </tr>
+          <tr>
+            <td class="c-dam">2대 질병 입원/통원일당</td>
+            <td class="c-crit">뇌·심장 직접치료 입원·통원 1일당</td>
+            <td class="c-ins">삼성화재·DB손보·KB손보</td>
+            <td class="c-amt">입원 1일 30만~50만</td>
+            <td class="c-feat">상급종합병원 가산형 · 1년 50% 감액 · 직접치료 목적 입증</td>
+          </tr>
+          <tr>
+            <td class="c-dam">후유장해 진단비</td>
+            <td class="c-crit">반신마비·언어장애 등 장해지급률 충족</td>
+            <td class="c-ins">삼성화재·손보 전반</td>
+            <td class="c-amt">장해율 비례</td>
+            <td class="c-feat">지급률 50%↑ 고액·납입면제 연계 · I69 후유증과 구분</td>
+          </tr>
+          <tr>
+            <td class="c-dam">보험료 납입면제</td>
+            <td class="c-crit">뇌출혈·급성심근경색 진단확정 시</td>
+            <td class="c-ins">교보라이프플래닛·한화생명·삼성화재</td>
+            <td class="c-amt">해당 없음(면제)</td>
+            <td class="c-feat">보장개시일 이후 진단 조건 · 면제 트리거 질환 범위 상품별 상이</td>
+          </tr>
+          <tr>
+            <td class="c-dam">선천성 심장·어린이 담보</td>
+            <td class="c-crit">선천성 심장질환·모야모야·신생아뇌출혈</td>
+            <td class="c-ins">삼성화재·현대해상·KB손보·우체국</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">어린이심장개흉·모야모야 개두수술비 · 태아특약(22주 이내) · 15세 미만 사망 무효</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reffoot">
+      <b>공통 단서 —</b> 동일 명칭이라도 보장 코드 범위·금액·감액기간은 상품·약관별로 다르다. 특히 "뇌졸중"·"심장질환"은 포함 코드(I65·I66, I20 협심증, I47~I50 등) 확인이 필수다. 금액은 검증된 예시·범위이며 연령·직업·플랜에 따라 달라진다. 가입 판단 전 반드시 약관 원문과 상품설명서를 확인할 것.
+    </p>
+  </section>
+
+  <!-- ===================== GAP & PROPOSALS ===================== -->
+  <section class="gapsec">
+    <div class="gapsec-head">
+      <div class="e">Coverage Gap & Proposals · 미보장 담보 제안</div>
+      <h2>아직 비어 있는 칸</h2>
+      <p>2대 질환은 진단·수술 보장은 두텁지만, 발병 후 <b>긴 후유·재활</b>과 <b>고가 신기술 치료</b>에서 보장이 얇다. 3개 렌즈(치료 과정 공백 · 암 기준선 대비 · 신기술)로 도출했다.</p>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>재활·작업치료 정액 담보</h3>
+        <p>뇌졸중 후 보행·언어·인지 회복을 위한 재활은 수개월~수년 이어지지만, 재활치료 자체를 정액 보장하는 담보는 얇다. 로봇재활 등 비급여 부담도 크다.</p>
+        <div class="meta"><b>기준선:</b> 회복 단계 핵심 비용인데 입원일당으로만 간접 보장.</div>
+        <span class="gap-status st-none">현황: 대체로 미보장(재활 정액)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>후유 돌봄·간병 장기 보장</h3>
+        <p>반신마비·연하장애 등으로 장기 돌봄이 필요해도, 입원 간병인일당 외에 <b>재가(在家) 돌봄·보조기기</b> 비용의 정액 보장은 부족하다.</p>
+        <div class="meta"><b>기준선:</b> 후유 단계 돌봄. 공적 장기요양과 사적 보장 사이 공백.</div>
+        <span class="gap-status st-some">현황: 입원 간병 일부 / 재가 돌봄 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>매월·생존형 생활비</h3>
+        <p>암보험은 '매월 지급'·'생존형 연금' 생활비가 활발하나, 2대 질환은 진단비 일시금 위주다. 휴직·소득 공백을 메우는 월지급형이 상대적으로 얇다.</p>
+        <div class="meta"><b>기준선:</b> 암의 매월·매년(생존) 생활비 담보에 대응하는 2대 질환형.</div>
+        <span class="gap-status st-none">현황: 신규 영역(월지급형 미약)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>재진단·반복지급 진단비</h3>
+        <p>암엔 재진단암·또또암 등 반복지급이 발달했으나, 2대 질환 진단비는 통상 최초 1회 소멸이다. 재발·재시술 위험에 비해 반복지급 설계가 부족하다.</p>
+        <div class="meta"><b>기준선:</b> 암의 재진단·다중지급 구조를 2대 질환 재발에 적용.</div>
+        <span class="gap-status st-some">현황: 수술/시술비로 일부 보완</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신기술·고가치료</div>
+        <h3>심장 신시술(TAVI·인공심장) 정액</h3>
+        <p>경피적 대동맥판막삽입술(TAVI), 좌심실보조장치(LVAD)·좌심방이폐색술 등 고가 신시술이 늘지만, 이를 정조준한 정액 담보는 초기 단계다.</p>
+        <div class="meta"><b>기준선:</b> 암의 중입자·표적치료 정액 담보에 대응하는 심장 신기술 담보.</div>
+        <span class="gap-status st-none">현황: 신규 영역(추가 확인 필요)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신기술·고가치료</div>
+        <h3>뇌혈관 고가 재료·중재시술</h3>
+        <p>뇌동맥류 코일색전술, 혈전제거술 등에 쓰이는 고가 재료·신중재술의 비급여 부담을 정조준한 정액 보장은 아직 얇다.</p>
+        <div class="meta"><b>기준선:</b> 비급여 고가 중재치료의 보장 공백.</div>
+        <span class="gap-status st-some">현황: 수술/시술비로 일부 / 신재료 공백</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESIGN NOTES ===================== -->
+  <section class="closing">
+    <div class="e">Design Notes · 설계 핵심</div>
+    <h2>이 지도를 읽는 6가지 관점</h2>
+    <div class="points">
+      <div class="point"><div class="num">1</div><div><h4>코드 범위가 먼저다</h4><p>뇌출혈⊂뇌졸중⊂뇌혈관질환, 급성심근경색⊂허혈성⊂심장질환. 좁은 코드는 흔한 병형(뇌경색·협심증)을 놓친다.</p></div></div>
+      <div class="point"><div class="num">2</div><div><h4>면책이 없고 감액만</h4><p>암의 90일 면책과 달리 2대 질환 진단비는 계약일부터 보장되며 1~2년 미만 50% 감액이 기본이다.</p></div></div>
+      <div class="point"><div class="num">3</div><div><h4>수술과 시술은 별개다</h4><p>개두·개흉 수술과 카테터 시술(스텐트·혈전용해)은 다른 담보다. 시술은 흔하므로 시술 보장 확인이 핵심.</p></div></div>
+      <div class="point"><div class="num">4</div><div><h4>진단 시 납입면제</h4><p>뇌출혈·급성심근경색 진단이 면제 트리거가 되는 경우가 많아, 치료 중 보험료 부담까지 덜어준다.</p></div></div>
+      <div class="point"><div class="num">5</div><div><h4>후유가 길다</h4><p>반신마비·언어장애 등 영구 후유와 장기 재활·돌봄이 핵심 리스크. 후유장해·장기요양 연계를 함께 본다.</p></div></div>
+      <div class="point"><div class="num">6</div><div><h4>회복·신기술이 얇다</h4><p>재활 정액, 월지급 생활비, 심장 신시술(TAVI) 등은 암 기준선 대비 공백이 크다. 보완 여지가 많다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 뇌혈관·심장(2대) 질환 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보 정의·KCD/ICD 코드·면책·감액·금액·판매사는 회사·약관 및 제도 변경에 따라 달라질 수 있으므로, 가입·보장 판단 시 <b>약관 원문과 상품설명서 확인이 전제</b>다. 판매사·상품명·금액은 공개된 정보를 바탕으로 검증한 예시이며, 동일 명칭이라도 보장 코드 범위·금액·조건은 상품별로 다르다. 약관 원문은 복제하지 않고 요약·재서술했다.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">CEREBRO-CARDIOVASCULAR COVERAGE JOURNEY MAP · v3 · 2계층 검증(여정 카드 + 검증 표) 적용</span>
+  </footer>
+
+</div>
+</body>
+</html>

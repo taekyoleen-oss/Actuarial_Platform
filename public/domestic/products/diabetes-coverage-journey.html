@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>당뇨 보장 여정 지도 — Diabetes Coverage Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --p1:#7A9A8E; --p2:#C25E4A; --p3:#3E6FB0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+    /* track colors (합병증 계통) */
+    --track-micro:#2E8B6E;  /* 미세혈관 */
+    --track-macro:#C2454A;  /* 대혈관(심·뇌) */
+    --track-mgmt:#3E6FB0;   /* 관리·치료 */
+    --track-common:#6B6A64;
+    --demo-sex:#8E5BA8; --demo-age:#B8862F; --demo-child:#2E8B6E; --gap:#2E8B6E;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  header{padding:60px 0 30px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,5.6vw,3.8rem);line-height:1.04;
+    letter-spacing:-.01em;margin-bottom:6px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--track-macro);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:26px;}
+  .lead{max-width:770px;font-size:1.02rem;color:#33322E;margin-bottom:8px;}
+  .lead b{color:var(--ink);}
+  .trackkey{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0 4px;}
+  .trackkey span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#403F3A;
+    display:inline-flex;align-items:center;gap:7px;}
+  .trackkey i{width:14px;height:4px;border-radius:3px;display:inline-block;}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 8px;}
+  @media(max-width:680px){.axes{grid-template-columns:1fr;}}
+  .axis{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;}
+  .axis .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--track-macro);text-transform:uppercase;}
+  .axis h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin:5px 0 4px;}
+  .axis p{font-size:.9rem;color:var(--muted);line-height:1.55;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .legend a{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 13px;background:#fff;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,box-shadow .12s ease;}
+  .legend a:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .legend a:focus-visible{outline:2px solid var(--p3);outline-offset:2px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  .spinewrap{padding:40px 0 6px;}
+  .spine{height:8px;border-radius:8px;width:100%;
+    background:linear-gradient(90deg,var(--p1),var(--p2) 22%,var(--p3) 42%,var(--p4) 62%,var(--p5) 82%,var(--p6));}
+  .nodes{display:grid;grid-template-columns:repeat(6,1fr);margin-top:-22px;}
+  .node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .node .bead{width:30px;height:30px;border-radius:50%;border:4px solid var(--cream);
+    box-shadow:0 0 0 1.5px rgba(0,0,0,.08);}
+  .node .lab{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);}
+  .node .lab b{display:block;font-family:var(--sans);font-weight:600;font-size:12px;color:var(--ink);letter-spacing:0;margin-top:2px;}
+  @media(max-width:680px){.node .lab b{font-size:10px;}.node .bead{width:22px;height:22px;}}
+
+  .phase{padding:46px 0 8px;scroll-margin-top:14px;}
+  .phase-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;
+    padding:4px 11px;border-radius:6px;text-transform:uppercase;}
+  .phase-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.6vw,2.2rem);letter-spacing:-.01em;}
+  .phase-sub{font-size:.96rem;color:var(--muted);max-width:760px;margin:4px 0 22px;}
+
+  .subgroup{margin:18px 0 6px;}
+  .subgroup-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--track-mgmt);
+    text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .subgroup-label::before{content:"";width:18px;height:1px;background:currentColor;display:inline-block;}
+  .subgroup-label.micro{color:var(--track-micro);}
+  .subgroup-label.macro{color:var(--track-macro);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .card{border:1px solid var(--line);border-left:4px solid var(--oc,var(--p3));border-radius:11px;
+    background:#fff;padding:16px 17px 15px;display:flex;flex-direction:column;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.1rem;line-height:1.25;}
+  .card-type{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);
+    text-align:right;white-space:nowrap;padding-top:4px;}
+  .card-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--track-mgmt);margin-bottom:8px;}
+  .card-def{font-size:.9rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .card-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-bottom:11px;}
+  .card-note b{color:var(--ink);}
+  .card-ins{margin-top:auto;display:flex;gap:9px;align-items:baseline;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.82rem;color:#403F3A;line-height:1.45;}
+
+  .pill{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle;white-space:nowrap;}
+  .new-pill{background:var(--gold);}
+  .rep-pill{background:var(--track-mgmt);}
+  .code-pill{background:var(--track-micro);font-family:var(--mono);}
+  .heart-pill{background:var(--track-macro);}
+  .tag-sex,.tag-age,.tag-child{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px;white-space:nowrap;}
+  .tag-sex{background:var(--demo-sex);} .tag-age{background:var(--demo-age);} .tag-child{background:var(--demo-child);}
+
+  /* ---------- Signature: complication branch map (.cmap) ---------- */
+  .sig{margin:54px 0 10px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
+  .sig-head{background:var(--ink);color:var(--cream);padding:22px 26px;}
+  .sig-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#B9B6AD;}
+  .sig-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:6px;}
+  .sig-head p{font-size:.92rem;color:#C9C6BD;margin-top:6px;max-width:740px;}
+  .sig-body{padding:26px;}
+  .cmap-root{display:flex;justify-content:center;margin-bottom:8px;}
+  .cmap-root .seed{background:var(--ink);color:var(--cream);border-radius:12px;padding:12px 22px;text-align:center;}
+  .cmap-root .seed b{font-family:var(--serif);font-size:1.15rem;font-weight:600;display:block;}
+  .cmap-root .seed small{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:#B9B6AD;}
+  .cmap-branches{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:22px;}
+  @media(max-width:760px){.cmap-branches{grid-template-columns:1fr;gap:30px;}}
+  .cbranch{border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .cbranch-head{padding:13px 18px;color:#fff;}
+  .cbranch-head b{font-family:var(--serif);font-size:1.12rem;font-weight:600;}
+  .cbranch-head small{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;display:block;opacity:.92;margin-top:2px;}
+  .cbranch.micro .cbranch-head{background:var(--track-micro);}
+  .cbranch.macro .cbranch-head{background:var(--track-macro);}
+  .cleaves{padding:8px 14px 14px;}
+  .cleaf{display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);}
+  .cleaf:last-child{border-bottom:none;}
+  .cleaf .organ{font-family:var(--serif);font-weight:600;font-size:.98rem;}
+  .cleaf .organ small{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:400;margin-top:1px;}
+  .cleaf .path{font-size:.84rem;color:#33322E;line-height:1.4;}
+  .cleaf .path .end{font-family:var(--mono);font-size:9.5px;color:var(--track-macro);letter-spacing:.02em;}
+  .cleaf.star{background:#FBF2F2;border-radius:8px;}
+  .cleaf.star .organ{color:var(--track-macro);}
+  .sig-note{font-size:.84rem;color:var(--muted);margin-top:22px;line-height:1.55;border-top:1px solid var(--line);padding-top:14px;}
+  .sig-note b{color:var(--ink);}
+  .crosslink{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--track-macro);
+    border:1px solid var(--track-macro);border-radius:6px;padding:3px 9px;margin-top:4px;}
+
+  /* ---------- Demographics ---------- */
+  .demosec{margin:54px 0 10px;border:1.5px solid var(--demo-sex);border-radius:16px;background:#fff;overflow:hidden;}
+  .demosec-head{padding:22px 26px;border-bottom:1px solid var(--line);}
+  .demosec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--demo-sex);}
+  .demosec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .demosec-head p{font-size:.92rem;color:var(--muted);margin-top:6px;max-width:760px;}
+  .demo-cols{display:grid;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.demo-cols{grid-template-columns:1fr;}}
+  .demo-col{padding:22px 24px;border-right:1px solid var(--line);}
+  .demo-col:last-child{border-right:none;}
+  @media(max-width:760px){.demo-col{border-right:none;border-bottom:1px solid var(--line);}.demo-col:last-child{border-bottom:none;}}
+  .demo-col h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .demo-col h3 .swatch{width:11px;height:11px;border-radius:3px;}
+  .demo-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .demo-col li{font-size:.875rem;color:#33322E;line-height:1.5;padding-left:14px;position:relative;}
+  .demo-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .demo-col li b{color:var(--ink);}
+  .warn{margin:0 24px 22px;background:#FBF3F1;border:1px solid #E8C9C0;border-radius:10px;padding:13px 16px;
+    font-size:.85rem;color:#8A3220;line-height:1.55;}
+  .warn b{color:#6E2415;}
+
+  /* ---------- Verification table ---------- */
+  .refsec{margin:54px 0 10px;}
+  .refsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .refsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:5px 0 4px;}
+  .refsec .desc{font-size:.92rem;color:var(--muted);max-width:760px;margin-bottom:20px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.reftable{border-collapse:collapse;width:100%;min-width:880px;font-size:.84rem;background:#fff;}
+  table.reftable thead th{background:var(--navy);color:var(--cream);font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:12px 14px;font-weight:500;}
+  table.reftable td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:#33322E;}
+  table.reftable tbody tr:nth-child(even){background:#FBFBF8;}
+  .c-dam{font-family:var(--serif);font-weight:600;font-size:.94rem;color:var(--ink);min-width:150px;}
+  .c-crit{min-width:210px;}
+  .c-ins{min-width:160px;}
+  .c-amt{min-width:120px;font-family:var(--mono);font-size:11px;}
+  .c-feat{min-width:200px;color:var(--muted);}
+  .reffoot{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:14px;padding:14px 16px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .reffoot b{color:var(--gold);}
+
+  /* ---------- Gap section ---------- */
+  .gapsec{margin:54px 0 10px;border:1.5px solid var(--gap);border-radius:16px;background:#fff;overflow:hidden;}
+  .gapsec-head{padding:22px 26px;background:#F2F8F5;border-bottom:1px solid #CFE6DB;}
+  .gapsec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gapsec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .gapsec-head p{font-size:.92rem;color:#3A6655;margin-top:6px;max-width:780px;}
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{padding:20px 24px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  @media(max-width:680px){.gap-item{border-right:none;}}
+  .gap-item h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .gap-item .lens{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gap);margin-bottom:9px;}
+  .gap-item p{font-size:.86rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .gap-item .meta{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .gap-item .meta b{color:var(--ink);}
+  .gap-status{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    padding:2px 8px;border-radius:5px;margin-top:8px;}
+  .st-none{background:#FBEFEC;color:#B0432C;} .st-some{background:#EAF4EE;color:#2E7D52;}
+
+  .closing{margin:54px 0 10px;background:var(--navy);color:var(--cream);border-radius:16px;padding:34px 30px;}
+  .closing .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#9DA8BF;}
+  .closing h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:6px 0 22px;}
+  .points{display:grid;grid-template-columns:1fr 1fr;gap:20px 30px;}
+  @media(max-width:680px){.points{grid-template-columns:1fr;}}
+  .point{display:flex;gap:13px;}
+  .point .num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--p4);line-height:1;flex-shrink:0;}
+  .point h4{font-size:.98rem;font-weight:600;margin-bottom:3px;}
+  .point p{font-size:.86rem;color:#C9CDD8;line-height:1.55;}
+
+  footer{margin:50px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .legend a{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage Journey Map · 보장 여정 지도 / 03</div>
+    <h1>당뇨, <em>합병증</em>으로 갈라지다</h1>
+    <div class="subtitle">진단은 시작일 뿐 — 평생 관리와 합병증의 길을 따라 보장을 읽다</div>
+    <p class="lead">
+      당뇨는 암·뇌·심장 같은 <b>급성 사건형</b>이 아니라 <b>만성 관리형</b> 질환이다. 진단 자체보다
+      <b>혈당이 오래 높게 유지될 때 갈라지는 합병증</b>이 비용과 보장을 결정한다. 합병증은 두 갈래로 뻗는다 —
+      가는 혈관이 망가지는 <b>미세혈관(신장·눈·신경·발)</b>, 굵은 혈관이 막히는 <b>대혈관(심장·뇌·말초)</b>.
+      그중 <b>심장질환(허혈성심장질환·심근경색)</b>은 가장 비용 충격이 큰 대혈관 합병증으로, 합병증만 있어도 의료비가
+      최대 10배 이상 치솟는다. 이 지도는 당뇨를 중심에 두고 <b>심장으로 이어지는 길</b>을 따라 담보를 배치한다.
+    </p>
+
+    <div class="trackkey">
+      <span><i style="background:var(--track-mgmt)"></i>진단·관리 트랙</span>
+      <span><i style="background:var(--track-micro)"></i>미세혈관 합병증 (신·안·신경·발)</span>
+      <span><i style="background:var(--track-macro)"></i>대혈관 합병증 (심장·뇌)</span>
+    </div>
+
+    <div class="axes">
+      <div class="axis">
+        <div class="n">Axis 1 — 관리의 길이</div>
+        <h3>일시금이 아니라 평생 비용</h3>
+        <p>당뇨는 진단 후 인슐린·약물·검사·기기를 평생 이어간다. 진단 일시금만으로는 긴 관리비용을 감당하기 어렵다.</p>
+      </div>
+      <div class="axis">
+        <div class="n">Axis 2 — 합병증의 갈래</div>
+        <h3>어디로 번지는가</h3>
+        <p>신장→투석, 눈→실명, 발→절단(미세혈관) / 심장→심근경색, 뇌→뇌졸중(대혈관). 갈래마다 다른 담보가 대응한다.</p>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="단계 이동">
+      <a href="#p1"><span class="dot" style="background:var(--p1)"></span>① 전단계(전당뇨)</a>
+      <a href="#p2"><span class="dot" style="background:var(--p2)"></span>② 진단</a>
+      <a href="#p3"><span class="dot" style="background:var(--p3)"></span>③ 일상 관리·치료</a>
+      <a href="#p4"><span class="dot" style="background:var(--p4)"></span>④ 합병증</a>
+      <a href="#p5"><span class="dot" style="background:var(--p5)"></span>⑤ 중증·장해</a>
+      <a href="#p6"><span class="dot" style="background:var(--p6)"></span>⑥ 사망</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <div class="spinewrap" aria-hidden="true">
+    <div class="spine"></div>
+    <div class="nodes">
+      <div class="node"><div class="bead" style="background:var(--p1)"></div><div class="lab">PHASE 01<b>전당뇨</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p2)"></div><div class="lab">PHASE 02<b>진단</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p3)"></div><div class="lab">PHASE 03<b>관리·치료</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p4)"></div><div class="lab">PHASE 04<b>합병증</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p5)"></div><div class="lab">PHASE 05<b>중증·장해</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p6)"></div><div class="lab">PHASE 06<b>사망</b></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== PHASE 1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p1)">Phase 01</span>
+      <h2>전단계 · 전당뇨</h2>
+    </div>
+    <p class="phase-sub">발병 전 고위험 구간. 공복혈당장애·내당능장애(전당뇨)나 고혈압·고지혈 등 위험요인을 관리하는 단계로, 정액 보장은 가장 얇다. 검사·관리 서비스가 중심이다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">대사위험 관리·검사 지원</div>
+          <div class="card-type">검사·서비스형</div>
+        </div>
+        <div class="card-sub">공복혈당·당화혈색소 검사 / 위험요인 관리</div>
+        <p class="card-def">전당뇨·고혈압·고지혈 등 대사위험을 조기 발견·관리하도록 돕는 검사·헬스케어 서비스. 진행을 늦추는 것이 합병증 비용을 줄이는 출발점이다.</p>
+        <p class="card-note">비고: 독립 정액 담보는 드문 <b>신규 영역</b>. 종합건강보험 부가서비스로 제공되는 경우가 많다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">일부 생·손보 건강관리 서비스 부가(표준화 이전, 추가 확인 필요)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">고혈압·고지혈 진단비 연계</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">당뇨와 함께 묶이는 대사질환 진단</div>
+        <p class="card-def">당뇨는 고혈압·이상지질혈증과 함께 대혈관 위험을 높인다. 이들 대사질환 진단비를 당뇨와 묶어 설계하면 위험요인 단계부터 대비할 수 있다.</p>
+        <p class="card-note">비고: 당뇨·고혈압을 함께 보장하는 <b>유병자 친화형</b> 상품 존재.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(당뇨고혈압OK건강보험)·KB손보 등 — 고혈압·고지혈 진단비</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p2)">Phase 02</span>
+      <h2>진단</h2>
+    </div>
+    <p class="phase-sub">보장의 출발점. 트리거는 <b>당화혈색소(HbA1c) 6.5% 이상 + 당뇨병 코드(E10–E14)</b>다. 암(90일)과 달리 통상 <b>1년 면책</b>이며, 보장개시일 전 진단 시 무효가 된다. 1형(인슐린의존)·2형·임신성으로 유형이 갈린다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">당뇨병 진단비 <span class="code-pill">HbA1c 6.5%↑</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">당화혈색소 6.5% 이상 + E10–E14 진단확정</div>
+        <p class="card-def">표준화(NGSP·DCCT) 측정 당화혈색소 6.5% 이상의 당뇨병으로 진단 시 일시금 지급. 2024년 국내 당뇨 환자는 약 518만 명에 이른다.</p>
+        <p class="card-note">비고: 통상 <b>1년 면책</b>. 보장개시일 전 진단 시 <b>특약 무효</b>(보험료 반환).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(하이콜퍼펙트종합보험)·삼성화재·메리츠·ABL생명 등</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">1형(인슐린의존) 당뇨 진단 <span class="tag-child">어린이</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">자가 인슐린 분비 결핍(E10) — 소아 호발</div>
+        <p class="card-def">스스로 인슐린을 만들지 못해 평생 인슐린 주사가 필요한 유형. 소아·청소년에 많이 발병하며 국내 1형 환자는 약 34만 명. 관리 강도가 높아 별도 대비가 중요하다.</p>
+        <p class="card-note">비고: 1형은 급여 적용으로 약제·검사 실비 청구가 수월. CGM·인슐린펌프 19세 미만 급여 지원.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">어린이보험 소아당뇨 특약(현대해상·삼성화재 등) · 1형 전용은 신규 영역</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--demo-sex)">
+        <div class="card-top">
+          <div class="card-name">임신성 당뇨 보장 <span class="tag-sex">여성</span></div>
+          <div class="card-type">진단·관리형</div>
+        </div>
+        <div class="card-sub">임신 중 발생한 당뇨(혈당 관리·합병증)</div>
+        <p class="card-def">임신 중 처음 발견된 당뇨로, 산모·태아 위험을 높이고 출산 후 2형 당뇨 위험을 키운다. 태아·산모보험에서 임신·출산 관련 위험으로 다뤄진다.</p>
+        <p class="card-note">비고: 임신 중 당뇨 환자 CGM 건강보험 지원(2024 신규, 출산예정일+15일까지). 사적 정액 담보는 얇음.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">태아·산모보험 임신질환 특약(현대해상·삼성화재 등) — 임신중독·임신성당뇨</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">당뇨 유병자 간편심사 가입 <span class="tag-age">고령</span></div>
+          <div class="card-type">진단·종합형</div>
+        </div>
+        <div class="card-sub">이미 당뇨가 있어도 가입 가능한 설계</div>
+        <p class="card-def">당뇨 진단 후에는 일반 심사 가입이 어려워, 고지 항목을 줄인 <b>간편심사(유병자)형</b>으로 진단·합병증·인슐린치료·장기요양까지 보장한다.</p>
+        <p class="card-note">비고: 일반형보다 보험료가 비싸다. 3·2·5 등 간편고지 기준 충족 시 가입.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(당뇨고혈압OK)·메리츠화재·삼성화재(Smart 유병자 간편보험)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p3)">Phase 03</span>
+      <h2>일상 관리 · 치료</h2>
+    </div>
+    <p class="phase-sub">당뇨의 본질이 드러나는 긴 구간. 인슐린·경구약·검사·관리기기가 평생 이어진다. 공적 건강보험(요양비)이 소모성재료·기기를 상당 부분 지원하므로, 사적 정액 보장은 이를 보완하는 위치다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">당뇨 인슐린치료비 <span class="rep-pill">치료 지속</span></div>
+          <div class="card-type">치료형 · 정액</div>
+        </div>
+        <div class="card-sub">인슐린 투여 치료를 받는 경우</div>
+        <p class="card-def">혈당이 조절되지 않아 인슐린 치료에 들어가면 정액 지급. 평생 이어지는 약물 관리 비용을 보조하는 만성 관리형 핵심 담보다.</p>
+        <p class="card-note">비고: 인슐린 '투여 여부'가 트리거. 유병자형 특약으로 부가되는 경우가 많다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(당뇨고혈압OK — 당뇨인슐린치료)·일부 생·손보</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">당뇨 입원·통원 실손 보조</div>
+          <div class="card-type">실손·일당형</div>
+        </div>
+        <div class="card-sub">E10–E14 치료 입원·통원·약제비</div>
+        <p class="card-def">진단코드(E10–E14)가 있으면 외래·검사·약제비 등을 실손으로 보장. 다만 유병자 실손은 약제비가 제외되는 경우가 많아 확인이 필요하다.</p>
+        <p class="card-note">비고: 약물치료만 받는 당뇨는 일반 실손 심사 완화 추세. 유병자형은 약제비 제외 주의.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">실손의료보험(1~5세대)·유병자 실손 — 보장 범위·자기부담 상품별 상이</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">관리기기·소모성재료 지원</div>
+          <div class="card-type">공적 요양비(참고)</div>
+        </div>
+        <div class="card-sub">혈당측정지·인슐린주사바늘·CGM·인슐린펌프</div>
+        <p class="card-def">혈당측정검사지·채혈침·인슐린주사바늘 등 소모성재료와 연속혈당측정기(CGM)·인슐린자동주입기를 <b>공적 건강보험(요양비)</b>이 지원(낮은 금액의 70~90%).</p>
+        <p class="card-note">비고: 사적 보험의 <b>정액 보장은 얇다</b>. 공적 지원이 주이며 사적 보완 여지가 큰 영역.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">국민건강보험 요양비(공적) · 사적 정액 담보는 신규 영역</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-mgmt)">
+        <div class="card-top">
+          <div class="card-name">납입면제 (중대 진단 시)</div>
+          <div class="card-type">서비스형 · 면제</div>
+        </div>
+        <div class="card-sub">중대 합병증·중대질병 진단 시 보험료 면제</div>
+        <p class="card-def">당뇨가 중증화되어 중대 합병증(심근경색·뇌졸중·신부전 등)이 확정되면 차회 이후 보험료를 면제하고 보장을 유지하는 안전망.</p>
+        <p class="card-note">비고: 면제 트리거 질환 범위는 상품별로 다름. 종합형 상품에 결합.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명·삼성화재 등 — 납입면제형(2종) 결합 상품</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p4)">Phase 04</span>
+      <h2>합병증 — 갈래로 번지다</h2>
+    </div>
+    <p class="phase-sub">당뇨 보장의 핵심. 혈당이 오래 높으면 가는 혈관(미세혈관)과 굵은 혈관(대혈관)이 각각 손상된다. 갈래마다 다른 담보가 대응하며, <b>대혈관(심장·뇌) 합병증의 비용 충격이 가장 크다.</b></p>
+
+    <div class="subgroup">
+      <div class="subgroup-label micro">ⓐ 미세혈관 합병증 (신장·눈·신경·발)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-micro)">
+          <div class="card-top">
+            <div class="card-name">당뇨병성 신증 진단비 <span class="code-pill">신장</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">콩팥 미세혈관 손상 → 단백뇨·신기능 저하</div>
+          <p class="card-def">콩팥의 작은 혈관이 손상돼 단백뇨가 나오고 신기능이 떨어지는 합병증. 진행하면 만성신부전·투석으로 이어져 비용이 급증한다.</p>
+          <p class="card-note">비고: 미세알부민뇨 1.3배 → 투석 <b>21배</b>까지 의료비 상승. 중증은 ⑤단계 투석 담보와 연계.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(3대 당뇨합병증)·만성당뇨합병증진단비 특약(손보 전반)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-micro)">
+          <div class="card-top">
+            <div class="card-name">당뇨병성 망막병증 진단비 <span class="code-pill">눈</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">망막 미세혈관 손상 → 시력저하·실명 위험</div>
+          <p class="card-def">망막 미세혈관이 손상돼 출혈·신생혈관이 생기는 합병증. 국내 실명 주요 원인의 하나로, 증식성으로 진행하면 수술이 필요하다.</p>
+          <p class="card-note">비고: 증식성 망막증 안과수술 시 의료비 6배↑. 레이저·유리체절제술 등 치료 동반.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">만성당뇨합병증진단비·당뇨망막병증 특약(손보 전반)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-micro)">
+          <div class="card-top">
+            <div class="card-name">당뇨병성 신경병증 진단비 <span class="code-pill">신경</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">말초신경 손상 → 감각저하·통증</div>
+          <p class="card-def">신경이 손상돼 손발 저림·통증·감각저하가 나타나는 합병증. 감각이 무뎌지면 발의 상처를 놓치기 쉬워 <b>당뇨발</b>으로 이어진다.</p>
+          <p class="card-note">비고: 망막·신증과 함께 <b>3대 미세혈관 합병증</b>. 만성당뇨합병증진단비로 묶이는 경우가 많다.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">만성당뇨합병증진단비 특약(ABL·손보 전반)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-micro)">
+          <div class="card-top">
+            <div class="card-name">당뇨발(족부) 진단·치료 <span class="code-pill">발</span></div>
+            <div class="card-type">진단·치료형</div>
+          </div>
+          <div class="card-sub">말초순환장애+신경병증 → 족부 궤양·괴사</div>
+          <p class="card-def">신경병증과 말초혈관 손상이 겹쳐 발에 궤양·감염·괴사가 생기는 합병증. 진행하면 절단에 이를 수 있어 미세·대혈관의 교차점에 있다.</p>
+          <p class="card-note">비고: 당뇨병성 말초순환장애(예: E11.58) 코드로 보장. 중증은 ⑤단계 절단 담보와 연계.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">만성당뇨합병증진단비·말초순환장애 특약(손보 전반)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label macro">ⓑ 대혈관 합병증 (심장·뇌) — ★ 심장질환 부각</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-macro)">
+          <div class="card-top">
+            <div class="card-name">대혈관 합병증 — 심장 <span class="heart-pill">심장질환</span></div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">허혈성심장질환(I20–I25)·급성심근경색(I21–I23)</div>
+          <p class="card-def">당뇨는 관상동맥을 망가뜨려 협심증·심근경색 위험을 크게 높인다. <b>당뇨의 대표 대혈관 합병증</b>으로, 허혈성심장질환·급성심근경색 진단비로 대응한다.</p>
+          <p class="card-note">비고: 대혈관 합병증만 있어도 의료비 <b>10.7배</b>, 입원 시 입원비가 전체의 60~70%. 심장 보장은 「02 뇌·심혈관 지도」와 연결.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·KB손보·현대해상·한화생명 — 허혈성심장질환·급성심근경색 진단비</span><br></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-macro)">
+          <div class="card-top">
+            <div class="card-name">대혈관 합병증 — 뇌</div>
+            <div class="card-type">진단형 · 일시금</div>
+          </div>
+          <div class="card-sub">뇌졸중·뇌혈관질환(I60–I69)</div>
+          <p class="card-def">당뇨는 뇌혈관 손상으로 뇌경색·뇌졸중 위험도 높인다. 뇌졸중·뇌혈관질환 진단비로 대응하며, 발병 후 후유장해·재활로 이어진다.</p>
+          <p class="card-note">비고: 코드 범위(I60–I69)가 보장을 가름. 상세는 「02 뇌·심혈관 지도」 참조.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재·KB손보·현대해상 — 뇌졸중·뇌혈관질환 진단비</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p5)">Phase 05</span>
+      <h2>중증 · 장해</h2>
+    </div>
+    <p class="phase-sub">합병증이 돌이킬 수 없는 단계로 진행한 구간. 투석·이식, 절단, 실명 등 영구적 손상과 장기 돌봄이 핵심 리스크이며, 의료비가 수십 배로 치솟는다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">만성신부전 투석·신장이식</div>
+          <div class="card-type">치료형 · 정액/반복</div>
+        </div>
+        <div class="card-sub">신증 진행 → 혈액투석·복막투석·신장이식</div>
+        <p class="card-def">신증이 말기로 진행하면 평생 투석 또는 신장이식이 필요하다. 투석 시 의료비 21배, 이식 시 23배로 치솟아 정액·반복 보장의 가치가 크다.</p>
+        <p class="card-note">비고: 투석은 주기적·반복 비용. 인공신장(투석)치료비·이식수술비 등 별도 담보로 대응.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 전반 — 만성신부전증 진단비·인공신장투석치료비·5대장기이식수술비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">당뇨발 절단 수술·후유장해</div>
+          <div class="card-type">수술·장해형</div>
+        </div>
+        <div class="card-sub">족부 궤양·괴사 → 발/다리 절단</div>
+        <p class="card-def">당뇨발이 악화돼 절단에 이르면 수술비와 후유장해를 보장. 절단은 영구 장해로 장해지급률에 따라 고액 지급·납입면제로 연계된다.</p>
+        <p class="card-note">비고: 절단 부위에 따라 장해지급률 차등. 의지·재활 비용은 정액 보장이 얇음(⑥ Gap 참조).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 전반 — 질병수술비·후유장해 특약(절단 장해지급률 적용)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">시력장해(실명) 진단비</div>
+          <div class="card-type">장해형 · 일시금</div>
+        </div>
+        <div class="card-sub">망막병증 진행 → 영구적 시력 상실</div>
+        <p class="card-def">당뇨망막병증이 진행해 영구적 시력 상실에 이르면 장해 정도에 따라 보장. 일상·근로 능력 상실에 대한 보조다.</p>
+        <p class="card-note">비고: 시력 장해지급률 기준 충족 필요. 후유장해 담보로 보장.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">손보 전반 — 후유장해 특약(시각 장해지급률 적용)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">장기요양상태 보장 <span class="tag-age">고령</span></div>
+          <div class="card-type">서비스·생활비형</div>
+        </div>
+        <div class="card-sub">중증 합병증 → 일상생활 수행능력 저하</div>
+        <p class="card-def">중증 당뇨·합병증으로 일상생활(ADL)이 어려워지면 장기요양 등급에 따라 간병·요양 비용을 보장. 공적 노인장기요양과 연계된다.</p>
+        <p class="card-note">비고: 뇌졸중 등은 <b>노인성 질병</b>으로 65세 미만도 등급 대상. 치매·LTC 지도와 연결.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명(당뇨고혈압OK — 장기요양상태)·노인장기요양보험(공적) 연계</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 6 ===================== -->
+  <section class="phase" id="p6">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p6)">Phase 06</span>
+      <h2>사망</h2>
+    </div>
+    <p class="phase-sub">여정의 마지막 단계. 당뇨는 그 자체보다 <b>심혈관·뇌혈관·신장 합병증을 통해</b> 사망 위험을 높인다. 다만 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>이므로, 소아 1형 당뇨 담보는 진단·치료 중심이다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">질병사망보험금</div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">당뇨 합병증(심·뇌·신) 등 질병으로 인한 사망</div>
+        <p class="card-def">당뇨 관련 합병증으로 인한 사망 시 유가족의 경제적 충격과 생활자금을 보조. 당뇨 종합보험에서 정기특약으로 사망보장을 결합한다.</p>
+        <p class="card-note">비고: 당뇨 직접사망보다 <b>합병증을 통한 사망</b>이 일반적. 사인 인과가 보장 판단에 영향.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">ABL생명·생보사 종합건강보험 정기특약(사망보험금 설계)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">CI·종신 연계 보장 <span class="tag-child">어린이 제외</span></div>
+          <div class="card-type">사망형 · 선지급</div>
+        </div>
+        <div class="card-sub">중대질병(말기신부전·중대심근경색 등) 선지급</div>
+        <p class="card-def">당뇨 합병증으로 말기신부전·중대한 심근경색 등에 이르면 사망보험금 일부를 미리 지급하는 CI 구조. 생전 치료·요양 자금으로 활용된다.</p>
+        <p class="card-note">비고: '중대한' 정의가 엄격. <b>15세 미만 사망보장은 상법상 무효</b>(소아 1형 당뇨 유의).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보사 CI·종신보험 특약(말기신부전·중대급성심근경색 등)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNATURE: complication branch map ===================== -->
+  <section class="sig">
+    <div class="sig-head">
+      <div class="e">Signature Axis · 당뇨의 자(尺)</div>
+      <h2>합병증이 갈래로 번진다</h2>
+      <p>당뇨 보장의 핵심 변수는 진단명이 아니라 <b style="color:#fff">합병증이 어느 갈래로 번지는가</b>다. 같은 당뇨라도 가는 혈관(미세)과 굵은 혈관(대)으로 갈리고, 각 갈래의 끝은 투석·실명·절단·심근경색·뇌졸중으로 이어진다. <b style="color:#fff">심장(대혈관)이 가장 비용 충격이 큰 종착점</b>이다.</p>
+    </div>
+    <div class="sig-body">
+      <div class="cmap-root">
+        <div class="seed">
+          <b>당뇨병 (고혈당 지속)</b>
+          <small>HbA1c 6.5%↑ · E10–E14 · 환자 약 518만 명</small>
+        </div>
+      </div>
+
+      <div class="cmap-branches">
+        <div class="cbranch micro">
+          <div class="cbranch-head">
+            <b>미세혈관 합병증</b>
+            <small>가는 혈관 손상 · 의료비 ~4.7배</small>
+          </div>
+          <div class="cleaves">
+            <div class="cleaf">
+              <div class="organ">신장<small>nephro</small></div>
+              <div class="path">단백뇨 → 신기능 저하 → <span class="end">만성신부전 · 투석(21배)·이식(23배)</span></div>
+            </div>
+            <div class="cleaf">
+              <div class="organ">눈<small>retino</small></div>
+              <div class="path">망막 출혈·신생혈관 → <span class="end">증식성 망막증 · 실명</span></div>
+            </div>
+            <div class="cleaf">
+              <div class="organ">신경<small>neuro</small></div>
+              <div class="path">저림·통증·감각저하 → <span class="end">족부 위험</span></div>
+            </div>
+            <div class="cleaf">
+              <div class="organ">발<small>foot</small></div>
+              <div class="path">궤양·감염·괴사 → <span class="end">당뇨발 · 절단</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cbranch macro">
+          <div class="cbranch-head">
+            <b>대혈관 합병증 — ★ 심장</b>
+            <small>굵은 혈관 손상 · 의료비 ~10.7배</small>
+          </div>
+          <div class="cleaves">
+            <div class="cleaf star">
+              <div class="organ">심장<small>cardio</small></div>
+              <div class="path">관상동맥 손상 → 협심증 → <span class="end">허혈성심장질환 · 급성심근경색</span></div>
+            </div>
+            <div class="cleaf">
+              <div class="organ">뇌<small>cerebro</small></div>
+              <div class="path">뇌혈관 손상 → <span class="end">뇌경색 · 뇌졸중</span></div>
+            </div>
+            <div class="cleaf">
+              <div class="organ">말초<small>peripheral</small></div>
+              <div class="path">말초동맥 협착 → <span class="end">말초순환장애 · 당뇨발</span></div>
+            </div>
+          </div>
+          <div style="padding:0 14px 14px"><span class="crosslink">→ 심·뇌 보장 상세: 「02 뇌·심혈관 지도」</span></div>
+        </div>
+      </div>
+
+      <p class="sig-note">
+        <b>읽는 법:</b> 당뇨 보장은 '진단비 하나'로 끝나지 않는다. <b>어느 갈래로 번질지</b>를 가정하고 갈래별 담보(신증·망막·신경 / 심장·뇌·말초)를 갖춰야 한다. 특히 사용자가 짚은 <b>심장(대혈관)</b>은 합병증만 있어도 의료비가 약 10.7배, 입원 시 입원비가 전체의 60~70%를 차지하는 가장 큰 종착점이다. 심장·뇌 대혈관 합병증은 이 지도의 ④단계에 두되, 보장 코드(I20–I25 / I60–I69)의 상세는 별도 「02 뇌·심혈관 지도」가 다룬다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== DEMOGRAPHICS ===================== -->
+  <section class="demosec">
+    <div class="demosec-head">
+      <div class="e">Population Lens · 인구집단 렌즈</div>
+      <h2>누구를 대상으로 하는가</h2>
+      <p>당뇨는 유형(1형·2형·임신성)이 연령·성별과 강하게 얽힌다. 어린이(1형)·여성(임신성)·고령(2형·유병자)으로 보장 설계가 갈린다.</p>
+    </div>
+    <div class="demo-cols">
+      <div class="demo-col" style="color:var(--demo-sex)">
+        <h3><span class="swatch" style="background:var(--demo-sex)"></span>성별 (여성·남성)</h3>
+        <ul style="color:#33322E">
+          <li><b>여성 — 임신성 당뇨:</b> 임신 중 발생, 산모·태아 위험을 높이고 출산 후 2형 당뇨 위험↑. CGM 임신부 급여 지원(2024).</li>
+          <li>태아·산모보험의 임신질환 특약(임신중독증 등)과 함께 다뤄진다.</li>
+          <li><b>남성:</b> 중장년 2형 당뇨·대혈관 합병증(심장) 위험이 상대적으로 높다.</li>
+          <li>성별 전용 진단 담보보다 <b>합병증 갈래·유병자 가입</b> 설계가 더 중요.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-age)">
+        <h3><span class="swatch" style="background:var(--demo-age)"></span>고령·연령</h3>
+        <ul style="color:#33322E">
+          <li><b>2형 당뇨 호발</b> — 중장년 이후 환자가 집중. 합병증 누적 위험이 크다.</li>
+          <li><b>유병자형:</b> 이미 당뇨가 있어도 가입 가능한 <b>간편심사형</b>이 핵심(ABL·메리츠·삼성).</li>
+          <li><b>갱신형 주의:</b> 만성질환 특성상 갱신 보험료 인상 폭을 함께 본다.</li>
+          <li>중증 합병증 시 <b>장기요양상태</b> 보장·공적 노인장기요양과 연계.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-child)">
+        <h3><span class="swatch" style="background:var(--demo-child)"></span>어린이 (1형 당뇨)</h3>
+        <ul style="color:#33322E">
+          <li><b>1형(소아) 당뇨:</b> 자가 인슐린 분비 결핍으로 평생 인슐린 필요. 소아·청소년 호발(국내 1형 약 34만 명).</li>
+          <li><b>공적 지원:</b> CGM·인슐린자동주입기(AID) 19세 미만 90% 급여 지원.</li>
+          <li>어린이보험 소아당뇨 특약으로 진단·관리 대비. 1형 전용 사적 정액은 신규 영역.</li>
+          <li>저혈당 응급·학교생활 관리 등 소아 특유 부담이 크다.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn">
+      <b>⚠ 법적 한계 —</b> 상법 제732조에 따라 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>다. 따라서 소아 1형 당뇨 담보는 <b>진단·관리·합병증 보장 중심</b>으로 구성되며 사망보장은 제외된다.
+    </div>
+  </section>
+
+  <!-- ===================== VERIFICATION TABLE ===================== -->
+  <section class="refsec">
+    <div class="e">Verification · 교차검증</div>
+    <h2>담보별 지급기준 · 판매사 · 금액 · 특징</h2>
+    <p class="desc">여정 카드가 '존재·판매사·갈래·대상'을 보여준다면, 이 표는 여정에 담기 어려운 <b>가입금액과 세부 조건(면책·트리거·반복·연령)</b>을 깊이로 보완한다. 금액은 검증된 예시·범위이며 상품·특약·연령별로 다르다.</p>
+    <div class="tablescroll">
+      <table class="reftable">
+        <thead>
+          <tr>
+            <th>담보</th>
+            <th>지급기준(트리거·코드)</th>
+            <th>대표 판매사(상품 예시)</th>
+            <th>가입금액 예시·범위</th>
+            <th>주요 특징(면책·반복·연령·갈래)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c-dam">당뇨병 진단비</td>
+            <td class="c-crit">당화혈색소(HbA1c) 6.5%↑ + E10–E14</td>
+            <td class="c-ins">현대해상·삼성화재·메리츠·ABL생명</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">통상 1년 면책 · 보장개시일 전 진단 시 무효(보험료 반환) · NGSP·DCCT 표준측정</td>
+          </tr>
+          <tr>
+            <td class="c-dam">1형(인슐린의존) 당뇨</td>
+            <td class="c-crit">자가 인슐린 분비 결핍(E10) 진단</td>
+            <td class="c-ins">어린이보험 소아당뇨 특약(현대·삼성)</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">소아 호발 · 급여 적용 · CGM·AID 19세 미만 90% 지원 · 1형 전용은 신규 영역</td>
+          </tr>
+          <tr>
+            <td class="c-dam">임신성 당뇨</td>
+            <td class="c-crit">임신 중 발생한 당뇨 진단·관리</td>
+            <td class="c-ins">태아·산모보험 임신질환 특약</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">CGM 임신부 급여(2024) · 출산 후 2형 위험↑ · 사적 정액 얇음</td>
+          </tr>
+          <tr>
+            <td class="c-dam">당뇨 인슐린치료비</td>
+            <td class="c-crit">인슐린 투여 치료 시행</td>
+            <td class="c-ins">ABL생명(당뇨고혈압OK)·일부 생·손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">인슐린 투여 여부 트리거 · 유병자형 특약 부가 · 관리형 보장</td>
+          </tr>
+          <tr>
+            <td class="c-dam">만성당뇨합병증 진단비</td>
+            <td class="c-crit">신증·망막병증·신경병증·말초순환장애 등</td>
+            <td class="c-ins">ABL생명·손보 전반</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">1년 면책 · 3대 미세혈관 묶음 보장 · 대상 코드(E1x.x) 확인 필수</td>
+          </tr>
+          <tr>
+            <td class="c-dam">대혈관 합병증 — 심장</td>
+            <td class="c-crit">허혈성심장질환(I20–I25)·급성심근경색(I21–I23)</td>
+            <td class="c-ins">삼성화재·KB손보·현대해상·한화생명</td>
+            <td class="c-amt">급성심근경색 ~5천만</td>
+            <td class="c-feat">합병증만 있어도 의료비 10.7배 · 코드 범위가 보장 가름 · 「02」 연계</td>
+          </tr>
+          <tr>
+            <td class="c-dam">대혈관 합병증 — 뇌</td>
+            <td class="c-crit">뇌졸중·뇌혈관질환(I60–I69)</td>
+            <td class="c-ins">삼성화재·KB손보·현대해상</td>
+            <td class="c-amt">통상 2천만~3천만</td>
+            <td class="c-feat">코드 범위(I60–I69) 확인 · 계약일부터 보장(감액) · 후유장해 연계</td>
+          </tr>
+          <tr>
+            <td class="c-dam">만성신부전 투석·이식</td>
+            <td class="c-crit">말기신부전 → 투석/신장이식</td>
+            <td class="c-ins">손보 전반 — 투석치료비·5대장기이식</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">투석 21배·이식 23배 비용 · 투석 반복 보장 · 신증 단계와 연계</td>
+          </tr>
+          <tr>
+            <td class="c-dam">당뇨발 절단·후유장해</td>
+            <td class="c-crit">족부 괴사 → 절단 수술 / 장해지급률 충족</td>
+            <td class="c-ins">손보 전반 — 질병수술비·후유장해</td>
+            <td class="c-amt">장해율 비례</td>
+            <td class="c-feat">절단 부위별 장해지급률 차등 · 50%↑ 납입면제 연계 · 의지·재활은 공백</td>
+          </tr>
+          <tr>
+            <td class="c-dam">장기요양상태 보장</td>
+            <td class="c-crit">중증 합병증 → ADL 저하·장기요양 등급</td>
+            <td class="c-ins">ABL생명·노인장기요양(공적) 연계</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">노인성 질병 65세 미만도 대상 · 치매·LTC 지도와 연결</td>
+          </tr>
+          <tr>
+            <td class="c-dam">당뇨 유병자 간편심사</td>
+            <td class="c-crit">당뇨 진단 후에도 간편고지로 가입</td>
+            <td class="c-ins">ABL생명·메리츠화재·삼성화재(Smart 유병자)</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">일반형 대비 보험료 높음 · 3·2·5 등 간편고지 · 합병증·인슐린·LTC 결합</td>
+          </tr>
+          <tr>
+            <td class="c-dam">보험료 납입면제</td>
+            <td class="c-crit">중대 합병증(심근경색·뇌졸중·신부전 등) 진단</td>
+            <td class="c-ins">ABL생명·삼성화재 등 납입면제형</td>
+            <td class="c-amt">해당 없음(면제)</td>
+            <td class="c-feat">면제 트리거 질환 범위 상품별 상이 · 종합형 결합</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reffoot">
+      <b>공통 단서 —</b> 동일 명칭이라도 보장 대상 코드·금액·면책기간·갈래 구성은 상품·약관별로 다르다. 특히 합병증 담보는 묶음(만성당뇨합병증) 여부와 대상 코드 확인이 필수다. 금액은 검증된 예시·범위이며 연령·직업·플랜에 따라 달라진다. 가입 판단 전 반드시 약관 원문과 상품설명서를 확인할 것.
+    </p>
+  </section>
+
+  <!-- ===================== GAP & PROPOSALS ===================== -->
+  <section class="gapsec">
+    <div class="gapsec-head">
+      <div class="e">Coverage Gap & Proposals · 미보장 담보 제안</div>
+      <h2>아직 비어 있는 칸</h2>
+      <p>당뇨는 '관리병'이라 진단 일시금보다 <b>긴 관리비용·신약·합병증 세분</b>에서 보장이 얇다. 3개 렌즈(치료 과정 공백 · 암 기준선 대비 · 신기술)로 도출했다.</p>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>관리기기·소모성재료 정액</h3>
+        <p>CGM(연속혈당측정)·인슐린펌프·소모성재료는 공적 요양비가 일부 지원하나, 사적 보험의 <b>정액 보장은 거의 없다.</b> 평생 반복되는 관리비용 공백이 크다.</p>
+        <div class="meta"><b>기준선:</b> 만성 관리 단계의 핵심 반복비용인데 정액 담보 부재.</div>
+        <span class="gap-status st-none">현황: 사적 미보장(공적 요양비 위주)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>절단 후 의지·재활 / 저혈당 응급</h3>
+        <p>당뇨발 절단 후 의지(義肢)·보행재활, 저혈당 쇼크 응급, 당뇨 교육·영양관리 비용은 정액 보장이 얇다.</p>
+        <div class="meta"><b>기준선:</b> 중증·회복 단계의 기능회복·응급 비용 공백.</div>
+        <span class="gap-status st-none">현황: 대체로 미보장</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>매월 관리비·생활비 정액</h3>
+        <p>암은 '매월 지급' 생활비가 발달했으나, 당뇨는 평생 관리병임에도 <b>매월 관리비용·소득보장형</b>이 거의 없다. 진단비 일시금에 의존한다.</p>
+        <div class="meta"><b>기준선:</b> 암의 매월·매년 생활비 담보에 대응하는 당뇨 관리형.</div>
+        <span class="gap-status st-none">현황: 신규 영역(월지급형 미약)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>합병증 단계별·재진단 세분</h3>
+        <p>암은 유사·일반·고액 분류와 재진단 반복지급이 정교하나, 당뇨 합병증은 묶음 진단비 위주다. <b>단계별 진행(미세→대혈관)·재진단</b> 세분이 부족하다.</p>
+        <div class="meta"><b>기준선:</b> 암의 분류표·재진단 구조를 합병증 진행 단계에 적용.</div>
+        <span class="gap-status st-some">현황: 묶음 진단비 위주 / 단계 세분 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>고가 신약(GLP-1) 약제비 정액</h3>
+        <p>위고비·마운자로 등 GLP-1 계열은 당뇨·비만 치료의 핵심으로 떠올랐으나 2형 당뇨 급여가 막혀(2026) <b>고가 비급여</b> 부담이 크다. 정액 보장은 없다.</p>
+        <div class="meta"><b>기준선:</b> 암의 표적·면역항암제 정액 담보에 대응하는 당뇨 신약 담보.</div>
+        <span class="gap-status st-none">현황: 미보장(급여 논쟁 중)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>인공췌장(AID)·이식 후 관리</h3>
+        <p>자동 인슐린 주입기(인공췌장)·줄기세포 등 신기술과, 신장이식 후 평생 면역억제제 비용을 정조준한 정액 담보는 초기 단계다.</p>
+        <div class="meta"><b>기준선:</b> 신기술 기기·이식 후 장기관리의 보장 공백.</div>
+        <span class="gap-status st-some">현황: 공적 일부 / 사적 정액 공백</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESIGN NOTES ===================== -->
+  <section class="closing">
+    <div class="e">Design Notes · 설계 핵심</div>
+    <h2>이 지도를 읽는 6가지 관점</h2>
+    <div class="points">
+      <div class="point"><div class="num">1</div><div><h4>합병증 갈래가 먼저다</h4><p>미세혈관(신·안·신경·발)과 대혈관(심·뇌·말초). 당뇨 보장은 어느 갈래로 번질지를 가정해 갖춘다.</p></div></div>
+      <div class="point"><div class="num">2</div><div><h4>심장이 가장 큰 종착점</h4><p>대혈관 합병증만 있어도 의료비 10.7배, 입원비가 60~70%. 심장(허혈성·심근경색) 보장이 핵심.</p></div></div>
+      <div class="point"><div class="num">3</div><div><h4>진단은 시작일 뿐</h4><p>HbA1c 6.5%+E10–E14 진단비는 출발점. 평생 관리·합병증으로 이어지는 긴 보장이 본질이다.</p></div></div>
+      <div class="point"><div class="num">4</div><div><h4>유병자 가입이 관건</h4><p>당뇨 진단 후엔 일반 가입이 어렵다. 간편심사형으로 진단·합병증·인슐린·LTC를 함께 갖춘다.</p></div></div>
+      <div class="point"><div class="num">5</div><div><h4>중증은 수십 배 비용</h4><p>투석 21배·이식 23배. 신부전·절단·실명 등 중증·장해 단계의 정액·반복 보장 가치가 크다.</p></div></div>
+      <div class="point"><div class="num">6</div><div><h4>관리·신약이 얇다</h4><p>CGM·인슐린펌프·GLP-1·매월 관리비는 암 기준선 대비 공백이 크다. 보완 여지가 많다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 당뇨 및 그 합병증(심장질환 포함) 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보 정의·KCD 코드·면책·금액·판매사는 회사·약관 및 제도 변경에 따라 달라질 수 있으므로, 가입·보장 판단 시 <b>약관 원문과 상품설명서 확인이 전제</b>다. 판매사·상품명·금액은 공개된 정보를 바탕으로 검증한 예시이며, 동일 명칭이라도 보장 대상 코드·금액·조건은 상품별로 다르다. 심장·뇌 대혈관 합병증의 보장 코드 상세는 별도 「02 뇌·심혈관 보장 여정 지도」를 참고하라. 약관 원문은 복제하지 않고 요약·재서술했다.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">DIABETES COVERAGE JOURNEY MAP · v3 · 2계층 검증(여정 카드 + 검증 표) 적용 · 심장(대혈관) 합병증 부각</span>
+  </footer>
+
+</div>
+</body>
+</html>

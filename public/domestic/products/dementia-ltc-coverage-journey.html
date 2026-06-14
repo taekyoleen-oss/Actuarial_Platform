@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>치매·장기간병 보장 여정 지도 — Dementia & LTC Coverage Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --p1:#7A9A8E; --p2:#C25E4A; --p3:#3E6FB0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+    /* track colors */
+    --track-cog:#574B90;   /* 치매·인지 */
+    --track-care:#2F8597;  /* 장기간병·돌봄 */
+    --track-common:#6B6A64;
+    --demo-sex:#8E5BA8; --demo-age:#B8862F; --demo-child:#2E8B6E; --gap:#2E8B6E;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  header{padding:60px 0 30px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,5.4vw,3.7rem);line-height:1.04;
+    letter-spacing:-.01em;margin-bottom:6px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--track-cog);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:26px;}
+  .lead{max-width:770px;font-size:1.02rem;color:#33322E;margin-bottom:8px;}
+  .lead b{color:var(--ink);}
+  .trackkey{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0 4px;}
+  .trackkey span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#403F3A;
+    display:inline-flex;align-items:center;gap:7px;}
+  .trackkey i{width:14px;height:4px;border-radius:3px;display:inline-block;}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 8px;}
+  @media(max-width:680px){.axes{grid-template-columns:1fr;}}
+  .axis{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;}
+  .axis .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--track-cog);text-transform:uppercase;}
+  .axis h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin:5px 0 4px;}
+  .axis p{font-size:.9rem;color:var(--muted);line-height:1.55;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .legend a{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 13px;background:#fff;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,box-shadow .12s ease;}
+  .legend a:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .legend a:focus-visible{outline:2px solid var(--p3);outline-offset:2px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  .spinewrap{padding:40px 0 6px;}
+  .spine{height:8px;border-radius:8px;width:100%;
+    background:linear-gradient(90deg,var(--p1),var(--p2) 22%,var(--p3) 42%,var(--p4) 62%,var(--p5) 82%,var(--p6));}
+  .nodes{display:grid;grid-template-columns:repeat(6,1fr);margin-top:-22px;}
+  .node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .node .bead{width:30px;height:30px;border-radius:50%;border:4px solid var(--cream);
+    box-shadow:0 0 0 1.5px rgba(0,0,0,.08);}
+  .node .lab{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);}
+  .node .lab b{display:block;font-family:var(--sans);font-weight:600;font-size:11.5px;color:var(--ink);letter-spacing:0;margin-top:2px;}
+  @media(max-width:680px){.node .lab b{font-size:9.5px;}.node .bead{width:22px;height:22px;}}
+
+  .phase{padding:46px 0 8px;scroll-margin-top:14px;}
+  .phase-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;
+    padding:4px 11px;border-radius:6px;text-transform:uppercase;}
+  .phase-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.6vw,2.2rem);letter-spacing:-.01em;}
+  .phase-sub{font-size:.96rem;color:var(--muted);max-width:760px;margin:4px 0 22px;}
+
+  .subgroup{margin:18px 0 6px;}
+  .subgroup-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--track-care);
+    text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .subgroup-label::before{content:"";width:18px;height:1px;background:currentColor;display:inline-block;}
+  .subgroup-label.cog{color:var(--track-cog);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .card{border:1px solid var(--line);border-left:4px solid var(--oc,var(--p3));border-radius:11px;
+    background:#fff;padding:16px 17px 15px;display:flex;flex-direction:column;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.1rem;line-height:1.25;}
+  .card-type{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);
+    text-align:right;white-space:nowrap;padding-top:4px;}
+  .card-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--track-care);margin-bottom:8px;}
+  .card-def{font-size:.9rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .card-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-bottom:11px;}
+  .card-note b{color:var(--ink);}
+  .card-ins{margin-top:auto;display:flex;gap:9px;align-items:baseline;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.82rem;color:#403F3A;line-height:1.45;}
+
+  .pill{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle;white-space:nowrap;}
+  .new-pill{background:var(--gold);}
+  .rep-pill{background:var(--track-care);}
+  .cdr-pill{background:var(--track-cog);font-family:var(--mono);}
+  .mon-pill{background:var(--p5);}
+  .tag-sex,.tag-age,.tag-child{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px;white-space:nowrap;}
+  .tag-sex{background:var(--demo-sex);} .tag-age{background:var(--demo-age);} .tag-child{background:var(--demo-child);}
+
+  /* ---------- Signature: CDR tiers + LTC grades ---------- */
+  .sig{margin:54px 0 10px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
+  .sig-head{background:var(--ink);color:var(--cream);padding:22px 26px;}
+  .sig-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#B9B6AD;}
+  .sig-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:6px;}
+  .sig-head p{font-size:.92rem;color:#C9C6BD;margin-top:6px;max-width:740px;}
+  .sig-body{padding:26px;}
+  .sig-axis-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--track-cog);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .sig-axis-label::before{content:"";width:16px;height:1px;background:currentColor;}
+  .sig-axis-label.care{color:var(--track-care);}
+  /* CDR tiers */
+  .tiers{display:flex;flex-direction:column;gap:8px;margin-bottom:30px;}
+  .tier{display:grid;grid-template-columns:118px 1fr 150px;align-items:center;gap:14px;}
+  @media(max-width:680px){.tier{grid-template-columns:78px 1fr 110px;gap:9px;}}
+  .tier .tn{font-family:var(--serif);font-weight:600;font-size:1rem;}
+  .tier .tn small{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:400;margin-top:1px;}
+  .tier-bar{height:32px;border-radius:7px;display:flex;align-items:center;padding-left:13px;color:#fff;font-size:.8rem;font-weight:500;}
+  .tier .maps{font-size:.78rem;color:#403F3A;line-height:1.3;}
+  /* LTC grades band */
+  .grades{display:flex;gap:6px;flex-wrap:wrap;}
+  .grade-chip{flex:1;min-width:104px;border-radius:9px;padding:11px 12px;color:#fff;}
+  .grade-chip .gn{font-family:var(--serif);font-weight:600;font-size:.98rem;}
+  .grade-chip .gd{font-size:.74rem;line-height:1.3;margin-top:3px;opacity:.95;}
+  .grade-chip .gs{font-family:var(--mono);font-size:8.5px;letter-spacing:.02em;margin-top:5px;opacity:.85;}
+  .sig-note{font-size:.84rem;color:var(--muted);margin-top:24px;line-height:1.55;border-top:1px solid var(--line);padding-top:14px;}
+  .sig-note b{color:var(--ink);}
+
+  /* ---------- Demographics ---------- */
+  .demosec{margin:54px 0 10px;border:1.5px solid var(--demo-sex);border-radius:16px;background:#fff;overflow:hidden;}
+  .demosec-head{padding:22px 26px;border-bottom:1px solid var(--line);}
+  .demosec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--demo-sex);}
+  .demosec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .demosec-head p{font-size:.92rem;color:var(--muted);margin-top:6px;max-width:760px;}
+  .demo-cols{display:grid;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.demo-cols{grid-template-columns:1fr;}}
+  .demo-col{padding:22px 24px;border-right:1px solid var(--line);}
+  .demo-col:last-child{border-right:none;}
+  @media(max-width:760px){.demo-col{border-right:none;border-bottom:1px solid var(--line);}.demo-col:last-child{border-bottom:none;}}
+  .demo-col h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .demo-col h3 .swatch{width:11px;height:11px;border-radius:3px;}
+  .demo-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .demo-col li{font-size:.875rem;color:#33322E;line-height:1.5;padding-left:14px;position:relative;}
+  .demo-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .demo-col li b{color:var(--ink);}
+  .warn{margin:0 24px 22px;background:#FBF3F1;border:1px solid #E8C9C0;border-radius:10px;padding:13px 16px;
+    font-size:.85rem;color:#8A3220;line-height:1.55;}
+  .warn b{color:#6E2415;}
+
+  /* ---------- Verification table ---------- */
+  .refsec{margin:54px 0 10px;}
+  .refsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .refsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:5px 0 4px;}
+  .refsec .desc{font-size:.92rem;color:var(--muted);max-width:760px;margin-bottom:20px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.reftable{border-collapse:collapse;width:100%;min-width:900px;font-size:.84rem;background:#fff;}
+  table.reftable thead th{background:var(--navy);color:var(--cream);font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:12px 14px;font-weight:500;}
+  table.reftable td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:#33322E;}
+  table.reftable tbody tr:nth-child(even){background:#FBFBF8;}
+  .c-dam{font-family:var(--serif);font-weight:600;font-size:.94rem;color:var(--ink);min-width:150px;}
+  .c-crit{min-width:210px;}
+  .c-ins{min-width:170px;}
+  .c-amt{min-width:130px;font-family:var(--mono);font-size:11px;}
+  .c-feat{min-width:200px;color:var(--muted);}
+  .reffoot{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:14px;padding:14px 16px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .reffoot b{color:var(--gold);}
+
+  /* ---------- Gap section ---------- */
+  .gapsec{margin:54px 0 10px;border:1.5px solid var(--gap);border-radius:16px;background:#fff;overflow:hidden;}
+  .gapsec-head{padding:22px 26px;background:#F2F8F5;border-bottom:1px solid #CFE6DB;}
+  .gapsec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gapsec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .gapsec-head p{font-size:.92rem;color:#3A6655;margin-top:6px;max-width:780px;}
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{padding:20px 24px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  @media(max-width:680px){.gap-item{border-right:none;}}
+  .gap-item h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .gap-item .lens{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gap);margin-bottom:9px;}
+  .gap-item p{font-size:.86rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .gap-item .meta{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .gap-item .meta b{color:var(--ink);}
+  .gap-status{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    padding:2px 8px;border-radius:5px;margin-top:8px;}
+  .st-none{background:#FBEFEC;color:#B0432C;} .st-some{background:#EAF4EE;color:#2E7D52;}
+
+  .closing{margin:54px 0 10px;background:var(--navy);color:var(--cream);border-radius:16px;padding:34px 30px;}
+  .closing .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#9DA8BF;}
+  .closing h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:6px 0 22px;}
+  .points{display:grid;grid-template-columns:1fr 1fr;gap:20px 30px;}
+  @media(max-width:680px){.points{grid-template-columns:1fr;}}
+  .point{display:flex;gap:13px;}
+  .point .num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--p4);line-height:1;flex-shrink:0;}
+  .point h4{font-size:.98rem;font-weight:600;margin-bottom:3px;}
+  .point p{font-size:.86rem;color:#C9CDD8;line-height:1.55;}
+
+  footer{margin:50px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .legend a{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage Journey Map · 보장 여정 지도 / 04</div>
+    <h1>치매·장기간병, <em>척도</em>와 <em>등급</em>의 지도</h1>
+    <div class="subtitle">진단명이 아니라 '얼마나 진행했는가'가 보장을 정한다 — 돌봄의 긴 길</div>
+    <p class="lead">
+      치매·장기간병은 암·뇌·심장 같은 급성형도, 당뇨 같은 만성 관리형도 아닌 <b>인지·돌봄형</b> 질환이다.
+      여기서는 진단명보다 <b>두 개의 자(尺)</b>가 보험금을 가른다. 첫째 <b>CDR 척도</b>(임상치매척도, 0.5→3~5) —
+      같은 치매라도 <b>경증·중등도·중증</b> 어디에 해당하는가로 진단비가 갈린다. 둘째 <b>공적 노인장기요양 등급</b>(1~5·인지지원) —
+      국가가 돌봄 필요도를 점수화한 등급이 사적 간병·생활자금 보장의 기준이 된다. 이 지도는 두 척도를 축으로,
+      검진에서 와상·사망까지 <b>돌봄의 긴 여정</b> 위에 담보를 올린다.
+    </p>
+
+    <div class="trackkey">
+      <span><i style="background:var(--track-cog)"></i>치매·인지 트랙 (CDR)</span>
+      <span><i style="background:var(--track-care)"></i>장기간병·돌봄 트랙 (장기요양 등급)</span>
+      <span><i style="background:var(--track-common)"></i>공통 / 연계</span>
+    </div>
+
+    <div class="axes">
+      <div class="axis">
+        <div class="n">Axis 1 — CDR 척도</div>
+        <h3>몇 점부터 보장되는가</h3>
+        <p>같은 치매도 CDR 1(경증)부터인지 3(중증)부터인지로 보험금이 갈린다. '몇 점 이상'이 증권의 핵심이다.</p>
+      </div>
+      <div class="axis">
+        <div class="n">Axis 2 — 장기요양 등급</div>
+        <h3>국가 등급이 기준이 된다</h3>
+        <p>공적 노인장기요양 1~5등급·인지지원등급이 사적 간병·생활자금 지급의 트리거로 쓰인다. 두 제도가 맞물린다.</p>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="단계 이동">
+      <a href="#p1"><span class="dot" style="background:var(--p1)"></span>① 검진·전조(MCI)</a>
+      <a href="#p2"><span class="dot" style="background:var(--p2)"></span>② 진단(CDR)</a>
+      <a href="#p3"><span class="dot" style="background:var(--p3)"></span>③ 초기 관리·치료</a>
+      <a href="#p4"><span class="dot" style="background:var(--p4)"></span>④ 장기요양 진입</a>
+      <a href="#p5"><span class="dot" style="background:var(--p5)"></span>⑤ 중증·와상</a>
+      <a href="#p6"><span class="dot" style="background:var(--p6)"></span>⑥ 사망</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <div class="spinewrap" aria-hidden="true">
+    <div class="spine"></div>
+    <div class="nodes">
+      <div class="node"><div class="bead" style="background:var(--p1)"></div><div class="lab">PHASE 01<b>검진·전조</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p2)"></div><div class="lab">PHASE 02<b>진단(CDR)</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p3)"></div><div class="lab">PHASE 03<b>관리·치료</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p4)"></div><div class="lab">PHASE 04<b>장기요양</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p5)"></div><div class="lab">PHASE 05<b>중증·와상</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p6)"></div><div class="lab">PHASE 06<b>사망</b></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== PHASE 1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p1)">Phase 01</span>
+      <h2>검진 · 전조 (경도인지장애)</h2>
+    </div>
+    <p class="phase-sub">치매 전 단계 구간. 경도인지장애(MCI)는 일상은 유지되지만 인지 저하가 시작된 상태로, 아직 치매 진단(F00–F03·G30)에 못 미쳐 보장에서 빠지기 쉽다. 검사·검진형 담보로 조기 발견을 돕는다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">경도인지장애(MCI) 보장</div>
+          <div class="card-type">진단·검사형</div>
+        </div>
+        <div class="card-sub">경도인지장애(R41 등) — 치매 전 단계</div>
+        <p class="card-def">치매로 진행하기 전 단계인 MCI를 진단받으면 종합검진·인지재활 프로그램 등을 지원. 조기 개입으로 진행을 늦추려는 신규 담보다.</p>
+        <p class="card-note">비고: 단순 인지저하(R41)는 통상 치매 보장 제외. MCI 전용 담보는 <b>신규 영역</b>(배타적사용권 사례 존재).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">신한라이프(ONE더케어 — MCI 종합검진·인지재활, 배타적사용권)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">치매 정밀검사 지원 (CT·MRI·PET)</div>
+          <div class="card-type">검사형 · 연간1회</div>
+        </div>
+        <div class="card-sub">뇌영상·아밀로이드 PET 등 조기진단 검사</div>
+        <p class="card-def">치매·알츠하이머 조기 진단을 위한 고가 정밀검사 비용을 지원. 신약 투약 판단(아밀로이드 확인)에도 필요해 치료와 연결된다.</p>
+        <p class="card-note">비고: 통상 <b>연간 1회</b> 지원. 진단 시 뇌영상 필수 약관과 연결돼 분쟁 소지 유의.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">교보생명·KB손보 등 — 치매 정밀검사(CT·MRI·PET) 지원 특약</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p2)">Phase 02</span>
+      <h2>진단 — CDR 척도</h2>
+    </div>
+    <p class="phase-sub">보장의 출발점이자 핵심. 트리거는 <b>치매 코드(F00–F03·G30) + CDR 척도 + 90일 이상 상태 지속</b>(또는 호전 불가)이다. <b>CDR 몇 점 이상부터 보장되는가</b>가 증권의 가장 중요한 기준이다. 통상 질병 1년 면책(상해는 계약일부터).</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">경증(경도) 치매 진단비 <span class="cdr-pill">CDR 1</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">CDR 1 수준 경도 치매 진단확정</div>
+        <p class="card-def">초기 단계 치매를 보장. 발생 빈도가 가장 높아(60세 이상 경도 약 64만 명) 실효성이 크다. 최근 단계별 보장 상품이 늘며 경증도 보장한다.</p>
+        <p class="card-note">비고: 금융당국이 <b>경증치매 고액보장</b>에 주의 권고. CDR 기준·뇌영상 필수 여부 확인.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프·삼성생명·동양생명·신한라이프 등 단계별 치매보험</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">중등도 치매 진단비 <span class="cdr-pill">CDR 2</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">CDR 2 수준 중등도 치매 진단확정</div>
+        <p class="card-def">일상생활에 상당한 도움이 필요한 중간 단계. 경증과 중증 사이를 메워 단계별 누적 보장을 완성한다(60세 이상 중등도 약 28만 명).</p>
+        <p class="card-note">비고: 경증·중등도·중증을 <b>단계별로 각각</b> 지급하는 설계가 늘고 있다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프·교보생명·삼성생명 등 — 중등도 이상 치매진단비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">중증 치매 진단비 <span class="cdr-pill">CDR 3~5</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">CDR 3 이상 중증 치매 + 90일 지속</div>
+        <p class="card-def">전적인 돌봄이 필요한 중증 단계. 진단비의 핵심 기둥으로 중증치매 산정특례 대상과 연계되며, 매월 생활자금(⑤단계)의 트리거가 된다.</p>
+        <p class="card-note">비고: 보장개시일 <b>질병 1년</b>(상해 계약일). CDR 3~5 + <b>90일 이상 지속</b> 또는 호전 불가.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(든든한약속)·삼성생명·동양생명 등 · 중증치매 진단비</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">알츠하이머·파킨슨 진단비</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">알츠하이머(G30)·파킨슨병 등 원인질환별</div>
+        <p class="card-def">치매의 주요 원인질환인 알츠하이머·파킨슨병을 별도 진단비로 보장. 신약(레켐비) 대상이 되는 알츠하이머는 치료 단계와 직접 연결된다.</p>
+        <p class="card-note">비고: 경증이상알츠하이머·파킨슨 진단비로 분리 운영. 원인질환 코드 확인.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB손보·KB라이프 등 — 경증이상알츠하이머치매·파킨슨병 진단비</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p3)">Phase 03</span>
+      <h2>초기 관리 · 치료</h2>
+    </div>
+    <p class="phase-sub">"치료에서 관리로" 인식이 바뀌는 구간. 증상완화제(도네페질·메만틴) 중심이던 치료가, <b>원인을 늦추는 항아밀로이드 신약</b> 등장으로 적극 관리로 옮겨가고 있다. 고가 비급여 신약이 핵심 비용이다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">표적치매 약물치료비 (레켐비) <span class="new-pill">신약</span></div>
+          <div class="card-type">치료형 · 정액/한도</div>
+        </div>
+        <div class="card-sub">항아밀로이드 표적치료제(레카네맙) 투약</div>
+        <p class="card-def">아밀로이드 베타를 제거해 알츠하이머 진행을 늦추는 신약 '레켐비'(레카네맙). 월 200만~300만 원, 연 수천만 원의 <b>비급여</b> 부담을 정액·한도로 보장한다.</p>
+        <p class="card-note">비고: 2024.5 식약처 허가(경도인지장애·경증 알츠하이머). 보장한도 1천만→2천만~3천만으로 확대 경쟁 중.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">흥국화재(최초)·KB손보(골든라이프케어)·교보생명(최대 2,500만)·삼성생명</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">중증치매 산정특례 진단자금</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">중증치매 산정특례 대상 신규 등록 시</div>
+        <p class="card-def">중증치매가 국가 산정특례(본인부담 경감) 대상으로 등록되면 별도 진단자금을 지급. 공적 제도 등록을 트리거로 삼는 객관적 담보다.</p>
+        <p class="card-note">비고: 보장개시일 <b>1년 이후</b> 신규 등록 조건. 최초 1회한 지급.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(행복한약속 — 중증치매산정특례대상진단자금)·KB손보</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">치매 약물·인지치료 (증상완화)</div>
+          <div class="card-type">치료형 · 급여 중심(참고)</div>
+        </div>
+        <div class="card-sub">도네페질·메만틴 등 + 인지재활</div>
+        <p class="card-def">기존 치매 치료의 중심인 증상완화제와 인지재활. MMSE·CDR·GDS 점수가 약물 급여 인정 기준에 쓰여 척도가 치료에도 관여한다.</p>
+        <p class="card-note">비고: 증상완화제는 대체로 <b>공적 급여</b>. 사적 정액 보장보다 실손·관리 영역.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">국민건강보험 급여(증상완화제) · 사적 인지재활 지원은 신규 영역</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-cog)">
+        <div class="card-top">
+          <div class="card-name">중증치매 리워드(악화 방지 보상)</div>
+          <div class="card-type">서비스·진단형</div>
+        </div>
+        <div class="card-sub">정상 유지 시 진단금 증액 / 악화 시 보장</div>
+        <p class="card-def">60세 이후 치매안심센터 검진에서 정상 판정 시 중증치매 진단금을 2년마다 증액(예: 5%씩 최대 50%)하는 등 예방·관리를 유인하는 설계다.</p>
+        <p class="card-note">비고: 신한라이프 특약 배타적사용권 사례. 관리 동기를 보장에 결합.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">신한라이프(ONE더케어 — 중증치매리워드플러스, 배타적사용권 9개월)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p4)">Phase 04</span>
+      <h2>장기요양 진입 — 공적 등급</h2>
+    </div>
+    <p class="phase-sub">돌봄이 본격화되는 구간. 국가가 돌봄 필요도를 점수화한 <b>노인장기요양 등급(1~5·인지지원)</b>이 사적 보장의 트리거가 된다. 65세 이상 또는 65세 미만이라도 <b>노인성 질병</b>(치매·뇌혈관·파킨슨)이면 대상이 된다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--track-care)">
+        <div class="card-top">
+          <div class="card-name">장기요양등급 진단비 <span class="rep-pill">1~5·인지</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">공적 장기요양 1~5등급/인지지원 판정 시</div>
+        <p class="card-def">국민건강보험공단 등급판정위원회가 부여한 장기요양 등급을 트리거로 지급. 객관적 공적 판정이라 분쟁이 적고, 등급이 높을수록(숫자가 낮을수록) 보장이 커진다.</p>
+        <p class="card-note">비고: 1등급(95점↑)~5등급(45~51점)·인지지원(45점 미만+치매). <b>중증(1~2등급)</b> 한정 vs 전등급 보장 차이 확인.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KDB생명(1~2등급 생활비)·동양생명(1~5등급)·KB라이프 등</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-care)">
+        <div class="card-top">
+          <div class="card-name">재가급여 — 방문요양·주야간보호</div>
+          <div class="card-type">서비스·생활비형 · 매월</div>
+        </div>
+        <div class="card-sub">집에서 받는 돌봄(방문요양·노치원·데이케어)</div>
+        <p class="card-def">시설이 아닌 집·주간센터에서 돌봄을 받는 경우 매월 비용을 보조. 이른바 '노치원'(주야간보호)·방문요양을 정액으로 보장하는 설계가 확대되고 있다.</p>
+        <p class="card-note">비고: 노치원·데이케어 월 최대 30만, 방문요양 월 최대 20만 예시(상품별).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(든든한약속 — 노치원 월30만·방문요양 월20만)·동양생명(복합재가급여)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-care)">
+        <div class="card-top">
+          <div class="card-name">시설급여 — 요양원 입소</div>
+          <div class="card-type">서비스·생활비형 · 매월</div>
+        </div>
+        <div class="card-sub">요양원 등 시설 입소 돌봄</div>
+        <p class="card-def">집에서 더 이상 돌볼 수 없어 요양원 등 시설에 입소하면 비용을 보조. 재가·시설 급여를 합산해 매월 고액을 보장하는 상품이 등장했다.</p>
+        <p class="card-note">비고: 재가·시설 급여 합산 <b>월 최대 300만</b> 예시(상품별). 공적 급여 본인부담 보완.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(든든한약속 — 재가·시설급여 최대 300만)·삼성생명·동양생명</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--track-common)">
+        <div class="card-top">
+          <div class="card-name">보험료 납입면제 (장기요양·중증)</div>
+          <div class="card-type">서비스형 · 면제</div>
+        </div>
+        <div class="card-sub">중증치매·장기요양 진단 시 보험료 면제</div>
+        <p class="card-def">중증치매·장기요양 상태가 확정되면 차회 이후 보험료를 면제하고 보장을 유지. 돌봄으로 소득이 끊긴 시점의 보험료 부담을 덜어준다.</p>
+        <p class="card-note">비고: 면제 트리거(CDR·등급) 상품별 상이. 종합 치매간병보험에 결합.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프·삼성생명 등 — 납입면제 결합 치매간병보험</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p5)">Phase 05</span>
+      <h2>중증 · 와상</h2>
+    </div>
+    <p class="phase-sub">돌봄 부담이 정점에 이르는 구간. 와상·전적 의존 상태의 <b>간병</b>과, 끝을 알 수 없는 기간 동안 이어지는 <b>매월 생활자금</b>이 핵심이다. 간병은 장소·형태별로, 생활자금은 지급조건·주기별로 세분된다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label care">ⓐ 간병 (장소·형태별 세분화)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-care)">
+          <div class="card-top">
+            <div class="card-name">치매 간병인 사용일당 <span class="rep-pill">1년후 재보장</span></div>
+            <div class="card-type">일당형(간병) · 1일당</div>
+          </div>
+          <div class="card-sub">요양병원·병원·간호간병통합 입원 간병</div>
+          <p class="card-def">치매로 입원해 간병인을 사용하면 장소별로 1일당 정액 지급. 요양병원·일반병원·간호간병통합서비스를 구분해 보장하며, 일정 기간 후 재보장되는 구조도 있다.</p>
+          <p class="card-note">비고: 요양병원 일 17만/병원 12만/간호간병통합 10만, <b>1년 후 180일 경과 시 재보장</b> 예시.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(행복한약속 — 치매간병인입원일당, 1년후 재보장)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-care)">
+          <div class="card-top">
+            <div class="card-name">일상생활장해(ADL)·와상 보장 <span class="tag-age">고령</span></div>
+            <div class="card-type">생활비·일당형</div>
+          </div>
+          <div class="card-sub">이동·식사·배설·목욕·옷입기 수행 불가</div>
+          <p class="card-def">중증치매가 아니어도 <b>일상생활 수행능력(ADL)</b>이 무너지면 보장. 이동을 스스로 못하면서 식사·화장실·목욕·옷입기 중 일정 항목을 못하는 와상 상태가 트리거다.</p>
+          <p class="card-note">비고: '중증치매(CDR 3~5) <b>또는</b> 일상생활장해상태'를 함께 트리거로 두는 설계가 많다.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(실버널싱케어특약 — 장기간병상태)·생보 LTC 특약 전반</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label care">ⓑ 생활자금 (지급조건·주기별 세분화)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--track-care)">
+          <div class="card-top">
+            <div class="card-name">중증치매 간병생활자금 (매월 종신) <span class="mon-pill">매월·종신</span></div>
+            <div class="card-type">생활비형 · 매월(상태지속)</div>
+          </div>
+          <div class="card-sub">중증치매 상태 지속 시 매월 종신 지급</div>
+          <p class="card-def">중증치매(CDR 3 이상) 진단·상태 지속 시 해당 월부터 매월 생활비를 지급. 기간을 정하지 않고 <b>종신</b>토록 지급하는 구조가 가장 강력해, 끝을 알 수 없는 돌봄 비용에 대응한다.</p>
+          <p class="card-note">비고: <b>지급기간(종신 vs 확정)이 상품 가치를 가른다.</b> 상태지속형(매월)·종신형 확인이 핵심.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(든든한약속 — CDR 3 이상 매월 종신)·삼성생명·동양생명</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--track-care)">
+          <div class="card-top">
+            <div class="card-name">장기요양 등급별 생활비 (매월) <span class="mon-pill">매월</span></div>
+            <div class="card-type">생활비형 · 매월(등급조건)</div>
+          </div>
+          <div class="card-sub">장기요양 1~2등급(또는 1~5등급) 매월</div>
+          <p class="card-def">공적 장기요양 등급을 받으면 등급에 따라 매월 생활비를 지급. 중증(1~2등급) 한정형과 전등급(1~5) 보장형이 있어 범위 확인이 중요하다.</p>
+          <p class="card-note">비고: 1~2등급 한정 vs 1~5등급 보장 차이. 공적 급여 본인부담을 사적으로 보완.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">KDB생명(1~2등급 생활비)·동양생명(1~5등급)·KB라이프</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 6 ===================== -->
+  <section class="phase" id="p6">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p6)">Phase 06</span>
+      <h2>사망</h2>
+    </div>
+    <p class="phase-sub">여정의 마지막 단계. 장기간병의 특성상 사망보장을 생전 간병자금으로 <b>선지급</b>하는 구조가 발달했다. 이 질환군은 고령 대상이라 어린이 이슈는 거의 없으나, 15세 미만 사망 무효 원칙은 동일하게 적용된다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">장기간병 선지급 (사망보장 활용) <span class="rep-pill">선지급</span></div>
+          <div class="card-type">사망형 · 선지급</div>
+        </div>
+        <div class="card-sub">장기간병상태 시 사망보험금 일부 선지급</div>
+        <p class="card-def">종신보험에 간병특약을 부가해, 60세 이후 장기간병상태(중증치매 또는 일상생활장해)가 되면 사망보험금의 상당 부분(예: 최고 80%)을 미리 지급한다. 사망 전 돌봄 자금으로 쓰인다.</p>
+        <p class="card-note">비고: 장기간병상태 = <b>중증치매(CDR 3~5) 또는 일상생활장해상태</b>. 선지급분만큼 사망보험금 차감.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KB라이프(변액종신 '약속' — 실버널싱케어특약, 사망보장 최고 80% 선지급)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">노후·질병 사망보험금 <span class="tag-child">어린이 제외</span></div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">치매·노인성 질환 등으로 인한 사망</div>
+        <p class="card-def">긴 돌봄 끝의 사망 시 유가족에게 보험금을 지급. 치매간병보험의 정기특약·종신보험으로 마지막 안전망을 구성한다.</p>
+        <p class="card-note">비고: <b>15세 미만 사망보장은 상법상 무효</b>(이 질환군은 고령 대상이라 실무상 영향 적음).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보사 종신·치매간병보험 정기특약(사망보험금 설계)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNATURE: CDR tiers + LTC grades ===================== -->
+  <section class="sig">
+    <div class="sig-head">
+      <div class="e">Signature Axis · 두 개의 자(尺)</div>
+      <h2>척도와 등급이 보장을 정한다</h2>
+      <p>치매·장기간병 보장의 핵심 변수는 진단명이 아니라 <b style="color:#fff">진행 정도를 재는 두 척도</b>다. 임상의 <b style="color:#fff">CDR 척도</b>가 진단비 단계를, 국가의 <b style="color:#fff">장기요양 등급</b>이 간병·생활자금 지급을 가른다. 두 척도가 맞물려 돌봄 여정 전체를 측정한다.</p>
+    </div>
+    <div class="sig-body">
+      <div class="sig-axis-label cog">척도 1 — CDR 임상치매척도 (진단비 단계)</div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tn">최경도<small>CDR 0.5</small></div>
+          <div class="tier-bar" style="background:#B6ACD6;width:25%">의심·전 단계</div>
+          <div class="maps">MCI 인접 · 통상 보장 제외</div>
+        </div>
+        <div class="tier">
+          <div class="tn">경증(경도)<small>CDR 1</small></div>
+          <div class="tier-bar" style="background:#9182BE;width:50%">초기 치매</div>
+          <div class="maps">경증 치매진단비 · 발생 최다</div>
+        </div>
+        <div class="tier">
+          <div class="tn">중등도<small>CDR 2</small></div>
+          <div class="tier-bar" style="background:#6F5DA8;width:75%">상당한 의존</div>
+          <div class="maps">중등도 이상 진단비</div>
+        </div>
+        <div class="tier">
+          <div class="tn">중증<small>CDR 3~5</small></div>
+          <div class="tier-bar" style="background:var(--track-cog);width:100%">전적 의존</div>
+          <div class="maps">중증 진단비 + <b>매월 생활자금</b> 트리거</div>
+        </div>
+      </div>
+
+      <div class="sig-axis-label care">척도 2 — 공적 노인장기요양 등급 (간병·생활자금 트리거)</div>
+      <div class="grades">
+        <div class="grade-chip" style="background:#9CC3CC"><div class="gn">인지지원</div><div class="gd">경증 치매</div><div class="gs">45점 미만 + 치매</div></div>
+        <div class="grade-chip" style="background:#79AEBA"><div class="gn">5등급</div><div class="gd">치매 특별</div><div class="gs">45~51점</div></div>
+        <div class="grade-chip" style="background:#5C9AA8"><div class="gn">4등급</div><div class="gd">경증</div><div class="gs">51~60점</div></div>
+        <div class="grade-chip" style="background:#43899A"><div class="gn">3등급</div><div class="gd">중등증</div><div class="gs">60~75점</div></div>
+        <div class="grade-chip" style="background:#2F8597"><div class="gn">2등급</div><div class="gd">중증</div><div class="gs">75~95점</div></div>
+        <div class="grade-chip" style="background:#1F6B7C"><div class="gn">1등급</div><div class="gd">최중증·전적 의존</div><div class="gs">95점 이상</div></div>
+      </div>
+
+      <p class="sig-note">
+        <b>읽는 법:</b> 두 척도는 서로 다른 것을 잰다. <b>CDR</b>은 의사가 인지·사회기능을 보고 매기는 임상 척도로 <b>진단비 단계</b>를 정하고, <b>장기요양 등급</b>은 국가가 돌봄 필요도를 점수화한 행정 척도로 <b>간병·생활자금</b>의 트리거가 된다. 증권을 볼 때 "치매진단비는 CDR 몇 점부터인가", "간병·생활비는 몇 등급부터인가"를 함께 확인해야 한다. 또 치매 보장은 진단 후 <b>90일 이상 상태 지속</b>을 요구하고 통상 질병 1년 면책이 적용되며, 일부 약관은 진단 시 <b>뇌영상검사</b>를 필수로 두어 분쟁 소지가 있으니 주의한다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== DEMOGRAPHICS ===================== -->
+  <section class="demosec">
+    <div class="demosec-head">
+      <div class="e">Population Lens · 인구집단 렌즈</div>
+      <h2>누구를 대상으로 하는가</h2>
+      <p>치매·장기간병은 본질적으로 <b>고령</b>의 질환이다. 어린이·태아 보장은 거의 해당이 없고, 연령(고령·초로기)과 성별(여성 유병률)에서 차이가 갈린다.</p>
+    </div>
+    <div class="demo-cols">
+      <div class="demo-col" style="color:var(--demo-sex)">
+        <h3><span class="swatch" style="background:var(--demo-sex)"></span>성별 (여성·남성)</h3>
+        <ul style="color:#33322E">
+          <li><b>여성:</b> 평균수명이 길어 고령 치매(특히 알츠하이머) 유병률·환자 수가 더 많다. 돌봄 부담도 가중되는 경향.</li>
+          <li><b>남성:</b> 혈관성 치매 비중이 상대적으로 높게 보고된다(생활습관·심뇌혈관 위험과 연관).</li>
+          <li>성별 전용 치매 담보는 드물다 — <b>해당 적음.</b> 척도·등급·생활자금 설계가 더 중요.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-age)">
+        <h3><span class="swatch" style="background:var(--demo-age)"></span>고령·연령 (핵심)</h3>
+        <ul style="color:#33322E">
+          <li><b>초고령사회·환자 100만 시대:</b> 60세 이상 치매 약 94만 명(2024), 빠르게 증가.</li>
+          <li><b>장기요양 대상:</b> 만 65세 이상, 또는 65세 미만이라도 <b>노인성 질병</b>(치매·뇌혈관·파킨슨).</li>
+          <li><b>초로기(조기발병) 치매:</b> 65세 미만 발병도 보장 대상이 될 수 있어 가입 연령·노인성 질병 정의 확인.</li>
+          <li>가입 가능 나이는 통상 <b>30~75세</b>. 유병자·고령 친화형 설계 확대.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-child)">
+        <h3><span class="swatch" style="background:var(--demo-child)"></span>어린이·태아</h3>
+        <ul style="color:#33322E">
+          <li><b>해당 거의 없음:</b> 치매·장기간병은 고령 질환으로 어린이·태아 보장 대상이 아니다.</li>
+          <li>소아의 인지·발달 문제(발달지연·뇌질환 등)는 <b>별개의 어린이보험 영역</b>에서 다룬다.</li>
+          <li>다만 가족 돌봄자(보호자) 관점의 부담은 전 연령에 걸친다 — 가족간병 공백은 ⑥ Gap 참조.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn">
+      <b>⚠ 법적 한계 —</b> 상법 제732조에 따라 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>다. 치매·장기간병은 고령 대상이라 실무상 영향은 작지만, 사망보장 설계 시 원칙은 동일하게 적용된다.
+    </div>
+  </section>
+
+  <!-- ===================== VERIFICATION TABLE ===================== -->
+  <section class="refsec">
+    <div class="e">Verification · 교차검증</div>
+    <h2>담보별 지급기준 · 판매사 · 금액 · 특징</h2>
+    <p class="desc">여정 카드가 '존재·판매사·척도/등급·형태'를 보여준다면, 이 표는 여정에 담기 어려운 <b>가입금액과 세부 조건(면책·지속기간·지급기간·범위)</b>을 깊이로 보완한다. 금액은 검증된 예시·범위이며 상품·특약·연령별로 다르다.</p>
+    <div class="tablescroll">
+      <table class="reftable">
+        <thead>
+          <tr>
+            <th>담보</th>
+            <th>지급기준(트리거·척도)</th>
+            <th>대표 판매사(상품 예시)</th>
+            <th>가입금액 예시·범위</th>
+            <th>주요 특징(면책·지속·지급기간·범위)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c-dam">경증 치매 진단비</td>
+            <td class="c-crit">CDR 1 수준 + F00–F03·G30 + 90일 지속</td>
+            <td class="c-ins">KB라이프·삼성생명·동양생명·신한라이프</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">질병 1년 면책 · 금융당국 경증 고액 주의 · 뇌영상 필수 여부 확인</td>
+          </tr>
+          <tr>
+            <td class="c-dam">중등도 치매 진단비</td>
+            <td class="c-crit">CDR 2 수준 진단확정 + 90일 지속</td>
+            <td class="c-ins">KB라이프·교보생명·삼성생명</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">경증·중등도·중증 단계별 각각 지급 설계 확대</td>
+          </tr>
+          <tr>
+            <td class="c-dam">중증 치매 진단비</td>
+            <td class="c-crit">CDR 3 이상 + 90일 지속(또는 호전 불가)</td>
+            <td class="c-ins">KB라이프(든든한약속)·삼성생명·동양생명</td>
+            <td class="c-amt">상품별 상이(고액)</td>
+            <td class="c-feat">질병 1년 면책(상해 계약일) · 산정특례·매월 생활자금 트리거</td>
+          </tr>
+          <tr>
+            <td class="c-dam">표적치매 약물치료비(레켐비)</td>
+            <td class="c-crit">항아밀로이드 표적치료제(레카네맙) 투약</td>
+            <td class="c-ins">흥국화재·KB손보·교보생명·삼성생명</td>
+            <td class="c-amt">최대 2,500만~3,000만</td>
+            <td class="c-feat">비급여(월 200만~300만) · 2024.5 허가 · 보장한도 확대 경쟁</td>
+          </tr>
+          <tr>
+            <td class="c-dam">중증치매 산정특례 진단자금</td>
+            <td class="c-crit">중증치매 산정특례 대상 신규 등록</td>
+            <td class="c-ins">KB라이프(행복한약속)·KB손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">보장개시일 1년 이후 등록 · 최초 1회한 · 공적 제도 연계 객관 트리거</td>
+          </tr>
+          <tr>
+            <td class="c-dam">장기요양등급 진단비</td>
+            <td class="c-crit">공적 장기요양 1~5등급/인지지원 판정</td>
+            <td class="c-ins">KDB생명·동양생명·KB라이프</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">중증(1~2등급) 한정 vs 전등급(1~5) 차이 · 공단 판정 객관 트리거</td>
+          </tr>
+          <tr>
+            <td class="c-dam">재가급여(방문요양·노치원)</td>
+            <td class="c-crit">등급 인정 후 재가(집·주간보호) 돌봄</td>
+            <td class="c-ins">KB라이프·동양생명(복합재가급여)</td>
+            <td class="c-amt">노치원 월30만·방문요양 월20만</td>
+            <td class="c-feat">매월 지급 · 시설급여와 합산 · 공적 본인부담 보완</td>
+          </tr>
+          <tr>
+            <td class="c-dam">시설급여(요양원 입소)</td>
+            <td class="c-crit">등급 인정 후 요양원 등 시설 입소</td>
+            <td class="c-ins">KB라이프·삼성생명·동양생명</td>
+            <td class="c-amt">재가·시설 합산 월 최대 300만</td>
+            <td class="c-feat">매월 지급 · 시설 입소 조건 · 등급별 차등</td>
+          </tr>
+          <tr>
+            <td class="c-dam">치매 간병인 사용일당</td>
+            <td class="c-crit">치매 입원 + 간병인 사용(장소별)</td>
+            <td class="c-ins">KB라이프(행복한약속)</td>
+            <td class="c-amt">요양병원17만/병원12만/통합10만</td>
+            <td class="c-feat">장소별 차등 · 1년 후 180일 경과 시 재보장 · 일당형</td>
+          </tr>
+          <tr>
+            <td class="c-dam">중증치매 간병생활자금</td>
+            <td class="c-crit">중증치매(CDR 3↑) 상태 지속</td>
+            <td class="c-ins">KB라이프(든든한약속)·삼성생명·동양생명</td>
+            <td class="c-amt">상품별 상이(월정액)</td>
+            <td class="c-feat">매월 지급 · <b>종신형 여부가 가치 좌우</b> · 상태지속 조건</td>
+          </tr>
+          <tr>
+            <td class="c-dam">일상생활장해(ADL)·장기간병 선지급</td>
+            <td class="c-crit">중증치매 또는 일상생활장해상태(이동+ADL)</td>
+            <td class="c-ins">KB라이프(실버널싱케어특약)</td>
+            <td class="c-amt">사망보장 최고 80% 선지급</td>
+            <td class="c-feat">60세 이후 · 이동불가+식사/화장실/목욕/옷입기 중 1 못함 · 선지급분 차감</td>
+          </tr>
+          <tr>
+            <td class="c-dam">경도인지장애(MCI) 보장</td>
+            <td class="c-crit">MCI 진단(치매 전 단계)</td>
+            <td class="c-ins">신한라이프(ONE더케어, 배타적사용권)</td>
+            <td class="c-amt">종합검진·인지재활 지원</td>
+            <td class="c-feat">단순 인지저하(R41) 제외 일반적 · MCI 전용은 신규 영역</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reffoot">
+      <b>공통 단서 —</b> 동일 명칭이라도 보장 트리거(CDR 점수·장기요양 등급 범위), 금액, 지급기간(종신 vs 확정), 면책은 상품·약관별로 다르다. 특히 "치매진단비는 CDR 몇 점부터", "생활자금은 종신인가"가 가치를 가른다. 금액은 검증된 예시·범위이며 연령·플랜에 따라 달라진다. 가입 판단 전 반드시 약관 원문과 상품설명서를 확인할 것.
+    </p>
+  </section>
+
+  <!-- ===================== GAP & PROPOSALS ===================== -->
+  <section class="gapsec">
+    <div class="gapsec-head">
+      <div class="e">Coverage Gap & Proposals · 미보장 담보 제안</div>
+      <h2>아직 비어 있는 칸</h2>
+      <p>치매·장기간병은 진단·시설 보장은 두터워졌으나, <b>가족 돌봄자·초기(MCI)·안전·신약 후속</b>에서 공백이 크다. 3개 렌즈(치료 과정 공백 · 암 기준선 대비 · 신기술)로 도출했다.</p>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>가족 돌봄자 소득보상</h3>
+        <p>가족이 직접 간병하느라 휴직·퇴직하는 경우가 많지만, 간병인을 '고용'해야 지급되는 담보가 대부분이라 <b>가족간병</b>의 소득 공백은 보장 사각이다.</p>
+        <div class="meta"><b>기준선:</b> 돌봄 단계의 실질 부담인데 간병인 사용 전제로 빠진다.</div>
+        <span class="gap-status st-none">현황: 대체로 미보장(가족간병)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>배회·실종 안전(GPS)·주거 개조</h3>
+        <p>치매 환자의 배회·실종 대비(위치추적·안전지원)와, 낙상 방지 주거 개조·복지용구 비용은 정액 보장이 거의 없다.</p>
+        <div class="meta"><b>기준선:</b> 돌봄 안전 비용. 서비스형으로 일부 시도되나 정액 공백.</div>
+        <span class="gap-status st-none">현황: 미보장(안전·주거)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>초기(MCI) 단계 보장 강화</h3>
+        <p>암은 전 단계(상피내암 등)부터 보장이 촘촘하나, 치매는 전 단계인 MCI가 대체로 보장 제외다. 진행을 늦추는 신약은 초기에 쓰는데 <b>초기 보장이 얇다.</b></p>
+        <div class="meta"><b>기준선:</b> 암의 조기·전 단계 보장에 대응하는 MCI 단계 담보.</div>
+        <span class="gap-status st-some">현황: 일부 신규(MCI 검진) / 진단비 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 암 기준선 대비</div>
+        <h3>악화 단계 재진단·다중지급</h3>
+        <p>암은 재진단·다중지급이 정교하나, 치매는 경증→중증 <b>악화 단계마다</b> 추가 지급하는 구조가 아직 부족하다. 단계 진행 자체가 보장 이벤트가 될 수 있다.</p>
+        <div class="meta"><b>기준선:</b> 암의 재진단 구조를 치매 악화 단계에 적용.</div>
+        <span class="gap-status st-some">현황: 단계별 일부 / 악화 다중지급 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>레켐비 후속 신약·장기 투약</h3>
+        <p>도나네맙 등 후속 항아밀로이드 신약과, 레켐비의 <b>장기 반복 투약</b>(연 단위 지속) 비용을 충분히 포괄하는지 점검이 필요하다. 한도 소진 후 공백이 우려된다.</p>
+        <div class="meta"><b>기준선:</b> 표적치매치료비의 보장 약제 범위·한도를 신약·장기투약까지 확장.</div>
+        <span class="gap-status st-some">현황: 레켐비 보장 일부 / 후속·장기 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신약·신기술</div>
+        <h3>조기진단 바이오마커·디지털 인지치료</h3>
+        <p>혈액 기반 알츠하이머 바이오마커 검사, 디지털 인지치료기기(DTx) 등 신기술의 비급여 비용을 정조준한 정액 담보는 초기 단계다.</p>
+        <div class="meta"><b>기준선:</b> 조기진단·신치료 기술의 보장 공백.</div>
+        <span class="gap-status st-none">현황: 신규 영역(추가 확인 필요)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESIGN NOTES ===================== -->
+  <section class="closing">
+    <div class="e">Design Notes · 설계 핵심</div>
+    <h2>이 지도를 읽는 6가지 관점</h2>
+    <div class="points">
+      <div class="point"><div class="num">1</div><div><h4>CDR 몇 점부터인가</h4><p>같은 치매도 CDR 1(경증)부터인지 3(중증)부터인지로 진단비가 갈린다. 증권의 첫 확인 사항.</p></div></div>
+      <div class="point"><div class="num">2</div><div><h4>국가 등급이 트리거다</h4><p>공적 장기요양 1~5·인지지원 등급이 사적 간병·생활자금 지급의 객관적 기준으로 쓰인다.</p></div></div>
+      <div class="point"><div class="num">3</div><div><h4>90일 지속·1년 면책</h4><p>치매 보장은 진단 후 90일 이상 상태 지속을 요구하고 통상 질병 1년 면책. 뇌영상 필수 여부도 확인.</p></div></div>
+      <div class="point"><div class="num">4</div><div><h4>생활자금은 종신이 핵심</h4><p>끝을 알 수 없는 돌봄. 매월 생활자금의 '종신 vs 확정' 지급기간이 상품 가치를 가른다.</p></div></div>
+      <div class="point"><div class="num">5</div><div><h4>간병은 장소·형태별로</h4><p>간병인일당(요양병원·병원·통합), 재가(방문·노치원), 시설(요양원)로 세분된다. 구성 확인.</p></div></div>
+      <div class="point"><div class="num">6</div><div><h4>신약이 판을 바꾼다</h4><p>레켐비 등 표적치매치료비가 새 경쟁 축. 가족간병·초기(MCI)·안전 보장은 여전히 공백이 크다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 치매·장기간병(LTC) 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보 정의·CDR 기준·장기요양 등급·면책·금액·판매사는 회사·약관 및 제도(노인장기요양보험·산정특례·급여) 변경에 따라 달라질 수 있으므로, 가입·보장 판단 시 <b>약관 원문과 상품설명서 확인이 전제</b>다. 판매사·상품명·금액은 공개된 정보를 바탕으로 검증한 예시이며, 동일 명칭이라도 보장 트리거(CDR 점수·등급 범위)·금액·지급기간은 상품별로 다르다. 공적 노인장기요양 등급·산정특례 기준은 국민건강보험공단 안내를 따른다. 약관 원문은 복제하지 않고 요약·재서술했다.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">DEMENTIA &amp; LTC COVERAGE JOURNEY MAP · v3 · 2계층 검증(여정 카드 + 검증 표) 적용 · CDR 척도 + 장기요양 등급 이중 시그니처</span>
+  </footer>
+
+</div>
+</body>
+</html>

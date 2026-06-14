@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>암 보장 여정 지도 — Cancer Coverage Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F;
+    --p1:#7A9A8E; --p2:#C25E4A; --p3:#3E6FB0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+    --demo-sex:#8E5BA8; --demo-age:#B8862F; --demo-child:#2E8B6E; --gap:#2E8B6E;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  /* ---------- Header ---------- */
+  header{padding:60px 0 30px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.4rem,6vw,4rem);line-height:1.02;
+    letter-spacing:-.01em;margin-bottom:6px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--p2);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);
+    color:var(--muted);margin-bottom:26px;}
+  .lead{max-width:760px;font-size:1.02rem;color:#33322E;margin-bottom:8px;}
+  .lead b{color:var(--ink);}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 8px;}
+  @media(max-width:680px){.axes{grid-template-columns:1fr;}}
+  .axis{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;}
+  .axis .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--p2);text-transform:uppercase;}
+  .axis h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin:5px 0 4px;}
+  .axis p{font-size:.9rem;color:var(--muted);line-height:1.55;}
+
+  /* ---------- Legend / anchor nav ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .legend a{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 13px;background:#fff;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,box-shadow .12s ease;}
+  .legend a:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .legend a:focus-visible{outline:2px solid var(--p3);outline-offset:2px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* ---------- Timeline spine ---------- */
+  .spinewrap{padding:40px 0 6px;}
+  .spine{height:8px;border-radius:8px;width:100%;
+    background:linear-gradient(90deg,var(--p1),var(--p2) 22%,var(--p3) 42%,var(--p4) 62%,var(--p5) 82%,var(--p6));}
+  .nodes{display:grid;grid-template-columns:repeat(6,1fr);margin-top:-22px;}
+  .node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .node .bead{width:30px;height:30px;border-radius:50%;border:4px solid var(--cream);
+    box-shadow:0 0 0 1.5px rgba(0,0,0,.08);}
+  .node .lab{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);}
+  .node .lab b{display:block;font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink);letter-spacing:0;margin-top:2px;}
+  @media(max-width:680px){.node .lab b{font-size:10.5px;}.node .bead{width:22px;height:22px;}}
+
+  /* ---------- Phase sections ---------- */
+  .phase{padding:46px 0 8px;scroll-margin-top:14px;}
+  .phase-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;
+    padding:4px 11px;border-radius:6px;text-transform:uppercase;}
+  .phase-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.6vw,2.2rem);letter-spacing:-.01em;}
+  .phase-sub{font-size:.96rem;color:var(--muted);max-width:740px;margin:4px 0 22px;}
+
+  .subgroup{margin:18px 0 6px;}
+  .subgroup-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--p2);
+    text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .subgroup-label::before{content:"";width:18px;height:1px;background:var(--p2);display:inline-block;}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .card{border:1px solid var(--line);border-left:4px solid var(--oc,var(--p3));border-radius:11px;
+    background:#fff;padding:16px 17px 15px;display:flex;flex-direction:column;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.1rem;line-height:1.25;}
+  .card-type{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);
+    text-align:right;white-space:nowrap;padding-top:4px;}
+  .card-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--p3);margin-bottom:8px;}
+  .card-def{font-size:.9rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .card-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-bottom:11px;}
+  .card-note b{color:var(--ink);}
+  .card-ins{margin-top:auto;display:flex;gap:9px;align-items:baseline;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.82rem;color:#403F3A;line-height:1.45;}
+
+  .pill{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle;white-space:nowrap;}
+  .new-pill{background:var(--gold);}
+  .rep-pill{background:var(--p3);}
+  .mon-pill{background:var(--p5);}
+  .tag-sex,.tag-age,.tag-child{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#fff;
+    padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px;white-space:nowrap;}
+  .tag-sex{background:var(--demo-sex);} .tag-age{background:var(--demo-age);} .tag-child{background:var(--demo-child);}
+
+  /* ---------- Signature callout ---------- */
+  .sig{margin:54px 0 10px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
+  .sig-head{background:var(--ink);color:var(--cream);padding:22px 26px;}
+  .sig-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#B9B6AD;}
+  .sig-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:6px;}
+  .sig-head p{font-size:.92rem;color:#C9C6BD;margin-top:6px;max-width:720px;}
+  .sig-body{padding:26px;}
+  .tiers{display:flex;flex-direction:column;gap:9px;}
+  .tier{display:grid;grid-template-columns:160px 1fr 86px;align-items:center;gap:14px;}
+  @media(max-width:680px){.tier{grid-template-columns:96px 1fr 60px;gap:9px;}}
+  .tier .tn{font-family:var(--serif);font-weight:600;font-size:1.02rem;}
+  .tier .tn small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--muted);font-weight:400;letter-spacing:.02em;margin-top:1px;}
+  .tier-bar{height:34px;border-radius:7px;display:flex;align-items:center;padding-left:14px;color:#fff;
+    font-size:.82rem;font-weight:500;}
+  .tier .pct{font-family:var(--mono);font-size:13px;text-align:right;color:var(--ink);font-weight:500;}
+  .sig-note{font-size:.84rem;color:var(--muted);margin-top:18px;line-height:1.55;border-top:1px solid var(--line);padding-top:14px;}
+  .move{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap;}
+  .move .chip{font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:7px 13px;border-radius:8px;
+    border:1px solid var(--line);background:var(--cream);}
+  .move .arrow{font-size:1.2rem;color:var(--p2);}
+
+  /* ---------- Demographics ---------- */
+  .demosec{margin:54px 0 10px;border:1.5px solid var(--demo-sex);border-radius:16px;background:#fff;overflow:hidden;}
+  .demosec-head{padding:22px 26px;border-bottom:1px solid var(--line);}
+  .demosec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--demo-sex);}
+  .demosec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .demosec-head p{font-size:.92rem;color:var(--muted);margin-top:6px;max-width:760px;}
+  .demo-cols{display:grid;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.demo-cols{grid-template-columns:1fr;}}
+  .demo-col{padding:22px 24px;border-right:1px solid var(--line);}
+  .demo-col:last-child{border-right:none;}
+  @media(max-width:760px){.demo-col{border-right:none;border-bottom:1px solid var(--line);}.demo-col:last-child{border-bottom:none;}}
+  .demo-col h3{font-family:var(--serif);font-size:1.18rem;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .demo-col h3 .swatch{width:11px;height:11px;border-radius:3px;}
+  .demo-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .demo-col li{font-size:.875rem;color:#33322E;line-height:1.5;padding-left:14px;position:relative;}
+  .demo-col li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
+  .demo-col li b{color:var(--ink);}
+  .warn{margin:0 24px 22px;background:#FBF3F1;border:1px solid #E8C9C0;border-radius:10px;padding:13px 16px;
+    font-size:.85rem;color:#8A3220;line-height:1.55;}
+  .warn b{color:#6E2415;}
+
+  /* ---------- Verification table ---------- */
+  .refsec{margin:54px 0 10px;}
+  .refsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .refsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:5px 0 4px;}
+  .refsec .desc{font-size:.92rem;color:var(--muted);max-width:760px;margin-bottom:20px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.reftable{border-collapse:collapse;width:100%;min-width:860px;font-size:.84rem;background:#fff;}
+  table.reftable thead th{background:var(--navy);color:var(--cream);font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:12px 14px;font-weight:500;}
+  table.reftable td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:#33322E;}
+  table.reftable tbody tr:nth-child(even){background:#FBFBF8;}
+  .c-dam{font-family:var(--serif);font-weight:600;font-size:.94rem;color:var(--ink);min-width:150px;}
+  .c-crit{min-width:200px;}
+  .c-ins{min-width:160px;}
+  .c-amt{min-width:130px;font-family:var(--mono);font-size:11px;}
+  .c-feat{min-width:200px;color:var(--muted);}
+  .reffoot{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:14px;padding:14px 16px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .reffoot b{color:var(--gold);}
+
+  /* ---------- Gap section ---------- */
+  .gapsec{margin:54px 0 10px;border:1.5px solid var(--gap);border-radius:16px;background:#fff;overflow:hidden;}
+  .gapsec-head{padding:22px 26px;background:#F2F8F5;border-bottom:1px solid #CFE6DB;}
+  .gapsec-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gapsec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin-top:5px;}
+  .gapsec-head p{font-size:.92rem;color:#3A6655;margin-top:6px;max-width:780px;}
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{padding:20px 24px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  .gap-item:nth-child(odd){border-right:1px solid var(--line);}
+  @media(max-width:680px){.gap-item{border-right:none;}}
+  .gap-item h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .gap-item .lens{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gap);margin-bottom:9px;}
+  .gap-item p{font-size:.86rem;color:#33322E;line-height:1.55;margin-bottom:8px;}
+  .gap-item .meta{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .gap-item .meta b{color:var(--ink);}
+  .gap-status{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    padding:2px 8px;border-radius:5px;margin-top:8px;}
+  .st-none{background:#FBEFEC;color:#B0432C;} .st-some{background:#EAF4EE;color:#2E7D52;}
+
+  /* ---------- Design notes ---------- */
+  .closing{margin:54px 0 10px;background:var(--navy);color:var(--cream);border-radius:16px;padding:34px 30px;}
+  .closing .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#9DA8BF;}
+  .closing h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);margin:6px 0 22px;}
+  .points{display:grid;grid-template-columns:1fr 1fr;gap:20px 30px;}
+  @media(max-width:680px){.points{grid-template-columns:1fr;}}
+  .point{display:flex;gap:13px;}
+  .point .num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--p4);line-height:1;flex-shrink:0;}
+  .point h4{font-size:.98rem;font-weight:600;margin-bottom:3px;}
+  .point p{font-size:.86rem;color:#C9CDD8;line-height:1.55;}
+
+  /* ---------- Footer ---------- */
+  footer{margin:50px 0 60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .legend a{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Coverage Journey Map · 보장 여정 지도 / 01</div>
+    <h1>암, 보장의 <em>지도</em></h1>
+    <div class="subtitle">예방에서 사망까지 — 한 사람의 암 여정 위에 시장의 담보를 올려놓다</div>
+    <p class="lead">
+      같은 '암'이라도 받는 보험금은 천차만별이다. 이 지도는 암 보장을 두 개의 축으로 읽는다.
+      첫째 <b>정의의 넓이</b> — 약관의 <b>암 분류표(유사암·소액암·일반암·고액암)</b>가 지급률을 가른다.
+      둘째 <b>치료의 길이</b> — 진단 한 번의 일시금에서 <b>치료당·연간1회·매월·재진단 반복지급</b>으로,
+      보장은 진단 후 5~10년 혹은 종신까지 길어진다.
+    </p>
+
+    <div class="axes">
+      <div class="axis">
+        <div class="n">Axis 1 — 정의의 넓이</div>
+        <h3>같은 명칭, 다른 보험금</h3>
+        <p>갑상선암은 '유사암'으로 일반암의 10~20%만 지급되고, 유방·전립선암은 '소액암'으로 분류되기도 한다. 분류표 확인이 보장의 출발점이다.</p>
+      </div>
+      <div class="axis">
+        <div class="n">Axis 2 — 치료의 길이</div>
+        <h3>일시금에서 반복지급으로</h3>
+        <p>생존율 73%(5년) 시대. 시장은 진단 일시금을 넘어 치료당·매월·재진단까지 보장 기간을 늘리는 방향으로 재편되고 있다.</p>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="단계 이동">
+      <a href="#p1"><span class="dot" style="background:var(--p1)"></span>① 예방·검진</a>
+      <a href="#p2"><span class="dot" style="background:var(--p2)"></span>② 진단</a>
+      <a href="#p3"><span class="dot" style="background:var(--p3)"></span>③ 치료</a>
+      <a href="#p4"><span class="dot" style="background:var(--p4)"></span>④ 회복·생활</a>
+      <a href="#p5"><span class="dot" style="background:var(--p5)"></span>⑤ 재발·후유</a>
+      <a href="#p6"><span class="dot" style="background:var(--p6)"></span>⑥ 사망</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <div class="spinewrap" aria-hidden="true">
+    <div class="spine"></div>
+    <div class="nodes">
+      <div class="node"><div class="bead" style="background:var(--p1)"></div><div class="lab">PHASE 01<b>예방·검진</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p2)"></div><div class="lab">PHASE 02<b>진단·발병</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p3)"></div><div class="lab">PHASE 03<b>치료</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p4)"></div><div class="lab">PHASE 04<b>회복·생활</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p5)"></div><div class="lab">PHASE 05<b>재발·후유</b></div></div>
+      <div class="node"><div class="bead" style="background:var(--p6)"></div><div class="lab">PHASE 06<b>사망</b></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== PHASE 1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p1)">Phase 01</span>
+      <h2>예방·검진</h2>
+    </div>
+    <p class="phase-sub">암 보장의 가장 얇은 구간. 대부분의 담보는 '진단 확정'을 트리거로 하므로, 발병 전 예방·검사 단계의 정액 보장은 제한적이다. 검사·검진형 담보가 일부 존재한다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p1)">
+        <div class="card-top">
+          <div class="card-name">유전성암 유전자검사비 <span class="tag-sex">여성</span></div>
+          <div class="card-type">검사형 · 최초1회</div>
+        </div>
+        <div class="card-sub">BRCA1/2 등 유전성 암 위험 검사 / 예후예측</div>
+        <p class="card-def">유전성 유방암·난소암 위험을 평가하는 유전자검사 또는 유방암 예후예측검사 비용을 보장. 맞춤 치료·재발 예측에 활용된다.</p>
+        <p class="card-note">비고: 대체로 <b>최초 1회</b> 한정. 검진 단계 정액 담보는 시장에 드문 <b>신규 영역</b>.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화손해보험(유방암예후예측검사비, 배타적사용권 획득) · 일부 손보</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p1)">
+        <div class="card-top">
+          <div class="card-name">암 정밀검사 지원 담보</div>
+          <div class="card-type">검사·검진형</div>
+        </div>
+        <div class="card-sub">암MRI촬영·특정생검조직병리검사 등</div>
+        <p class="card-def">암 진단·경과 확인을 위한 고가 정밀검사(MRI, 조직병리검사) 비용을 정액 보장. 진단 전후 검사 부담을 보조한다.</p>
+        <p class="card-note">비고: 통상 <b>연간 1회한</b> 등 횟수 제한. 진단 단계와 인접해 작동.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(두배받는암보험 — 암MRI촬영검사·특정생검조직병리검사) · 일부 생·손보</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p2)">Phase 02</span>
+      <h2>진단 · 발병</h2>
+    </div>
+    <p class="phase-sub">암 보장의 핵심 기둥. 진단 확정(조직검사 등)이 트리거다. 무엇보다 <b>어느 분류에 들어가는가</b>가 보험금을 결정한다 — 같은 진단도 분류표에 따라 10%에서 100%, 그 이상까지 갈린다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">일반암 진단비</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">암 진단확정 / 유사·소액·고액암 제외 대부분 암</div>
+        <p class="card-def">위·폐·간·대장암 등 유사암·소액암·고액암을 제외한 대부분의 암 진단 시 가입금액 100% 일시금 지급. 보장의 중심축.</p>
+        <p class="card-note">비고: <b>90일 면책(암보장개시일)</b> · 1년 미만 <b>50% 감액</b>(상품별).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화생명(e암보험)·삼성화재·현대해상·DB손보·KB손보·메리츠화재 등 전반 · 5천만~1억</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">유사암 진단비</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">갑상선·기타피부·제자리암·경계성종양</div>
+        <p class="card-def">생존율이 높지만 발생 빈도가 잦은 암. 일반암의 10~20% 수준으로 지급. 발병률이 높아 별도 특약 설계가 중요하다.</p>
+        <p class="card-note">비고: 통상 <b>계약일부터 보장</b>(90일 면책 없음). 금융당국 가이드로 한도 <b>일반암의 20% 이내</b>로 제한.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 사 특약 운영 · 한화생명·현대해상 등 · 최대 1천만~3천만(상품별)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">소액암 진단비 <span class="tag-sex">여성·남성</span></div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">유방·자궁경부·자궁체부·전립선·방광암</div>
+        <p class="card-def">흔히 들어본 암이지만 일부 상품은 소액암으로 분류해 진단금을 일부만 지급. 성별 호발암이 여기 묶이는지 확인이 핵심.</p>
+        <p class="card-note">비고: 메리츠 또또암은 여성 3개 소액암을 <b>각각 보장</b>(타사 동일그룹 1회 후 소멸과 차이).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">메리츠화재(또또암 — 소액암 각 최대 1억)·현대해상 등</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">고액암(특정암) 진단비</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">췌장·뇌·뼈·백혈병·식도·담도암 등</div>
+        <p class="card-def">치료비가 매우 큰 암군. 일반암 진단비에 더해 별도 특약으로 보장 규모를 키우는 구조. 진단 시 가입금액을 추가 지급한다.</p>
+        <p class="card-note">비고: 일반암 진단비와 <b>중복 지급</b> 설계가 일반적. 고액암 단독 한도 최대 1억 예시.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화생명(e암보험 — 고액암 최대 1억)·삼성·현대 등 특정암 특약</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">전이암 진단비</div>
+          <div class="card-type">진단형 · 일시금</div>
+        </div>
+        <div class="card-sub">원발 부위에서 먼 곳에 새로 발생한 전이암 확정</div>
+        <p class="card-def">암이 다른 장기로 전이되어 진단 확정 시 추가 지급. 환자가 가장 두려워하는 '전이' 국면의 비용 충격을 보조.</p>
+        <p class="card-note">비고: 메리츠 통합전이암은 <b>종류별 각 4회</b> 보장(최대 8천만 예시).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">메리츠화재(또또암 — 전이암 4회)·현대해상(두배받는암 — 전이암 특약)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p2)">
+        <div class="card-top">
+          <div class="card-name">다발성소아암 진단비 <span class="tag-child">어린이·태아</span></div>
+          <div class="card-type">진단형 · 최초1회</div>
+        </div>
+        <div class="card-sub">소아 백혈병·뇌종양 등 다발성소아암 진단</div>
+        <p class="card-def">소아에 호발하는 암(백혈병·뇌종양 등)을 진단 시 일반 암보다 높은 정액 지급. 어린이·태아보험의 핵심 담보.</p>
+        <p class="card-note">비고: <b>15세 미만은 암보장개시일=계약일</b>(90일 면책 없음). 다발성소아암 외 암은 별도 금액.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(굿앤굿어린이종합보험)·삼성화재(자녀보험)·KB손보 · 다발성 5천만/그외 2천만 예시</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p3)">Phase 03</span>
+      <h2>치료</h2>
+    </div>
+    <p class="phase-sub">진단형에서 <b>치료형</b>으로 무게중심이 이동하는 구간. 수술·방사선·약물의 3대 치료와, 비급여 고가 신약·신기술이 핵심이다. 여기서 담보 명칭이 거의 같아 보여도 <b>포함 범위와 지급 방식</b>이 전혀 다르므로 정밀 구분이 필요하다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓐ 수술</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">암수술비 <span class="rep-pill">반복</span></div>
+            <div class="card-type">치료형(수술) · 수술당</div>
+          </div>
+          <div class="card-sub">암 직접치료 목적의 수술 시행</div>
+          <p class="card-def">암 제거·치료를 위한 수술 시 정액 지급. 다빈치 로봇수술 등 최신 기법도 정액 보장 대상에 포함되는 추세.</p>
+          <p class="card-note">비고: 메리츠는 원발·전이·잔여·재발 무관 매 수술 시 <b>가입금액 25% 체증 최대 5회</b>.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">메리츠화재(또또암 — 체증 수술비)·현대해상(다빈치로봇암수술 특약)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓑ 방사선·약물 (2대 치료)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">항암방사선·약물치료비 <span class="new-pill">정정</span></div>
+            <div class="card-type">치료형 · 치료당/최초1회</div>
+          </div>
+          <div class="card-sub">방사선·약물치료 시행(수술 제외)</div>
+          <p class="card-def">잔존·전이암 억제를 위한 <b>방사선 또는 약물치료</b>를 받으면 정액 지급. <b>수술은 제외</b>하고 2대 치료만 대상. 중입자치료 등 비급여 방사선도 포괄.</p>
+          <p class="card-note">비고: 일반암 <b>90일 면책</b>, 갑상선·기타피부암은 계약일 이후. 향후 신치료법까지 소급 보장하는 점이 강점.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">현대해상·삼성화재·DB손보·KB손보 등 광범위 운영 · 1천만~2천만 예시</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓒ 주요·통합 치료비 (3대 치료 + 신기술)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">암주요치료비 <span class="new-pill">정정</span><span class="rep-pill">연1회</span></div>
+            <div class="card-type">치료형 · 연간1회·진단후N년</div>
+          </div>
+          <div class="card-sub">수술+방사선+약물(3대) 주요치료 시행</div>
+          <p class="card-def"><b>수술·방사선·약물을 구분하지 않고</b> 주요치료로 분류되면 지급. 원발·전이·재발 무관, <b>진단 후 5~10년간 매년 1회</b> 집중 보장. 위 'ⓑ 항암방사선·약물치료비'와는 <b>별개 담보</b>다.</p>
+          <p class="card-note">비고: 중입자치료 등 <b>신의료기술</b> 대응. 수술 중심 설계의 공백을 메우려 등장.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(두배받는암보험 — 진단후 5/10년 매년)·KB손보·삼성화재 · 연 최대 3천만 예시</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">암통합치료비 <span class="rep-pill">연1회</span></div>
+            <div class="card-type">치료형 · 연간1회·만기까지</div>
+          </div>
+          <div class="card-sub">검사~수술~약물~방사선~비급여~재활 포괄</div>
+          <p class="card-def">주요치료비를 확장해 <b>암 검사부터 비급여·재활치료까지</b> 폭넓게 보장. 1년 1회, 보장만기까지 반복 지급해 누적 한도가 매우 크다.</p>
+          <p class="card-note">비고: 메리츠 <b>1년 최대 1억</b> 한도(40세 남 최대 누적 60억 예시). 손해율·보장축소 가능성 유의.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">메리츠화재(암 통합치료비 특약, 1년 최대 1억) · 경쟁사 연 3천만대</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓓ 고가 신약·신기술 (비급여)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">표적항암약물허가치료비</div>
+            <div class="card-type">치료형 · 치료당</div>
+          </div>
+          <div class="card-sub">식약처 허가 표적·면역항암제 투여</div>
+          <p class="card-def">허셉틴·넥사바 등 표적치료제와 키트루다·옵디보 등 <b>면역항암제</b>까지 식약처 허가 약제 투여 시 정액 지급. 회당 수백만~연 수천만 원 비급여 부담을 보조.</p>
+          <p class="card-note">비고: 약제의 <b>식약처 허가 여부</b>가 보장 가부를 가름. 치료당 반복 지급 구조.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">AIG(표적항암약물허가치료비 최대 5천만)·현대해상·메리츠화재·라이나생명</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">카티(CAR-T) 항암약물치료비</div>
+            <div class="card-type">치료형 · 연간1회한</div>
+          </div>
+          <div class="card-sub">킴리아 등 CAR-T 면역세포치료 시행</div>
+          <p class="card-def">환자의 면역세포(T세포)를 배양·주입하는 맞춤형 면역세포 치료. 약값이 수억 원에 달해 별도 고액 정액 담보로 보장.</p>
+          <p class="card-note">비고: 라이나·KB는 <b>킴리아 단일</b>, 메리츠는 12종으로 확장 보장(상품별 상이).</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">라이나생명·KB손보·메리츠화재(카티항암약물치료비)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">항암중입자방사선치료비 <span class="new-pill">신기술</span></div>
+            <div class="card-type">치료형 · 연간/치료당</div>
+          </div>
+          <div class="card-sub">중입자(탄소빔) 방사선치료 시행</div>
+          <p class="card-def">정상조직 손상을 줄이는 '꿈의 치료'로 불리는 중입자치료. 수천만 원 비급여 비용을 정액 보장하는 신담보로 빠르게 확산 중.</p>
+          <p class="card-note">비고: 연간 최대 5천만 예시. 국내 장비·제도 미비로 접근성은 제한적.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">DB손해보험(하이클래스암보험 — 항암중입자방사선치료비)·삼성화재 등</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">ⓔ 입원</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">암직접치료 입원일당</div>
+            <div class="card-type">일당형(입원) · 1일당</div>
+          </div>
+          <div class="card-sub">암 직접치료 목적 입원 1일당</div>
+          <p class="card-def">암의 직접 치료를 위해 입원하면 입원 1일당 정액 지급. 치료 기간이 길수록 누적 보장이 커진다.</p>
+          <p class="card-note">비고: '직접치료' 목적 입증이 쟁점. 요양병원 입원과 구분되는 경우가 많다.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">전 사 운영(현대해상 두배받는암·삼성·DB 등) · 1일 N만원</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p3)">
+          <div class="card-top">
+            <div class="card-name">중환자실 입원치료비 <span class="new-pill">신규</span></div>
+            <div class="card-type">일당형(입원)</div>
+          </div>
+          <div class="card-sub">수술 직후 집중치료·중환자실 입원</div>
+          <p class="card-def">수술 직후 통증관리·감염예방·장기기능 관리를 위한 중환자실 입원 시 보장. 고비용 집중치료 구간을 메우는 신담보.</p>
+          <p class="card-note">비고: 상급 종합병원 입원일당 등과 결합. <b>신규 영역</b>.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">DB손해보험(하이클래스암보험 — 중환자입원치료비)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p4)">Phase 04</span>
+      <h2>회복 · 생활</h2>
+    </div>
+    <p class="phase-sub">'생활병'으로 인식이 바뀌며 가장 빠르게 재편되는 구간. 치료비를 넘어 <b>소득 공백·간병·재활</b>을 보장한다. 같은 '생활비'라도 지급조건(생존형·치료형)과 주기(매월·매년)로 세분된다.</p>
+
+    <div class="subgroup">
+      <div class="subgroup-label">생활비·소득보장 (지급조건·주기별 세분)</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">암 생활비 (치료형·매월) <span class="mon-pill">매월</span></div>
+            <div class="card-type">생활비형 · 매월</div>
+          </div>
+          <div class="card-sub">진단·치료 중 매월 정액 지급</div>
+          <p class="card-def">암 진단 후 치료기간 동안 매월 일정액을 지급하는 '두 번째 월급' 성격. 휴직·소득 공백을 메운다. 재발·전이 시 다시 매월 지급되는 구조도 있다.</p>
+          <p class="card-note">비고: 메리츠 매월계속받는암은 새 원발·전이·재발·잔여암 진단 시 <b>매월 1년간</b> 지급.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">신한라이프(통합건강ONE암 — 월200만×5년)·메리츠화재(매월계속받는암/매월받는암·진·치)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">암 생활비 (생존형·매년) <span class="mon-pill">매년</span></div>
+            <div class="card-type">생활비형 · 매년(생존조건)</div>
+          </div>
+          <div class="card-sub">매년 진단확정일에 '생존 시' 지급</div>
+          <p class="card-def">진단확정일을 기준으로 매년 생존해 있으면 약정액을 지급. 장기 생존 기간의 생활 안정을 목표로 하는 연금형 보장.</p>
+          <p class="card-note">비고: 라이나는 매년 진단확정일 생존 시 12개월 확정지급, <b>최대 3년(36회)</b>. 미래에셋생명 월100만×10년형도 존재.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">미래에셋생명(월100만×10년, 최대 1.2억)·라이나생명(암생활자금)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <div class="subgroup-label">간병·요양·통원·납입면제</div>
+      <div class="grid">
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">요양병원 암입원일당</div>
+            <div class="card-type">일당형(입원) · 1일당</div>
+          </div>
+          <div class="card-sub">암 치료 후 요양병원 입원 1일당</div>
+          <p class="card-def">급성기 치료 후 회복·재활을 위한 요양병원 입원을 별도 일당으로 보장. 일반 암입원일당과 분리 설계되는 경우가 많다.</p>
+          <p class="card-note">비고: '암의 직접치료' 목적·입원 일수 한도가 쟁점. 비급여 비중 확인 필요.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">다수 생·손보 요양병원 입원일당 특약 운영(상품별 한도 상이)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">간병인 사용일당 <span class="tag-age">고령</span></div>
+            <div class="card-type">일당형(간병) · 1일당</div>
+          </div>
+          <div class="card-sub">상급종합병원 등 입원 중 간병인 사용</div>
+          <p class="card-def">입원 기간 간병인을 고용하면 1일당 정액 지급. 고령·중증 환자의 간병 부담을 보조한다.</p>
+          <p class="card-note">비고: 2025년 손보사 일제히 <b>일당 한도 축소</b>(성인 10만/어린이 5만 등). 가입 시점 한도 확인.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">DB손보·삼성화재·KB손보·한화손보(상급종합병원 간병인사용일당)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">암 통원치료비(통원일당)</div>
+            <div class="card-type">일당형(통원) · 1일당</div>
+          </div>
+          <div class="card-sub">암 직접치료 목적 통원 1일당</div>
+          <p class="card-def">입원 없이 통원으로 항암·방사선 치료를 받는 경우가 늘며, 통원 1일당 정액을 보장. 상급병원 통원은 더 높게 설계되기도 한다.</p>
+          <p class="card-note">비고: 상급병원 암통원 하루당 N만원 예시. 입원일당과 별개로 누적.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">다수 생·손보 암통원일당 특약(상급병원 가산형 포함)</span></div>
+        </div>
+
+        <div class="card" style="--oc:var(--p4)">
+          <div class="card-top">
+            <div class="card-name">보험료 납입면제</div>
+            <div class="card-type">서비스형 · 진단 시</div>
+          </div>
+          <div class="card-sub">암 진단확정 시 차회 이후 보험료 면제</div>
+          <p class="card-def">암 진단이 확정되면 이후 보험료 납입을 면제하고 보장은 만기까지 유지. 치료 중 보험료 부담까지 덜어주는 안전망.</p>
+          <p class="card-note">비고: <b>암보장개시일 전 진단은 제외.</b> 특약 보험료도 함께 면제되는 것이 일반적.</p>
+          <div class="card-ins"><span class="k">대표</span><span class="v">대다수 암보험 기본 탑재(KDB생명·전 사) · 면제 대상 암 범위 확인</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p5)">Phase 05</span>
+      <h2>재발 · 후유</h2>
+    </div>
+    <p class="phase-sub">"한 번 받고 끝"의 한계를 메우는 구간. 잔여·재발·전이·새 원발암을 다시 보장하는 <b>재진단·반복 진단비</b>가 핵심이며, 치료 후 남는 장해를 보장하는 담보가 더해진다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">재진단암 진단비 <span class="rep-pill">2년마다</span></div>
+          <div class="card-type">진단형 · 반복</div>
+        </div>
+        <div class="card-sub">직전 진단확정일 2년 후 잔여·재발·전이·원발</div>
+        <p class="card-def">치료 후 남은 잔여암, 다시 생긴 재발암, 먼 곳의 전이암, 새 부위 원발암을 <b>매 1~2년마다 계속</b> 보장. 일반암 1회 소멸의 공백을 메운다.</p>
+        <p class="card-note">비고: 기타피부암·갑상선암·전립선암은 제외되는 경우가 많다(상품별).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(계속받는암보험 — 2년마다 재진단암)·KB손보</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">반복지급 통합암진단비 <span class="rep-pill">최대30회</span></div>
+          <div class="card-type">진단형 · 다중지급</div>
+        </div>
+        <div class="card-sub">원발·전이 진단을 횟수 한도까지 반복</div>
+        <p class="card-def">암을 여러 종(예: 30종)으로 나눠 진단 시마다 각각 보장. 원발암 다수 회·전이암 수 회까지 반복 지급해 재발·다발 위험을 폭넓게 흡수.</p>
+        <p class="card-note">비고: 메리츠 또또암 <b>원발 30회·전이 4회</b>, 1그룹당 최대 1억(합산 한도 큼).</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">메리츠화재(또 걸려도 또 받는 암 — 또또암)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p5)">
+        <div class="card-top">
+          <div class="card-name">암 후유장해 담보</div>
+          <div class="card-type">장해형 · 일시금</div>
+        </div>
+        <div class="card-sub">암·치료로 인한 장해지급률 충족 시</div>
+        <p class="card-def">암 또는 치료 과정에서 발생한 후유장해가 장해분류표상 일정 지급률에 도달하면 보장. 납입면제 트리거로도 활용된다.</p>
+        <p class="card-note">비고: 장해지급률 <b>50% 이상</b> 시 납입면제·고액 지급 연계 설계 존재.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">KDB생명 등 — 장해 50%↑ 납입면제 연계 · 후유장해 일반 특약 활용</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PHASE 6 ===================== -->
+  <section class="phase" id="p6">
+    <div class="phase-head">
+      <span class="phase-tag" style="background:var(--p6)">Phase 06</span>
+      <h2>사망</h2>
+    </div>
+    <p class="phase-sub">여정의 마지막 단계. 암으로 인한 사망 또는 일반사망을 보장한다. 다만 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>이므로, 어린이 담보는 진단·치료 중심으로 설계된다.</p>
+
+    <div class="grid">
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">암사망보험금</div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">암을 직접 원인으로 한 사망</div>
+        <p class="card-def">피보험자가 암을 직접적인 원인으로 사망하면 보험금을 지급. 유가족의 경제적 충격과 잔여 부채·생활자금을 보조한다.</p>
+        <p class="card-note">비고: 암 직접사망 인과 입증이 쟁점. 일반사망 담보와 보장 범위가 다르다.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보사 암보험·종신/정기 특약 중심 운영(상품별 가입금액 상이)</span></div>
+      </div>
+
+      <div class="card" style="--oc:var(--p6)">
+        <div class="card-top">
+          <div class="card-name">일반사망 · CI 연계 담보 <span class="tag-child">어린이 제외</span></div>
+          <div class="card-type">사망형 · 일시금</div>
+        </div>
+        <div class="card-sub">사망(원인 불문) / 중대질병(CI) 선지급</div>
+        <p class="card-def">원인을 불문한 사망보장 또는 중대한 암 진단 시 사망보험금 일부를 선지급하는 CI 구조. 암 여정 전반의 최종 안전망.</p>
+        <p class="card-note">비고: <b>15세 미만 사망보장은 상법상 무효</b> → 어린이 상품은 진단·치료 보장으로 한정.</p>
+        <div class="card-ins"><span class="k">대표</span><span class="v">생보사 종신·CI보험 특약 전반(연령·상품별 상이)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNATURE ===================== -->
+  <section class="sig">
+    <div class="sig-head">
+      <div class="e">Signature Axis · 암의 자(尺)</div>
+      <h2>분류표가 보험금을 가른다</h2>
+      <p>암 보장의 핵심 변수는 진단명이 아니라 <b style="color:#fff">증권의 '암 분류표'</b>다. 같은 암도 어느 칸에 들어가느냐에 따라 지급률이 10%에서 100%, 그 이상까지 달라진다. 아래는 시장에서 통용되는 분류 사다리와 대략적 지급 수준이다.</p>
+    </div>
+    <div class="sig-body">
+      <div class="tiers">
+        <div class="tier">
+          <div class="tn">유사암<small>갑상선·기타피부·제자리·경계성</small></div>
+          <div class="tier-bar" style="background:var(--p1);width:18%">발생 잦음</div>
+          <div class="pct">10~20%</div>
+        </div>
+        <div class="tier">
+          <div class="tn">소액암<small>유방·자궁·전립선·방광 (상품별)</small></div>
+          <div class="tier-bar" style="background:var(--p4);width:45%">성별 호발암 다수</div>
+          <div class="pct">10~50%</div>
+        </div>
+        <div class="tier">
+          <div class="tn">일반암<small>위·폐·간·대장 등 대부분</small></div>
+          <div class="tier-bar" style="background:var(--p2);width:100%">보장의 기둥</div>
+          <div class="pct">100%</div>
+        </div>
+        <div class="tier">
+          <div class="tn">고액·특정암<small>췌장·뇌·뼈·백혈병·식도</small></div>
+          <div class="tier-bar" style="background:var(--navy);width:100%">일반암 + 추가지급</div>
+          <div class="pct">100%+α</div>
+        </div>
+      </div>
+
+      <div class="move">
+        <span class="chip">진단형 (일시금)</span>
+        <span class="arrow">→</span>
+        <span class="chip">치료형 (치료당·연1회·매월)</span>
+        <span class="arrow">→</span>
+        <span class="chip">재진단·반복 (2년마다·최대30회)</span>
+      </div>
+
+      <p class="sig-note">
+        <b>읽는 법:</b> 분류표는 회사·상품별로 다르다. "유방암 진단비"가 일반암 100%인지 소액암 일부인지, "뇌암"이 고액암에 포함되는지 — 같은 명칭이라도 반드시 <b>대상 분류와 지급률</b>을 약관에서 확인해야 한다. 보장의 무게중심은 진단 일시금(진단형)에서 치료 과정 보장(치료형)으로, 다시 재발까지 잇는 반복지급으로 이동해 왔다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== DEMOGRAPHICS ===================== -->
+  <section class="demosec">
+    <div class="demosec-head">
+      <div class="e">Population Lens · 인구집단 렌즈</div>
+      <h2>누구를 대상으로 하는가</h2>
+      <p>같은 암이라도 성별·연령에 따라 호발암과 보장 설계가 갈린다. 성별 특이암, 고령 가입 조건, 어린이·태아 보장을 분리해 본다.</p>
+    </div>
+    <div class="demo-cols">
+      <div class="demo-col" style="color:var(--demo-sex)">
+        <h3><span class="swatch" style="background:var(--demo-sex)"></span>성별 (여성·남성)</h3>
+        <ul style="color:#33322E">
+          <li><b>여성:</b> 유방암(1위)·자궁경부·자궁체부·난소암. 유방·자궁암이 '소액암'으로 분류돼 진단금이 깎이는지 확인이 핵심.</li>
+          <li><b>여성 특화:</b> 한화손보 <b>유방암예후예측검사비</b>(배타적사용권), 여성건강보험으로 별도 설계.</li>
+          <li><b>남성:</b> 폐·위·전립선암 호발. 전립선·방광암이 소액암에 묶이는지 점검.</li>
+          <li>성별 타깃 상품(여성건강·남성건강보험)으로 호발암 진단비를 일반암 100%로 끌어올리는 특약이 출시되는 추세.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-age)">
+        <h3><span class="swatch" style="background:var(--demo-age)"></span>고령·연령</h3>
+        <ul style="color:#33322E">
+          <li>암은 <b>50~70대 호발</b>. 고령일수록 일반 심사 가입이 어려워진다.</li>
+          <li><b>유병자·고령형:</b> 3·2·5 등 <b>간편심사(고지 축소)형</b> 암보험·암생활비보험이 다양하게 출시.</li>
+          <li><b>갱신형:</b> 초기 보험료가 낮으나 갱신 시 인상. 장기 유지 시 비갱신형이 유리.</li>
+          <li>간병인 사용일당 등 고령 친화 담보가 결합되나 2025년 한도 축소에 유의.</li>
+        </ul>
+      </div>
+      <div class="demo-col" style="color:var(--demo-child)">
+        <h3><span class="swatch" style="background:var(--demo-child)"></span>어린이·태아</h3>
+        <ul style="color:#33322E">
+          <li><b>다발성소아암 진단비</b>(백혈병·뇌종양 등)와 <b>조혈모세포이식(골수이식) 수술비</b>가 핵심.</li>
+          <li><b>15세 미만은 암보장개시일=계약일</b> — 90일 면책 없이 보장.</li>
+          <li><b>태아보험</b> = 어린이보험 + 태아특약(선천이상수술·특정선천이상진단) + 산모특약(임신중독증·유산위로금). 임신 중에만 가입.</li>
+          <li>대표: 현대해상(굿앤굿어린이종합보험)·삼성화재·KB손보(금쪽같은자녀보험).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn">
+      <b>⚠ 법적 한계 —</b> 상법 제732조에 따라 <b>15세 미만자의 사망을 보험사고로 한 계약은 무효</b>다. 따라서 어린이 암 담보는 <b>진단·치료·수술 중심</b>으로 구성되며 사망보장은 제외된다.
+    </div>
+  </section>
+
+  <!-- ===================== VERIFICATION TABLE ===================== -->
+  <section class="refsec">
+    <div class="e">Verification · 교차검증</div>
+    <h2>담보별 지급기준 · 판매사 · 금액 · 특징</h2>
+    <p class="desc">여정 카드가 '존재·판매사·형태'를 보여준다면, 이 표는 여정에 담기 어려운 <b>가입금액과 세부 조건(면책·감액·반복·한도)</b>을 깊이로 보완한다. 금액은 검증된 예시·범위이며 상품·특약·연령별로 다르다.</p>
+    <div class="tablescroll">
+      <table class="reftable">
+        <thead>
+          <tr>
+            <th>담보</th>
+            <th>지급기준(트리거)</th>
+            <th>대표 판매사(상품 예시)</th>
+            <th>가입금액 예시·범위</th>
+            <th>주요 특징(면책·감액·반복·한도·연령)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c-dam">일반암 진단비</td>
+            <td class="c-crit">암 진단확정(조직검사 등), 유사·소액·고액암 제외</td>
+            <td class="c-ins">한화생명·삼성·현대·DB·KB·메리츠 등 전반</td>
+            <td class="c-amt">5천만~1억<br>(증권 합산)</td>
+            <td class="c-feat">90일 면책 · 1년 미만 50% 감액 · 진단 1회 지급(반복은 재진단 특약)</td>
+          </tr>
+          <tr>
+            <td class="c-dam">유사암 진단비</td>
+            <td class="c-crit">갑상선·기타피부·제자리암·경계성종양 진단</td>
+            <td class="c-ins">전 사 특약(한화생명 e암 등)</td>
+            <td class="c-amt">최대 1천만~3천만</td>
+            <td class="c-feat">대체로 계약일부터 보장 · 한도 일반암의 20% 이내(당국 가이드)</td>
+          </tr>
+          <tr>
+            <td class="c-dam">소액암 진단비</td>
+            <td class="c-crit">유방·자궁경부·자궁체부·전립선·방광암 진단</td>
+            <td class="c-ins">메리츠(또또암)·현대해상 등</td>
+            <td class="c-amt">상품별 상이<br>(또또암 각 최대 1억)</td>
+            <td class="c-feat">동일그룹 1회 후 소멸 vs 각각 보장 등 회사별 차이 큼 · 성별 호발암 포함</td>
+          </tr>
+          <tr>
+            <td class="c-dam">전이암 진단비</td>
+            <td class="c-crit">원발 부위에서 먼 곳의 전이암 진단확정</td>
+            <td class="c-ins">메리츠(또또암)·현대해상(두배받는암)</td>
+            <td class="c-amt">상품별 상이<br>(통합전이 최대 8천만)</td>
+            <td class="c-feat">종류별 각 4회 등 반복 보장 · 일반암 진단비와 별도</td>
+          </tr>
+          <tr>
+            <td class="c-dam">암주요치료비</td>
+            <td class="c-crit">수술·방사선·약물 등 주요치료 시행(연간1회)</td>
+            <td class="c-ins">현대해상·KB손보·삼성화재</td>
+            <td class="c-amt">연 최대 3천만대</td>
+            <td class="c-feat">3대 치료 통합 · 진단후 5~10년 매년 1회 · 원발/전이/재발 무관</td>
+          </tr>
+          <tr>
+            <td class="c-dam">암통합치료비</td>
+            <td class="c-crit">검사~수술~약물~방사선~비급여~재활 치료</td>
+            <td class="c-ins">메리츠화재(암 통합치료비 특약)</td>
+            <td class="c-amt">1년 최대 1억</td>
+            <td class="c-feat">연 1회·만기까지 반복 → 누적 한도 매우 큼 · 손해율發 보장축소 가능성</td>
+          </tr>
+          <tr>
+            <td class="c-dam">항암방사선·약물치료비</td>
+            <td class="c-crit">방사선 또는 약물치료 시행(수술 제외)</td>
+            <td class="c-ins">현대·삼성·DB·KB 등 광범위</td>
+            <td class="c-amt">1천만~2천만</td>
+            <td class="c-feat">2대 치료만 · 90일 면책(갑상선·피부암은 계약일) · 향후 신치료법 소급</td>
+          </tr>
+          <tr>
+            <td class="c-dam">표적항암약물허가치료비</td>
+            <td class="c-crit">식약처 허가 표적·면역항암제 투여(치료당)</td>
+            <td class="c-ins">AIG·현대해상·메리츠·라이나</td>
+            <td class="c-amt">최대 5천만</td>
+            <td class="c-feat">허가 여부가 보장 가름 · 키트루다·옵디보 등 면역항암제 포함 · 치료당 반복</td>
+          </tr>
+          <tr>
+            <td class="c-dam">카티(CAR-T) 치료비</td>
+            <td class="c-crit">킴리아 등 CAR-T 면역세포치료 시행</td>
+            <td class="c-ins">라이나·KB손보·메리츠화재</td>
+            <td class="c-amt">5천만 예시</td>
+            <td class="c-feat">연간1회한 · 라이나·KB 킴리아 단일, 메리츠 다종 확장(상품별 상이)</td>
+          </tr>
+          <tr>
+            <td class="c-dam">항암중입자방사선치료비</td>
+            <td class="c-crit">중입자(탄소빔) 방사선치료 시행</td>
+            <td class="c-ins">DB손보(하이클래스암)·삼성화재 등</td>
+            <td class="c-amt">연 최대 5천만</td>
+            <td class="c-feat">신기술 신담보 · 국내 장비·제도 미비로 접근성 제한 · 90일 면책</td>
+          </tr>
+          <tr>
+            <td class="c-dam">암 생활비(매월)</td>
+            <td class="c-crit">암 진단·치료 중 매월(재발·전이 시 재개)</td>
+            <td class="c-ins">신한라이프·메리츠화재</td>
+            <td class="c-amt">월 100만~300만<br>(누적 1억대)</td>
+            <td class="c-feat">소득보장 성격 · 진단 시 납입면제 결합 · 지급기간 상품별 상이</td>
+          </tr>
+          <tr>
+            <td class="c-dam">암 생활비(매년·생존형)</td>
+            <td class="c-crit">매년 진단확정일에 생존 시 지급</td>
+            <td class="c-ins">미래에셋생명·라이나생명</td>
+            <td class="c-amt">최대 1.2억<br>(예: 월100만×10년)</td>
+            <td class="c-feat">생존 조건부 연금형 · 라이나 최대 3년(36회) 확정지급 등</td>
+          </tr>
+          <tr>
+            <td class="c-dam">재진단암 진단비</td>
+            <td class="c-crit">직전 진단확정일 2년 후 잔여·재발·전이·원발</td>
+            <td class="c-ins">현대해상(계속받는암)·KB손보</td>
+            <td class="c-amt">상품별 상이</td>
+            <td class="c-feat">매 1~2년마다 반복 · 기타피부·갑상선·전립선암 제외되는 경우</td>
+          </tr>
+          <tr>
+            <td class="c-dam">반복 통합암진단비</td>
+            <td class="c-crit">원발·전이 진단을 횟수 한도까지 반복</td>
+            <td class="c-ins">메리츠화재(또또암)</td>
+            <td class="c-amt">1그룹당 최대 1억</td>
+            <td class="c-feat">원발 30회·전이 4회 · 25% 체증 수술비 결합</td>
+          </tr>
+          <tr>
+            <td class="c-dam">다발성소아암 진단비</td>
+            <td class="c-crit">소아 백혈병·뇌종양 등 다발성소아암 진단</td>
+            <td class="c-ins">현대해상·삼성화재·KB손보</td>
+            <td class="c-amt">다발성 5천만/그외 2천만</td>
+            <td class="c-feat">최초 1회 · 15세 미만 보장개시일=계약일 · 조혈모세포이식 수술비 결합</td>
+          </tr>
+          <tr>
+            <td class="c-dam">보험료 납입면제</td>
+            <td class="c-crit">암 진단확정 시 차회 이후 보험료 면제</td>
+            <td class="c-ins">대다수 암보험 기본 탑재</td>
+            <td class="c-amt">해당 없음(면제)</td>
+            <td class="c-feat">암보장개시일 전 진단 제외 · 특약 보험료도 면제 · 면제 대상 암 범위 확인</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reffoot">
+      <b>공통 단서 —</b> 동일 명칭이라도 보장 범위·금액·감액기간·대상 분류는 상품·약관별로 다르다. 금액은 검증된 예시·범위이며 연령·직업·플랜에 따라 달라진다. 가입 판단 전 반드시 약관 원문과 상품설명서를 확인할 것.
+    </p>
+  </section>
+
+  <!-- ===================== GAP & PROPOSALS ===================== -->
+  <section class="gapsec">
+    <div class="gapsec-head">
+      <div class="e">Coverage Gap & Proposals · 미보장 담보 제안</div>
+      <h2>아직 비어 있는 칸</h2>
+      <p>암은 보장 세트가 가장 완비된 '기준선' 질병이지만, 치료 과정을 훑으면 비용이 드는데 보장이 얇은 구간이 남는다. 3개 렌즈(치료 과정 공백 · 기준선 대비 · 신기술)로 도출했다.</p>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>가임력 보존비 (난자·정자 동결)</h3>
+        <p>항암치료는 생식능력을 떨어뜨려, 치료 전 난자·정자·배아 동결이 필요한 환자가 늘고 있다. 그러나 계획적 동결은 대체로 <b>비급여</b>다.</p>
+        <div class="meta"><b>기준선:</b> 암 치료의 직접 부수 비용인데도 정액 담보가 거의 없음.</div>
+        <span class="gap-status st-none">현황: 미보장(신규 영역)</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 1 — 치료 과정 공백</div>
+        <h3>유방재건·재활 정액 담보</h3>
+        <p>유방절제 후 재건술, 장루(인공항문) 관리, 림프부종 재활, 탈모 가발 등 '치료 후 일상 복귀' 비용은 실손 외 정액 보장이 얇다.</p>
+        <div class="meta"><b>기준선:</b> 회복·생활 단계의 기능 회복 비용. 생활비형은 있으나 항목별 정액은 공백.</div>
+        <span class="gap-status st-none">현황: 대체로 미보장</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 기준선 대비</div>
+        <h3>항암 부작용 관리 정액비</h3>
+        <p>호중구감소·구내염·말초신경병증 등 항암 부작용 관리·지지요법 비용은 치료 본체에 가려 별도 정액 보장이 드물다.</p>
+        <div class="meta"><b>기준선:</b> 치료형 담보는 '치료 시행'엔 지급하나 '부작용 관리'는 사각.</div>
+        <span class="gap-status st-some">현황: 일부 검사·입원 담보로만 간접 보장</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 2 — 기준선 대비</div>
+        <h3>심리·정신건강 지원</h3>
+        <p>암 진단·치료 과정의 우울·불안에 대한 상담·정신과 치료 비용. 어린이보험은 정신질환 보장이 있으나 성인 암보험은 드물다.</p>
+        <div class="meta"><b>기준선:</b> 어린이보험의 정신질환 진단·치료 담보를 성인 암 여정에 대응.</div>
+        <span class="gap-status st-some">현황: 어린이 일부 / 성인 공백</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신기술·고가신약</div>
+        <h3>차세대 신약(ADC·이중항체) 대응</h3>
+        <p>항체-약물접합체(ADC), 이중특이항체 등 새 비급여 고가 약제가 빠르게 등장. 기존 '표적항암약물허가치료비'가 신약을 적시에 포괄하는지 점검 필요.</p>
+        <div class="meta"><b>기준선:</b> 표적·면역항암제 담보의 보장 약제 범위를 신약까지 확장.</div>
+        <span class="gap-status st-some">현황: 허가 약제 범위 내 일부 보장</span>
+      </div>
+
+      <div class="gap-item">
+        <div class="lens">렌즈 3 — 신기술·고가신약</div>
+        <h3>중입자·방사성리간드치료 확대</h3>
+        <p>중입자치료 담보는 빠르게 출시됐으나 장비·제도 미비로 실효성 제한. 방사성리간드치료(RPT) 등 신방사선 치료의 정액 보장은 아직 초기다.</p>
+        <div class="meta"><b>기준선:</b> 비급여 고가 방사선 신기술의 보장 공백.</div>
+        <span class="gap-status st-some">현황: 일부 출시(비급여암통합치료 등)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESIGN NOTES ===================== -->
+  <section class="closing">
+    <div class="e">Design Notes · 설계 핵심</div>
+    <h2>이 지도를 읽는 6가지 관점</h2>
+    <div class="points">
+      <div class="point"><div class="num">1</div><div><h4>분류표가 먼저다</h4><p>진단명이 아니라 증권의 암 분류표가 지급률을 정한다. 유사·소액·일반·고액 어디에 들어가는지부터 확인한다.</p></div></div>
+      <div class="point"><div class="num">2</div><div><h4>명칭이 같아도 담보가 다르다</h4><p>'항암방사선·약물치료비'(2대·수술 제외)와 '암주요치료비'(3대·연1회·진단후N년)는 별개 담보다.</p></div></div>
+      <div class="point"><div class="num">3</div><div><h4>일시금에서 반복지급으로</h4><p>치료당·연간1회·매월·재진단(2년마다·최대30회)으로 보장 기간이 길어졌다. 누적 한도를 함께 본다.</p></div></div>
+      <div class="point"><div class="num">4</div><div><h4>치료비에서 생활비로</h4><p>'생활병' 인식과 함께 소득 공백·간병·통원을 메우는 생활비형이 빠르게 확대되고 있다.</p></div></div>
+      <div class="point"><div class="num">5</div><div><h4>면책·감액을 항상 본다</h4><p>일반암 90일 면책·1년 50% 감액이 기본. 유사암·15세 미만은 계약일부터 보장되는 등 예외가 많다.</p></div></div>
+      <div class="point"><div class="num">6</div><div><h4>여정의 양끝이 얇다</h4><p>예방·검진과 회복(가임력·재건·재활)은 정액 보장이 얇다. 신약·신기술과 함께 공백 보완의 여지가 크다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 암 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아니다. 담보 정의·분류·면책·감액·금액·판매사는 회사·약관 및 제도 변경에 따라 달라질 수 있으므로, 가입·보장 판단 시 <b>약관 원문과 상품설명서 확인이 전제</b>다. 판매사·상품명·금액은 공개된 정보를 바탕으로 검증한 예시이며, 동일 명칭이라도 보장 범위·금액·조건은 상품별로 다르다. 약관 원문은 복제하지 않고 요약·재서술했다.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">CANCER COVERAGE JOURNEY MAP · v3 · 2계층 검증(여정 카드 + 검증 표) 적용</span>
+  </footer>
+
+</div>
+</body>
+</html>
