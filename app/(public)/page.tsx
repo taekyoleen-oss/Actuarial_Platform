@@ -9,14 +9,20 @@ import {
   UserRound,
 } from "lucide-react";
 import { HeroSection } from "@/components/feature/HeroSection";
+import { PostCard } from "@/components/feature/PostCard";
 import { PostGrid } from "@/components/feature/PostGrid";
+import { ResourceCard } from "@/components/feature/ResourceCard";
 import { Reveal } from "@/components/feature/Reveal";
 import { StatStrip } from "@/components/feature/StatStrip";
 import { ThemeChip } from "@/components/feature/fsa/ThemeChip";
+import { listDomesticProducts } from "@/lib/domesticProducts";
 import { FSA_STATS } from "@/lib/japanFsa";
 import { FSA_THEMES } from "@/data/japan-fsa/themes";
+import { groupPosts } from "@/lib/postSections";
 import { listCategories, listPosts } from "@/lib/queries";
 import { THEORY_TOPICS, listTheoryItems } from "@/lib/theory";
+import { excerpt } from "@/lib/utils";
+import type { PostListItem } from "@/types";
 
 export const revalidate = 60;
 
@@ -45,6 +51,15 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+// 최신 자료 — 카테고리 항목(서브타이틀)별 최신 1건
+type LatestCell =
+  | { label: string; post: PostListItem; product?: undefined }
+  | {
+      label: string;
+      product: { href: string; title: string; subtitle: string };
+      post?: undefined;
+    };
+
 export default async function HomePage() {
   const [categories, recent] = await Promise.all([
     listCategories(),
@@ -55,8 +70,49 @@ export default async function HomePage() {
     0
   );
   const byCatSlug = new Map(categories.map((c) => [c.slug, c]));
-  const exclusive = byCatSlug.get("exclusive-rights");
-  const domestic = byCatSlug.get("domestic");
+  const exclusiveCat = byCatSlug.get("exclusive-rights");
+  const domesticCat = byCatSlug.get("domestic");
+
+  // 국내 '상품 정보' 항목의 정적 자료 — 건수 합산·최신 카드용
+  const products = listDomesticProducts();
+  const latestProduct = products[0];
+
+  // 콘텐츠 카드용 최신 1건(배타적 사용권)
+  const latestExclusive = recent.find(
+    (p) => p.category.slug === "exclusive-rights"
+  );
+
+  // 최신 자료 — 각 카테고리 항목(서브타이틀)별 최신 1건
+  const exclusiveGroups =
+    groupPosts(
+      "exclusive-rights",
+      recent.filter((p) => p.category.slug === "exclusive-rights")
+    ) ?? [];
+  const domesticGroups =
+    groupPosts(
+      "domestic",
+      recent.filter((p) => p.category.slug === "domestic")
+    ) ?? [];
+
+  const latestBySection: LatestCell[] = [];
+  for (const g of exclusiveGroups) {
+    if (g.posts[0]) latestBySection.push({ label: g.title, post: g.posts[0] });
+  }
+  for (const g of domesticGroups) {
+    if (g.title === "상품 정보") {
+      if (latestProduct)
+        latestBySection.push({
+          label: g.title,
+          product: {
+            href: `/domestic/products/${latestProduct.base}`,
+            title: latestProduct.title,
+            subtitle: latestProduct.subtitle,
+          },
+        });
+    } else if (g.posts[0]) {
+      latestBySection.push({ label: g.title, post: g.posts[0] });
+    }
+  }
 
   const tileBase =
     "group relative flex h-full flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
@@ -77,7 +133,7 @@ export default async function HomePage() {
             items={[
               {
                 label: "게시 자료",
-                value: recent.length,
+                value: recent.length + products.length,
                 suffix: "건",
                 href: "/posts?category=exclusive-rights",
               },
@@ -109,37 +165,114 @@ export default async function HomePage() {
             <SectionHeading>콘텐츠 한눈에</SectionHeading>
           </div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {/* 대형: 해외 자료 */}
-            <Reveal className="md:col-span-2">
-              <Link href="/global" className={tileBase}>
+            {/* 배타적 사용권 — 가장 최근 자료 */}
+            <Reveal>
+              <Link
+                href={
+                  latestExclusive
+                    ? `/posts/${latestExclusive.id}`
+                    : "/posts?category=exclusive-rights"
+                }
+                className={tileBase}
+              >
                 <div className={tileEyebrow}>
                   <span
                     className={tileIcon}
                     style={{
-                      background: "var(--chip-blue-bg)",
-                      color: "var(--chip-blue-fg)",
+                      background: "var(--chip-rose-bg)",
+                      color: "var(--chip-rose-fg)",
                     }}
                   >
-                    <Globe2 size={18} />
+                    <Scale size={18} />
                   </span>
-                  GLOBAL · 해외 주요 보험 정보·자료
+                  EXCLUSIVE · 배타적 사용권
                 </div>
-                <h3 className="mt-4 text-[22px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[24px]">
-                  일본 금융청 심사사례 {FSA_STATS.cases}건, 테마·기간·분야로
-                  탐색
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                  {latestExclusive?.title ??
+                    exclusiveCat?.name ??
+                    "보험 배타적 사용권 분석"}
                 </h3>
-                <p className="mt-2 text-[15px] leading-[1.8] text-body">
-                  금융청 심사사례집({FSA_STATS.periods}개 호)·생명보험
-                  동향·변천 가이드를 사이트 일체형 페이지로 — 용어 해설과 한국
-                  시장 맥락(유사 사례·현황·규정)까지 함께 제공합니다.
+                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
+                  {latestExclusive
+                    ? excerpt(latestExclusive.content, 90)
+                    : exclusiveCat?.description ??
+                      "신상품 배타적사용권 심의 결과를 급부 구조 중심으로 분석합니다."}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {FSA_THEMES.slice(0, 6).map((t) => (
-                    <ThemeChip key={t.id} themeId={t.id} />
-                  ))}
-                </div>
                 <span className={tileCta}>
-                  해외 자료 허브로{" "}
+                  최신 분석 보기{" "}
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
+                  />
+                </span>
+              </Link>
+            </Reveal>
+
+            {/* 국내 보험 정보·분석 — 상품정보 최신 자료 */}
+            <Reveal delay={40}>
+              <Link
+                href={
+                  latestProduct
+                    ? `/domestic/products/${latestProduct.base}`
+                    : "/posts?category=domestic"
+                }
+                className={tileBase}
+              >
+                <div className={tileEyebrow}>
+                  <span
+                    className={tileIcon}
+                    style={{
+                      background: "var(--chip-green-bg)",
+                      color: "var(--chip-green-fg)",
+                    }}
+                  >
+                    <LayoutGrid size={18} />
+                  </span>
+                  DOMESTIC · 국내 보험 정보·분석
+                </div>
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                  {latestProduct?.title ??
+                    domesticCat?.name ??
+                    "국내 보험 정보·분석"}
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
+                  {latestProduct?.subtitle ||
+                    domesticCat?.description ||
+                    "국내 보험 시장의 정보와 분석 자료를 제공합니다."}
+                </p>
+                <span className={tileCta}>
+                  최신 상품정보 보기{" "}
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
+                  />
+                </span>
+              </Link>
+            </Reveal>
+
+            {/* 뉴스 */}
+            <Reveal delay={80}>
+              <Link href="/news" className={tileBase}>
+                <div className={tileEyebrow}>
+                  <span
+                    className={tileIcon}
+                    style={{
+                      background: "var(--chip-amber-bg)",
+                      color: "var(--chip-amber-fg)",
+                    }}
+                  >
+                    <Newspaper size={18} />
+                  </span>
+                  NEWS · 보험 뉴스
+                </div>
+                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                  보험 뉴스 대시보드
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
+                  생보·손보·헬스케어 뉴스를 매일 수집해 정리합니다.
+                </p>
+                <span className={tileCta}>
+                  뉴스 보기{" "}
                   <ArrowRight
                     size={15}
                     className="transition-transform duration-tesla group-hover:translate-x-0.5"
@@ -149,7 +282,7 @@ export default async function HomePage() {
             </Reveal>
 
             {/* 보험이론 사전 */}
-            <Reveal delay={80}>
+            <Reveal delay={120}>
               <Link href="/theory" className={tileBase}>
                 <div className={tileEyebrow}>
                   <span
@@ -180,93 +313,37 @@ export default async function HomePage() {
               </Link>
             </Reveal>
 
-            {/* 배타적 사용권 */}
-            <Reveal delay={40}>
-              <Link href="/posts?category=exclusive-rights" className={tileBase}>
+            {/* 대형: 해외 자료 */}
+            <Reveal className="md:col-span-2" delay={60}>
+              <Link href="/posts?category=global" className={tileBase}>
                 <div className={tileEyebrow}>
                   <span
                     className={tileIcon}
                     style={{
-                      background: "var(--chip-rose-bg)",
-                      color: "var(--chip-rose-fg)",
+                      background: "var(--chip-blue-bg)",
+                      color: "var(--chip-blue-fg)",
                     }}
                   >
-                    <Scale size={18} />
+                    <Globe2 size={18} />
                   </span>
-                  EXCLUSIVE · 배타적 사용권
+                  GLOBAL · 해외 주요 보험 정보·자료
                 </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  {exclusive?.name ?? "보험 배타적 사용권 분석"}
+                <h3 className="mt-4 text-[22px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[24px]">
+                  일본 금융청 심사사례 {FSA_STATS.cases}건, 테마·기간·분야로
+                  탐색
                 </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  {exclusive?.description ??
-                    "신상품 배타적사용권 심의 결과를 급부 구조 중심으로 분석합니다."}
+                <p className="mt-2 text-[15px] leading-[1.8] text-body">
+                  금융청 심사사례집({FSA_STATS.periods}개 호)·생명보험
+                  동향·변천 가이드를 사이트 일체형 페이지로 — 용어 해설과 한국
+                  시장 맥락(유사 사례·현황·규정)까지 함께 제공합니다.
                 </p>
-                <span className={tileCta}>
-                  분석 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </Reveal>
-
-            {/* 국내 자료 */}
-            <Reveal delay={80}>
-              <Link href="/posts?category=domestic" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-green-bg)",
-                      color: "var(--chip-green-fg)",
-                    }}
-                  >
-                    <LayoutGrid size={18} />
-                  </span>
-                  DOMESTIC · 국내 자료
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {FSA_THEMES.slice(0, 6).map((t) => (
+                    <ThemeChip key={t.id} themeId={t.id} />
+                  ))}
                 </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  {domestic?.name ?? "국내 보험 정보·분석"}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  {domestic?.description ??
-                    "국내 보험 시장의 정보와 분석 자료를 제공합니다."}
-                </p>
                 <span className={tileCta}>
-                  자료 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </Reveal>
-
-            {/* 뉴스 */}
-            <Reveal delay={120}>
-              <Link href="/news" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-amber-bg)",
-                      color: "var(--chip-amber-fg)",
-                    }}
-                  >
-                    <Newspaper size={18} />
-                  </span>
-                  NEWS · 보험 뉴스
-                </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  보험 뉴스 대시보드
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  생보·손보·헬스케어 뉴스를 매일 수집해 정리합니다.
-                </p>
-                <span className={tileCta}>
-                  뉴스 보기{" "}
+                  해외 자료 보기{" "}
                   <ArrowRight
                     size={15}
                     className="transition-transform duration-tesla group-hover:translate-x-0.5"
@@ -341,7 +418,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 최신 자료 */}
+        {/* 최신 자료 — 항목(서브타이틀)별 최신 1건 */}
         <div className="mt-20">
           <div className="mb-6 flex items-end justify-between">
             <SectionHeading>최신 자료</SectionHeading>
@@ -349,7 +426,35 @@ export default async function HomePage() {
               전체 보기
             </Link>
           </div>
-          <PostGrid posts={recent.slice(0, 6)} />
+          {latestBySection.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {latestBySection.map((cell) => (
+                <div key={cell.label} className="flex flex-col">
+                  <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-brand-sky">
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-1.5 shrink-0 bg-brand-sky"
+                    />
+                    {cell.label}
+                  </p>
+                  <div className="flex-1">
+                    {cell.post ? (
+                      <PostCard post={cell.post} />
+                    ) : (
+                      <ResourceCard
+                        href={cell.product.href}
+                        title={cell.product.title}
+                        subtitle={cell.product.subtitle}
+                        badge="국내 보험 정보·분석"
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <PostGrid posts={recent.slice(0, 6)} />
+          )}
         </div>
 
         {/* 관련 링크 */}

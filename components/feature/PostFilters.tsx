@@ -49,7 +49,8 @@ export function PostFilters({
 
   return (
     <div className="space-y-5">
-      {/* 카테고리 선택 시: 항목(서브카테고리) 탭 / 미선택 시: 카테고리 탭 */}
+      {/* 카테고리 선택 시: 항목(서브카테고리) 탭 / 미선택 시: 카테고리 탭.
+          카테고리가 선택됐는데 항목이 없으면(예: 해외) 전체 카테고리 탭을 다시 노출하지 않는다(2026-06-15). */}
       {showSub ? (
         <div className="flex flex-wrap gap-2">
           <Tab active={!currentSub} onClick={() => setParam("sub", null)}>
@@ -65,7 +66,7 @@ export function PostFilters({
             </Tab>
           ))}
         </div>
-      ) : (
+      ) : current ? null : (
         <div className="flex flex-wrap gap-2">
           <Tab
             active={!current}

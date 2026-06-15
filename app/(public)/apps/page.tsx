@@ -181,8 +181,9 @@ function PipelineIdentCell({
   heightClass?: string;
 }) {
   // 카드 없이 페이지 배경(크림)에 녹아드는 아이덴트 (2026-06-14 사용자 요청)
+  // 모바일에서는 대표 아이덴트(상단 모듈러 빌드)만 남기고 파이프라인 2종은 숨김(2026-06-15).
   return (
-    <div className="flex h-full flex-col">
+    <div className="hidden h-full flex-col md:flex">
       <iframe
         src={src}
         title={title}
@@ -208,8 +209,8 @@ export default function AppsPage() {
         탭에서 앱이 열립니다.
       </p>
 
-      {/* 모듈러 빌드 아이덴트 — 그래픽만, 페이지 배경에 녹아들게 (PC 전용) */}
-      <div className="mt-10 hidden lg:block">
+      {/* 모듈러 빌드 아이덴트 — 대표 아이덴트(모바일 포함 노출, 2026-06-15) */}
+      <div className="mt-10 block">
         <iframe
           src="/idents/tkleen-modular-build-animation.html"
           title="모듈 조립 아이덴트"
