@@ -1,13 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpen,
-  Globe2,
-  LayoutGrid,
-  Newspaper,
-  Scale,
-  UserRound,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, LayoutGrid, Scale } from "lucide-react";
 import { HeroSection } from "@/components/feature/HeroSection";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostGrid } from "@/components/feature/PostGrid";
@@ -73,33 +65,36 @@ export default async function HomePage() {
   const exclusiveCat = byCatSlug.get("exclusive-rights");
   const domesticCat = byCatSlug.get("domestic");
 
-  // 국내 '상품 정보' 항목의 정적 자료 — 건수 합산·최신 카드용
+  // 국내 '보장내용 분석' 항목의 정적 자료 — 건수 합산·최신 카드용
   const products = listDomesticProducts();
   const latestProduct = products[0];
 
-  // 콘텐츠 카드용 최신 1건(배타적 사용권)
-  const latestExclusive = recent.find(
+  // 배타적 사용권 게시물 — 콘텐츠 카드·스탯용
+  const exclusivePosts = recent.filter(
     (p) => p.category.slug === "exclusive-rights"
   );
+  const latestExclusive = exclusivePosts[0];
 
   // 최신 자료 — 각 카테고리 항목(서브타이틀)별 최신 1건
   const exclusiveGroups =
-    groupPosts(
-      "exclusive-rights",
-      recent.filter((p) => p.category.slug === "exclusive-rights")
-    ) ?? [];
+    groupPosts("exclusive-rights", exclusivePosts) ?? [];
   const domesticGroups =
     groupPosts(
       "domestic",
       recent.filter((p) => p.category.slug === "domestic")
     ) ?? [];
 
+  // 스탯: 배타적 사용권 분석 건수 / 보장내용 분석 건수(상품 자료 + 상품 게시물)
+  const exclusiveCount = exclusivePosts.length;
+  const coverageGroup = domesticGroups.find((g) => g.title === "보장내용 분석");
+  const coverageCount = (coverageGroup?.posts.length ?? 0) + products.length;
+
   const latestBySection: LatestCell[] = [];
   for (const g of exclusiveGroups) {
     if (g.posts[0]) latestBySection.push({ label: g.title, post: g.posts[0] });
   }
   for (const g of domesticGroups) {
-    if (g.title === "상품 정보") {
+    if (g.title === "보장내용 분석") {
       if (latestProduct)
         latestBySection.push({
           label: g.title,
@@ -132,10 +127,16 @@ export default async function HomePage() {
           <StatStrip
             items={[
               {
-                label: "게시 자료",
-                value: recent.length + products.length,
+                label: "배타적 사용권 분석",
+                value: exclusiveCount,
                 suffix: "건",
                 href: "/posts?category=exclusive-rights",
+              },
+              {
+                label: "보장내용 분석",
+                value: coverageCount,
+                suffix: "건",
+                href: "/posts?category=domestic",
               },
               {
                 label: "일본 금융청 심사사례",
@@ -148,12 +149,6 @@ export default async function HomePage() {
                 value: theoryCount,
                 suffix: "편",
                 href: "/theory",
-              },
-              {
-                label: "KCI 연구 논문",
-                value: 8,
-                suffix: "편",
-                href: "/about#research",
               },
             ]}
           />
@@ -250,39 +245,8 @@ export default async function HomePage() {
               </Link>
             </Reveal>
 
-            {/* 뉴스 */}
-            <Reveal delay={80}>
-              <Link href="/news" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-amber-bg)",
-                      color: "var(--chip-amber-fg)",
-                    }}
-                  >
-                    <Newspaper size={18} />
-                  </span>
-                  NEWS · 보험 뉴스
-                </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  보험 뉴스 대시보드
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  생보·손보·헬스케어 뉴스를 매일 수집해 정리합니다.
-                </p>
-                <span className={tileCta}>
-                  뉴스 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </Reveal>
-
             {/* 보험이론 사전 */}
-            <Reveal delay={120}>
+            <Reveal delay={80}>
               <Link href="/theory" className={tileBase}>
                 <div className={tileEyebrow}>
                   <span
@@ -314,7 +278,7 @@ export default async function HomePage() {
             </Reveal>
 
             {/* 대형: 해외 자료 */}
-            <Reveal className="md:col-span-2" delay={60}>
+            <Reveal className="md:col-span-2 lg:col-span-3" delay={120}>
               <Link href="/posts?category=global" className={tileBase}>
                 <div className={tileEyebrow}>
                   <span
@@ -353,7 +317,7 @@ export default async function HomePage() {
             </Reveal>
 
             {/* 앱 */}
-            <Reveal className="md:col-span-2" delay={60}>
+            <Reveal className="md:col-span-2 lg:col-span-3" delay={160}>
               <Link href="/apps" className={tileBase}>
                 <div className={tileEyebrow}>
                   <span
@@ -376,38 +340,6 @@ export default async function HomePage() {
                 </p>
                 <span className={tileCta}>
                   앱 모음 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </Reveal>
-
-            {/* 만든이 */}
-            <Reveal delay={120}>
-              <Link href="/about" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-violet-bg)",
-                      color: "var(--chip-violet-fg)",
-                    }}
-                  >
-                    <UserRound size={18} />
-                  </span>
-                  ABOUT · 만든이
-                </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  보험계리사 · 경영학 박사
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  30년 재보험 실무, KCI 논문 8편 — 만든이의 경력과 연구를
-                  소개합니다.
-                </p>
-                <span className={tileCta}>
-                  소개 보기{" "}
                   <ArrowRight
                     size={15}
                     className="transition-transform duration-tesla group-hover:translate-x-0.5"

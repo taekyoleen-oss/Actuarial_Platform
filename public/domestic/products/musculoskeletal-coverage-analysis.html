@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>근골격계 질환 보장 담보 분석 — 질환별 보장 · 판매사 · 신규 보장 제안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F; --gap:#2E8B6E;
+    --c-joint:#C25E4A; --c-spine:#3E6FB0; --c-frac:#9C6B3F; --c-bone:#C99A2E; --c-soft:#2F8597; --c-nerve:#8E5BA8;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+
+  header{padding:58px 0 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.01em;margin-bottom:8px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--c-joint);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--muted);margin-bottom:24px;}
+  .lead{max-width:840px;font-size:1.0rem;color:#33322E;margin-bottom:6px;}
+  .lead b{color:var(--ink);}
+
+  .ctx{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:24px 0 6px;}
+  @media(max-width:680px){.ctx{grid-template-columns:1fr;}}
+  .ctxbox{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:#fff;}
+  .ctxbox .big{font-family:var(--serif);font-weight:600;font-size:1.3rem;color:var(--c-joint);line-height:1.05;}
+  .ctxbox .lab{font-size:.84rem;color:var(--muted);margin-top:7px;line-height:1.45;}
+  .ctxbox .lab b{color:var(--ink);}
+
+  .sigbox{margin:24px 0 4px;background:var(--navy);border-radius:14px;padding:20px 22px;color:#EDEBE6;}
+  .sigbox .e{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#A9B4C7;}
+  .sigbox h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;margin:5px 0 10px;color:#fff;}
+  .sigbox .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:600px){.sigbox .split{grid-template-columns:1fr;}}
+  .sigbox .s{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;}
+  .sigbox .s b{color:#fff;font-family:var(--serif);font-size:1rem;}
+  .sigbox .s p{font-size:.84rem;color:#C9CFDA;margin-top:4px;line-height:1.5;}
+
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px;}
+  .nav a{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:5px 12px;background:#fff;display:inline-flex;align-items:center;gap:6px;transition:transform .12s,box-shadow .12s;white-space:nowrap;}
+  .nav a:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(0,0,0,.06);}
+  .nav a:focus-visible{outline:2px solid var(--c-joint);outline-offset:2px;}
+  .nav a .d{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .msec{padding:42px 0 6px;scroll-margin-top:12px;}
+  .m-head{display:flex;align-items:baseline;gap:13px;margin-bottom:5px;flex-wrap:wrap;border-left:5px solid var(--mc);padding-left:14px;}
+  .m-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mc);font-weight:500;}
+  .m-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,1.95rem);letter-spacing:-.01em;}
+  .m-mech{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#fff;background:var(--mc);padding:3px 9px;border-radius:5px;white-space:nowrap;}
+  .m-intro{font-size:.92rem;color:var(--muted);max-width:880px;margin:6px 0 18px;padding-left:19px;line-height:1.55;}
+  .m-intro b{color:#403F3A;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-left:4px solid var(--mc);border-radius:11px;background:#fff;padding:15px 16px 14px;display:flex;flex-direction:column;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.02rem;line-height:1.25;margin-bottom:3px;}
+  .card-name .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;color:#fff;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+  .tag-code{background:var(--mc);} .tag-gap{background:var(--gap);}
+  .card-trig{font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--mc);margin-bottom:8px;}
+  .card-def{font-size:.875rem;color:#33322E;line-height:1.52;margin-bottom:8px;}
+  .card-def b{color:var(--ink);}
+  .card-spec{display:flex;flex-direction:column;gap:5px;}
+  .card-spec .row{display:flex;gap:8px;font-size:.8rem;line-height:1.4;}
+  .card-spec .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--mc);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .card-spec .v{color:#403F3A;}
+  .card-spec .v b{color:var(--ink);}
+  .card-ins{margin-top:10px;display:flex;gap:9px;align-items:baseline;border-top:1px dashed var(--line);padding-top:9px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.81rem;color:#403F3A;line-height:1.45;}
+  .card-ins .v b{color:var(--ink);}
+
+  .cmpsec{margin:50px 0 6px;}
+  .cmpsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--c-joint);}
+  .cmpsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 4px;}
+  .cmpsec .desc{font-size:.92rem;color:var(--muted);max-width:880px;margin-bottom:18px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:1040px;font-size:.82rem;background:#fff;}
+  table.cmp thead th{background:var(--navy);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:left;padding:11px 12px;font-weight:500;}
+  table.cmp td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.45;color:#33322E;}
+  table.cmp tbody tr:nth-child(even){background:#FBFBF8;}
+  .cm-name{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--ink);min-width:150px;}
+  .cm-name .pip{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .cm-code{min-width:78px;font-family:var(--mono);font-size:.76rem;}
+  .cm-ds{min-width:66px;font-family:var(--mono);font-size:.74rem;}
+  .cov-y{color:#2E7D52;font-weight:600;} .cov-p{color:#B8862F;font-weight:600;} .cov-n{color:#B0432C;font-weight:600;}
+  .cm-ins{min-width:175px;font-size:.79rem;color:#403F3A;}
+  .cm-ins b{color:var(--ink);}
+
+  .gapsec{margin:54px 0 6px;border:1.5px solid var(--gap);border-radius:16px;overflow:hidden;background:#fff;}
+  .gap-head{padding:22px 24px;border-bottom:1px solid var(--line);background:#F2FAF6;}
+  .gap-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gap-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin-top:5px;}
+  .gap-head p{font-size:.9rem;color:#3A5A4C;margin-top:8px;max-width:880px;line-height:1.55;}
+  .gap-head p b{color:#1F4536;}
+  .gap-lens{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+  .gap-lens span{font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;color:var(--gap);border:1px solid var(--gap);border-radius:14px;padding:3px 10px;white-space:nowrap;}
+  .gap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px 24px;}
+  @media(max-width:760px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{border:1px solid #CDE6DA;border-radius:12px;padding:16px 17px;background:#FCFEFD;display:flex;flex-direction:column;}
+  .gap-item .gi-top{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+  .gap-item .gi-no{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;background:var(--gap);border-radius:5px;padding:2px 8px;}
+  .gap-item h4{font-family:var(--serif);font-weight:600;font-size:1.04rem;line-height:1.2;color:var(--ink);}
+  .gap-item .gi-cost{font-family:var(--mono);font-size:9px;letter-spacing:.03em;color:#fff;background:var(--c-joint);border-radius:5px;padding:2px 7px;white-space:nowrap;}
+  .gap-item .gi-body{font-size:.86rem;color:#33322E;line-height:1.52;margin-bottom:9px;}
+  .gap-item .gi-body b{color:var(--ink);}
+  .gap-item .gi-meta{display:flex;flex-direction:column;gap:5px;margin-top:auto;border-top:1px dashed #CDE6DA;padding-top:9px;}
+  .gap-item .gi-meta .row{display:flex;gap:8px;font-size:.79rem;line-height:1.42;}
+  .gap-item .gi-meta .k{font-family:var(--mono);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--gap);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .gap-item .gi-meta .v{color:#3A5A4C;} .gap-item .gi-meta .v b{color:#1F4536;}
+
+  .pvsec{margin:50px 0 6px;border:1.5px solid var(--muted);border-radius:16px;overflow:hidden;background:#fff;}
+  .pv-head{padding:20px 24px;}
+  .pv-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .pv-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.35rem,3.2vw,1.85rem);margin-top:5px;}
+  .pv-head p{font-size:.88rem;color:#33322E;margin-top:8px;line-height:1.55;max-width:880px;}
+  .pv-head p b{color:var(--ink);}
+
+  .cautsec{margin:50px 0 6px;}
+  .cautsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+  .cautsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 16px;}
+  .cauts{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:680px){.cauts{grid-template-columns:1fr;}}
+  .caut{border:1px solid #E8D9BE;background:#FBF7EE;border-radius:12px;padding:15px 17px;}
+  .caut h4{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin-bottom:5px;color:#7A5A1E;}
+  .caut p{font-size:.86rem;color:#5A4A2E;line-height:1.52;}
+  .caut p b{color:#3E2C10;}
+
+  footer{margin:48px 0 60px;padding-top:22px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav a{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Musculoskeletal Coverage · 근골격계 질환 보장 분석</div>
+    <h1>근골격계 질환, <em>어떻게</em> 보장받는가</h1>
+    <div class="subtitle">관절·척추·골절·골다공증·연부조직 — 질병이냐 상해냐, 보존이냐 수술이냐가 보장을 가른다</div>
+    <p class="lead">
+      근골격계 질환은 <b>전 국민이 평생 한 번쯤 겪는</b> 흔한 영역이다. 그런데 보장은 단순하지 않다 — 같은 무릎이라도 <b>퇴행성(질병)이냐 외상(상해)이냐</b>에 따라
+      적용 담보가 다르고, <b>보존치료(물리·주사·도수)→수술(관절경·인공관절·척추)→후유장해</b>로 갈수록 보장 구조가 달라진다. 진단비보다 <b>수술비·실손·골절진단비·후유장해</b>가 중심이다.
+      이 자료는 근골격계를 <b>6개 군으로 나눠 보장 담보와 대표 판매사</b>를 정리하고, <b>비용은 큰데 비어 있는 신규 보장</b>도 함께 제안한다.
+    </p>
+
+    <div class="ctx">
+      <div class="ctxbox"><div class="big">질병 ↔ 상해</div><div class="lab">퇴행성은 <b>질병 담보</b>, 외상은 <b>상해 담보</b> — 구분이 청구의 출발점</div></div>
+      <div class="ctxbox"><div class="big">인공관절 250~350만</div><div class="lab">슬관절 250~300만·고관절 300~350만 — <b>질병수술비</b>로 보장</div></div>
+      <div class="ctxbox"><div class="big">도수치료 축소</div><div class="lab">5세대 실손 비중증 비급여 <b>50%+5만·연 1,000만</b>으로 축소</div></div>
+    </div>
+
+    <div class="sigbox">
+      <div class="e">Signature Axis · 근골격계의 자(尺)</div>
+      <h3>근골격계 보장을 가르는 두 경계</h3>
+      <div class="split">
+        <div class="s"><b>① 질병 vs 상해(외상)</b><p>같은 골절·관절손상도 <b>외상(S코드)이면 상해 담보</b>, 퇴행·질병이면 질병 담보. 어느 쪽이냐가 골절진단비·수술비·후유장해 적용을 가른다.</p></div>
+        <div class="s"><b>② 보존 → 수술 → 후유장해</b><p>물리·주사·<b>도수치료(보존)</b>는 실손, <b>수술</b>은 수술비, 남은 <b>운동장해</b>는 후유장해. 단계마다 다른 담보가 작동한다.</p></div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="질환군 이동">
+      <a href="#m1"><span class="d" style="background:var(--c-joint)"></span>① 관절</a>
+      <a href="#m2"><span class="d" style="background:var(--c-spine)"></span>② 척추</a>
+      <a href="#m3"><span class="d" style="background:var(--c-frac)"></span>③ 골절·외상</a>
+      <a href="#m4"><span class="d" style="background:var(--c-bone)"></span>④ 골다공증·골대사</a>
+      <a href="#m5"><span class="d" style="background:var(--c-soft)"></span>⑤ 연부조직·스포츠</a>
+      <a href="#m6"><span class="d" style="background:var(--c-nerve)"></span>⑥ 신경포착·말단</a>
+      <a href="#cmp"><span class="d" style="background:var(--navy)"></span>★ 요약표</a>
+      <a href="#gap"><span class="d" style="background:var(--gap)"></span>◆ 신규 보장 제안</a>
+    </nav>
+  </header>
+
+  <!-- ============ ① 관절 ============ -->
+  <section class="msec" id="m1" style="--mc:var(--c-joint)">
+    <div class="m-head"><span class="m-num">군 ①</span><h2>관절 질환</h2><span class="m-mech">관절염·인공관절</span></div>
+    <p class="m-intro">퇴행성·류마티스 관절염과 그 종착점인 <b>인공관절치환술</b>. 고령에서 다발하며 <b>수술비·실손</b>이 핵심이다. 만 65세 이상의 약 60%가 무릎관절염을 겪는다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">퇴행성(골)관절염 <span class="tag tag-code">M15–M19</span></div>
+        <div class="card-trig">트리거: 골관절염 진단·치료·수술</div>
+        <p class="card-def">연골이 닳아 생기는 퇴행성 관절염. <b>질병</b>으로 분류돼 보존치료는 실손, 관절경·절골술 등은 질병 수술비로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병 수술비·실손·입원일당</span></div>
+          <div class="row"><span class="k">비고</span><span class="v">퇴행성=질병 담보 적용</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 질병수술비 공통 · DB손보(참좋은 행복더블플러스)·현대해상·삼성화재</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">인공관절치환술 (무릎·고관절) <span class="tag tag-code">Z96·수술</span></div>
+        <div class="card-trig">트리거: 인공관절 전치환·부분치환 수술</div>
+        <p class="card-def">관절염 말기에 손상 관절을 인공관절로 대체. <b>슬관절 250~300만·고관절 300~350만원</b> 수준. 외상·질병 무관하게 <b>질병/상해 수술비</b>로 청구된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병/상해 수술비·N대 수술비·실손</span></div>
+          <div class="row"><span class="k">공적</span><span class="v">취약계층 무릎 120만 지원(만60↑)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 수술비 공통(질병/상해 수술비·N종·N대) · DB·현대·메리츠·KB 등</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">류마티스관절염 <span class="tag tag-code">M05–M06</span></div>
+        <div class="card-trig">트리거: 류마티스관절염 진단·치료</div>
+        <p class="card-def">자가면역성 염증성 관절염. 생물학적제제 등 <b>고가 약물치료</b>가 길게 이어진다. 진단·약물은 실손, 일부 특정질환 진단비로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손·일부 특정질환 진단비</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">고가 생물학제제 장기 부담</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통 · 특정질환 진단비는 일부 생·손보(추가 확인 필요)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">관절 운동 후유장해</div>
+        <div class="card-trig">트리거: 관절 강직·운동범위 제한 장해</div>
+        <p class="card-def">수술·외상 후 남는 <b>관절 운동범위 제한·강직</b>은 후유장해 분류표(관절 기능장해)에 따라 장해지급률로 보험금을 지급한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">후유장해(관절 기능장해 %)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 질병·상해 후유장해 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ② 척추 ============ -->
+  <section class="msec" id="m2" style="--mc:var(--c-spine)">
+    <div class="m-head"><span class="m-num">군 ②</span><h2>척추 질환</h2><span class="m-mech">디스크·협착·수술</span></div>
+    <p class="m-intro">디스크(추간판탈출)·척추관협착증 등. <b>보존치료(도수·주사·물리)→수술(내시경·고정술)</b>로 단계가 나뉘며, <b>척추질환 수술비·실손</b>이 핵심이다. 척추수술비를 별도로 두는 상품이 많다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">추간판탈출증(디스크) <span class="tag tag-code">M50·M51</span></div>
+        <div class="card-trig">트리거: 경추·요추 디스크 진단·수술</div>
+        <p class="card-def">목·허리 디스크. 보존치료는 실손, 내시경·미세현미경 <b>척추수술</b>은 수술비로 보장된다. 디스크 수술비를 별도 특약으로 두기도 한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·척추질환수술·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(참좋은 행복더블플러스 — 척추질환수술)·전 손보 질병수술비 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">척추관협착증 <span class="tag tag-code">M48</span></div>
+        <div class="card-trig">트리거: 척추관협착증 진단·시술·수술</div>
+        <p class="card-def">신경통로가 좁아져 다리 저림·보행장애. 신경성형술·내시경 감압 등 <b>시술·수술</b>로 치료한다. 고령 다발 질환이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">척추질환수술·질병수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 척추질환수술·질병수술비 공통(DB·현대·메리츠 등)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">척추(압박)골절 <span class="tag tag-code">S22·S32</span></div>
+        <div class="card-trig">트리거: 척추 골절 진단(외상·골다공증성)</div>
+        <p class="card-def">흉·요추 골절. 골다공증성 압박골절은 고령·여성에 다발. <b>골절진단비·척추수술비(척추성형술 등)</b>로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">골절진단비·척추수술비·실손</span></div>
+          <div class="row"><span class="k">비고</span><span class="v">외상 S코드 / 골다공증성 병행</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(참좋은 행복더블플러스)·현대해상·삼성화재(골절·척추 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">척추 후유장해</div>
+        <div class="card-trig">트리거: 척추 운동장해·신경학적 결손</div>
+        <p class="card-def">척추 손상·수술 후 남는 <b>운동제한·신경장해</b>는 후유장해 분류표(척추 장해)로 장해보험금이 지급된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">후유장해(척추 장해 %)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 후유장해 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 골절·외상 ============ -->
+  <section class="msec" id="m3" style="--mc:var(--c-frac)">
+    <div class="m-head"><span class="m-num">군 ③</span><h2>골절 · 외상</h2><span class="m-mech">상해 담보</span></div>
+    <p class="m-intro">외상성 골절은 보장이 비교적 명확한 영역. <b>골절진단비(사고당 1회)</b>가 기본이고, 주요 부위는 <b>5대골절</b>로 고액 가산된다. 상해 담보가 적용된다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">골절진단비 <span class="tag tag-code">S02·S42·S52·S72·S82 등</span></div>
+        <div class="card-trig">트리거: 상해로 골절 진단(치료·수술 무관)</div>
+        <p class="card-def">상해로 골절 진단 시 <b>사고당 1회 정액</b> 지급(치료·수술·입원 무관, 진단만으로). 치아파절(S02.5) 포함/제외로 담보가 갈린다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v"><b>사고당 1회</b> 정액 · 중복보상 가능</span></div>
+          <div class="row"><span class="k">비고</span><span class="v">면책기간 있음 · 치아파절 별도</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 공통(건강·실손·종신·운전자·간병 특약) · DB손보·현대해상·삼성</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">5대골절 진단비 <span class="tag tag-code">두개·척추·골반·대퇴 등</span></div>
+        <div class="card-trig">트리거: 주요 5대 부위 골절 진단</div>
+        <p class="card-def">두개·척추·골반·대퇴골 등 <b>중대 부위 골절</b>에 고액 가산. 일반 골절진단비 가입을 전제로 추가 설계된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">주요부위 고액 정액(가산)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(참좋은 행복더블플러스)·롯데손보(힐링케어)·현대해상·삼성</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">상해수술비·깁스(부목)치료비 <span class="tag tag-code">상해</span></div>
+        <div class="card-trig">트리거: 골절 수술·깁스 고정</div>
+        <p class="card-def">골절 수술 시 상해수술비, 깁스(부목) 고정 시 <b>깁스치료비</b>를 지급한다. 수술하지 않는 골절도 깁스치료비로 보완된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">상해수술비·깁스치료비·입원일당</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 공통(상해수술비·깁스치료비 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">관절 탈구·인대 파열(외상) <span class="tag tag-code">S43·S83 등</span></div>
+        <div class="card-trig">트리거: 외상성 탈구·인대 파열</div>
+        <p class="card-def">어깨 탈구, 무릎 십자인대 파열 등 <b>외상성 손상</b>. 상해수술비·실손으로 보장되며 스포츠 손상과 겹친다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">상해수술비·실손·입원일당</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 상해수술비·실손 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 골다공증·골대사 ============ -->
+  <section class="msec" id="m4" style="--mc:var(--c-bone)">
+    <div class="m-head"><span class="m-num">군 ④</span><h2>골다공증 · 골대사</h2><span class="m-mech">고령·여성</span></div>
+    <p class="m-intro">뼈가 약해지는 골다공증은 <b>골절의 직접 원인</b>이자 고령·폐경 여성의 핵심 질환. 진단비·수술 매회 보장과 <b>골다공증성 골절 연계</b>가 중요하다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">골다공증 진단·수술 <span class="tag tag-code">M80–M82</span></div>
+        <div class="card-trig">트리거: 골다공증(병적골절 포함) 진단·수술</div>
+        <p class="card-def">골밀도 저하로 골절 위험↑. 일부 상품은 <b>골다공증 진단비·골다공증 수술 매회 보장</b>을 둔다. 여성·고령 타깃 담보다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">골다공증 진단비·수술(매회)·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(참좋은 행복더블플러스 — 골다공증 수술 매회)·전 손보 여성건강 특약</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">골다공증성 골절 (취약골절)</div>
+        <div class="card-trig">트리거: 골다공증 동반 골절</div>
+        <p class="card-def">가벼운 충격에도 부러지는 <b>취약골절</b>(척추·고관절·손목). 골절진단비·5대골절·수술비로 보장되며 골다공증과 연계 설계된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">골절진단비·5대골절·수술비</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보·현대해상·삼성·롯데(골절·여성건강 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">대퇴골두 무혈성 괴사 <span class="tag tag-code">M87</span></div>
+        <div class="card-trig">트리거: 골괴사 진단·인공관절 수술</div>
+        <p class="card-def">혈류 차단으로 뼈가 괴사. 진행 시 <b>인공관절치환</b>이 필요해 수술비 부담이 크다. 음주·스테로이드 등이 위험인자다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·인공관절 수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 질병수술비 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">통풍·결정성 관절염 <span class="tag tag-code">M10</span></div>
+        <div class="card-trig">트리거: 통풍 진단·치료</div>
+        <p class="card-def">요산 결정이 관절에 쌓여 극심한 통증. 대사+근골격 경계 질환으로 실손·일부 특정질환 진단비로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손·일부 진단비</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(특정질환 진단비는 일부)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 연부조직·스포츠 ============ -->
+  <section class="msec" id="m5" style="--mc:var(--c-soft)">
+    <div class="m-head"><span class="m-num">군 ⑤</span><h2>연부조직 · 스포츠 손상</h2><span class="m-mech">건·인대·연골</span></div>
+    <p class="m-intro">힘줄·인대·연골판 손상. <b>회전근개파열·반월상연골판파열·십자인대파열·오십견</b>이 대표적. 관절경 수술이 많아 <b>수술비·실손</b>이 핵심이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">회전근개 파열 <span class="tag tag-code">M75</span></div>
+        <div class="card-trig">트리거: 어깨 회전근개 파열 진단·수술</div>
+        <p class="card-def">어깨 힘줄 파열. 관절경 봉합수술이 흔하다. 퇴행성·외상 혼재라 <b>질병/상해 구분</b>이 청구의 관건이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병/상해 수술비·실손·입원</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 수술비·실손 공통(관절경 수술)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">반월상연골판 파열 <span class="tag tag-code">S83·M23</span></div>
+        <div class="card-trig">트리거: 무릎 연골판 파열 진단·수술</div>
+        <p class="card-def">무릎 쿠션 연골 파열. 관절경 절제·봉합으로 치료한다. 외상(S83)/퇴행(M23)에 따라 적용 담보가 갈린다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병/상해 수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 수술비·실손 공통(관절경)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">십자인대 파열 <span class="tag tag-code">S83.5</span></div>
+        <div class="card-trig">트리거: 무릎 십자인대 파열 진단·재건</div>
+        <p class="card-def">스포츠 손상의 대표. <b>인대재건술</b>이 필요하며 외상성이라 상해수술비·실손으로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">상해수술비·실손·입원일당</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 상해수술비·실손 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">오십견·건염·근막통증 <span class="tag tag-code">M75.0·M65·M79</span></div>
+        <div class="card-trig">트리거: 유착성관절낭염·건염 등 보존치료</div>
+        <p class="card-def">오십견(유착성관절낭염)·건초염·근막통증. 주로 <b>보존치료(주사·물리·도수)</b>로, 실손 중심이며 수술은 드물다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손(주사·물리·도수)·통원</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">도수치료 5세대 축소</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(도수치료는 5세대 비중증 비급여 50%+5만)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑥ 신경포착·말단 ============ -->
+  <section class="msec" id="m6" style="--mc:var(--c-nerve)">
+    <div class="m-head"><span class="m-num">군 ⑥</span><h2>신경포착 · 말단 질환</h2><span class="m-mech">손목·발</span></div>
+    <p class="m-intro">손·발의 신경포착과 변형. <b>수근관증후군·무지외반증·족저근막염</b> 등. 기능 적응증 수술은 보장되나 미용·경증은 경계가 있다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">수근관증후군(손목터널) <span class="tag tag-code">G56.0</span></div>
+        <div class="card-trig">트리거: 손목 정중신경 압박 진단·수술</div>
+        <p class="card-def">손목에서 정중신경이 눌려 손저림. <b>신경 감압 수술</b> 시 수술비·실손으로 보장된다. 반복 작업자·임신부에 흔하다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 질병수술비·실손 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">무지외반증 <span class="tag tag-code">M20.1</span></div>
+        <div class="card-trig">트리거: 엄지발가락 변형 교정수술</div>
+        <p class="card-def">엄지발가락이 휘는 변형. <b>기능적 교정수술(절골술·MICA 등)</b>은 수술비·실손 보장되나, 미용 목적은 제외된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손(기능 적응증)</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">미용 목적·핀제거 단순처치 제한</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 수술비·실손 공통(치료 목적 한정)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">족저근막염·아킬레스건 <span class="tag tag-code">M72.2·M76.6</span></div>
+        <div class="card-trig">트리거: 족부 통증 진단·치료</div>
+        <p class="card-def">발바닥·뒤꿈치 통증. 주로 <b>보존치료(체외충격파·주사·물리)</b>로, 실손 중심이며 비급여 비중이 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손(체외충격파·주사)·통원</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">체외충격파 5세대 비중증 축소</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(체외충격파는 5세대 비중증 50%+5만)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">방아쇠수지·결절종 등 <span class="tag tag-code">M65.3·M67.4</span></div>
+        <div class="card-trig">트리거: 손가락 건초염·결절종 진단·수술</div>
+        <p class="card-def">방아쇠수지(협착성건초염)·결절종 등 흔한 손 질환. 보존치료는 실손, 수술 시 수술비로 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 수술비·실손 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ★ 요약표 ===================== -->
+  <section class="cmpsec" id="cmp">
+    <div class="e">★ Summary Matrix · 질환별 보장 요약</div>
+    <h2>근골격계 질환별 보장·공백 한눈에</h2>
+    <p class="desc">근골격계는 <b>코드·질병/상해·보장 경로·보장 정도·판매사</b>가 제각각이다. 이 표로 <b>어디가 보장되고 어디가 공백인지</b>를 한눈에 본다. ●=보장, ◐=일부·조건부, ○=공백. (질병=Dz / 상해=Tr / 혼재=Mx)</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr><th>질환</th><th>KCD</th><th>질병/상해</th><th>주요 보장 경로</th><th>보장 정도</th><th>대표 판매사(예시)</th></tr></thead>
+      <tbody>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-joint)"></span>퇴행성관절염</td><td class="cm-code">M15–19</td><td class="cm-ds">Dz</td><td>질병수술비·실손</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">DB(참좋은 행복더블플러스)·현대·삼성</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-joint)"></span>인공관절치환술</td><td class="cm-code">수술</td><td class="cm-ds">Mx</td><td>질병/상해 수술비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 손보·생보 수술비(DB·현대·메리츠·KB)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-joint)"></span>류마티스관절염</td><td class="cm-code">M05–06</td><td class="cm-ds">Dz</td><td>실손·일부 진단비</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 실손(진단비 일부)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-spine)"></span>디스크(추간판)</td><td class="cm-code">M50–51</td><td class="cm-ds">Dz</td><td>척추수술·질병수술비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">DB(척추질환수술)·전 손보</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-spine)"></span>척추관협착증</td><td class="cm-code">M48</td><td class="cm-ds">Dz</td><td>척추수술·실손</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 손보 척추질환수술 공통</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-frac)"></span>골절</td><td class="cm-code">S02–92</td><td class="cm-ds">Tr</td><td>골절진단비·상해수술비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 손보(DB·현대·삼성)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-frac)"></span>5대골절</td><td class="cm-code">주요부위</td><td class="cm-ds">Tr</td><td>5대골절 진단비(가산)</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">DB·롯데(힐링케어)·현대·삼성</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-bone)"></span>골다공증</td><td class="cm-code">M80–82</td><td class="cm-ds">Dz</td><td>진단비·수술(매회)</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">DB(골다공증 수술 매회)·여성건강 특약</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-soft)"></span>회전근개 파열</td><td class="cm-code">M75</td><td class="cm-ds">Mx</td><td>수술비·실손(관절경)</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 손보 수술비·실손 공통</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-soft)"></span>오십견·건염</td><td class="cm-code">M75.0</td><td class="cm-ds">Dz</td><td>실손(주사·도수)</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 실손(도수 5세대 축소)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-nerve)"></span>무지외반증</td><td class="cm-code">M20.1</td><td class="cm-ds">Dz</td><td>수술비·실손(기능)</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 수술비(미용 제외)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--c-nerve)"></span>족저근막염</td><td class="cm-code">M72.2</td><td class="cm-ds">Dz</td><td>실손(체외충격파)</td><td><span class="cov-n">○ 공백</span></td><td class="cm-ins">전 손보 실손(비중증 축소)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* 판매사·코드는 검증된 예시이며 상품·약관별로 다르다. 근골격계는 <b>질병/상해 구분과 '치료 목적' 입증</b>이 청구의 핵심이며, 도수·체외충격파·비급여주사는 <b>5세대 실손에서 비중증 비급여로 축소</b>(자부담 50%+5만·연 1,000만)됐다.</p>
+  </section>
+
+  <!-- ===================== ◆ 신규 보장 제안 (GAP) ===================== -->
+  <section class="gapsec" id="gap">
+    <div class="gap-head">
+      <div class="e">◆ Coverage Gap & Proposals · 신규 보장 제안</div>
+      <h2>비용은 큰데, 아직 비어 있는 근골격 보장 6선</h2>
+      <p>근골격계에서 <b>비용은 크지만 보장이 얇거나 비어 있는</b> 영역을 도출했다. 대부분 <b>'반복·장기 보존치료'이거나 '신의료기술·비급여'</b>라 공백이 생긴다. 암·뇌·심의 보장 세트(중증도 단계별 진단·치료·반복지급·재활)를 <b>기준선</b>으로 삼아 대응시켜 제안한다.</p>
+      <div class="gap-lens">
+        <span>렌즈1 · 치료 과정 공백</span>
+        <span>렌즈2 · 암·뇌·심 기준선 벤치마크</span>
+        <span>렌즈3 · 신의료기술·고가 반복치료</span>
+      </div>
+    </div>
+    <div class="gap-grid">
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">01</span><h4>도수·물리치료 반복 정액 보장</h4><span class="gi-cost">5세대 축소</span></div>
+        <p class="gi-body">5세대 실손에서 <b>도수치료·체외충격파가 비중증 비급여로 축소</b>(50%+5만·연 1,000만)됐다. 만성 근골격 환자의 장기 반복 치료 부담을 <b>정액·횟수 기반</b>으로 메우는 담보가 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">암 <b>치료당·연간 반복지급</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">실손 축소 · <b>정액 반복 담보 얇음</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">근골격 만성환자 다수·장기 반복</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">02</span><h4>연골재생술(줄기세포 등) 신의료기술 보장</h4><span class="gi-cost">고가 비급여</span></div>
+        <p class="gi-body">관절 연골 손상의 <b>줄기세포 연골재생·자가연골배양 이식</b> 등 신의료기술은 고가 비급여다. 인공관절 전 단계를 늦추는 치료의 <b>정액 보장</b>이 비어 있다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">암 <b>비급여 고가신약·신기술</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">대부분 비급여 자부담 · <b>전용 담보 부족</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">고가·신의료기술 확산</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">03</span><h4>인공관절 재치환술·로봇수술 가산</h4><span class="gi-cost">재수술 고비용</span></div>
+        <p class="gi-body">인공관절은 수명이 있어 <b>재치환(재수술)</b>이 발생하고, 로봇 인공관절 등 비급여가 늘고 있다. <b>재치환·비급여 술기 가산</b> 보장이 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">암 <b>재진단·재치료 다중지급</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">수술비 1회성 · <b>재치환 가산 부족</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">고령화로 재치환 수요↑</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">04</span><h4>골다공증 골절 예방 약물치료 보장</h4><span class="gi-cost">장기 투약</span></div>
+        <p class="gi-body">데노수맙·테리파라타이드 등 <b>골절 예방 골다공증 약물</b>은 장기 투약이 필요하다. 골절이 나기 '전' 예방 치료를 <b>정액·연간 지원</b>하는 담보가 비어 있다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">당뇨 <b>합병증 예방·관리 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">진단비·골절 후 보장 위주 · <b>예방 공백</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">골절 시 사망·요양 위험 큼</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">05</span><h4>척추·관절 후 재활 정액 보장</h4><span class="gi-cost">회복기 공백</span></div>
+        <p class="gi-body">수술 후 <b>재활·물리치료 회복기</b>가 길지만 정액 보장이 얇다. 인공관절·척추수술 후 <b>재활 단계 정액(입원·통원)</b>으로 회복기 비용을 메우는 담보가 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">뇌·심 <b>회복·재활 단계 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">실손·입원일당 일부 · <b>재활 정액 부족</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">수술 후 장기 재활 비용 부담</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">06</span><h4>'질병/상해 경계' 객관 트리거형 정액</h4><span class="gi-cost">분쟁多</span></div>
+        <p class="gi-body">회전근개·연골판 등은 <b>질병이냐 상해냐 분쟁</b>이 잦아 지급이 불확실하다. <b>진단·수술 사실(객관 트리거)만으로 정액 지급</b>해 구분 분쟁을 줄인 담보가 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">진단·수술 <b>객관 트리거형</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">질병/상해 심사 의존 · <b>지급 불확실</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">퇴행·외상 혼재 빈발</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== 공적 baseline ===================== -->
+  <section class="pvsec">
+    <div class="pv-head">
+      <div class="e">Public Baseline · 공적 제도</div>
+      <h2>근골격계의 공적 보장 — 민간 보완의 기준선</h2>
+      <p>근골격계도 <b>건강보험 급여</b>가 baseline이다. 인공관절치환술·척추수술 등은 급여 대상이고, <b>만 60세 이상 취약계층은 무릎 인공관절 수술비를 한쪽 120만원 한도로 지원</b>받는다(국민건강보험공단·노인의료나눔재단). 그 위에 <b>본인부담·비급여(도수·체외충격파·신의료기술)·재활·예방치료</b>가 민간의 자리다. 특히 5세대 실손의 비중증 비급여 축소로 <b>정액 보완</b> 필요성이 커졌다.</p>
+    </div>
+  </section>
+
+  <!-- ===================== 주의사항 ===================== -->
+  <section class="cautsec">
+    <div class="e">Cautions · 핵심 주의점</div>
+    <h2>근골격계 보장, 이것부터 확인</h2>
+    <div class="cauts">
+      <div class="caut">
+        <h4>① 질병이냐 상해냐가 첫 갈림길</h4>
+        <p>같은 골절·파열도 <b>외상(S코드)=상해 담보</b>, 퇴행·질병=질병 담보로 갈린다. 진단서의 코드·발생 경위가 청구의 출발점이다.</p>
+      </div>
+      <div class="caut">
+        <h4>② 진단비보다 수술비·실손 중심</h4>
+        <p>근골격계는 단독 진단비가 드물고 <b>수술비·실손·골절진단비·후유장해</b>로 흩어져 보장된다. 수술비(질병/상해·N종·N대)를 두텁게 구성해야 한다.</p>
+      </div>
+      <div class="caut">
+        <h4>③ 도수·체외충격파 5세대 축소</h4>
+        <p>도수치료·체외충격파·비급여주사는 5세대 실손에서 <b>비중증 비급여로 자부담 50%+5만·연 1,000만</b>으로 줄었다. 자주 받는다면 옛 세대 유지·정액 보완 검토.</p>
+      </div>
+      <div class="caut">
+        <h4>④ 미용 목적은 제외</h4>
+        <p>무지외반증·핀 제거 등은 <b>'치료 목적'(기능 회복)이 진료기록에 명확</b>해야 보장된다. 미용·단순처치로 기재되면 제외될 수 있다.</p>
+      </div>
+      <div class="caut">
+        <h4>⑤ 골절진단비 면책·치아파절 확인</h4>
+        <p>골절진단비는 <b>가입 후 면책기간</b>이 있고, <b>치아파절(S02.5) 포함/제외</b>로 담보가 갈린다. 사고당 1회 지급·중복보상 여부도 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>⑥ 후유장해는 치료 종결 후 평가</h4>
+        <p>관절·척추 운동장해는 <b>후유장해</b> 대상이나 통상 <b>치료 종결·장해 확정 후</b> 지급률로 평가된다. 장해진단 시점·분류표 확인이 필요하다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 근골격계 질환의 보장 담보를 질환군별로 정리하고 고비용 미보장 영역의 신규 보장을 제안하기 위한 교육·기획용 참고 자료이며, 특정인을 위한 가입 권유·재무 설계나 의료 자문이 아니다. 근골격계는 단독 진단비가 드물고 <b>수술비·실손·골절진단비·후유장해</b>로 보장되며, <b>'질병이냐 상해냐'</b>의 구분과 <b>'치료 목적'</b> 입증이 보장 여부를 크게 좌우한다. KCD 코드·트리거·면책·금액·<b>판매사</b>는 상품·약관·가입 시점·제도 변경에 따라 달라지며, <b>판매사는 검증된 예시</b>로 표준화 담보는 "전 손보 공통", 표준화 이전·미검증은 "일부 손보(추가 확인 필요)"로 표기했다. 인공관절치환술 비용(슬관절 약 250~300만·고관절 약 300~350만)과 만 60세 이상 취약계층 무릎 인공관절 수술비 지원(한쪽 120만원 한도)은 국민건강보험공단·노인의료나눔재단 기준이다. 도수치료·체외충격파·비급여주사는 5세대 실손(2026.5.6~)에서 비중증 비급여로 자기부담 50%+5만원·연 1,000만원으로 축소됐다. 신규 보장 제안 6선은 비용·필요성 근거에 기반한 기획 제안이며 실제 출시 여부·조건은 보험사·당국 판단에 따른다. 가입·청구 판단 시 반드시 <b>약관 원문과 상품설명서, 진료기록</b>을 확인해야 한다. 약관 원문은 복제하지 않고 요약·재서술했다. 골절·골다공증·후유장해 연계는 「노인성 질병 생애 메타 지도」·「진단 담보 카탈로그」를 함께 참고하라.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">MUSCULOSKELETAL COVERAGE ANALYSIS · 6 질환군 + 요약 매트릭스(판매사 포함) + 신규 보장 제안 6선 · 질병↔상해 / 보존↔수술 축</span>
+  </footer>
+
+</div>
+</body>
+</html>

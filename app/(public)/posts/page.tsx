@@ -76,7 +76,7 @@ export default async function PostsPage({
         (n, s) =>
           n +
           s.posts.length +
-          (sp.category === "domestic" && s.title === "상품 정보"
+          (sp.category === "domestic" && s.title === "보장내용 분석"
             ? extraProducts.length
             : 0),
         0
@@ -115,7 +115,7 @@ export default async function PostsPage({
             <div className="space-y-12">
               {visibleSections.map((section) => {
                 const isProductSection =
-                  sp.category === "domestic" && section.title === "상품 정보";
+                  sp.category === "domestic" && section.title === "보장내용 분석";
                 const extras = isProductSection ? extraProducts : [];
                 if (section.posts.length === 0 && extras.length === 0)
                   return null;

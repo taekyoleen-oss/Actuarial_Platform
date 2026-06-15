@@ -24,7 +24,7 @@ export const POST_SECTIONS: Record<string, SectionDef[]> = {
   ],
   domestic: [
     { title: "보험사 매각정보", match: /매각/ },
-    { title: "상품 정보", isDefault: true },
+    { title: "보장내용 분석", isDefault: true },
   ],
 };
 

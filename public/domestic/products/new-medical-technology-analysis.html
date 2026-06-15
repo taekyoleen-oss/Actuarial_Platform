@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신의료기술 비급여 치료 심층 분석 — 치료법·대상질환·비용·치료율·과잉진료·한일 비교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F; --warn:#C0392B; --jp:#2A3F66;
+    --t-rad:#C0392B; --t-cell:#8E5BA8; --t-robot:#3E6FB0; --t-regen:#2E8B6E; --t-over:#C99A2E; --t-etc:#2F8597;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+
+  header{padding:58px 0 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,4.6vw,3.3rem);line-height:1.06;letter-spacing:-.01em;margin-bottom:8px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--t-rad);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--muted);margin-bottom:24px;}
+  .lead{max-width:860px;font-size:1.0rem;color:#33322E;margin-bottom:6px;}
+  .lead b{color:var(--ink);}
+
+  .ctx{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 6px;}
+  @media(max-width:760px){.ctx{grid-template-columns:1fr 1fr;}}
+  @media(max-width:460px){.ctx{grid-template-columns:1fr;}}
+  .ctxbox{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:#fff;}
+  .ctxbox .big{font-family:var(--serif);font-weight:600;font-size:1.16rem;color:var(--t-rad);line-height:1.08;}
+  .ctxbox .lab{font-size:.8rem;color:var(--muted);margin-top:6px;line-height:1.4;}
+  .ctxbox .lab b{color:var(--ink);}
+
+  .sigbox{margin:24px 0 4px;background:var(--navy);border-radius:14px;padding:20px 22px;color:#EDEBE6;}
+  .sigbox .e{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#A9B4C7;}
+  .sigbox h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;margin:5px 0 10px;color:#fff;}
+  .sigbox .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:600px){.sigbox .split{grid-template-columns:1fr;}}
+  .sigbox .s{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;}
+  .sigbox .s b{color:#fff;font-family:var(--serif);font-size:1rem;}
+  .sigbox .s p{font-size:.84rem;color:#C9CFDA;margin-top:4px;line-height:1.5;}
+
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px;}
+  .nav a{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:5px 12px;background:#fff;display:inline-flex;align-items:center;gap:6px;transition:transform .12s,box-shadow .12s;white-space:nowrap;}
+  .nav a:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(0,0,0,.06);}
+  .nav a:focus-visible{outline:2px solid var(--t-rad);outline-offset:2px;}
+  .nav a .d{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .msec{padding:42px 0 6px;scroll-margin-top:12px;}
+  .m-head{display:flex;align-items:baseline;gap:13px;margin-bottom:5px;flex-wrap:wrap;border-left:5px solid var(--mc);padding-left:14px;}
+  .m-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mc);font-weight:500;}
+  .m-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,1.95rem);letter-spacing:-.01em;}
+  .m-mech{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#fff;background:var(--mc);padding:3px 9px;border-radius:5px;white-space:nowrap;}
+  .m-intro{font-size:.92rem;color:var(--muted);max-width:880px;margin:6px 0 18px;padding-left:19px;line-height:1.55;}
+  .m-intro b{color:#403F3A;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-left:4px solid var(--mc);border-radius:11px;background:#fff;padding:15px 16px 14px;display:flex;flex-direction:column;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.04rem;line-height:1.25;margin-bottom:3px;}
+  .card-name .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;color:#fff;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+  .tag-val{background:var(--t-regen);} .tag-risk{background:var(--warn);} .tag-mix{background:var(--gold);}
+  .card-trig{font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--mc);margin-bottom:8px;}
+  .card-def{font-size:.875rem;color:#33322E;line-height:1.52;margin-bottom:8px;}
+  .card-def b{color:var(--ink);}
+  .card-spec{display:flex;flex-direction:column;gap:5px;}
+  .card-spec .row{display:flex;gap:8px;font-size:.8rem;line-height:1.4;}
+  .card-spec .k{font-family:var(--mono);font-size:8px;letter-spacing:.03em;text-transform:uppercase;color:#fff;background:var(--mc);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .card-spec .v{color:#403F3A;}
+  .card-spec .v b{color:var(--ink);}
+  .card-cost{margin-top:9px;background:#FBF6F0;border:1px solid #EAD9C5;border-radius:8px;padding:8px 11px;font-size:.82rem;color:#6E4B23;line-height:1.45;}
+  .card-cost b{color:#5A3A18;font-family:var(--mono);}
+
+  .cmpsec{margin:50px 0 6px;}
+  .cmpsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--t-rad);}
+  .cmpsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 4px;}
+  .cmpsec .desc{font-size:.92rem;color:var(--muted);max-width:880px;margin-bottom:18px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:1100px;font-size:.81rem;background:#fff;}
+  table.cmp thead th{background:var(--navy);color:#fff;font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;text-transform:uppercase;text-align:left;padding:11px 11px;font-weight:500;}
+  table.cmp td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;line-height:1.42;color:#33322E;}
+  table.cmp tbody tr:nth-child(even){background:#FBFBF8;}
+  .cm-name{font-family:var(--serif);font-weight:600;font-size:.88rem;color:var(--ink);min-width:120px;}
+  .cm-name .pip{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .cm-tgt{min-width:130px;} .cm-cost{min-width:140px;font-family:var(--mono);font-size:.76rem;}
+  .cm-rate{min-width:150px;} .cm-cov{min-width:110px;}
+  .risk-h{color:#B0432C;font-weight:600;} .risk-m{color:#B8862F;font-weight:600;} .risk-l{color:#2E7D52;font-weight:600;}
+
+  .moralsec{margin:54px 0 6px;border:1.5px solid var(--warn);border-radius:16px;overflow:hidden;background:#fff;}
+  .moral-head{padding:22px 24px;border-bottom:1px solid var(--line);background:#FBF0EE;}
+  .moral-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--warn);}
+  .moral-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin-top:5px;}
+  .moral-head p{font-size:.9rem;color:#6E2C22;margin-top:8px;max-width:880px;line-height:1.55;}
+  .moral-head p b{color:#4A1812;}
+  .moral-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px 24px;}
+  @media(max-width:760px){.moral-grid{grid-template-columns:1fr;}}
+  .moral-item{border:1px solid #E6C6C0;border-radius:12px;padding:15px 17px;background:#FDFAF9;}
+  .moral-item h4{font-family:var(--serif);font-weight:600;font-size:1.04rem;color:var(--ink);margin-bottom:6px;}
+  .moral-item p{font-size:.86rem;color:#4A3A36;line-height:1.52;}
+  .moral-item p b{color:#7A2418;}
+
+  .jpsec{margin:50px 0 6px;border:1.5px solid var(--jp);border-radius:16px;overflow:hidden;background:#fff;}
+  .jp-head{padding:22px 24px;border-bottom:1px solid var(--line);background:#EEF1F8;}
+  .jp-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--jp);}
+  .jp-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin-top:5px;}
+  .jp-head p{font-size:.9rem;color:#2C3A5C;margin-top:8px;max-width:880px;line-height:1.55;}
+  .jp-head p b{color:#16243F;}
+  .jp-body{padding:20px 24px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:760px){.jp-body{grid-template-columns:1fr;}}
+  .jp-card{border:1px solid #CBD4E6;border-radius:12px;padding:15px 17px;background:#FCFDFF;display:flex;flex-direction:column;}
+  .jp-card h4{font-family:var(--serif);font-weight:600;font-size:1.04rem;color:var(--ink);margin-bottom:6px;}
+  .jp-card p{font-size:.86rem;color:#2C3A50;line-height:1.5;margin-bottom:8px;}
+  .jp-card p b{color:#16243F;}
+  .jp-card .jp-meta{display:flex;flex-direction:column;gap:5px;margin-top:auto;border-top:1px dashed #CBD4E6;padding-top:9px;}
+  .jp-card .jp-meta .row{display:flex;gap:8px;font-size:.79rem;line-height:1.4;}
+  .jp-card .jp-meta .k{font-family:var(--mono);font-size:8px;letter-spacing:.03em;text-transform:uppercase;color:#fff;background:var(--jp);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .jp-card .jp-meta .v{color:#2C3A50;} .jp-card .jp-meta .v b{color:#16243F;}
+  .kr-jp{margin:16px 24px 4px;}
+  .kr-jp table{border-collapse:collapse;width:100%;font-size:.82rem;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .kr-jp th{background:var(--jp);color:#fff;font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;text-align:left;padding:9px 11px;font-weight:500;}
+  .kr-jp td{padding:9px 11px;border-top:1px solid var(--line);vertical-align:top;line-height:1.4;color:#33322E;}
+  .kr-jp td:first-child{font-family:var(--mono);font-size:.76rem;color:#403F3A;white-space:nowrap;font-weight:600;}
+
+  .cautsec{margin:50px 0 6px;}
+  .cautsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+  .cautsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 16px;}
+  .cauts{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:680px){.cauts{grid-template-columns:1fr;}}
+  .caut{border:1px solid #E8D9BE;background:#FBF7EE;border-radius:12px;padding:15px 17px;}
+  .caut h4{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin-bottom:5px;color:#7A5A1E;}
+  .caut p{font-size:.86rem;color:#5A4A2E;line-height:1.52;}
+  .caut p b{color:#3E2C10;}
+
+  footer{margin:48px 0 60px;padding-top:22px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav a{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">New Medical Technology · 신의료기술 비급여 심층 분석 · 한국 ↔ 일본</div>
+    <h1>신의료기술 비급여, <em>꿈의 치료</em>와 과잉진료 사이</h1>
+    <div class="subtitle">중입자·양성자·CAR-T·로봇수술·줄기세포부터 도수·다초점렌즈까지 — 치료법·대상질환·비용·치료율·도덕적 위험</div>
+    <p class="lead">
+      한국의 비급여 신의료기술은 <b>두 얼굴</b>이다. 한쪽엔 <b>난치암을 겨냥한 검증된 고가치료</b>(중입자·양성자·CAR-T)가, 다른 쪽엔
+      <b>과잉진료 논란의 비급여</b>(도수·체외충격파·다초점렌즈)가 있다. 둘 다 '비급여 신의료기술'이지만 <b>치료가치·근거·도덕적 위험</b>은 정반대다.
+      이 자료는 주요 신의료기술의 <b>치료법·대상질환·상세 비용·치료율(근거)</b>을 정리하고, <b>과잉진료 도덕적 위험</b>을 분석한 뒤,
+      이 분야를 세계적으로 주도하는 <b>일본의 활용 수준·치료현황·성과</b>와 비교한다. (한국 신의료기술평가: 한국보건의료연구원 NECA)
+    </p>
+
+    <div class="ctx">
+      <div class="ctxbox"><div class="big">중입자 6,500만</div><div class="lab">췌장암 3주12회 <b>전액 비급여</b> · 간암 5,000만</div></div>
+      <div class="ctxbox"><div class="big">CAR-T 3.6억</div><div class="lab">비급여 1회 → 급여 후 본인부담 <b>598만원</b></div></div>
+      <div class="ctxbox"><div class="big">실손 14.1조</div><div class="lab">2023 총진료비 133조의 <b>10%</b> · 가입 4,000만명</div></div>
+      <div class="ctxbox"><div class="big">일본 90%</div><div class="lab">전 세계 중입자치료의 <b>약 90%가 일본</b>(2019.3 누적)</div></div>
+    </div>
+
+    <div class="sigbox">
+      <div class="e">Signature Axis · 신의료기술 비급여를 읽는 두 축</div>
+      <h3>'비급여 신의료기술'이라는 한 단어, 정반대의 두 세계</h3>
+      <div class="split">
+        <div class="s"><b>① 검증된 고가치료 vs 과잉진료 비급여</b><p>중입자·CAR-T는 <b>난치암 근거 기반 고가치료</b>(접근성·재정이 문제). 도수·다초점렌즈는 <b>과잉·혼합 비급여</b>(남용·도덕적 위험이 문제). 같은 '비급여'지만 성격이 다르다.</p></div>
+        <div class="s"><b>② 치료가치(치료율) vs 비용</b><p>비용이 크다고 가치가 큰 건 아니다. <b>양성자(100만) vs 중입자(수천만)</b>가 치료성적은 비슷한 아이러니, <b>로봇수술(비용 2~3배, 생존율 차이 미미)</b>처럼 비용·근거가 어긋나는 영역이 있다.</p></div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="기술군 이동">
+      <a href="#m1"><span class="d" style="background:var(--t-rad)"></span>① 입자방사선</a>
+      <a href="#m2"><span class="d" style="background:var(--t-cell)"></span>② 세포·면역</a>
+      <a href="#m3"><span class="d" style="background:var(--t-robot)"></span>③ 로봇수술</a>
+      <a href="#m4"><span class="d" style="background:var(--t-regen)"></span>④ 재생의료</a>
+      <a href="#m5"><span class="d" style="background:var(--t-over)"></span>⑤ 과잉진료 비급여</a>
+      <a href="#m6"><span class="d" style="background:var(--t-etc)"></span>⑥ 기타 신기술</a>
+      <a href="#cmp"><span class="d" style="background:var(--navy)"></span>★ 비용·치료율표</a>
+      <a href="#cost"><span class="d" style="background:var(--gold)"></span>💴 환자부담 비용</a>
+      <a href="#moral"><span class="d" style="background:var(--warn)"></span>⚠ 도덕적 위험</a>
+      <a href="#jp"><span class="d" style="background:var(--jp)"></span>🇯🇵 일본 비교</a>
+      <a href="#jponly"><span class="d" style="background:#2A7F62"></span>🔬 일본 선도 신기술</a>
+    </nav>
+  </header>
+
+  <!-- ============ ① 입자방사선 ============ -->
+  <section class="msec" id="m1" style="--mc:var(--t-rad)">
+    <div class="m-head"><span class="m-num">기술군 ①</span><h2>입자방사선 치료 (중입자·양성자)</h2><span class="m-mech">난치암 · 고근거</span></div>
+    <p class="m-intro">암세포에 에너지를 집중(브래그 피크)해 정상조직 손상을 줄이는 정밀 방사선. <b>중입자(탄소)는 양성자(수소)보다 12배 무겁고 생물학적 효과 2~3배</b>로 난치암에 강하다. 근거는 탄탄하나 <b>비용·접근성</b>이 핵심 문제다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">중입자치료 (탄소이온) <span class="tag tag-val">검증·고가</span></div>
+        <div class="card-trig">대상: 전립선암·간암·췌장암·두경부암·골육종 등 난치·재발암</div>
+        <p class="card-def">탄소이온을 빛의 70%까지 가속해 암세포 DNA를 파괴. 기존 방사선 대비 <b>2~3배 생물학적 효과</b>로 '꿈의 암 치료기'로 불린다. 산소 없는 환경의 암(췌장·뇌종양)에도 효과가 기대된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">국내</span><span class="v">연세암병원 <b>2023.4 국내 최초</b>(전립선암 시작), 2024.11까지 437명</span></div>
+          <div class="row"><span class="k">확대</span><span class="v">2025 하반기 갠트리 추가 <b>3대 완전가동</b> → 두경부암·골육종</span></div>
+          <div class="row"><span class="k">치료율</span><span class="v">연세암 폐암 상대생존율 <b>43.7%</b>(국내 평균 34.7%)</span></div>
+        </div>
+        <div class="card-cost">비용: <b>간암 1주 4회 5,000만원</b> · <b>췌장암 3주 12회 6,500만원</b> · 전액 비급여 (과거 일본 원정 시 약 2억원)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">양성자치료 (수소이온) <span class="tag tag-val">검증·급여일부</span></div>
+        <div class="card-trig">대상: 소아암·뇌종양·두경부암·간암·폐암 등 고형암</div>
+        <p class="card-def">수소이온으로 정상조직을 보호하며 암을 조준. 국립암센터가 <b>2007년 국내 최초 도입</b>, 2007~2022년 <b>총 8만1,110건</b> 시행. 소아·재발암 등에서 표준적 정밀치료다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">급여</span><span class="v"><b>전립선암 제외 건강보험 적용</b></span></div>
+          <div class="row"><span class="k">치료율</span><span class="v">고형암 전반 우수한 치료성적(혈액암 제외)</span></div>
+        </div>
+        <div class="card-cost">비용: 급여 적용 + 암 산정특례 5% 시 <b>본인부담 약 100만원</b> (중입자 수천만원과 큰 대비)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ② 세포·면역 ============ -->
+  <section class="msec" id="m2" style="--mc:var(--t-cell)">
+    <div class="m-head"><span class="m-num">기술군 ②</span><h2>세포·면역 치료 (CAR-T·면역·표적항암)</h2><span class="m-mech">맞춤·초고가</span></div>
+    <p class="m-intro">면역세포·유전자를 이용한 차세대 항암. <b>CAR-T는 환자 T세포를 조작</b>해 암을 공격하는 맞춤 치료로, 초고가지만 급여화로 부담이 급감했다. 면역·표적항암은 효과 큰 만큼 비용도 천문학적이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">CAR-T 세포치료 (킴리아 등) <span class="tag tag-val">검증·급여</span></div>
+        <div class="card-trig">대상: B세포 급성림프성백혈병·미만성 거대 B세포 림프종(재발·불응)</div>
+        <p class="card-def">환자 T세포에 암 인식 수용체를 삽입해 다시 주입하는 <b>개인 맞춤 면역세포 항암제</b>. 기존 치료가 듣지 않는 혈액암에서 완치적 반응을 보인다. 국산 CAR-T도 개발 중이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">급여</span><span class="v"><b>2022.4.1 건강보험 적용</b></span></div>
+          <div class="row"><span class="k">치료율</span><span class="v">재발·불응 혈액암에 완치적 반응 사례</span></div>
+        </div>
+        <div class="card-cost">비용: 비급여 <b>1회 3억6,000만원</b> → 급여 + 산정특례 5% 시 <b>본인부담 598만원</b></div>
+      </div>
+      <div class="card">
+        <div class="card-name">면역항암제 (키트루다·옵디보) <span class="tag tag-mix">고가·근거상이</span></div>
+        <div class="card-trig">대상: 폐암·흑색종·신장암 등 다양한 고형암(면역관문억제제)</div>
+        <p class="card-def">면역관문을 풀어 면역세포가 암을 공격하게 하는 <b>3세대 항암제</b>. 적응증에 따라 급여/비급여가 갈리며, 비급여 구간의 부담이 매우 크다. 병용요법은 근거 축적이 필요하다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">투여</span><span class="v">키트루다 3주마다 · 옵디보 2주마다</span></div>
+          <div class="row"><span class="k">치료율</span><span class="v">반응 시 장기 생존 — 적응증별 차이 큼</span></div>
+        </div>
+        <div class="card-cost">비용(인하 후): 키트루다 <b>1회 약 630만원</b> · 옵디보 <b>1회 약 340만원</b> · 연 <b>8,000만~1억원</b>(비급여 구간)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">표적항암제 (허가초과 포함) <span class="tag tag-mix">고가</span></div>
+        <div class="card-trig">대상: 특정 유전자 변이 암(폐·유방·대장 등)</div>
+        <p class="card-def">암의 특정 표적을 공격하는 약물. 허가·급여 범위를 벗어난 사용(허가초과)은 비급여로 부담이 크며, 보험의 <b>표적항암약물허가치료비</b> 담보가 이를 일부 보완한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보험</span><span class="v">표적치료비 담보로 일부 보완</span></div>
+        </div>
+        <div class="card-cost">비용: 약제·적응증별 상이 · 비급여·허가초과 구간 고액 — 보험 연계: <b>AIG(표적항암약물허가치료비) 등</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 로봇수술 ============ -->
+  <section class="msec" id="m3" style="--mc:var(--t-robot)">
+    <div class="m-head"><span class="m-num">기술군 ③</span><h2>로봇수술 (다빈치)</h2><span class="m-mech">편의·비용효과 논란</span></div>
+    <p class="m-intro">로봇팔과 3D 고배율 시야로 정밀 최소침습수술. 2005년 도입 후 <b>2021년 연 10만 건</b>을 넘었다. 회복·미용 이점은 있으나, 일부 암종에서 <b>비용 대비 생존 이득이 불분명</b>해 비용효과 논란이 있다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">전립선암 로봇수술(RARP) <span class="tag tag-risk">비용효과 논란</span></div>
+        <div class="card-trig">대상: 전립선암 근치적 절제</div>
+        <p class="card-def">로봇보조 전립선절제술. 후유증(요실금·발기부전)이 줄지만, <b>NECA 분석상 복강경 대비 비용 2~3배·삶의 질 개선은 그에 못 미쳐 비용효과적이지 못하다</b>는 평가다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">근거</span><span class="v">생존율 차이 미미 · 3개월 사망률 RARP 0.63% vs RP 0.09%</span></div>
+        </div>
+        <div class="card-cost">비용: 비급여 <b>1,000~2,000만원</b>(국립대 전립선 다빈치 최고 1,000만원) · 장비 약 30억원</div>
+      </div>
+      <div class="card">
+        <div class="card-name">갑상선암 로봇수술 <span class="tag tag-risk">미용 비중↑</span></div>
+        <div class="card-trig">대상: 갑상선암 절제(겨드랑이·구강 접근)</div>
+        <p class="card-def">목 앞 흉터를 피하려 겨드랑이·입을 통해 접근. <b>미용(흉터) 목적 비중이 높아</b> 로봇수술 선택이 매년 증가한다. 종양학적 필요성 외 요인이 큰 영역이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">동인</span><span class="v">미용(흉터 회피)·환자 선호</span></div>
+        </div>
+        <div class="card-cost">비용: 국립대 갑상선 다빈치 <b>650~1,000만원</b> · 비급여</div>
+      </div>
+      <div class="card">
+        <div class="card-name">기타 로봇수술 (외과·산부인과·흉부) <span class="tag tag-mix">확대</span></div>
+        <div class="card-trig">대상: 위암·대장암·자궁암·폐암 등</div>
+        <p class="card-def">비뇨·외과·이비인후과·산부인과·흉부외과로 확대. 최소침습 이점이 분명한 영역도 있으나 <b>비급여라 자부담이 크다.</b></p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보험</span><span class="v">'다빈치로봇수술비' 특약 존재(전립선·갑상선=특정암 제외 구조)</span></div>
+        </div>
+        <div class="card-cost">비용: 부위·병원별 약 <b>700~2,000만원</b> 비급여 · 실손은 입원 여부가 보상한도 좌우</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 재생의료 ============ -->
+  <section class="msec" id="m4" style="--mc:var(--t-regen)">
+    <div class="m-head"><span class="m-num">기술군 ④</span><h2>재생의료 (줄기세포 연골재생 등)</h2><span class="m-mech">재생·근거확립 중</span></div>
+    <p class="m-intro">줄기세포로 손상 조직을 재생. <b>무릎 연골재생</b>이 대표적으로, 인공관절 전 단계를 늦추려는 수요가 크다. 적응증 내에선 효과·안전성이 입증됐으나 <b>비급여 비중과 적응증 경계</b>가 쟁점이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">카티스템 (동종 제대혈 줄기세포) <span class="tag tag-val">허가·근거</span></div>
+        <div class="card-trig">대상: 50~60대 광범위 무릎 연골결손·퇴행성 관절염</div>
+        <p class="card-def">탯줄(제대혈) 줄기세포로 연골을 재생. <b>2012년 출시</b>, 적응증에선 재생효과·안전성이 입증돼 가장 많이 쓰인다(히딩크 감독 사례로 알려짐). 인공관절 전 단계 지연이 목표.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">근거</span><span class="v">적응증 내 재생·안전성 입증</span></div>
+          <div class="row"><span class="k">한계</span><span class="v">하지정렬 교정 동반 필요한 경우 多</span></div>
+        </div>
+        <div class="card-cost">비용: 비급여 고가(시술·병원별 상이) · 자가골수·연골이식 등 대체술과 비교 필요</div>
+      </div>
+      <div class="card">
+        <div class="card-name">카티라이프·메가카티·자가골수 주사 <span class="tag tag-mix">신기술·근거상이</span></div>
+        <div class="card-trig">대상: 연골 손상·골관절염</div>
+        <p class="card-def">자가연골배양(카티라이프)·자가골수 흡인물 주사 등 다양한 연골재생술. <b>기술별로 근거·적응증이 다르고 대부분 비급여</b>라, 과잉 적용 여부 판단이 어렵다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">주의</span><span class="v">기술별 근거 편차 · 비급여 자부담</span></div>
+        </div>
+        <div class="card-cost">비용: 비급여 고가 · 신의료기술평가(NECA) 통과 여부·적응증 확인 필요</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 과잉진료 비급여 ============ -->
+  <section class="msec" id="m5" style="--mc:var(--t-over)">
+    <div class="m-head"><span class="m-num">기술군 ⑤</span><h2>과잉진료 논란 비급여</h2><span class="m-mech">도덕적 위험 집중</span></div>
+    <p class="m-intro">근거보다 <b>실손·수익 구조</b>에 끌려 과다 이용되기 쉬운 비급여. <b>도수·체외충격파·증식치료·다초점렌즈</b>가 대표다. 5세대 실손 제외·관리급여 지정 등 <b>제도적 통제가 집중</b>되는 영역이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">도수치료 <span class="tag tag-risk">과잉·관리급여</span></div>
+        <div class="card-trig">대상: 근골격계 통증(목·허리·어깨 등)</div>
+        <p class="card-def">치료사가 손으로 하는 물리치료. 치료 목적이면 유용하나 <b>횟수·기록 과다로 과잉진료 1순위</b>로 지목돼 왔다. 2025.12 정부가 <b>관리급여(예비급여)로 지정</b>해 가격·진료량을 통제한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">제도</span><span class="v">5세대 실손 <b>보험금 제외</b> · 관리급여 전환</span></div>
+          <div class="row"><span class="k">부담</span><span class="v">관리급여 시 <b>본인부담 90~95%</b>(10만원 중 9.5만원)</span></div>
+        </div>
+        <div class="card-cost">비용: 회당 약 <b>10만원</b> 안팎(비급여 시) · 반복·장기 이용으로 누적 부담↑</div>
+      </div>
+      <div class="card">
+        <div class="card-name">체외충격파·증식치료(프롤로) <span class="tag tag-risk">과잉·제외</span></div>
+        <div class="card-trig">대상: 족저근막염·건염·관절통 등</div>
+        <p class="card-def">충격파·증식 주사로 통증을 완화. 효과 근거는 제한적이고 반복 이용이 많아 <b>도수와 함께 5세대 실손에서 제외</b>됐다(신의료기술 미등재 영역 중심).</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">제도</span><span class="v">5세대 실손 보험금 제외(도수·체외·증식)</span></div>
+        </div>
+        <div class="card-cost">비용: 회당 수만~십수만원 비급여 · 반복 시 누적 부담</div>
+      </div>
+      <div class="card">
+        <div class="card-name">백내장 다초점렌즈 <span class="tag tag-risk">혼합비급여 대표</span></div>
+        <div class="card-trig">대상: 백내장 + 노안·난시 교정 동시</div>
+        <p class="card-def">백내장 수술에 <b>시력교정 기능 렌즈</b>를 더하는 혼합비급여. 과잉·혼합 비급여의 대표로 지목됐으나, <b>안과의사회 자정으로 다빈도 비급여 3위→10위권 밖</b>으로 내려갔다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">실손</span><span class="v">시력교정(미용)=제외 · <b>단초점만 보장</b></span></div>
+          <div class="row"><span class="k">분쟁</span><span class="v">치료 vs 시력교정 경계 민원 多</span></div>
+        </div>
+        <div class="card-cost">비용: 다초점렌즈 비급여 수백만원(렌즈·병원별 상이)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">비급여 주사·고가 검사 <span class="tag tag-risk">과잉</span></div>
+        <div class="card-trig">대상: 영양·통증 주사, 비급여 MRI 등</div>
+        <p class="card-def">영양·통증 주사, 비급여 MRI 등은 <b>의학적 필요를 넘어선 과다 이용</b> 우려가 크다. 비급여 보장한도 제한·할인할증제 등 통제 대상이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">제도</span><span class="v">비급여 보장한도 제한·할인할증제</span></div>
+        </div>
+        <div class="card-cost">비용: 항목별 상이 · 실손 4세대 이후 본인부담 30%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑥ 기타 신기술 ============ -->
+  <section class="msec" id="m6" style="--mc:var(--t-etc)">
+    <div class="m-head"><span class="m-num">기술군 ⑥</span><h2>기타 신의료기술</h2><span class="m-mech">신시술·근거확립 중</span></div>
+    <p class="m-intro">근거를 쌓아가는 신시술들. 디스크 고주파·고강도초음파(HIFU)·갑상선 고주파절제 등 — <b>최소침습 이점</b>이 있으나 비급여이고 적응증·근거가 영역별로 다르다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">추간판내 고주파 열치료술 <span class="tag tag-mix">신시술</span></div>
+        <div class="card-trig">대상: 허리 디스크(추간판) 통증</div>
+        <p class="card-def">고주파 열로 디스크 통증을 줄이는 최소침습 시술. 수술 전 단계로 쓰이나 <b>병원별 비용 편차가 크다</b>(근거·적응증 확인 필요).</p>
+        <div class="card-cost">비용: 국립대 <b>112만~320만원</b>(병원 간 약 3배 차이)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">갑상선·자궁근종 고주파절제(RFA)·HIFU <span class="tag tag-mix">신시술</span></div>
+        <div class="card-trig">대상: 갑상선 양성결절·자궁근종 등</div>
+        <p class="card-def">수술 대신 <b>열·초음파로 종양을 태우는</b> 최소침습 신시술. 흉터·회복 이점이 있으나 비급여이고 적응증이 제한적이다.</p>
+        <div class="card-cost">비용: 비급여 수백만원(부위·장비별 상이)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">맘모톰(진공보조 유방생검·절제) <span class="tag tag-mix">신시술</span></div>
+        <div class="card-trig">대상: 유방 양성종양</div>
+        <p class="card-def">절개 없이 양성 유방종양을 흡인·절제. 신의료기술평가를 거쳐 <b>일부 급여화</b>됐으나 비급여 구간도 남아 보험 분쟁이 있었다.</p>
+        <div class="card-cost">비용: 개수·병원별 상이 · 일부 급여 전환</div>
+      </div>
+      <div class="card">
+        <div class="card-name">신의료기술평가(nHTA) 체계 <span class="tag tag-val">제도</span></div>
+        <div class="card-trig">관문: 안전성·유효성 평가 후 시장 진입</div>
+        <p class="card-def">신기술은 <b>한국보건의료연구원(NECA)의 신의료기술평가</b>로 안전성·유효성을 인정받아야 비급여로라도 쓸 수 있다. 이후 평가를 거쳐 급여로 전환된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">운영</span><span class="v"><b>NECA(한국보건의료연구원)</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ★ 비용·치료율 매트릭스 ===================== -->
+  <section class="cmpsec" id="cmp">
+    <div class="e">★ Cost · Evidence · Moral-hazard Matrix</div>
+    <h2>한 표로 보는 신의료기술 — 대상·비용·치료율·과잉위험·보장</h2>
+    <p class="desc">기술마다 <b>대상질환·비용·치료율(근거)·과잉진료 위험·보험 보장</b>이 다르다. 이 표가 핵심 — <b>'비용이 크다=가치가 크다'가 아니며</b>, 근거와 도덕적 위험을 함께 봐야 한다. 위험: ●높음/◐중간/○낮음.</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr><th>기술</th><th>대상질환</th><th>비용(대략)</th><th>치료율·근거</th><th>과잉/도덕적 위험</th><th>보험 보장</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-rad)"></span>중입자치료</td>
+          <td class="cm-tgt">전립선·간·췌장·두경부암</td>
+          <td class="cm-cost">간암 5,000만 / 췌장암 6,500만(전액 비급여)</td>
+          <td class="cm-rate">기존 방사선 2~3배 효과 · 난치암 근거 축적 중</td>
+          <td><span class="risk-l">○ 낮음</span> (접근성·재정이 쟁점)</td>
+          <td class="cm-cov">암진단비·암치료비로 일부 충당</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-rad)"></span>양성자치료</td>
+          <td class="cm-tgt">소아암·뇌종양·고형암</td>
+          <td class="cm-cost">급여+산정특례 시 본인부담 약 100만</td>
+          <td class="cm-rate">고형암 우수 성적 · 표준적 정밀치료</td>
+          <td><span class="risk-l">○ 낮음</span></td>
+          <td class="cm-cov">건강보험 급여(전립선암 제외)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-cell)"></span>CAR-T(킴리아)</td>
+          <td class="cm-tgt">재발 B세포 백혈병·림프종</td>
+          <td class="cm-cost">3.6억 → 급여 후 본인부담 598만</td>
+          <td class="cm-rate">재발·불응 혈액암 완치적 반응</td>
+          <td><span class="risk-l">○ 낮음</span></td>
+          <td class="cm-cov">건강보험 급여(2022.4)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-cell)"></span>면역항암제</td>
+          <td class="cm-tgt">폐암·흑색종 등 고형암</td>
+          <td class="cm-cost">키트루다 630만/회 · 연 8천만~1억(비급여)</td>
+          <td class="cm-rate">반응 시 장기생존 · 적응증별 차이</td>
+          <td><span class="risk-m">◐ 중간</span> (병용 근거 주의)</td>
+          <td class="cm-cov">적응증별 급여/비급여 · 암치료비</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-robot)"></span>로봇수술(전립선)</td>
+          <td class="cm-tgt">전립선암</td>
+          <td class="cm-cost">1,000~2,000만(비급여)</td>
+          <td class="cm-rate">후유증↓이나 <b>생존율 차이 미미</b></td>
+          <td><span class="risk-h">● 높음</span> (비용효과 논란)</td>
+          <td class="cm-cov">다빈치로봇수술비 특약(특정암 제외)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-robot)"></span>로봇수술(갑상선)</td>
+          <td class="cm-tgt">갑상선암</td>
+          <td class="cm-cost">650~1,000만(비급여)</td>
+          <td class="cm-rate">종양학적 이득보다 <b>미용 동인</b></td>
+          <td><span class="risk-h">● 높음</span> (미용 비중↑)</td>
+          <td class="cm-cov">로봇수술비 특약 일부</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-regen)"></span>줄기세포 연골재생</td>
+          <td class="cm-tgt">무릎 연골결손·골관절염</td>
+          <td class="cm-cost">비급여 고가(시술별 상이)</td>
+          <td class="cm-rate">적응증 내 재생·안전성 입증</td>
+          <td><span class="risk-m">◐ 중간</span> (적응증 경계)</td>
+          <td class="cm-cov">대부분 비급여(수술비 일부)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-over)"></span>도수·체외·증식치료</td>
+          <td class="cm-tgt">근골격 통증</td>
+          <td class="cm-cost">도수 회당 약 10만(반복)</td>
+          <td class="cm-rate">치료 목적 한정 유효 · <b>근거 제한적</b></td>
+          <td><span class="risk-h">● 높음</span> (과잉 1순위)</td>
+          <td class="cm-cov"><b>5세대 실손 제외</b> · 관리급여</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-over)"></span>백내장 다초점렌즈</td>
+          <td class="cm-tgt">백내장+노안·난시</td>
+          <td class="cm-cost">렌즈 비급여 수백만</td>
+          <td class="cm-rate">치료(백내장)+시력교정 혼합</td>
+          <td><span class="risk-h">● 높음</span> (혼합비급여)</td>
+          <td class="cm-cov">단초점만 보장 · 다초점=제외</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* 비용·치료율은 검증된 공개 자료 기준의 <b>대략값</b>이며 병원·시점·적응증에 따라 다르다. 치료율은 단일 지표로 단정할 수 없어 '근거 수준'으로 함께 적었다. 신의료기술의 안전성·유효성은 <b>한국보건의료연구원(NECA)</b> 신의료기술평가로 판단한다.</p>
+  </section>
+
+  <!-- ===================== 💴 환자 부담 비용 상세 ===================== -->
+  <section class="cmpsec" id="cost">
+    <div class="e" style="color:var(--gold)">💴 Patient Cost Detail · 환자 부담 비용 (한국 1회·기간·총액 + 일본 비교)</div>
+    <h2>환자가 실제로 내는 돈 — 치료별 비용 상세</h2>
+    <p class="desc">신의료기술 비급여는 <b>1회 비용 × 횟수(기간) = 총액</b>으로 봐야 부담이 보인다. 아래는 <b>한국의 1회 비용·횟수·총액·보험 적용 후 실부담</b>과 <b>일본의 동일·유사 치료 비용</b>을 함께 정리한 것이다. 정확한 확정값이 아니라 <b>검증된 공개 자료 기준의 대략 범위</b>이며 병원·시점·적응증에 따라 다르다. (환율은 변동 — 본 표는 출처의 환산값을 따름, 대략 <b>100엔 ≈ 약 900~1,000원</b>)</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr>
+        <th>치료</th><th>한국 1회 비용</th><th>한국 횟수·기간</th><th>한국 총비용(비급여)</th><th>한국 보험적용 후 실부담</th><th>일본 비용(유사 치료)</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-rad)"></span>중입자치료</td>
+          <td class="cm-cost">약 540만~1,250만 (암종·분할별)</td>
+          <td class="cm-tgt">12~16회 / 1~3주 (간암 4회, 췌장암 12회)</td>
+          <td class="cm-cost"><b>간암 약 5,000만 · 췌장암 약 6,500만</b> (전액 비급여)</td>
+          <td class="cm-cov">비급여(보험 미적용) · 암진단비·치료비로 일부 충당</td>
+          <td class="cm-cost">표준 자비 <b>314만엔(약 3,100만원)</b> +검사 10만엔 · 보험암종(육종·전립선·두경부)은 본인부담 약 30%(75세↑ 약 10%)</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-rad)"></span>양성자치료</td>
+          <td class="cm-cost">치료계획 약 370만 + 조사 회당 약 50만</td>
+          <td class="cm-tgt">약 20~30회 / 4~6주</td>
+          <td class="cm-cost">비급여 환산 시 약 <b>1,500만~2,500만</b></td>
+          <td class="cm-cov"><b>전립선암 제외 급여</b> → 산정특례 5% 시 본인부담 <b>약 100만</b></td>
+          <td class="cm-cost">자비 약 <b>250만~270만엔(약 2,500만원대)</b> · 일부 암종 보험·선진의료</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-cell)"></span>CAR-T (킴리아)</td>
+          <td class="cm-cost">원샷 <b>약 3.6억</b>(급여상한) · 비급여 list 약 5억</td>
+          <td class="cm-tgt">1회 투여(세포 제조 3~4주)</td>
+          <td class="cm-cost">급여 전 약 <b>3.6억~5억</b></td>
+          <td class="cm-cov">급여(2022.4)+산정특례 5% → 본인부담 <b>약 598만</b></td>
+          <td class="cm-cost"><b>약 3,349만엔(약 3.5억)</b> · 아시아 최초 보험적용+고액요양비로 실부담 급감</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-cell)"></span>면역항암제 (키트루다·옵디보)</td>
+          <td class="cm-cost">키트루다 <b>약 630만</b>(3주) · 옵디보 <b>약 340만</b>(2주)</td>
+          <td class="cm-tgt">수개월~1년+ (간격 반복 투여)</td>
+          <td class="cm-cost">비급여 구간 연 <b>약 8,000만~1억</b></td>
+          <td class="cm-cov">적응증 급여 시 5% · 비급여 구간은 전액</td>
+          <td class="cm-cost">보험적용(옵디보 등)+<b>고액요양비제도</b>로 월 본인부담 상한 적용</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-robot)"></span>로봇수술 (다빈치)</td>
+          <td class="cm-cost">1회성 <b>약 650만~2,000만</b> (전립선·갑상선 650만~1,000만)</td>
+          <td class="cm-tgt">1회 수술(입원 약 3~7일)</td>
+          <td class="cm-cost">약 <b>650만~2,000만</b> (비급여)</td>
+          <td class="cm-cov">비급여(실손은 입원 여부로 한도차) · 로봇수술비 특약 정액</td>
+          <td class="cm-cost">다수 암종 <b>보험적용</b>(전립선·위·직장·신장 등)+고액요양비 · 선진의료 잔여는 1회 <b>80만~87만엔 자비</b></td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-regen)"></span>줄기세포 연골재생</td>
+          <td class="cm-cost">카티스템 <b>약 1,000만~1,500만</b> · 자가골수주사 양측 450만~700만</td>
+          <td class="cm-tgt">1회 시술(입원 3일~1주, 재활 6주+)</td>
+          <td class="cm-cost">약 <b>450만~1,500만</b> (비급여)</td>
+          <td class="cm-cov">비급여 · 실손·수술비 특약으로 일부 환급</td>
+          <td class="cm-cost">재생의료 자비(시설·기술별 상이) · 일본도 대체로 자비</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-over)"></span>도수치료</td>
+          <td class="cm-cost">회당 <b>약 10만</b></td>
+          <td class="cm-tgt">주 1~2회 × 수개월(수십 회)</td>
+          <td class="cm-cost">누적 <b>수십만~수백만</b></td>
+          <td class="cm-cov"><b>5세대 실손 제외</b> · 관리급여 시 본인부담 90~95%(회당 약 9.5만)</td>
+          <td class="cm-cost">보험 물리치료 체계 상이 · 자비 '도수' 개념 약함</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-over)"></span>백내장 다초점렌즈</td>
+          <td class="cm-cost">렌즈+수술 비급여 (안당 수백만)</td>
+          <td class="cm-tgt">1회 수술/안 (양안 2회)</td>
+          <td class="cm-cost">양안 <b>수백만</b> (렌즈·병원별)</td>
+          <td class="cm-cov">단초점=급여·실손 / <b>다초점=제외</b></td>
+          <td class="cm-cost">선정요양(선택요양)으로 <b>차액 자비</b> 부담</td>
+        </tr>
+        <tr>
+          <td class="cm-name"><span class="pip" style="background:var(--t-etc)"></span>자궁근종 하이푸·유방 RFA</td>
+          <td class="cm-cost">하이푸 수백만~1,000만 (비급여)</td>
+          <td class="cm-tgt">1회 시술</td>
+          <td class="cm-cost">수백만~<b>약 1,000만</b></td>
+          <td class="cm-cov">비급여(일부 RFA 급여 전환)</td>
+          <td class="cm-cost">선진의료 자궁근종 MRgFUS <b>45만4천엔</b>(1회) · 유방 RFA <b>약 40만엔</b>(1회)</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* <b>읽는 법 —</b> '한국 총비용'은 보험 적용 전 비급여 기준이고, '보험적용 후 실부담'은 급여·산정특례·실손 등이 적용됐을 때다(중입자·로봇·줄기세포·도수 상당수는 여전히 비급여). 일본은 <b>고가 입자치료·CAR-T를 보험에 편입하고 고액요양비제도(월 본인부담 상한)</b>로 실부담을 낮추는 구조라, 표시가격(자비)이 같아도 환자 실부담은 한국과 다를 수 있다. 모든 값은 <b>대략 범위</b>이며 병원·시점·적응증·환율에 따라 달라진다.</p>
+  </section>
+
+  <!-- ===================== ⚠ 도덕적 위험 ===================== -->
+  <section class="moralsec" id="moral">
+    <div class="moral-head">
+      <div class="e">⚠ Moral Hazard · 과잉진료 도덕적 위험 분석</div>
+      <h2>'비급여 신의료기술'에 도덕적 위험은 존재하는가</h2>
+      <p>결론부터 — <b>존재한다, 그러나 기술마다 정도가 다르다.</b> 근거가 탄탄한 고가치료(중입자·CAR-T)는 <b>접근성·재정</b>이 문제일 뿐 과잉 위험은 작다. 반대로 실손과 수익 구조에 끌리기 쉬운 비급여(도수·다초점·로봇수술 일부)는 <b>의학적 필요를 넘어선 과다 이용(공급자 유발 수요)</b>이 구조적으로 발생한다.</p>
+    </div>
+    <div class="moral-grid">
+      <div class="moral-item">
+        <h4>① 실손이 만든 '제3자 지불' 구조</h4>
+        <p>실손 가입자 4,000만 명. 환자는 본인부담이 작아 <b>가격에 둔감</b>해지고, 공급자는 비급여 단가·횟수를 늘릴 유인이 생긴다. 2023년 총진료비 133조 중 <b>실손이 14.1조(10%)</b>로, 비급여 과다 이용의 토양이 됐다.</p>
+      </div>
+      <div class="moral-item">
+        <h4>② 정부의 통제 — 5세대 실손·관리급여</h4>
+        <p>2026.5 <b>5세대 실손</b>은 도수·체외·증식치료 등 신의료기술 비급여를 <b>보험금에서 제외</b>했고, 2025.12 정부는 도수치료 등 3개를 <b>관리급여(예비급여)</b>로 지정해 가격·진료량을 직접 통제하기 시작했다(본인부담 90~95%).</p>
+      </div>
+      <div class="moral-item">
+        <h4>③ 비용효과가 어긋나는 영역</h4>
+        <p>로봇수술(전립선)은 <b>복강경 대비 비용 2~3배인데 생존율 차이는 미미</b>(NECA)하고, 갑상선 로봇수술은 <b>미용 동인</b>이 크다. 중입자(수천만)와 양성자(100만)가 <b>치료성적은 비슷한 아이러니</b>도 비용-가치 불일치의 사례다.</p>
+      </div>
+      <div class="moral-item">
+        <h4>④ 혼합비급여와 '치료 vs 미용' 경계</h4>
+        <p>백내장 다초점렌즈처럼 <b>치료(급여)에 비급여를 끼워 파는 혼합비급여</b>는 과잉의 전형으로 지목됐다. 다만 안과의사회 자정으로 <b>다빈도 3위→10위권 밖</b>으로 내려가, 자율 통제가 작동한 사례이기도 하다.</p>
+      </div>
+      <div class="moral-item">
+        <h4>⑤ 근거 없는 남용 vs 근거 있는 고가</h4>
+        <p>도덕적 위험의 핵심은 '비싸다'가 아니라 <b>'의학적 필요를 넘어서느냐'</b>다. CAR-T·중입자는 비싸도 <b>대안 없는 난치 영역</b>이라 과잉이 아니고, 도수·다초점은 <b>대체·자율 통제가 가능</b>한데 과다 이용된 것이 문제다.</p>
+      </div>
+      <div class="moral-item">
+        <h4>⑥ 균형 — 통제와 접근성 사이</h4>
+        <p>과잉을 막되 <b>꼭 필요한 고가 신기술의 접근성</b>은 지켜야 한다. 일률적 비급여 축소는 난치암 환자의 치료 기회를 줄일 수 있어, <b>근거·중증도 기반의 선별적 보장</b>(5세대의 중증/비중증 분리)이 방향이다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 🇯🇵 일본 비교 ===================== -->
+  <section class="jpsec" id="jp">
+    <div class="jp-head">
+      <div class="e">🇯🇵 Japan · 일본의 신의료기술 활용·현황·성과</div>
+      <h2>일본 — 입자치료의 세계 표준, '先進医療' 제도</h2>
+      <p>일본은 <b>중입자치료를 세계 최초로 임상화</b>하고 지금도 세계를 주도한다. 신기술을 보험 전 단계에서 관리하는 <b>'先進医療(선진의료)' 제도</b>로 안전성·근거를 쌓으며 단계적으로 보험에 편입하는 점이 한국과의 큰 차이다.</p>
+    </div>
+    <div class="jp-body">
+      <div class="jp-card">
+        <h4>중입자치료 — 세계 90%가 일본</h4>
+        <p>일본 방사선의학종합연구소(NIRS, 현 QST)가 <b>1994년 세계 최초로 중입자(HIMAC) 임상</b>을 시작. QST병원은 <b>2019.3까지 누적 11,834명</b>을 치료했고, 이는 <b>전 세계 중입자치료의 약 90%</b>에 해당한다.</p>
+        <div class="jp-meta">
+          <div class="row"><span class="k">기관</span><span class="v">QST·카나가와현립암센터·규슈국제중입자선암치료센터 등 <b>6개 이상</b></span></div>
+          <div class="row"><span class="k">성과</span><span class="v">치료기 설계·임상·상용화까지 기술 축적, <b>세계 주도</b></span></div>
+        </div>
+      </div>
+      <div class="jp-card">
+        <h4>입자치료 복합시설 — 양성자+중입자</h4>
+        <p>일본은 양성자·중입자를 함께 갖춘 복합시설을 일찍 구축. 한 시설은 <b>2001년 양성자, 2002년 중입자</b>를 시작해 <b>2016년까지 양성자 5,473건·중입자 2,552건</b>을 시행하는 등 임상 데이터가 두텁다.</p>
+        <div class="jp-meta">
+          <div class="row"><span class="k">대상</span><span class="v">전립선암·두경부암 등 광범위 암종</span></div>
+          <div class="row"><span class="k">근거</span><span class="v">저위험 전립선암 RBE 등 <b>장기 임상연구</b> 다수</span></div>
+        </div>
+      </div>
+      <div class="jp-card">
+        <h4>先進医療(선진의료) 제도</h4>
+        <p>보험 적용 전 신기술을 <b>'先進医療'로 지정</b>해 보험진료와 병용(혼합진료 예외)을 허용하고 안전성·근거를 평가하는 단계적 관리 체계. 예: <b>구인두·하인두·후두암의 경구 로봇수술(da Vinci)을 先進医療A로 운영</b>(약 107만5천엔).</p>
+        <div class="jp-meta">
+          <div class="row"><span class="k">의의</span><span class="v">신기술 접근성과 근거 축적을 <b>동시에</b> 달성</span></div>
+          <div class="row"><span class="k">시사</span><span class="v">한국의 '관리급여'와 유사한 단계적 편입 모델</span></div>
+        </div>
+      </div>
+      <div class="jp-card">
+        <h4>글로벌 확산 — 일본 모델의 영향</h4>
+        <p>일본 중입자 기술은 <b>이탈리아 CNAO·오스트리아 MedAustron</b> 등 해외 센터로 확산됐고, 한국 연세암병원도 <b>QST(NIRS)와 협력</b>해 임상·교육을 받았다. 일본이 사실상 입자치료의 글로벌 표준을 세웠다.</p>
+        <div class="jp-meta">
+          <div class="row"><span class="k">협력</span><span class="v">연세암병원–QST 교류 · 글로벌 스탠더드 지향</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="kr-jp">
+      <table>
+        <thead><tr><th>구분</th><th>한국</th><th>일본</th></tr></thead>
+        <tbody>
+          <tr><td>중입자 도입</td><td>2023.4 연세암병원(국내 최초)</td><td><b>1994 세계 최초 임상</b>(NIRS/HIMAC)</td></tr>
+          <tr><td>중입자 누적</td><td>2024.11까지 약 437명(전립선암 중심)</td><td><b>2019.3까지 11,834명</b>(세계의 약 90%)</td></tr>
+          <tr><td>운영 기관</td><td>연세암병원(서울아산 2031 목표)</td><td><b>6개 이상</b> 기관 활발 운영</td></tr>
+          <tr><td>신기술 제도</td><td>신의료기술평가(NECA)+관리급여(2025~)</td><td><b>先進医療(선진의료)</b> 단계적 편입</td></tr>
+          <tr><td>양성자 급여</td><td>전립선암 제외 급여(본인부담 약 100만)</td><td>광범위 시행 · 복합시설 임상 축적</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== 🔬 한국 미도입·일본 선도 신기술 ===================== -->
+  <section class="msec" id="jponly" style="--mc:#2A7F62">
+    <div class="m-head"><span class="m-num">일본 선도</span><h2>한국엔 아직 없고, 일본은 활발히 쓰는 신의료기술</h2><span class="m-mech">한국 미도입 · 원정치료</span></div>
+    <p class="m-intro">일본은 <b>재생의료법(2015)의 '선(先)승인 후(後)평가'</b>와 <b>先進医療 제도</b>로, 안전성을 통과한 신기술을 한국보다 빠르게 환자에게 적용한다. 한국은 임상 1~3상·이중 심사로 문턱이 높아, <b>난치 환자들이 일본으로 원정치료</b>를 떠난다(오사카의 한 줄기세포 클리닉은 환자의 약 90%가 한국인). 아래는 <b>한국에 아직 도입되지 않았거나 임상에 머무는데, 일본에선 승인·실용화돼 활발히 쓰이는</b> 대표 기술과 <b>외국인 자비 비용</b>이다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">붕소중성자포착치료 (BNCT) <span class="tag tag-val">일본 세계최초 승인</span></div>
+        <div class="card-trig">대상: 재발성·국소진행 두경부암 (악성뇌종양·흑색종 연구 중)</div>
+        <p class="card-def">붕소 약물을 암세포에 모은 뒤 <b>중성자를 쏘아 세포 단위로만 암을 파괴</b>하는 '제5의 암 치료법'. 정상조직 손상이 적고 <b>1~2회로 치료</b>가 끝난다. 일본은 <b>2020년 세계 최초로 재발 두경부암에 보험 승인</b>(NeuCure)했고, 시판 후 조사에서 양호한 안전성·효과가 보고됐다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">효과</span><span class="v">재(再)방사선 어려운 재발암의 새 선택지</span></div>
+          <div class="row"><span class="k">한국</span><span class="v">국내 기업 개발 중 · <b>임상 단계(미도입)</b></span></div>
+        </div>
+        <div class="card-cost">외국인 비용: 일본 거주자는 보험, <b>외국인은 자비(고액)</b> — 의료관광 에이전시 통해 안내(공개가 제한적, 수천만원대 추정)</div>
+      </div>
+      <div class="card">
+        <div class="card-name">광면역요법 (Photoimmunotherapy) <span class="tag tag-val">일본 세계최초 승인</span></div>
+        <div class="card-trig">대상: 절제 불가 국소진행·재발 두경부암</div>
+        <p class="card-def">암세포에 달라붙는 약물(빛 반응 물질 결합)을 주입한 뒤 <b>근적외선 레이저를 쏘아 암세포만 파괴</b>하는 치료. 일본이 <b>2020년 세계 최초로 승인</b>해 임상 적용 중이며, 기존 치료가 듣지 않는 두경부암에서 국소 제어를 기대한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">효과</span><span class="v">국소 재발 두경부암 표적 파괴 · 반복 가능</span></div>
+          <div class="row"><span class="k">한국</span><span class="v"><b>미도입</b>(의료관광으로 안내)</span></div>
+        </div>
+        <div class="card-cost">외국인 비용: 자비 · 에이전시 통한 안내(공개가 제한적) — 약물·조사 횟수·적응증에 따라 상이</div>
+      </div>
+      <div class="card">
+        <div class="card-name">iPS세포 재생의료 <span class="tag tag-val">일본 원천기술</span></div>
+        <div class="card-trig">대상: 파킨슨병·황반변성·중증 심부전·척수손상</div>
+        <p class="card-def">야마나카 신야가 개발한 <b>유도만능줄기세포(iPS)</b>로 신경·망막·심근을 만들어 이식하는 재생의료. 일본은 <b>황반변성(2014 세계 최초)·심부전(오사카대)·파킨슨병(2025 치료제 승인 신청)</b> 등에서 세계를 선도한다. 근본 치료가 없는 난치병의 새 길로 기대된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">효과</span><span class="v">손상 신경·조직 '대체' 시도 — 증상 완화 넘어 근본 접근</span></div>
+          <div class="row"><span class="k">한국</span><span class="v">연구는 활발하나 <b>실용화(상용 치료) 미흡</b></span></div>
+        </div>
+        <div class="card-cost">외국인 비용: 대부분 <b>임상·조건부 승인 단계</b>로 상업적 치료가는 미정 · 일반 환자 적용은 향후 단계적</div>
+      </div>
+      <div class="card">
+        <div class="card-name">줄기세포 치료 (재생의료법 조건부) <span class="tag tag-mix">조건부 허용</span></div>
+        <div class="card-trig">대상: 척수손상·관절(연골)·난치성 질환</div>
+        <p class="card-def">일본은 <b>위험도가 낮은 세포치료를 의약품 허가 없이도</b>(후생성 승인 기관에서) 환자에게 쓸 수 있게 했다. 급성 척수손상에 자가 골수 줄기세포를 정맥주사하는 치료가 <b>조건부 승인</b>됐고, 관절·항노화 줄기세포 치료도 활발하다. 한국은 임상 절차가 엄격해 환자들이 원정한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">효과</span><span class="v">손상 조직 재생·기능 회복 시도(적응증·근거 편차 큼)</span></div>
+          <div class="row"><span class="k">한국</span><span class="v">규제로 <b>국내 시술 제한</b> → 원정</span></div>
+        </div>
+        <div class="card-cost">외국인 비용: 회당 <b>수백만~수천만원</b>(시술·기관별 상이) · 일본 클리닉 환자 다수가 한국인</div>
+      </div>
+      <div class="card">
+        <div class="card-name">면역세포치료 (NK·수지상세포·T세포) <span class="tag tag-mix">자유진료·보조</span></div>
+        <div class="card-trig">대상: 다양한 암(주로 표준치료 보조요법)</div>
+        <p class="card-def">환자 혈액에서 <b>NK세포·수지상세포(DC)·αβ/γδ T세포</b>를 배양해 다시 주입하는 면역요법. 일본은 재생의료법으로 <b>자유진료(자비)로 활발히</b> 제공돼 의료관광 수요가 크다. 다만 <b>대개 표준치료의 보조</b>이며 단독 완치 근거는 제한적이라, 효과 기대는 신중해야 한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">효과</span><span class="v">보조요법 — 표준치료 병행 · <b>단독 근거 제한적</b></span></div>
+          <div class="row"><span class="k">한국</span><span class="v">자유진료 제한 → <b>원정</b>(예: NK세포 MYJ1633)</span></div>
+        </div>
+        <div class="card-cost">외국인 비용(일본 공시 예시): NK세포 1회 24만엔(약 220만원)~자기활성NK 71.5만엔(약 650만원) · 수지상세포백신 1회 40만엔(약 360만원) · 6회 코스 144만~300만엔(약 1,300만~2,700만원) · 원정 사례 NK 회당 800만원×5회 ≈ 항공·체류 포함 4,000만원+</div>
+      </div>
+    </div>
+
+    <!-- 외국인 비용 요약표 -->
+    <div class="cmpsec" style="margin-top:34px;">
+      <div class="e" style="color:#2A7F62">◆ 한국 미도입 기술 — 대상·효과·외국인 비용 요약</div>
+      <h2 style="font-size:clamp(1.3rem,3vw,1.7rem);">일본 선도 신기술 비교표</h2>
+      <p class="desc">한국에 아직 없거나 임상에 머무는 기술의 <b>대상질병·치료효과·한국 현황·일본 현황·외국인 자비 비용</b>을 정리했다. 비용은 <b>대략 범위</b>이며 기관·시점·환율에 따라 다르다(대략 100엔≈900~1,000원). 일부(BNCT·광면역·iPS)는 공개가가 제한적이거나 임상 단계다.</p>
+      <div class="tablescroll"><table class="cmp">
+        <thead><tr><th>기술</th><th>대상질병</th><th>치료효과(요지)</th><th>한국 현황</th><th>일본 현황</th><th>외국인 자비 비용(대략)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cm-name"><span class="pip" style="background:#2A7F62"></span>BNCT</td>
+            <td class="cm-tgt">재발 두경부암(뇌종양·흑색종 연구)</td>
+            <td class="cm-rate">중성자로 세포 단위 파괴, 1~2회</td>
+            <td class="cm-cov">개발 중(미도입)</td>
+            <td class="cm-cov"><b>2020 세계최초 보험승인</b></td>
+            <td class="cm-cost">자비 고액(에이전시 안내·공개가 제한적)</td>
+          </tr>
+          <tr>
+            <td class="cm-name"><span class="pip" style="background:#2A7F62"></span>광면역요법</td>
+            <td class="cm-tgt">절제불가·재발 두경부암</td>
+            <td class="cm-rate">근적외선으로 암세포 표적 파괴</td>
+            <td class="cm-cov">미도입</td>
+            <td class="cm-cov"><b>2020 세계최초 승인</b></td>
+            <td class="cm-cost">자비(에이전시 안내)</td>
+          </tr>
+          <tr>
+            <td class="cm-name"><span class="pip" style="background:#2A7F62"></span>iPS 재생의료</td>
+            <td class="cm-tgt">파킨슨·황반변성·심부전·척수손상</td>
+            <td class="cm-rate">손상 신경·조직 대체(근본 접근)</td>
+            <td class="cm-cov">연구 활발·실용화 미흡</td>
+            <td class="cm-cov">임상~조건부 승인(2025 파킨슨 신청)</td>
+            <td class="cm-cost">임상 단계 — 상업 치료가 미정</td>
+          </tr>
+          <tr>
+            <td class="cm-name"><span class="pip" style="background:#2A7F62"></span>줄기세포 치료</td>
+            <td class="cm-tgt">척수손상·관절·난치질환</td>
+            <td class="cm-rate">조직 재생·기능 회복(근거 편차)</td>
+            <td class="cm-cov">규제로 제한→원정</td>
+            <td class="cm-cov">재생의료법 조건부 허용</td>
+            <td class="cm-cost"><b>회당 수백만~수천만원</b></td>
+          </tr>
+          <tr>
+            <td class="cm-name"><span class="pip" style="background:#2A7F62"></span>면역세포치료</td>
+            <td class="cm-tgt">다양한 암(보조요법)</td>
+            <td class="cm-rate">면역세포 배양·주입(단독 근거 제한)</td>
+            <td class="cm-cov">자유진료 제한→원정</td>
+            <td class="cm-cov">자유진료 활발</td>
+            <td class="cm-cost">NK 1회 약 220만~650만 · <b>6회 코스 약 1,300만~2,700만</b>(원정 포함 4,000만+)</td>
+          </tr>
+        </tbody>
+      </table></div>
+      <p class="desc" style="margin-top:11px;font-size:.84rem;">* <b>주의 —</b> '일본에 있다'가 '효과가 입증됐다'와 같지는 않다. BNCT·광면역요법은 <b>규제당국 승인</b>을 받은 근거 기반 치료이고, iPS 재생의료는 <b>임상~조건부</b> 단계다. 반면 일부 <b>면역세포 자유진료·항노화 줄기세포</b>는 표준치료의 보조이거나 근거가 제한적일 수 있어, 원정 전 <b>적응증·근거·총비용(항공·체류 포함)</b>을 신중히 따져야 한다. 일본의 빠른 도입은 <b>'선승인 후평가' 제도</b> 덕분이며, 그만큼 <b>시판 후 검증이 진행 중</b>인 치료도 포함된다.</p>
+    </div>
+  </section>
+
+  <!-- ===================== 주의사항 ===================== -->
+  <section class="cautsec">
+    <div class="e">Cautions · 핵심 주의점</div>
+    <h2>신의료기술 비급여, 이렇게 읽자</h2>
+    <div class="cauts">
+      <div class="caut">
+        <h4>① '비싸다 ≠ 좋다'를 분리하라</h4>
+        <p>비용은 가치의 척도가 아니다. <b>양성자(100만) vs 중입자(수천만)</b>가 치료성적이 비슷하듯, 비용·근거가 어긋나는 영역이 있다. 근거(치료율)와 대안 유무를 함께 봐야 한다.</p>
+      </div>
+      <div class="caut">
+        <h4>② 과잉 위험은 기술마다 다르다</h4>
+        <p>CAR-T·중입자는 <b>대안 없는 난치 영역</b>이라 과잉이 아니고, 도수·다초점·일부 로봇수술은 <b>대체 가능한데 과다 이용</b>되는 구조다. 같은 '비급여'로 묶어 보면 안 된다.</p>
+      </div>
+      <div class="caut">
+        <h4>③ 5세대 실손 변화 확인</h4>
+        <p>도수·체외·증식치료는 <b>5세대 실손에서 제외</b>됐고 관리급여로 전환 중(본인부담 90~95%). 자주 받는다면 옛 세대 유지·정액 보완을 검토.</p>
+      </div>
+      <div class="caut">
+        <h4>④ 고가치료는 보험 연계로 대비</h4>
+        <p>중입자·로봇수술 등 고액 비급여는 실손만으로 부족할 수 있다. <b>암치료비·로봇수술비·표적치료비</b> 등 정액 담보로 보완하되, 특정암 제외 등 구조를 약관에서 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>⑤ 신의료기술평가(NECA) 통과 여부</h4>
+        <p>신기술은 <b>NECA 신의료기술평가</b>로 안전성·유효성을 인정받았는지, 적응증에 맞는지 확인이 중요하다. 미검증·적응증 외 사용은 위험·자부담이 크다.</p>
+      </div>
+      <div class="caut">
+        <h4>⑥ 일본 사례는 '제도'까지 보라</h4>
+        <p>일본의 강점은 기술뿐 아니라 <b>先進医療로 접근성과 근거를 동시에 쌓는 제도</b>다. 한국의 관리급여·단계적 급여화도 같은 방향이며, 환자에겐 '근거 기반 선별 보장'이 유리하다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 한국에서 사용되는 신의료기술 비급여 치료의 치료법·대상질환·비용·치료율(근거)·과잉진료 도덕적 위험과 일본의 활용 수준·현황·성과를 정리·분석한 <b>교육·기획용 참고 자료</b>이며, 특정 치료의 권유·의료 자문이나 특정 보험의 가입 권유가 아니다. 비용·치료율·치료건수는 검증된 공개 자료(병원·학회·정부·언론) 기준의 <b>대략값</b>으로 병원·시점·적응증에 따라 달라지며, 치료율은 단일 지표로 단정할 수 없어 '근거 수준'으로 함께 표기했다. 중입자치료 비용(간암 약 5,000만·췌장암 약 6,500만, 전액 비급여), 양성자치료(전립선암 제외 급여·본인부담 약 100만), CAR-T 킴리아(비급여 약 3.6억→급여 후 본인부담 약 598만, 2022.4 급여), 면역항암제(키트루다 약 630만/회·옵디보 약 340만/회·연 8천만~1억 비급여 구간), 로봇수술(비급여 약 650~2,000만, NECA 비용효과성 지적), 도수·체외·증식치료(5세대 실손 제외·2025.12 관리급여 지정·본인부담 90~95%), 백내장 다초점렌즈(혼합비급여·실손 제외) 등은 보도·기관 자료 기준이다. 일본은 1994년 세계 최초 중입자 임상(NIRS/QST) 이후 2019.3까지 누적 11,834명(세계의 약 90%)을 치료했고 6개 이상 기관과 先進医療 제도를 운영한다. 한국 신의료기술평가는 한국보건의료연구원(NECA)이 담당한다. 수치·제도는 변경될 수 있으므로 진료·가입 판단 시 반드시 <b>의료진·약관·기관 공식자료</b>를 확인해야 한다. 인용한 자료는 복제하지 않고 요약·재서술했다. 보험 보장 연계는 「암 보장 여정 지도」·「통원 보장 방법별 분석」·「실손보험 변천사」를 함께 참고하라.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">NEW MEDICAL TECHNOLOGY (비급여) ANALYSIS · 6 기술군 + 비용·치료율·도덕적위험 매트릭스 + 과잉진료 분석 + 한일 비교 · 검증 자료 기반 대략값</span>
+  </footer>
+
+</div>
+</body>
+</html>

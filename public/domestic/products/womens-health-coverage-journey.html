@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여성질환 생애주기 보장 분석 — 사춘기부터 노년까지 · 질환·치료·판매사 검증</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+    --gold:#B8862F; --gap:#2E8B6E;
+    --s1:#C77DA8; --s2:#8E5BA8; --s3:#3E8A8A; --s4:#C0392B; --s5:#C99A2E; --s6:#9C6B3F;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+
+  header{padding:58px 0 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.01em;margin-bottom:8px;}
+  h1 em{font-style:italic;font-weight:500;color:var(--s2);}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--muted);margin-bottom:24px;}
+  .lead{max-width:860px;font-size:1.0rem;color:#33322E;margin-bottom:6px;}
+  .lead b{color:var(--ink);}
+
+  /* life-stage band */
+  .lifeband{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:26px 0 6px;}
+  @media(max-width:760px){.lifeband{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:460px){.lifeband{grid-template-columns:repeat(2,1fr);}}
+  .lifeband a{text-decoration:none;border:1px solid var(--line);border-top:4px solid var(--lc);border-radius:10px;padding:10px 11px;background:#fff;display:block;transition:transform .12s,box-shadow .12s;}
+  .lifeband a:hover{transform:translateY(-2px);box-shadow:0 4px 11px rgba(0,0,0,.07);}
+  .lifeband a:focus-visible{outline:2px solid var(--lc);outline-offset:2px;}
+  .lifeband .age{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--lc);font-weight:600;}
+  .lifeband .nm{font-family:var(--serif);font-size:.92rem;font-weight:600;color:var(--ink);margin-top:2px;line-height:1.2;}
+  .lifeband .ds{font-size:.74rem;color:var(--muted);margin-top:3px;line-height:1.35;}
+
+  .sigbox{margin:24px 0 4px;background:var(--navy);border-radius:14px;padding:20px 22px;color:#EDEBE6;}
+  .sigbox .e{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#A9B4C7;}
+  .sigbox h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;margin:5px 0 10px;color:#fff;}
+  .sigbox .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:600px){.sigbox .split{grid-template-columns:1fr;}}
+  .sigbox .s{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;}
+  .sigbox .s b{color:#fff;font-family:var(--serif);font-size:1rem;}
+  .sigbox .s p{font-size:.84rem;color:#C9CFDA;margin-top:4px;line-height:1.5;}
+
+  .msec{padding:42px 0 6px;scroll-margin-top:12px;}
+  .m-head{display:flex;align-items:baseline;gap:13px;margin-bottom:5px;flex-wrap:wrap;border-left:5px solid var(--mc);padding-left:14px;}
+  .m-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mc);font-weight:500;}
+  .m-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,1.95rem);letter-spacing:-.01em;}
+  .m-age{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#fff;background:var(--mc);padding:3px 9px;border-radius:5px;white-space:nowrap;}
+  .m-intro{font-size:.92rem;color:var(--muted);max-width:880px;margin:6px 0 18px;padding-left:19px;line-height:1.55;}
+  .m-intro b{color:#403F3A;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-left:4px solid var(--mc);border-radius:11px;background:#fff;padding:15px 16px 14px;display:flex;flex-direction:column;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:1.02rem;line-height:1.25;margin-bottom:3px;}
+  .card-name .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;color:#fff;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+  .tag-code{background:var(--mc);} .tag-gap{background:var(--gap);}
+  .card-trig{font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--mc);margin-bottom:8px;}
+  .card-def{font-size:.875rem;color:#33322E;line-height:1.52;margin-bottom:8px;}
+  .card-def b{color:var(--ink);}
+  .card-spec{display:flex;flex-direction:column;gap:5px;}
+  .card-spec .row{display:flex;gap:8px;font-size:.8rem;line-height:1.4;}
+  .card-spec .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--mc);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .card-spec .v{color:#403F3A;}
+  .card-spec .v b{color:var(--ink);}
+  .card-ins{margin-top:10px;display:flex;gap:9px;align-items:baseline;border-top:1px dashed var(--line);padding-top:9px;}
+  .card-ins .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--gold);padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .card-ins .v{font-size:.81rem;color:#403F3A;line-height:1.45;}
+  .card-ins .v b{color:var(--ink);}
+
+  .cmpsec{margin:50px 0 6px;}
+  .cmpsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--s2);}
+  .cmpsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 4px;}
+  .cmpsec .desc{font-size:.92rem;color:var(--muted);max-width:880px;margin-bottom:18px;}
+  .tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:1060px;font-size:.82rem;background:#fff;}
+  table.cmp thead th{background:var(--navy);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:left;padding:11px 12px;font-weight:500;}
+  table.cmp td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.45;color:#33322E;}
+  table.cmp tbody tr:nth-child(even){background:#FBFBF8;}
+  .cm-name{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--ink);min-width:135px;}
+  .cm-name .pip{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .cm-code{min-width:80px;font-family:var(--mono);font-size:.76rem;}
+  .cm-st{min-width:60px;font-family:var(--mono);font-size:.74rem;}
+  .cov-y{color:#2E7D52;font-weight:600;} .cov-p{color:#B8862F;font-weight:600;} .cov-n{color:#B0432C;font-weight:600;}
+  .cm-ins{min-width:175px;font-size:.79rem;color:#403F3A;}
+  .cm-ins b{color:var(--ink);}
+
+  .gapsec{margin:54px 0 6px;border:1.5px solid var(--gap);border-radius:16px;overflow:hidden;background:#fff;}
+  .gap-head{padding:22px 24px;border-bottom:1px solid var(--line);background:#F2FAF6;}
+  .gap-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gap);}
+  .gap-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin-top:5px;}
+  .gap-head p{font-size:.9rem;color:#3A5A4C;margin-top:8px;max-width:880px;line-height:1.55;}
+  .gap-head p b{color:#1F4536;}
+  .gap-lens{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+  .gap-lens span{font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;color:var(--gap);border:1px solid var(--gap);border-radius:14px;padding:3px 10px;white-space:nowrap;}
+  .gap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px 24px;}
+  @media(max-width:760px){.gap-grid{grid-template-columns:1fr;}}
+  .gap-item{border:1px solid #CDE6DA;border-radius:12px;padding:16px 17px;background:#FCFEFD;display:flex;flex-direction:column;}
+  .gap-item .gi-top{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+  .gap-item .gi-no{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;background:var(--gap);border-radius:5px;padding:2px 8px;}
+  .gap-item h4{font-family:var(--serif);font-weight:600;font-size:1.04rem;line-height:1.2;color:var(--ink);}
+  .gap-item .gi-cost{font-family:var(--mono);font-size:9px;letter-spacing:.03em;color:#fff;background:var(--s4);border-radius:5px;padding:2px 7px;white-space:nowrap;}
+  .gap-item .gi-body{font-size:.86rem;color:#33322E;line-height:1.52;margin-bottom:9px;}
+  .gap-item .gi-body b{color:var(--ink);}
+  .gap-item .gi-meta{display:flex;flex-direction:column;gap:5px;margin-top:auto;border-top:1px dashed #CDE6DA;padding-top:9px;}
+  .gap-item .gi-meta .row{display:flex;gap:8px;font-size:.79rem;line-height:1.42;}
+  .gap-item .gi-meta .k{font-family:var(--mono);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--gap);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:1px;}
+  .gap-item .gi-meta .v{color:#3A5A4C;} .gap-item .gi-meta .v b{color:#1F4536;}
+
+  .pvsec{margin:50px 0 6px;border:1.5px solid var(--muted);border-radius:16px;overflow:hidden;background:#fff;}
+  .pv-head{padding:20px 24px;}
+  .pv-head .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .pv-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.35rem,3.2vw,1.85rem);margin-top:5px;}
+  .pv-head p{font-size:.88rem;color:#33322E;margin-top:8px;line-height:1.55;max-width:880px;}
+  .pv-head p b{color:var(--ink);}
+
+  .cautsec{margin:50px 0 6px;}
+  .cautsec .e{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+  .cautsec h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.1rem);margin:5px 0 16px;}
+  .cauts{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:680px){.cauts{grid-template-columns:1fr;}}
+  .caut{border:1px solid #E8D9BE;background:#FBF7EE;border-radius:12px;padding:15px 17px;}
+  .caut h4{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin-bottom:5px;color:#7A5A1E;}
+  .caut p{font-size:.86rem;color:#5A4A2E;line-height:1.52;}
+  .caut p b{color:#3E2C10;}
+
+  footer{margin:48px 0 60px;padding-top:22px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted);line-height:1.7;}
+  footer b{color:#403F3A;}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lifeband a{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div class="eyebrow">Women's Health Lifecourse · 여성질환 생애주기 보장 분석</div>
+    <h1>여성의 일생, <em>나이마다 다른</em> 질환과 보장</h1>
+    <div class="subtitle">사춘기 월경부터 가임기 양성종양·임신출산·여성암·갱년기·노년까지 — 생애주기로 본 여성질환 보장 지도</div>
+    <p class="lead">
+      여성질환은 <b>나이대마다 호발 질환이 뚜렷이 다르다.</b> 사춘기의 월경 질환, 가임기의 자궁근종·난소낭종, 임신·출산, 중년의 여성암,
+      갱년기의 골다공증까지 — 생애주기를 따라 흐른다. 보장도 그에 맞춰 <b>여성건강보험·태아/산모특약·부인과 수술비·여성암 진단비</b>로 설계된다.
+      이 자료는 여성질환을 <b>6개 생애 단계로 나눠 주요 질환·치료·대표 판매사</b>를 정리하고, 검증한 뒤 <b>비어 있는 신규 보장</b>도 제안한다.
+    </p>
+
+    <div class="lifeband">
+      <a href="#m1" style="--lc:var(--s1)"><div class="age">10~20대</div><div class="nm">사춘기·가임 초기</div><div class="ds">월경질환·다낭성난소</div></a>
+      <a href="#m2" style="--lc:var(--s2)"><div class="age">20~40대</div><div class="nm">가임기 부인과</div><div class="ds">자궁근종·난소낭종·내막증</div></a>
+      <a href="#m3" style="--lc:var(--s3)"><div class="age">20~40대</div><div class="nm">임신·출산</div><div class="ds">태아·산모·임신합병증</div></a>
+      <a href="#m4" style="--lc:var(--s4)"><div class="age">30~60대</div><div class="nm">여성암</div><div class="ds">유방·자궁경부·내막·난소</div></a>
+      <a href="#m5" style="--lc:var(--s5)"><div class="age">45~55세</div><div class="nm">갱년기·폐경</div><div class="ds">갱년기장애·골다공증</div></a>
+      <a href="#m6" style="--lc:var(--s6)"><div class="age">60대~</div><div class="nm">노년·후속</div><div class="ds">골절·요실금·재건</div></a>
+    </div>
+
+    <div class="sigbox">
+      <div class="e">Signature Axis · 여성질환의 자(尺)</div>
+      <h3>여성 보장을 읽는 두 축</h3>
+      <div class="split">
+        <div class="s"><b>① 생애주기(나이대)</b><p>여성질환은 <b>월경 → 양성종양 → 임신·출산 → 암 → 갱년기 → 노년</b>으로 나이를 따라 흐른다. 가입 시점·여성특화 담보(태아·산모·여성건강)가 단계마다 다르다.</p></div>
+        <div class="s"><b>② 양성(D·N) vs 악성(C)</b><p>같은 자궁이라도 <b>양성종양(D25 등)·비종양(N코드)</b>은 부인과 수술비, <b>악성(C50·C53 등)</b>은 여성암 진단비. 상피내암(0기)은 소액 지급으로 갈린다.</p></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ① 사춘기·가임 초기 ============ -->
+  <section class="msec" id="m1" style="--mc:var(--s1)">
+    <div class="m-head"><span class="m-num">단계 ①</span><h2>사춘기 · 가임 초기</h2><span class="m-age">10~20대</span></div>
+    <p class="m-intro">초경 이후의 월경 질환과 호르몬 이상. <b>월경통·월경과다·다낭성난소증후군(PCOS)</b>이 흔하다. 단독 진단비는 드물고 <b>실손·수술비</b>로 보장되며, 이 시기 진단은 향후 가입에 영향을 줄 수 있다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">월경통·월경 이상 <span class="tag tag-code">N94</span></div>
+        <div class="card-trig">트리거: 월경통·월경과다 진단·치료</div>
+        <p class="card-def">원발성 월경통(N94.4)·월경과다 등. <b>실손(검사·주사·약제)</b>으로 일부 보장되나, 자궁근종·내막증이 원인으로 진단되면 향후 가입에 부담보가 생길 수 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손(의사 소견 검사·주사)</span></div>
+          <div class="row"><span class="k">주의</span><span class="v">원인 질환 진단 시 가입 제약</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(단독 진단비는 일반적이지 않음)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">다낭성난소증후군(PCOS) <span class="tag tag-code">E28.2</span></div>
+        <div class="card-trig">트리거: PCOS 진단·치료</div>
+        <p class="card-def">배란장애·호르몬 불균형으로 월경불순·불임·대사이상을 일으킨다. <b>실손·일부 특정질환 진단비</b>로 보장되며, 장기 호르몬 관리가 필요하다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손 · 일부 특정질환 진단비</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">장기 관리·가임력 영향</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(특정질환 진단비는 일부 생·손보)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">난소낭종·기능성 낭종 <span class="tag tag-code">N83</span></div>
+        <div class="card-trig">트리거: 난소낭종 진단·수술</div>
+        <p class="card-def">젊은 여성에 흔한 난소 물혹. 대개 경과관찰하나 커지면 수술. <b>실손·질병수술비</b>로 보장되며 양성(D27)/기능성(N83) 코드에 따라 담보가 갈린다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보·생보 질병수술비 공통 · 삼성화재(부인과 특정질환 수술비 — D27 등)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">조기난소부전·생식기 선천이상 <span class="tag tag-code">E28.3·Q5x</span></div>
+        <div class="card-trig">트리거: 조기폐경·선천 생식기 이상 진단</div>
+        <p class="card-def">이른 난소기능 저하나 선천성 생식기 이상. 드물지만 가임력·호르몬에 큰 영향. <b>실손·선천이상(어린이보험) 수술비</b>로 일부 보장된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손·선천이상 수술비(어린이보험)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 어린이·실손 공통(선천이상 특약)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ② 가임기 부인과 ============ -->
+  <section class="msec" id="m2" style="--mc:var(--s2)">
+    <div class="m-head"><span class="m-num">단계 ②</span><h2>가임기 양성 부인과질환</h2><span class="m-age">20~40대</span></div>
+    <p class="m-intro">가임기 여성에 매우 흔한 <b>자궁·난소의 양성질환</b>. 자궁근종·난소낭종·자궁내막증·자궁선근증이 대표다. <b>부인과 수술비·종수술비(횟수 무제한)·실손</b>이 핵심이며, 여성건강보험이 집중 보장한다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">자궁근종 <span class="tag tag-code">D25</span></div>
+        <div class="card-trig">트리거: 자궁평활근종 진단·수술</div>
+        <p class="card-def">가임기 여성에 가장 흔한 자궁 양성종양. 약물·색전술·근종절제·자궁절제로 치료한다. <b>질병수술비·종수술비는 수술마다 반복 지급</b>(횟수 무제한 상품 多)된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병/종수술비(반복)·실손·부인과 수술비</span></div>
+          <div class="row"><span class="k">비고</span><span class="v">양성(D25) · 수술 시마다 지급</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(부인과 특정질환 수술비 D25)·한화손보(시그니처 여성건강보험4.0)·KB·현대해상</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">난소 양성종양·자궁 양성신생물 <span class="tag tag-code">D27·D26</span></div>
+        <div class="card-trig">트리거: 난소·자궁 양성신생물 진단·수술</div>
+        <p class="card-def">난소의 양성종양(D27), 자궁의 기타 양성신생물(D26) 등. 부인과 특정질환 수술비 특약이 <b>D25~D28을 묶어 보장</b>한다(생식기 암·제자리암은 제외).</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">부인과 특정질환 수술비·질병수술비·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(부인과 특정질환 수술비 D25·D26·D27·D28)·전 손보 여성건강 특약</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">자궁내막증·자궁선근증 <span class="tag tag-code">N80·N80.0</span></div>
+        <div class="card-trig">트리거: 자궁내막증 진단·수술</div>
+        <p class="card-def">자궁내막 조직이 다른 곳에 자라 통증·불임을 유발. <b>실손·질병수술비</b>로 보장되나, 만성·재발이라 <b>가입 시 부담보가 잦은</b> 영역이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손(N80~95 일부 수술비)</span></div>
+          <div class="row"><span class="k">주의</span><span class="v">가입 시 부담보·만성 재발</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(부인과 특정질환 수술비 N80~N95 일부)·전 손보 질병수술비·실손</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">골반염증성질환(PID) <span class="tag tag-code">N70–N77</span></div>
+        <div class="card-trig">트리거: 여성 골반 염증질환 진단·치료</div>
+        <p class="card-def">난관·난소·골반의 염증. 불임·만성통증으로 이어질 수 있다. <b>실손·부인과 수술비</b>로 보장되나 성병성 골반염 등 일부는 제외된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손·부인과 특정질환 수술비(N70~77)</span></div>
+          <div class="row"><span class="k">제외</span><span class="v">성병성(매독·임균·클라미디아) 골반염</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">삼성화재(부인과 특정질환 수술비 N70~N77)·전 손보 실손</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 임신·출산 ============ -->
+  <section class="msec" id="m3" style="--mc:var(--s3)">
+    <div class="m-head"><span class="m-num">단계 ③</span><h2>임신 · 출산</h2><span class="m-age">20~40대</span></div>
+    <p class="m-intro">임신·출산은 <b>태아보험(태아특약)+산모특약</b>으로 설계된다. 태아특약은 <b>임신 22주 이내</b>(권장 12주 전) 가입해야 하고, 산모특약은 임신중독증·조기진통·제왕절개 등을 보장한다. 출산 자체는 보장 제외다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">태아특약 (선천이상·저체중·신생아질환) <span class="tag tag-code">태아</span></div>
+        <div class="card-trig">트리거: 출생 후 선천질환·신생아 입원·수술</div>
+        <p class="card-def">태아(아이)의 선천이상·저체중·신생아질환을 보장. <b>임신 22주 이내 가입</b>해야 핵심 특약을 받는다. 태아는 출생을 조건으로 계약 시점에 소급해 피보험자가 된다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">선천이상 수술·신생아 입원·실손</span></div>
+          <div class="row"><span class="k">시점</span><span class="v"><b>임신 22주 이내</b>(권장 12주 전)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(굿앤굿 어린이종합보험)·삼성화재·DB·메리츠·KB(태아보험)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">산모특약 (임신중독증·고위험임신) <span class="tag tag-code">O1x·O2x</span></div>
+        <div class="card-trig">트리거: 임신중독증·태반조기분리 등 진단</div>
+        <p class="card-def">산모의 임신·출산 위험을 보장. 통상 <b>임신중독증 진단·태반조기분리·고위험산모질환·출산전 선별검사 이상</b> 등으로 구성. 1회 일시납, 보장은 출산 후 약 42일까지.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">임신중독증 진단·태반조기분리·고위험산모</span></div>
+          <div class="row"><span class="k">기간</span><span class="v">출산 후 약 42일까지</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상·삼성화재·DB·메리츠·KB(태아보험 산모특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">임신·출산질환 입원·수술 <span class="tag tag-code">O00–O99</span></div>
+        <div class="card-trig">트리거: 임신·출산 질환으로 입원·수술</div>
+        <p class="card-def">조기진통·임신성 고혈압/당뇨·제왕절개 등 <b>임신·출산질환</b>으로 인한 입원·수술·일당. 단, <b>정상 임신·출산 자체는 보험금 지급 제외</b> 사유다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">임신출산질환 실손·수술비·입원일당</span></div>
+          <div class="row"><span class="k">제외</span><span class="v">정상 임신·출산(제왕절개 포함)은 면책</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">현대해상(임신·출산질환 실손·수술·일당)·전 손보 태아보험 공통</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">자궁외임신·유산 <span class="tag tag-code">O00·O03</span></div>
+        <div class="card-trig">트리거: 자궁외임신·유산 진단·수술</div>
+        <p class="card-def">자궁외임신(난관임신 등)·유산은 응급 수술이 필요할 수 있다. <b>질병수술비·실손·산모특약</b>으로 보장되나 습관성 유산(N96)은 별도·제외인 경우가 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병/응급 수술비·실손·산모특약</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 질병수술비·태아보험 산모특약 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 여성암 ============ -->
+  <section class="msec" id="m4" style="--mc:var(--s4)">
+    <div class="m-head"><span class="m-num">단계 ④</span><h2>여성암 (유방·자궁·난소)</h2><span class="m-age">30~60대</span></div>
+    <p class="m-intro">여성 특화 악성종양. <b>유방암·자궁경부암·자궁내막(체부)암·난소암</b>이 핵심. 과거 유방암·자궁경부암은 <b>소액암(일반암의 일부)</b>으로 분류됐으나 최근 일반암 보장 확대 추세다. 상피내암(0기)은 소액 지급된다. (상세: 「암 보장 여정 지도」)</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">유방암 <span class="tag tag-code">C50</span></div>
+        <div class="card-trig">트리거: 유방 악성신생물 진단확정</div>
+        <p class="card-def">여성암 1위. <b>진단비·수술·항암·방사선·유방재건</b>까지 이어진다. 과거 특정소액암(일반암의 40% 등)이었으나 일반암으로 보장하는 상품이 늘었다. 유방 상피내암(D05)은 소액.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">(일반/소액)암 진단비·치료비·유방재건</span></div>
+          <div class="row"><span class="k">비고</span><span class="v">상피내암(D05)=소액 지급</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 암 담보 공통 · 한화·교보라이프플래닛(여성건강보험 유방암·유방재건)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">자궁경부암 <span class="tag tag-code">C53</span></div>
+        <div class="card-trig">트리거: 자궁경부 악성신생물 진단확정</div>
+        <p class="card-def">HPV 연관 암으로 검진·백신으로 예방 가능. <b>진단비·수술·방사선</b> 보장. 자궁경부 상피내암(D06)·이형성은 소액·유사암 검토 대상이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">(특정소액/일반)암 진단비·치료비</span></div>
+          <div class="row"><span class="k">예방</span><span class="v">국가검진(20세↑ 2년)·HPV 백신</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 암 담보 공통 · 여성생식기암 진단비(한화·교보라이프플래닛 등)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">자궁내막(체부)암 <span class="tag tag-code">C54</span></div>
+        <div class="card-trig">트리거: 자궁체부 악성신생물 진단확정</div>
+        <p class="card-def">폐경 전후 증가하는 자궁내막암. <b>진단비·수술(자궁적출)·항암</b> 보장. 전 단계인 <b>비정형 자궁내막증식증(N85.1·N85.2)은 유사암 진단비 검토</b> 대상이 될 수 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">암 진단비·자궁적출 수술비</span></div>
+          <div class="row"><span class="k">전구</span><span class="v">비정형 내막증식증(N85)=유사암 검토</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 암 담보 공통 · 여성생식기암 진단비(한화·교보 등)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">난소암 <span class="tag tag-code">C56</span></div>
+        <div class="card-trig">트리거: 난소 악성신생물 진단확정</div>
+        <p class="card-def">초기 증상이 적어 늦게 발견되는 '침묵의 암'. <b>일반암 진단비·수술·항암(표적 포함)</b> 보장. 유전성(BRCA) 위험군은 예방·관리 수요가 크다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">일반암 진단비·치료비·수술비</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 암 담보 공통 · 여성생식기암 진단비(한화·교보라이프플래닛)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 갱년기·폐경 ============ -->
+  <section class="msec" id="m5" style="--mc:var(--s5)">
+    <div class="m-head"><span class="m-num">단계 ⑤</span><h2>갱년기 · 폐경</h2><span class="m-age">45~55세</span></div>
+    <p class="m-intro">폐경 전후 호르몬 급감으로 오는 변화. <b>갱년기 장애·골다공증·자궁내막 변화</b>가 대표. 골다공증은 이후 골절의 직접 원인이라, 여성건강보험이 <b>골다공증·여성호발 질환</b>을 집중 보장한다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">갱년기 장애 <span class="tag tag-code">N95</span></div>
+        <div class="card-trig">트리거: 폐경기 장애 진단·치료(HRT 등)</div>
+        <p class="card-def">안면홍조·불면·우울 등 갱년기 증상. 호르몬치료(HRT) 등으로 관리한다. <b>실손·일부 여성건강 특약</b>으로 보장되나 단독 정액 담보는 제한적이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손·일부 여성건강 특약</span></div>
+          <div class="row"><span class="k">공백</span><span class="v">장기 호르몬 관리 정액 담보 적음</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통 · 여성건강보험(한화·교보라이프플래닛 일부)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">골다공증 <span class="tag tag-code">M80–M82</span></div>
+        <div class="card-trig">트리거: 골다공증(병적골절 포함) 진단·수술</div>
+        <p class="card-def">폐경 후 급증하는 뼈 약화. <b>골다공증 진단비·골다공증 수술 매회 보장</b>을 두는 상품이 있다. 이후 골절 위험과 직결돼 여성건강보험의 핵심 담보다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">골다공증 진단비·수술(매회)·실손</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보(골다공증 수술 매회)·한화·교보(여성건강보험 골다공증 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">자궁내막증식증 <span class="tag tag-code">N85</span></div>
+        <div class="card-trig">트리거: 자궁내막증식증 진단(조직검사)</div>
+        <p class="card-def">폐경 전후 호르몬 영향으로 내막이 두꺼워짐. <b>비정형(N85.1·N85.2)은 유사암 진단비 검토</b> 대상이나, 조직검사 결과와 약관 분류 일치가 필요해 분쟁이 잦다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">유사암 진단비(비정형)·질병수술비·실손</span></div>
+          <div class="row"><span class="k">주의</span><span class="v">조직검사↔약관 분류 분쟁</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 생·손보 유사암 진단비 공통(비정형 N85.1·N85.2 검토)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">폐경기 비뇨생식 위축·기타 <span class="tag tag-code">N95.2</span></div>
+        <div class="card-trig">트리거: 폐경기 위축성 질염 등 진단·치료</div>
+        <p class="card-def">폐경 후 비뇨생식기 위축으로 인한 불편. <b>실손</b> 중심으로 보장되며, 다음 단계인 요실금·골반장기탈출로 이어질 수 있다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손(치료 목적)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑥ 노년·후속 ============ -->
+  <section class="msec" id="m6" style="--mc:var(--s6)">
+    <div class="m-head"><span class="m-num">단계 ⑥</span><h2>노년 · 후속 질환</h2><span class="m-age">60대~</span></div>
+    <p class="m-intro">앞선 단계가 누적돼 나타나는 결과. <b>골다공증 골절·요실금·골반장기탈출</b>과 여성암 치료 후의 <b>유방재건·림프부종</b> 등. 일부는 미용 경계로 보장이 갈린다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">골다공증성 골절 (취약골절) <span class="tag tag-code">M80·S코드</span></div>
+        <div class="card-trig">트리거: 골다공증 동반 골절 진단</div>
+        <p class="card-def">폐경 후 골다공증으로 척추·고관절·손목이 쉽게 부러진다. <b>골절진단비·5대골절·수술비</b>로 보장되며, 고관절 골절은 노년 삶의 질을 크게 좌우한다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">골절진단비·5대골절·수술비</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">DB손보·현대해상·삼성·롯데(골절·여성건강 특약)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">요실금·골반장기탈출 <span class="tag tag-code">N39.3·N39.4·N81·R32</span></div>
+        <div class="card-trig">트리거: 요실금·골반장기탈출 진단·수술</div>
+        <p class="card-def">출산·노화로 골반저가 약해져 생기는 요실금·자궁탈출. <b>수술 시 질병수술비·실손</b>으로 보장되나, <b>부인과 특정질환 수술비에서는 요실금이 제외</b>되는 경우가 많아 별도 확인이 필요하다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">질병수술비·실손(수술 시)</span></div>
+          <div class="row"><span class="k">주의</span><span class="v">부인과 수술비 특약서 요실금 제외 多</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 질병수술비·실손 공통(요실금 별도 확인 필요)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">유방재건 (여성암 후) <span class="tag tag-code">재건</span></div>
+        <div class="card-trig">트리거: 유방암 절제 후 재건수술</div>
+        <p class="card-def">유방암 절제 후 <b>유방재건수술</b>을 보장. 여성건강보험이 <b>유방재건·자궁난소적출</b> 수술을 묶어 보장하는 경우가 많다. 치료 목적 재건이 보장 대상이다.</p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">유방재건 수술비(여성건강 특약)</span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">한화·교보라이프플래닛(여성건강보험 유방재건·자궁난소적출 수술)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-name">림프부종·치료 후유 <span class="tag tag-code">I97.2 등</span> <span class="tag tag-gap">공백</span></div>
+        <div class="card-trig">트리거: 암 치료 후 림프부종 관리</div>
+        <p class="card-def">유방암·부인암 수술(림프절 절제) 후 팔·다리가 붓는 <b>림프부종</b>. 평생 관리가 필요하나 <b>반복 물리치료·압박치료 전용 보장이 얇다.</b></p>
+        <div class="card-spec">
+          <div class="row"><span class="k">보장</span><span class="v">실손 일부(치료 목적)</span></div>
+          <div class="row"><span class="k">공백</span><span class="v"><b>반복 관리 전용 담보 부족</b></span></div>
+        </div>
+        <div class="card-ins"><span class="k">대표</span><span class="v">전 손보 실손 공통(림프부종 전용 담보는 신규 영역 — 추가 확인 필요)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ★ 요약표 ===================== -->
+  <section class="cmpsec" id="cmp">
+    <div class="e">★ Summary Matrix · 생애주기 질환 보장 요약</div>
+    <h2>여성질환 생애주기 보장·공백 한눈에</h2>
+    <p class="desc">여성질환은 <b>나이대·코드(양성D·비종양N·악성C)·보장 경로·판매사</b>가 제각각이다. ●=보장, ◐=일부·조건부, ○=공백. 코드 앞 글자로 <b>양성/악성</b>을 빠르게 구분할 수 있다.</p>
+    <div class="tablescroll"><table class="cmp">
+      <thead><tr><th>질환</th><th>KCD</th><th>단계</th><th>주요 보장 경로</th><th>보장 정도</th><th>대표 판매사(예시)</th></tr></thead>
+      <tbody>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s1)"></span>월경통·월경이상</td><td class="cm-code">N94</td><td class="cm-st">①</td><td>실손</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 실손 공통</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s1)"></span>다낭성난소(PCOS)</td><td class="cm-code">E28.2</td><td class="cm-st">①</td><td>실손·일부 진단비</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 실손(진단비 일부)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s2)"></span>자궁근종</td><td class="cm-code">D25</td><td class="cm-st">②</td><td>부인과/종수술비(반복)·실손</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">삼성화재·한화·KB·현대해상</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s2)"></span>난소 양성종양</td><td class="cm-code">D27</td><td class="cm-st">②</td><td>부인과 특정질환 수술비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">삼성화재(부인과 특정질환 수술비)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s2)"></span>자궁내막증</td><td class="cm-code">N80</td><td class="cm-st">②</td><td>질병수술비·실손</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 질병수술비(부담보 잦음)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s3)"></span>임신·출산질환</td><td class="cm-code">O00–99</td><td class="cm-st">③</td><td>산모특약·임신출산 실손·수술</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">현대해상·삼성·DB·메리츠·KB(태아보험)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s4)"></span>유방암</td><td class="cm-code">C50</td><td class="cm-st">④</td><td>암 진단비·치료비·유방재건</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 생·손보 암 담보 · 한화·교보</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s4)"></span>자궁경부암</td><td class="cm-code">C53</td><td class="cm-st">④</td><td>(소액/일반)암 진단비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 생·손보 암 담보 공통</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s4)"></span>난소암</td><td class="cm-code">C56</td><td class="cm-st">④</td><td>일반암 진단비·치료비</td><td><span class="cov-y">● 보장</span></td><td class="cm-ins">전 생·손보 암 담보 · 여성생식기암</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s5)"></span>갱년기 장애</td><td class="cm-code">N95</td><td class="cm-st">⑤</td><td>실손·일부 여성건강 특약</td><td><span class="cov-n">○ 공백</span></td><td class="cm-ins">전 손보 실손(정액 담보 적음)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s5)"></span>골다공증</td><td class="cm-code">M80–82</td><td class="cm-st">⑤</td><td>진단비·수술(매회)</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">DB손보·한화·교보(여성건강)</td></tr>
+        <tr><td class="cm-name"><span class="pip" style="background:var(--s6)"></span>요실금·골반탈출</td><td class="cm-code">N81·R32</td><td class="cm-st">⑥</td><td>질병수술비·실손</td><td><span class="cov-p">◐ 일부</span></td><td class="cm-ins">전 손보 질병수술비(부인과 특약선 요실금 제외)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="desc" style="margin-top:11px;font-size:.84rem;">* 판매사·코드는 검증된 예시이며 상품·약관별로 다르다. <b>코드 앞 글자가 핵심</b> — D(양성종양)·N(비종양 질환)은 수술비, C(악성)는 암 진단비. 유방암·자궁경부암은 과거 소액암이었으나 <b>일반암 보장 확대</b> 추세이고, 상피내암(0기·D코드)·비정형 증식증은 소액·유사암으로 갈린다.</p>
+  </section>
+
+  <!-- ===================== ◆ 신규 보장 제안 (GAP) ===================== -->
+  <section class="gapsec" id="gap">
+    <div class="gap-head">
+      <div class="e">◆ Coverage Gap & Proposals · 신규 보장 제안</div>
+      <h2>여성 생애에서 비어 있는 보장 6선</h2>
+      <p>여성 생애주기에서 <b>비용·필요는 큰데 보장이 얇은</b> 영역을 도출했다. 대부분 <b>'반복·만성 관리'이거나 '가임력·미용 경계'</b>라 공백이 생긴다. 암·뇌·심의 보장 세트(단계별 진단·치료·반복지급·재활)를 <b>기준선</b>으로 삼아 대응시켜 제안한다.</p>
+      <div class="gap-lens">
+        <span>렌즈1 · 생애 과정 공백</span>
+        <span>렌즈2 · 암·뇌·심 기준선 벤치마크</span>
+        <span>렌즈3 · 신의료기술·반복 관리</span>
+      </div>
+    </div>
+    <div class="gap-grid">
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">01</span><h4>난임·가임력 보존 보장</h4><span class="gi-cost">고비용·반복</span></div>
+        <p class="gi-body">난임 시술(시험관 IVF·인공수정)·난자 동결은 <b>고비용·반복</b>인데 보장이 거의 없다. 만혼·저출생 시대에 수요가 큰 <b>가임력 보존·난임 시술 정액</b> 담보가 비어 있다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">암 <b>치료당·회차 반복지급</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">공적 일부 지원 · <b>민간 전용 담보 부족</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">난임 진단 증가·고령임신</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">02</span><h4>자궁내막증·PCOS 만성 관리</h4><span class="gi-cost">평생 관리</span></div>
+        <p class="gi-body">자궁내막증·다낭성난소는 <b>재발·평생 호르몬 관리</b>가 필요한데, 가입 시 부담보가 잦고 관리 비용 보장이 얇다. <b>만성 부인과질환 관리 정액</b> 담보가 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">당뇨 <b>합병증·만성 관리 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">부담보·실손 일부 · <b>관리 담보 부족</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">가임기 유병률 높음·재발성</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">03</span><h4>임신·출산 합병증·산후 확대</h4><span class="gi-cost">고위험</span></div>
+        <p class="gi-body">고령·고위험 임신 증가로 임신중독증·산후 합병증·<b>산후우울</b> 부담이 크다. 산모특약(출산 후 42일)을 넘어 <b>산후 회복·정신건강까지</b> 확장한 보장이 필요하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">뇌·심 <b>회복기 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">산모특약 단기 · <b>산후 장기 공백</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">고령임신·산후우울 증가</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">04</span><h4>갱년기 호르몬치료(HRT) 장기 관리</h4><span class="gi-cost">장기 투약</span></div>
+        <p class="gi-body">갱년기 호르몬치료·골다공증 약물은 <b>장기 투약</b>인데 정액 보장이 적다. 폐경 이후 삶의 질·골절 예방과 직결되는 <b>갱년기·골 건강 관리</b> 담보가 비어 있다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">당뇨 <b>예방·관리 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">실손 일부 · <b>정액 관리 담보 적음</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">전 여성이 겪는 보편 단계</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">05</span><h4>유방재건 다단계·림프부종 관리</h4><span class="gi-cost">다단계·평생</span></div>
+        <p class="gi-body">유방재건은 <b>여러 단계 수술</b>이 필요하고, 림프절 절제 후 <b>림프부종은 평생 관리</b>가 든다. 재건 단계별·림프부종 반복관리 보장이 얇아 자부담이 크다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">암 <b>재건·후유 단계 보장</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">재건 일부 · <b>림프부종 전용 미흡</b></span></div>
+          <div class="row"><span class="k">근거</span><span class="v">유방암 생존자 증가·장기 관리</span></div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gi-top"><span class="gi-no">06</span><h4>요실금·골반저 비수술 반복치료</h4><span class="gi-cost">반복</span></div>
+        <p class="gi-body">요실금·골반장기탈출은 <b>비수술 반복치료(골반저 재활·레이저 등)</b>가 많은데, 부인과 수술비 특약에서 <b>요실금이 제외</b>되는 경우가 많다. 보장 공백이 분명하다.</p>
+        <div class="gi-meta">
+          <div class="row"><span class="k">기준선</span><span class="v">재활 <b>반복지급</b>에 대응</span></div>
+          <div class="row"><span class="k">현황</span><span class="v">부인과 특약서 <b>요실금 제외</b> 多</span></div>
+          <div class="row"><span class="k">근거</span><span class="v">출산·노화로 유병률 높음</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== 공적 baseline ===================== -->
+  <section class="pvsec">
+    <div class="pv-head">
+      <div class="e">Public Baseline · 공적 제도</div>
+      <h2>여성질환의 공적 보장 — 민간 보완의 기준선</h2>
+      <p>여성질환도 <b>국가 건강검진·건강보험 급여</b>가 baseline이다. <b>자궁경부암 검진은 20세 이상 여성에게 2년마다 무료</b>(국민건강보험공단), 유방암 검진은 40세 이상 2년마다 제공된다. 여성생식기 초음파도 급여가 확대됐다. 그 위에 <b>본인부담·비급여·반복 관리·가임력 보존·미용 경계</b> 영역이 민간의 자리다. 특히 <b>난임·갱년기·림프부종처럼 공적·민간 모두 얇은 구간</b>이 신규 보장(위 6선)의 핵심 타깃이다.</p>
+    </div>
+  </section>
+
+  <!-- ===================== 주의사항 ===================== -->
+  <section class="cautsec">
+    <div class="e">Cautions · 핵심 주의점</div>
+    <h2>여성질환 보장, 이것부터 확인</h2>
+    <div class="cauts">
+      <div class="caut">
+        <h4>① 코드 앞 글자(D·N·C)를 보라</h4>
+        <p>같은 자궁·난소라도 <b>D(양성종양)·N(비종양)은 수술비</b>, <b>C(악성)는 암 진단비</b>로 보장이 갈린다. 진단서의 KCD 코드가 청구의 출발점이다.</p>
+      </div>
+      <div class="caut">
+        <h4>② 상피내암·유사암은 소액</h4>
+        <p>유방·자궁경부 <b>상피내암(0기·D코드)</b>과 비정형 증식증은 일반암보다 <b>소액 지급</b>되는 경우가 많다. 조직검사 결과와 약관 분류 일치가 중요하다.</p>
+      </div>
+      <div class="caut">
+        <h4>③ 태아·산모특약은 가입 시점</h4>
+        <p>태아특약은 <b>임신 22주 이내</b>(권장 12주 전) 가입해야 핵심 보장을 받는다. 산모특약은 1회 일시납·보장이 <b>출산 후 약 42일</b>로 짧으니 범위를 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>④ 정상 임신·출산은 면책</h4>
+        <p>임신·출산질환(임신중독증·조기진통 등)은 보장하지만 <b>정상 임신·출산 자체(제왕절개 포함)는 지급 제외</b>다. '질환'으로 인한 입원·수술인지 구분이 핵심.</p>
+      </div>
+      <div class="caut">
+        <h4>⑤ 부인과 수술비의 '제외' 항목</h4>
+        <p>부인과 특정질환 수술비는 <b>생식기 암·제자리암·요실금·성병성 골반염·불임은 제외</b>하는 경우가 많다. 무엇이 빠지는지 약관에서 반드시 확인.</p>
+      </div>
+      <div class="caut">
+        <h4>⑥ 가입 전 진단은 부담보 가능</h4>
+        <p>자궁근종·내막증·PCOS 등은 <b>가입 전 진단 시 부담보</b>가 붙을 수 있다. 증상·복용약·치료 이력을 정확히 고지해 분쟁을 피하는 것이 중요하다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <b>면책 고지 —</b> 본 자료는 여성질환을 생애주기(사춘기~노년)로 정리하고 주요 질환·치료·대표 판매사를 검증해 보장 구조를 한눈에 보기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계나 의료 자문이 아니다. 여성질환은 <b>코드(양성 D·비종양 N·악성 C)와 생애 단계</b>에 따라 보장 경로가 다르며, 단독 진단비보다 부인과 수술비·종수술비·실손·여성암 진단비·태아/산모특약으로 보장된다. KCD 코드·트리거·면책·금액·<b>판매사</b>는 상품·약관·가입 시점·제도 변경에 따라 달라지며, <b>판매사는 검증된 예시</b>로 표준화 담보는 "전 손보 공통", 표준화 이전·미검증은 "일부 생·손보(추가 확인 필요)"로 표기했다. 자궁근종(D25)·난소 양성종양(D27) 등은 부인과 특정질환 수술비(예: 삼성화재)로, 임신·출산은 태아보험 산모특약(현대해상·삼성·DB·메리츠·KB 등)으로, 여성암·유방재건·골다공증은 여성건강보험(한화 시그니처 여성건강보험4.0·교보라이프플래닛 등)으로 보장되는 예가 확인된다. 부인과 특정질환 수술비는 생식기 암·제자리암·요실금(N39.3·N39.4·R32)·자궁무력증(N88.3)·성병성 골반염·습관성 유산(N96)·여성 불임(N97) 등을 제외하는 경우가 많고, 태아특약은 임신 22주 이내, 산모특약 보장은 출산 후 약 42일까지가 일반적이다. 자궁경부암 검진은 20세 이상 여성 2년마다 국민건강보험공단이 지원한다. 신규 보장 제안 6선은 비용·필요성 근거에 기반한 기획 제안이며 실제 출시·조건은 보험사·당국 판단에 따른다. 가입·청구 판단 시 반드시 <b>약관 원문과 상품설명서, 진료기록</b>을 확인해야 한다. 약관 원문은 복제하지 않고 요약·재서술했다. 여성암·골다공증·간병 연계는 「암 보장 여정 지도」·「진단 담보 카탈로그」·「근골격계 보장 분석」을 함께 참고하라.
+    <br><br>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:#9A998F">WOMEN'S HEALTH LIFECOURSE COVERAGE · 6 생애 단계 + 요약 매트릭스(판매사 포함) + 신규 보장 제안 6선 · 생애주기 / 양성↔악성 축</span>
+  </footer>
+
+</div>
+</body>
+</html>
