@@ -65,9 +65,11 @@ export default async function HomePage() {
   const exclusiveCat = byCatSlug.get("exclusive-rights");
   const domesticCat = byCatSlug.get("domestic");
 
-  // 국내 '보장내용 분석' 항목의 정적 자료 — 건수 합산·최신 카드용
+  // 국내 정적 자료 — 건수 합산·최신 카드용
   const products = listDomesticProducts();
-  const latestProduct = products[0];
+  const coverageProducts = products.filter((p) => p.section === "보장내용 분석");
+  // 벤토 '국내' 카드: '보장내용 분석' 항목의 대표 자료
+  const latestProduct = coverageProducts[0];
 
   // 배타적 사용권 게시물 — 콘텐츠 카드·스탯용
   const exclusivePosts = recent.filter(
@@ -87,25 +89,28 @@ export default async function HomePage() {
   // 스탯: 배타적 사용권 분석 건수 / 보장내용 분석 건수(상품 자료 + 상품 게시물)
   const exclusiveCount = exclusivePosts.length;
   const coverageGroup = domesticGroups.find((g) => g.title === "보장내용 분석");
-  const coverageCount = (coverageGroup?.posts.length ?? 0) + products.length;
+  const coverageCount =
+    (coverageGroup?.posts.length ?? 0) + coverageProducts.length;
 
   const latestBySection: LatestCell[] = [];
   for (const g of exclusiveGroups) {
     if (g.posts[0]) latestBySection.push({ label: g.title, post: g.posts[0] });
   }
   for (const g of domesticGroups) {
-    if (g.title === "보장내용 분석") {
-      if (latestProduct)
+    // 항목별 최신 1건: DB 게시물 우선, 없으면 해당 항목의 정적 자료
+    if (g.posts[0]) {
+      latestBySection.push({ label: g.title, post: g.posts[0] });
+    } else {
+      const secProduct = products.find((p) => p.section === g.title);
+      if (secProduct)
         latestBySection.push({
           label: g.title,
           product: {
-            href: `/domestic/products/${latestProduct.base}`,
-            title: latestProduct.title,
-            subtitle: latestProduct.subtitle,
+            href: `/domestic/products/${secProduct.base}`,
+            title: secProduct.title,
+            subtitle: secProduct.subtitle,
           },
         });
-    } else if (g.posts[0]) {
-      latestBySection.push({ label: g.title, post: g.posts[0] });
     }
   }
 

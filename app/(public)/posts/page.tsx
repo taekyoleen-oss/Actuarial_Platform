@@ -76,8 +76,8 @@ export default async function PostsPage({
         (n, s) =>
           n +
           s.posts.length +
-          (sp.category === "domestic" && s.title === "보장내용 분석"
-            ? extraProducts.length
+          (sp.category === "domestic"
+            ? extraProducts.filter((p) => p.section === s.title).length
             : 0),
         0
       )
@@ -114,9 +114,10 @@ export default async function PostsPage({
           ) : (
             <div className="space-y-12">
               {visibleSections.map((section) => {
-                const isProductSection =
-                  sp.category === "domestic" && section.title === "보장내용 분석";
-                const extras = isProductSection ? extraProducts : [];
+                const extras =
+                  sp.category === "domestic"
+                    ? extraProducts.filter((p) => p.section === section.title)
+                    : [];
                 if (section.posts.length === 0 && extras.length === 0)
                   return null;
                 return (

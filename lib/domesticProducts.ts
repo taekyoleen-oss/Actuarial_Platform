@@ -15,8 +15,16 @@ export interface ProductItem {
   title: string;
   /** 카드 보조설명 — html <title>의 대시 뒷부분(영문/비교 설명) */
   subtitle: string;
+  /** 국내 카테고리 내 노출 항목(서브섹션). 미지정은 '보장내용 분석'. */
+  section: string;
   htmlPath: string;
 }
+
+/** 정적 자료를 '보장내용 분석'이 아닌 다른 항목에 노출할 때 매핑(2026-06-15). */
+const SECTION_OF: Record<string, string> = {
+  "silson-insurance-generations": "보험 관련 정보",
+};
+const DEFAULT_PRODUCT_SECTION = "보장내용 분석";
 
 const ROOT = path.join(process.cwd(), "public", "domestic", "products");
 
@@ -71,6 +79,7 @@ export function listDomesticProducts(): ProductItem[] {
       base,
       title,
       subtitle,
+      section: SECTION_OF[base] ?? DEFAULT_PRODUCT_SECTION,
       htmlPath: `/domestic/products/${encodeURIComponent(file)}`,
     });
   }
