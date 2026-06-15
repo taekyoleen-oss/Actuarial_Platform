@@ -48,7 +48,12 @@ type LatestCell =
   | { label: string; post: PostListItem; product?: undefined }
   | {
       label: string;
-      product: { href: string; title: string; subtitle: string };
+      product: {
+        href: string;
+        title: string;
+        subtitle: string;
+        description: string;
+      };
       post?: undefined;
     };
 
@@ -109,6 +114,7 @@ export default async function HomePage() {
             href: `/domestic/products/${secProduct.base}`,
             title: secProduct.title,
             subtitle: secProduct.subtitle,
+            description: secProduct.description,
           },
         });
     }
@@ -382,6 +388,7 @@ export default async function HomePage() {
                         href={cell.product.href}
                         title={cell.product.title}
                         subtitle={cell.product.subtitle}
+                        description={cell.product.description}
                         badge="국내 보험 정보·분석"
                       />
                     )}

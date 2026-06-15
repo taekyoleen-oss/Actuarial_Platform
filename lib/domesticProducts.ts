@@ -15,6 +15,8 @@ export interface ProductItem {
   title: string;
   /** 카드 보조설명 — html <title>의 대시 뒷부분(영문/비교 설명) */
   subtitle: string;
+  /** 카드 본문 설명 — 문서 도입부(<p class="lead">)에서 추출. 없으면 빈 문자열. */
+  description: string;
   /** 국내 카테고리 내 노출 항목(서브섹션). 미지정은 '보장내용 분석'. */
   section: string;
   htmlPath: string;
@@ -67,6 +69,32 @@ function titleParts(filePath: string, base: string): { title: string; subtitle: 
   return { title: base.split(/[-_]+/).join(" "), subtitle: "" };
 }
 
+/**
+ * 문서 도입부 카피를 카드 설명으로 추출 — <p class="lead">의 텍스트(태그 제거·공백 정리).
+ * 모든 자료가 동일한 형태의 '읽는 법' 도입 문단을 가진다(예: 뇌·심혈관의 두 축 설명).
+ */
+function leadText(filePath: string): string {
+  try {
+    const html = fs.readFileSync(filePath, "utf8");
+    const m = html.match(/<p[^>]*class=["'][^"']*\blead\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+    if (m) {
+      return m[1]
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+  } catch {
+    /* 폴백: 설명 없음 */
+  }
+  return "";
+}
+
 export function listDomesticProducts(): ProductItem[] {
   if (!fs.existsSync(ROOT)) return [];
 
@@ -74,11 +102,13 @@ export function listDomesticProducts(): ProductItem[] {
   for (const file of fs.readdirSync(ROOT)) {
     if (path.extname(file).toLowerCase() !== ".html") continue;
     const base = file.slice(0, -5);
-    const { title, subtitle } = titleParts(path.join(ROOT, file), base);
+    const filePath = path.join(ROOT, file);
+    const { title, subtitle } = titleParts(filePath, base);
     items.push({
       base,
       title,
       subtitle,
+      description: leadText(filePath),
       section: SECTION_OF[base] ?? DEFAULT_PRODUCT_SECTION,
       htmlPath: `/domestic/products/${encodeURIComponent(file)}`,
     });

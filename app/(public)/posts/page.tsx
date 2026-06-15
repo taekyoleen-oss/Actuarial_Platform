@@ -136,6 +136,7 @@ export default async function PostsPage({
                           href={`/domestic/products/${p.base}`}
                           title={p.title}
                           subtitle={p.subtitle}
+                          description={p.description}
                           badge={activeCategory?.name}
                         />
                       ))}

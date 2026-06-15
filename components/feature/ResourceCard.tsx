@@ -9,11 +9,14 @@ export function ResourceCard({
   href,
   title,
   subtitle,
+  description,
   badge,
 }: {
   href: string;
   title: string;
   subtitle?: string;
+  /** 문서 도입부에서 추출한 본문 설명(제목 아래 노출). */
+  description?: string;
   badge?: string;
 }) {
   const c = pastelFor(title);
@@ -32,8 +35,13 @@ export function ResourceCard({
           {title}
         </h3>
         {subtitle ? (
-          <p className="mt-2 flex-1 text-sm leading-relaxed text-body">
+          <p className="mt-1.5 text-[13px] leading-snug text-tertiary">
             {subtitle}
+          </p>
+        ) : null}
+        {description ? (
+          <p className="mt-2.5 flex-1 text-sm leading-relaxed text-body">
+            {description}
           </p>
         ) : (
           <span className="flex-1" />
