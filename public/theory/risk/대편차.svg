@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 대편차: 분포의 먼 꼬리(희귀 대손실) 확률을 정밀 평가 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="216" x2="408" y2="216" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="216" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 분포 곡선 -->
+<path d="M 72 216 Q 150 80 220 216" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 먼 꼬리(Sky 강조) -->
+<path d="M 220 216 Q 300 196 396 210" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+<path d="M 300 216 L 300 200 L 360 206 L 360 216 Z" fill="#EAF2F9"/>
+<text x="330" y="190" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2">희귀 꼬리</text>
+<!-- 망원경 든 사람(먼 곳 관측) -->
+<g transform="translate(360 184)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

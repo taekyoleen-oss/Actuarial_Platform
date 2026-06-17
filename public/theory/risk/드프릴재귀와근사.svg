@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 드프릴 재귀: 개별위험 총합분포를 한 칸씩 재귀로 쌓아 계산 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 재귀로 쌓이는 분포 막대(앞쪽 Sky=방금 계산) -->
+<g stroke="#171A20" stroke-width="2.5">
+<rect x="96" y="150" width="34" height="82" fill="#EAF2F9"/>
+<rect x="138" y="120" width="34" height="112" fill="#EAF2F9"/>
+<rect x="180" y="136" width="34" height="96" fill="#EAF2F9"/>
+<rect x="222" y="168" width="34" height="64" fill="#EAF2F9"/>
+<rect x="264" y="190" width="34" height="42" fill="#4A90C2"/>
+<rect x="306" y="208" width="34" height="24" fill="#FFFFFF" stroke-dasharray="4 4"/>
+</g>
+<!-- 재귀 화살표 -->
+<path d="M 281 184 Q 300 168 318 200" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M 318 200 l 1 -9 l -8 5 z" fill="#171A20"/>
+<text x="110" y="106" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">f(s) ← f(s-1) …</text>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
