@@ -9,10 +9,8 @@ import type { DbErd, DbTable, RiskFieldSpec } from "@/lib/publicDb";
 
 interface Conn {
   key: string;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+  /** 박스 모서리에서 모서리로 잇는 베지어 path(d) */
+  d: string;
   active: boolean;
   dim: boolean;
 }
@@ -61,16 +59,62 @@ export function DbErdView({
       if (!a || !b) continue;
       const ar = a.getBoundingClientRect();
       const br = b.getBoundingClientRect();
-      const x1 = ar.left - cr.left + c.scrollLeft + ar.width / 2;
-      const y1 = ar.top - cr.top + c.scrollTop + ar.height / 2;
-      const x2 = br.left - cr.left + c.scrollLeft + br.width / 2;
-      const y2 = br.top - cr.top + c.scrollTop + br.height / 2;
+      // 캔버스 콘텐츠 좌표(스크롤 포함)
+      const sx = ar.left - cr.left + c.scrollLeft;
+      const sy = ar.top - cr.top + c.scrollTop;
+      const tx = br.left - cr.left + c.scrollLeft;
+      const ty = br.top - cr.top + c.scrollTop;
+      const sw = ar.width;
+      const sh = ar.height;
+      const tw = br.width;
+      const th = br.height;
+      const sMid = sy + sh / 2;
+      const tMid = ty + th / 2;
+      // 박스 '모서리'에서 시작·도착하도록 앵커 — 선이 박스 뒤로 숨지 않게.
+      let x1: number, y1: number, x2: number, y2: number, c1x: number, c2x: number;
+      if (tx >= sx + sw - 6) {
+        // 타깃이 오른쪽 컬럼: 소스 우변 → 타깃 좌변
+        x1 = sx + sw;
+        y1 = sMid;
+        x2 = tx;
+        y2 = tMid;
+        const dx = Math.max(26, (x2 - x1) * 0.45);
+        c1x = x1 + dx;
+        c2x = x2 - dx;
+      } else if (sx >= tx + tw - 6) {
+        // 타깃이 왼쪽 컬럼: 소스 좌변 → 타깃 우변
+        x1 = sx;
+        y1 = sMid;
+        x2 = tx + tw;
+        y2 = tMid;
+        const dx = Math.max(26, (x1 - x2) * 0.45);
+        c1x = x1 - dx;
+        c2x = x2 + dx;
+      } else {
+        // 같은 컬럼(세로 인접): 여백이 더 넓은 쪽으로 볼록한 브래킷(가장자리 잘림 방지)
+        y1 = sMid;
+        y2 = tMid;
+        const rightRoom = c.scrollWidth - Math.max(sx + sw, tx + tw);
+        const leftRoom = Math.min(sx, tx);
+        if (rightRoom >= leftRoom) {
+          x1 = sx + sw;
+          x2 = tx + tw;
+          const bulge =
+            Math.max(sx + sw, tx + tw) + Math.min(30, Math.max(8, rightRoom - 4));
+          c1x = bulge;
+          c2x = bulge;
+        } else {
+          x1 = sx;
+          x2 = tx;
+          const bulge = Math.min(sx, tx) - Math.min(30, Math.max(8, leftRoom - 4));
+          c1x = bulge;
+          c2x = bulge;
+        }
+      }
+      const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${c1x.toFixed(1)} ${y1.toFixed(1)} ${c2x.toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
       next.push({
         key: `${rel.from}-${rel.to}-${rel.via}`,
-        x1,
-        y1,
-        x2,
-        y2,
+        d,
         active: rel.from === selected || rel.to === selected,
         // 위험률 강조 모드: 양 끝이 모두 위험률 테이블인 연결만 살리고 나머지는 흐리게.
         dim: active && !(riskTables.has(rel.from) && riskTables.has(rel.to)),
@@ -151,21 +195,48 @@ export function DbErdView({
         className="relative overflow-x-auto rounded-cover border border-border bg-surface/40 p-5"
       >
         <svg
-          className="pointer-events-none absolute left-0 top-0 z-0 hidden md:block"
+          className="pointer-events-none absolute left-0 top-0 z-0 block"
           width={svgSize.w || "100%"}
           height={svgSize.h || "100%"}
           aria-hidden
         >
+          <defs>
+            <marker
+              id="erd-arrow"
+              markerWidth="9"
+              markerHeight="9"
+              refX="6.5"
+              refY="3.2"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M0,0 L7,3.2 L0,6.4 Z" fill="var(--text-tertiary)" />
+            </marker>
+            <marker
+              id="erd-arrow-on"
+              markerWidth="10"
+              markerHeight="10"
+              refX="6.8"
+              refY="3.4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M0,0 L7.5,3.4 L0,6.8 Z" fill="var(--brand-sky)" />
+            </marker>
+          </defs>
           {conns.map((c) => (
-            <line
+            <path
               key={c.key}
-              x1={c.x1}
-              y1={c.y1}
-              x2={c.x2}
-              y2={c.y2}
+              d={c.d}
+              fill="none"
               stroke={c.active ? "var(--brand-sky)" : "var(--text-tertiary)"}
-              strokeOpacity={c.dim ? 0.08 : c.active ? 0.9 : 0.28}
-              strokeWidth={c.active ? 2 : 1.2}
+              strokeOpacity={c.dim ? 0.07 : c.active ? 0.95 : 0.5}
+              strokeWidth={c.active ? 2.4 : 1.6}
+              markerEnd={
+                c.dim
+                  ? undefined
+                  : `url(#${c.active ? "erd-arrow-on" : "erd-arrow"})`
+              }
             />
           ))}
         </svg>
