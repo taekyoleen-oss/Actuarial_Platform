@@ -11,6 +11,11 @@ interface Conn {
   key: string;
   /** 박스 모서리에서 모서리로 잇는 베지어 path(d) */
   d: string;
+  /** 조인키(연결에 사용된 키값) — 화살표 중앙에 라벨로 표시 */
+  via: string;
+  /** 라벨 위치(베지어 중점) */
+  mx: number;
+  my: number;
   active: boolean;
   dim: boolean;
 }
@@ -112,9 +117,15 @@ export function DbErdView({
         }
       }
       const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${c1x.toFixed(1)} ${y1.toFixed(1)} ${c2x.toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+      // 베지어 t=0.5 중점 — 키값 라벨 위치
+      const mx = 0.125 * x1 + 0.375 * c1x + 0.375 * c2x + 0.125 * x2;
+      const my = 0.5 * y1 + 0.5 * y2;
       next.push({
         key: `${rel.from}-${rel.to}-${rel.via}`,
         d,
+        via: rel.via,
+        mx,
+        my,
         active: rel.from === selected || rel.to === selected,
         // 위험률 강조 모드: 양 끝이 모두 위험률 테이블인 연결만 살리고 나머지는 흐리게.
         dim: active && !(riskTables.has(rel.from) && riskTables.has(rel.to)),
@@ -265,6 +276,29 @@ export function DbErdView({
               </div>
             );
           })}
+        </div>
+
+        {/* 조인키 라벨 — 각 연결선(화살표) 중앙에 연결 키값 pill (박스 위 z-[2]) */}
+        <div
+          className="pointer-events-none absolute left-0 top-0 z-[2]"
+          style={{ width: svgSize.w || "100%", height: svgSize.h || "100%" }}
+          aria-hidden
+        >
+          {conns.map((c) =>
+            c.dim ? null : (
+              <span
+                key={`lbl-${c.key}`}
+                style={{ left: c.mx, top: c.my }}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-1.5 py-px font-mono text-[10px] font-medium shadow-card ${
+                  c.active
+                    ? "border-brand-sky bg-brand-sky text-white"
+                    : "border-border bg-white text-tertiary"
+                }`}
+              >
+                {c.via}
+              </span>
+            )
+          )}
         </div>
       </div>
 

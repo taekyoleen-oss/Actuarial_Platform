@@ -137,8 +137,9 @@ export default async function PublicDbDetailPage({
         {erd ? (
           <>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
-              키값(조인키)으로 테이블이 상호 연결됩니다. 테이블 박스를 누르면 아래에
-              컬럼·설명이 표시되고, 선이 연결된 테이블이 강조됩니다.
+              키값(조인키)으로 테이블이 상호 연결됩니다. 각 화살표 중앙의 칩에 연결에
+              쓰인 키값이 표시되며, 테이블 박스를 누르면 아래에 컬럼·설명이 표시되고
+              해당 테이블의 연결선·키값이 강조됩니다.
               {getRiskSpec(profile.id) &&
                 " 우측 ‘위험률 개발 필드 강조’ 버튼을 누르면 다음 위험률 자료를 만들 때 꼭 필요한 필드만 부각됩니다."}
             </p>
