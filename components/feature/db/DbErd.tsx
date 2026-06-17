@@ -3,9 +3,9 @@
 // DB 구조(ERD) 뷰어 — 컬럼 그룹별 테이블 박스 + 조인 연결선(SVG) + 테이블 클릭 시 컬럼 설명.
 // 원천: SQL_Builder 'DB 구조(ERD)' 뷰를 보드 디자인(v2)으로 재구성. 데이터는 lib/publicDb.
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { KeyRound } from "lucide-react";
-import type { DbErd, DbTable } from "@/lib/publicDb";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { KeyRound, Filter } from "lucide-react";
+import type { DbErd, DbTable, RiskFieldSpec } from "@/lib/publicDb";
 
 interface Conn {
   key: string;
@@ -14,16 +14,40 @@ interface Conn {
   x2: number;
   y2: number;
   active: boolean;
+  dim: boolean;
 }
 
-export function DbErdView({ erd }: { erd: DbErd }) {
+export function DbErdView({
+  erd,
+  riskSpec,
+}: {
+  erd: DbErd;
+  riskSpec?: RiskFieldSpec | null;
+}) {
   const [selected, setSelected] = useState<string>(erd.tables[0]?.name ?? "");
+  const [riskOnly, setRiskOnly] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const boxRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [conns, setConns] = useState<Conn[]>([]);
   const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
 
   const selectedTable = erd.tables.find((t) => t.name === selected) ?? null;
+
+  // 위험률 개발 필드 집합 — "table.col" 키. riskSpec 없으면 빈 집합.
+  const riskCols = useMemo(() => {
+    const s = new Set<string>();
+    if (riskSpec) {
+      for (const [t, cols] of Object.entries(riskSpec.fields)) {
+        for (const c of cols) s.add(`${t}.${c}`);
+      }
+    }
+    return s;
+  }, [riskSpec]);
+  const riskTables = useMemo(
+    () => new Set(Object.keys(riskSpec?.fields ?? {})),
+    [riskSpec]
+  );
+  const active = Boolean(riskSpec) && riskOnly;
 
   const compute = useCallback(() => {
     const c = canvasRef.current;
@@ -48,10 +72,12 @@ export function DbErdView({ erd }: { erd: DbErd }) {
         x2,
         y2,
         active: rel.from === selected || rel.to === selected,
+        // 위험률 강조 모드: 양 끝이 모두 위험률 테이블인 연결만 살리고 나머지는 흐리게.
+        dim: active && !(riskTables.has(rel.from) && riskTables.has(rel.to)),
       });
     }
     setConns(next);
-  }, [erd.relations, selected]);
+  }, [erd.relations, selected, active, riskTables]);
 
   useLayoutEffect(() => {
     compute();
@@ -79,7 +105,7 @@ export function DbErdView({ erd }: { erd: DbErd }) {
 
   return (
     <div>
-      {/* 조인키 범례 */}
+      {/* 조인키 범례 + 위험률 필드 강조 토글 */}
       <div className="mb-4 flex flex-wrap items-center gap-2 text-[13px]">
         <span className="inline-flex items-center gap-1 font-medium text-tertiary">
           <KeyRound size={13} className="text-brand-sky" /> 조인키
@@ -93,7 +119,31 @@ export function DbErdView({ erd }: { erd: DbErd }) {
             {col}
           </span>
         ))}
+        {riskSpec && (
+          <button
+            type="button"
+            onClick={() => setRiskOnly((v) => !v)}
+            aria-pressed={active}
+            className={`ml-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12.5px] font-semibold transition-colors ${
+              active
+                ? "border-brand-sky bg-brand-sky text-white"
+                : "border-border bg-white text-tertiary hover:border-brand-sky hover:text-brand-sky"
+            }`}
+          >
+            <Filter size={13} />
+            {active ? "위험률 개발 필드만 보는 중" : "위험률 개발 필드 강조"}
+          </button>
+        )}
       </div>
+
+      {/* 위험률 강조 안내 배너 */}
+      {active && riskSpec && (
+        <div className="mb-4 rounded-cover border border-brand-sky/30 bg-chip-blue-bg px-4 py-3 text-[13px] leading-relaxed text-chip-blue-fg">
+          <p className="font-semibold">{riskSpec.label} 강조 중</p>
+          <p className="mt-1 text-foreground/80">{riskSpec.criterion}</p>
+          <p className="mt-1 text-foreground/70">→ {riskSpec.builds}</p>
+        </div>
+      )}
 
       {/* ERD 캔버스 — 가로 스크롤(데스크톱 다컬럼), SVG 연결선은 박스 뒤(z-0) */}
       <div
@@ -114,7 +164,7 @@ export function DbErdView({ erd }: { erd: DbErd }) {
               x2={c.x2}
               y2={c.y2}
               stroke={c.active ? "var(--brand-sky)" : "var(--text-tertiary)"}
-              strokeOpacity={c.active ? 0.9 : 0.28}
+              strokeOpacity={c.dim ? 0.08 : c.active ? 0.9 : 0.28}
               strokeWidth={c.active ? 2 : 1.2}
             />
           ))}
@@ -136,6 +186,9 @@ export function DbErdView({ erd }: { erd: DbErd }) {
                     selected={t.name === selected}
                     onSelect={() => setSelected(t.name)}
                     refCb={(el) => (boxRefs.current[t.name] = el)}
+                    riskOn={active}
+                    isRiskTable={riskTables.has(t.name)}
+                    riskCols={riskCols}
                   />
                 ))}
               </div>
@@ -165,7 +218,13 @@ export function DbErdView({ erd }: { erd: DbErd }) {
       </ul>
 
       {/* 선택 테이블 컬럼 설명 */}
-      {selectedTable && <ColumnDetail table={selectedTable} />}
+      {selectedTable && (
+        <ColumnDetail
+          table={selectedTable}
+          riskOn={active}
+          riskCols={riskCols}
+        />
+      )}
     </div>
   );
 }
@@ -175,50 +234,80 @@ function ErdBox({
   selected,
   onSelect,
   refCb,
+  riskOn,
+  isRiskTable,
+  riskCols,
 }: {
   table: DbTable;
   selected: boolean;
   onSelect: () => void;
   refCb: (el: HTMLButtonElement | null) => void;
+  riskOn: boolean;
+  isRiskTable: boolean;
+  riskCols: Set<string>;
 }) {
+  // 위험률 강조 모드인데 위험률 테이블이 아니면 박스 전체를 흐리게.
+  const tableDimmed = riskOn && !isRiskTable;
   return (
     <button
       ref={refCb}
       onClick={onSelect}
       aria-pressed={selected}
-      className={`w-full rounded-cover border bg-white p-3 text-left shadow-card transition-[border-color,box-shadow] ${
+      className={`w-full rounded-cover border bg-white p-3 text-left shadow-card transition-[border-color,box-shadow,opacity] ${
         selected
           ? "border-brand-sky shadow-card-hover ring-1 ring-brand-sky/40"
           : "border-border hover:border-foreground"
+      } ${tableDimmed ? "opacity-40" : ""} ${
+        riskOn && isRiskTable ? "ring-1 ring-brand-sky/30" : ""
       }`}
     >
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[14px] font-semibold text-foreground">
           {table.label}
         </span>
+        {riskOn && isRiskTable && (
+          <span className="rounded-full bg-brand-sky px-1.5 py-0.5 text-[9.5px] font-bold text-white">
+            위험률
+          </span>
+        )}
       </div>
       <p className="mt-0.5 font-mono text-[11px] text-placeholder">
         {table.name} · {table.unit}
       </p>
       <ul className="mt-2 flex flex-wrap gap-1">
-        {table.columns.map((c) => (
-          <li
-            key={c.name}
-            className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
-              c.key
-                ? "bg-chip-blue-bg font-semibold text-chip-blue-fg"
-                : "bg-surface text-tertiary"
-            }`}
-          >
-            {c.name}
-          </li>
-        ))}
+        {table.columns.map((c) => {
+          const isRisk = riskCols.has(`${table.name}.${c.name}`);
+          // 강조 모드: 위험률 필드는 sky로 부각, 나머지는 흐리게.
+          const cls = riskOn
+            ? isRisk
+              ? "bg-brand-sky font-semibold text-white"
+              : "bg-surface text-tertiary opacity-35"
+            : c.key
+              ? "bg-chip-blue-bg font-semibold text-chip-blue-fg"
+              : "bg-surface text-tertiary";
+          return (
+            <li
+              key={c.name}
+              className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${cls}`}
+            >
+              {c.name}
+            </li>
+          );
+        })}
       </ul>
     </button>
   );
 }
 
-function ColumnDetail({ table }: { table: DbTable }) {
+function ColumnDetail({
+  table,
+  riskOn,
+  riskCols,
+}: {
+  table: DbTable;
+  riskOn: boolean;
+  riskCols: Set<string>;
+}) {
   return (
     <div className="mt-6 rounded-cover border border-border bg-white p-5 shadow-card">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -231,23 +320,37 @@ function ColumnDetail({ table }: { table: DbTable }) {
         <span className="text-[13px] text-tertiary">· {table.group}</span>
       </div>
       <dl className="mt-4 divide-y divide-border">
-        {table.columns.map((c) => (
-          <div key={c.name} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:gap-4">
-            <dt className="flex shrink-0 items-center gap-1.5 sm:w-44">
-              {c.key && (
-                <KeyRound size={12} className="shrink-0 text-brand-sky" />
-              )}
-              <span
-                className={`font-mono text-[13px] ${
-                  c.key ? "font-semibold text-chip-blue-fg" : "text-foreground"
-                }`}
-              >
-                {c.name}
-              </span>
-            </dt>
-            <dd className="text-[14px] leading-relaxed text-body">{c.desc}</dd>
-          </div>
-        ))}
+        {table.columns.map((c) => {
+          const isRisk = riskCols.has(`${table.name}.${c.name}`);
+          const dimmed = riskOn && !isRisk;
+          return (
+            <div
+              key={c.name}
+              className={`flex flex-col gap-1 py-2.5 sm:flex-row sm:gap-4 ${
+                dimmed ? "opacity-40" : ""
+              } ${riskOn && isRisk ? "-mx-2 rounded bg-chip-blue-bg px-2" : ""}`}
+            >
+              <dt className="flex shrink-0 items-center gap-1.5 sm:w-44">
+                {c.key && (
+                  <KeyRound size={12} className="shrink-0 text-brand-sky" />
+                )}
+                <span
+                  className={`font-mono text-[13px] ${
+                    c.key ? "font-semibold text-chip-blue-fg" : "text-foreground"
+                  }`}
+                >
+                  {c.name}
+                </span>
+                {riskOn && isRisk && (
+                  <span className="rounded-full bg-brand-sky px-1.5 py-0.5 text-[9px] font-bold text-white">
+                    위험률
+                  </span>
+                )}
+              </dt>
+              <dd className="text-[14px] leading-relaxed text-body">{c.desc}</dd>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );

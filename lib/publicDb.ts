@@ -363,6 +363,76 @@ export const PROFILES: Record<string, DbProfile> = {
   },
 };
 
+/**
+ * 위험률 개발 필드 사양 — "위험률 개발 필드 강조" 버튼이 부각하는 컬럼 집합.
+ * 한국 자료를 기반으로 다음 위험률 자료를 만들 때 꼭 필요한 DB·필드만 보여주기 위함.
+ * (사용자 기준: 표본코호트=간편보험 위험률 / NPS=특정질병·입원·통원·수술 / JMDC=표본코호트 예제용)
+ */
+export interface RiskFieldSpec {
+  /** 버튼·배너 제목 */
+  label: string;
+  /** 어떤 기준으로 필드를 골랐는지 */
+  criterion: string;
+  /** 이 필드로 만들 수 있는 자료 */
+  builds: string;
+  /** 테이블명 → 강조할 컬럼명 배열 */
+  fields: Record<string, string[]>;
+}
+
+export const RISK_SPEC: Record<string, RiskFieldSpec> = {
+  nsc2: {
+    label: "간편보험 위험률 필드",
+    criterion:
+      "간편심사(유병자)보험 위험률 산출에 쓰이는 핵심 필드 — 개인(연령·성별·자격기간)·사망, 청구의 상병(특정질병)·입원/외래 구분·입원일수·통원일수·수술여부.",
+    builds:
+      "표본코호트로 동일인을 추적해 발생률·입원율·수술율 등 간편보험 위험률 데이터셋을 구성할 수 있습니다.",
+    fields: {
+      NSC2_BNC: ["RN_INDI", "SEX", "STD_YYYY", "GAIBJA_TYPE"],
+      NSC2_BND: ["RN_INDI", "BTH_YYYY", "DTH_YYYYMM", "COD1"],
+      NSC2_M20: [
+        "RN_INDI", "RN_KEY", "MDCARE_STRT_DT", "FORM_CD", "SICK_SYM1",
+        "SICK_SYM2", "HSPTZ_PATH_TYPE", "OPRTN_YN", "MDCARE_DD_CNT",
+        "VSHSP_DD_CNT", "FST_HSPTZ_DT",
+      ],
+      NSC2_M40: ["RN_INDI", "RN_KEY", "MCEX_SICK_SYM", "SICK_CLSF_TYPE"],
+    },
+  },
+  nps: {
+    label: "특정질병·입원·통원·수술 필드",
+    criterion:
+      "특정질병(주·부상병), 입원 여부 및 입원일수, 통원 여부 및 통원횟수, 수술 건수 산출에 쓰이는 필드(가중치 포함).",
+    builds:
+      "환자표본으로 특정질병·입원일수·통원횟수·수술 건수 단면 통계를 가중추정할 수 있습니다.",
+    fields: {
+      T200: [
+        "SPEC_ID_SNO", "JID", "SEX_TP_CD", "PAT_AGE", "FOM_TP_CD", "MSICK_CD",
+        "SSICK_CD", "SOPR_YN", "RECU_FR_DD", "FST_IPAT_DD", "RECU_DDCNT",
+        "VST_DDCNT", "SamplingWeight",
+      ],
+      T400: ["SPEC_ID_SNO", "SICK_CD"],
+      T300: ["SPEC_ID_SNO", "DIV_CD", "TOT_USE_QTY_OR_EXEC_FQ"],
+    },
+  },
+  jmdc: {
+    label: "표본코호트형 위험률 필드",
+    criterion:
+      "한국 표본코호트와 유사 — 가입자(연령·성별·자격기간), 상병(ICD-10·진료개시일·확정), 입원/외래 구분, 입원일수(DPC), 수술 건수(진료행위)로 표본코호트 예제를 구성하는 필드.",
+    builds:
+      "JMDC로 한국 표본코호트와 동일한 발생률·입원율·수술율 예제(해외 벤치마크)를 만들 수 있습니다.",
+    fields: {
+      "加入者台帳": ["加入者ID", "性別 / 生年月 / 続柄", "資格取得·喪失年月"],
+      "レセプト共通": ["レセプトID", "加入者ID", "レセプト種別", "診療年月 / 請求点数"],
+      "傷病名": ["レセプトID", "ICD10コード", "主傷病/疑い · 転帰", "診療開始日"],
+      "診療行為": ["レセプトID", "診療行為コード", "点数 / 回数"],
+      "DPC情報": ["レセプトID", "入院日 / 退院日", "入院経路 / 退院転帰"],
+    },
+  },
+};
+
+export function getRiskSpec(id: string): RiskFieldSpec | null {
+  return RISK_SPEC[id] ?? null;
+}
+
 export function listDbs(): DbProfile[] {
   return DB_ORDER.map((id) => PROFILES[id]);
 }

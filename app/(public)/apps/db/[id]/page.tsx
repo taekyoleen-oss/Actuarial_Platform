@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Target, ExternalLink, Info } from "lucide-react";
 import { DbErdView } from "@/components/feature/db/DbErd";
-import { DB_ORDER, getDb } from "@/lib/publicDb";
+import { DB_ORDER, getDb, getRiskSpec } from "@/lib/publicDb";
 
 export function generateStaticParams() {
   return DB_ORDER.map((id) => ({ id }));
@@ -131,10 +131,35 @@ export default async function PublicDbDetailPage({
         />
       </section>
 
-      {/* DB 구조(ERD) */}
+      {/* DB 구조(ERD) — 네이티브 ERD 우선. embedHtml은 보조(전체 비교 문서) 링크로만 노출 */}
       <section className="mt-16">
         <SectionTitle>DB 구조 (ERD){profile.estimated && " · 추정"}</SectionTitle>
-        {profile.embedHtml ? (
+        {erd ? (
+          <>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
+              키값(조인키)으로 테이블이 상호 연결됩니다. 테이블 박스를 누르면 아래에
+              컬럼·설명이 표시되고, 선이 연결된 테이블이 강조됩니다.
+              {getRiskSpec(profile.id) &&
+                " 우측 ‘위험률 개발 필드 강조’ 버튼을 누르면 다음 위험률 자료를 만들 때 꼭 필요한 필드만 부각됩니다."}
+            </p>
+            {profile.embedHtml && (
+              <div className="mt-4 flex justify-end">
+                <a
+                  href={profile.embedHtml}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  한일 구조 비교 전체 문서(매핑) 새 탭에서 보기{" "}
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+            )}
+            <div className="mt-6">
+              <DbErdView erd={erd} riskSpec={getRiskSpec(profile.id)} />
+            </div>
+          </>
+        ) : profile.embedHtml ? (
           <>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
               공개 자료로 재구성한 논리(추정) ERD와 한국 유사 데이터(NHIS) 대응 매핑·비교
@@ -157,16 +182,6 @@ export default async function PublicDbDetailPage({
                 className="h-[820px] w-full border-0 bg-white"
                 loading="lazy"
               />
-            </div>
-          </>
-        ) : erd ? (
-          <>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
-              좌→우로 개인·명세서(허브)에서 세부내역·기관으로 이어집니다. 테이블 박스를
-              누르면 아래에 컬럼·설명이 표시되고, 선이 연결된 테이블이 강조됩니다.
-            </p>
-            <div className="mt-6">
-              <DbErdView erd={erd} />
             </div>
           </>
         ) : null}
