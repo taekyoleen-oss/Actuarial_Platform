@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 완비시장: 모든 보수를 복제 포트폴리오로 완전 재현(=) -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 왼쪽: 목표 보수(계단) -->
+<path d="M 96 196 L 134 196 L 134 150 L 172 150 L 172 116 L 200 116" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="120" y="222" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">보수 X</text>
+<!-- 등호 -->
+<line x1="224" y1="150" x2="256" y2="150" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="224" y1="166" x2="256" y2="166" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 오른쪽: 복제 포트폴리오(블록 합) -->
+<rect x="284" y="170" width="40" height="30" fill="#EAF2F9" stroke="#171A20" stroke-width="3"/>
+<rect x="284" y="134" width="40" height="34" fill="#EAF2F9" stroke="#171A20" stroke-width="3"/>
+<rect x="284" y="104" width="40" height="28" fill="#4A90C2" stroke="#171A20" stroke-width="3"/>
+<text x="338" y="160" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">복제</text>
+<g transform="translate(360 110)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20" stroke="#171A20" stroke-width="2.2" stroke-linejoin="round"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

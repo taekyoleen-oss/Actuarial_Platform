@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 신용위험: 정상 상환 경로와 부도(default) 절벽 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="70" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 정상 상환 가치(Sky) -->
+<path d="M 84 150 L 232 150" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+<!-- 부도 절벽 -->
+<path d="M 232 150 L 232 210 L 384 210" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 0"/>
+<line x1="232" y1="150" x2="232" y2="210" stroke="#171A20" stroke-width="3" stroke-dasharray="5 5"/>
+<!-- 회수(recovery) 면 -->
+<rect x="232" y="210" width="152" height="22" fill="#EAF2F9"/>
+<text x="308" y="226" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">recovery</text>
+<text x="120" y="138" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">정상</text>
+<text x="246" y="186" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">default</text>
+<!-- 식은땀 흘리는 사람 -->
+<g transform="translate(232 120)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 5 Q 0 1.5 5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/><path d="M 17 -11 q 3.5 4.5 0 7 q -3.5 -2.5 0 -7" fill="#4A90C2"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

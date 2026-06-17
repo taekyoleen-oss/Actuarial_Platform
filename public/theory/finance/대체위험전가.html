@@ -1,0 +1,145 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>대체위험전가 (Alternative Risk Transfer) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','\B9D1\C740 \ACE0\B515',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 재보험·위험관리</div>
+<h1>대체위험전가 (ART)</h1>
+<div class="meta">Alternative Risk Transfer &nbsp;·&nbsp; 원저자: Walther Neuhaus &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 개요와 정의 <span class="en">Introduction</span></h2>
+<p><b>대체위험전가(alternative risk transfer, ART)</b>라는 용어는 본래 미국에서, 기업이 <b>자기 위험을 스스로 금융(financing)</b>할 수 있게 하는 여러 방식을 가리키려고 만들어졌다. 최근에는 그 의미가 더 넓어져, 많은 (재)보험회사와 금융기관이 ART 솔루션을 독자적인 상품으로 개발·판매하고 있다.</p>
+<p>ART를 설명하기 위해 먼저 <b>전통적 위험전가(standard risk transfer)</b>를 생각해 보자. (이하에서 &ldquo;보험&rdquo;이라 하면 <b>재보험</b>도 포함하는 것으로 한다.)</p>
+<p><b>전통적 보험계약</b>은 피보험자가 입은 손해를 보상해 줄 것을 약속한다. 어떤 상황에서 얼마를 보상할지는 계약에 정해진다. 약관은 천차만별이지만, 모든 보험의 공통점은 <b>보상 대상이 되려면 손해가 어떤 의미로든 우연적(random)이어야 한다</b>는 점이다. 보험자는 비슷한 위험을 다수 인수하고 각 피보험자에게 보험료를 받아, 그 합계가 손해보상 비용과 보험자의 이윤 마진을 충당하도록 한다. 즉 보험자는 <b>개별 위험과 비슷한 위험들의 큰 풀(pool) 사이를 잇는 도관(conduit)</b> 역할을 한다.</p>
+<p>한편 <b>전통적 금융파생상품(financial derivative)</b>은 어떤 기초자산(또는 자산 풀)의 가치에 따라 지급액(payout)이 정해진다. 파생상품은 보통 기초자산 가치의 불리한 변동에 대비해 <b>헤지(&lsquo;보험&rsquo;)</b>하는 데 쓰인다. 파생상품의 지급액은 매수자의 사정과 무관하며, 특히 매수자가 &lsquo;실제&rsquo; 손해를 입었는지에 의존하지 않는다. 파생상품 거래소는 <b>개별 투자자와 금융시장 참가자 사이를 잇는 도관</b> 역할을 한다.</p>
+<p>그런데 보험 가능한 위험과 헤지 가능한 자산 외에도, 전형적인 기업은 <b>보험에 들 수도, 헤지할 수도 없는 다양한 위험</b>을 안고 있다. 이들이 현실화될 때 회사에 미치는 잠재적 충격으로 보면, 오히려 이런 위험이 가장 큰 경우가 많다. 전통적 보험과 금융파생상품이 제공하는 위험전가는 <b>단편적(piecemeal)</b>이고, 비싸며, 대체로 비효율적이다. <b>ART 솔루션의 목적은 더 효율적인 위험전가를 제공하는 것</b>이다.</p>
+<p>무엇이 &ldquo;더 효율적인 위험전가&rdquo;인지는 관련된 위험과 추구하는 목적에 따라 달라진다. 그래서 ART라는 이름을 단 여러 솔루션은 <b>전통적 재보험과 금융상품의 알려진 기법을 새로운 맥락에서 활용한다</b>는 점 외에는 공통점이 거의 없다. 스위스리(Swiss Re)는 ART 솔루션을 다음과 같이 분류한다.</p>
+<ul>
+<li>캡티브(Captives)</li>
+<li>유한위험재보험(Finite risk reinsurance)</li>
+<li>통합상품(Integrated products)</li>
+<li>다중트리거 상품(Multitrigger products)</li>
+<li>우발자본(Contingent capital)</li>
+<li>보험증권화(Insurance securitization)</li>
+<li>보험파생상품(Insurance derivatives)</li>
+</ul>
+<p>여기에 뮌헨리(Munich Re)는 <b>보험화(insuratization)</b>, 즉 비(非)보험위험을 보험자에게 이전하는 것을 추가한다. 다음 절에서 이 솔루션들을 간략히 살펴본다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> ART = 보험과 자본시장을 잇는 &ldquo;맞춤형&rdquo; 위험전가</div><p style="margin-bottom:0">전통적 위험전가에는 두 길이 있다. 하나는 <b>보험·재보험</b>(실제 손해를 보상), 다른 하나는 <b>금융파생상품</b>(지수·가격에 따라 지급). ART는 이 둘의 기법을 빌려와 <b>기업·보험사의 개별 사정에 맞게 재조합</b>한 위험전가·위험금융의 총칭이다. 핵심 동기는 (1) 보험에도 헤지에도 잘 맞지 않는 큰 위험까지 다루고, (2) 더 싸고 효율적으로 위험을 넘기며, (3) <b>전 세계 자본시장</b>이라는 거대한 새 위험자본 원천에 접근하는 것이다.</p></div>
+
+<h2>2. ART의 여러 형태 <span class="en">Forms of ART</span></h2>
+<h3>2.1 캡티브 <span class="en">Captives</span></h3>
+<p><b>캡티브(captive)</b>는 보험업에 종사하지 않는 기업이 소유한 (재)보험 수단으로, 주로 <b>모회사의 위험을 인수</b>한다. 캡티브는 빌려 쓸 수도 있다(렌터캡티브). 법규상 모든 목적에서 캡티브는 정상적인 (재)보험회사다. 캡티브를 쓰면 모회사는 보험에 들기에는 비경제적인 <b>고빈도 위험의 보유(retention)</b>를 늘릴 수 있다. <b>재보험 시장에 직접 접근</b>할 수 있어 보유 수준을 모회사 필요에 맞게 조정할 수 있고, 그 결과 보험료로 빠져나갔을 자금을 그룹 안에 남긴다.</p>
+<p>캡티브와 결부된 <b>세제상 이점</b>은 최근 다소 줄었다. 많은 관할지가 캡티브에 낸 보험료의 손비 인정을 제한했기 때문이다. 여러 기업이 모여 <b>위험보유그룹(risk-retention group)</b>이나 <b>구매그룹(purchasing group)</b> 같은 캡티브 구조를 만들어 집단적 위험보유와 협상력을 키우기도 한다.</p>
+
+<h3>2.2 유한위험재보험 <span class="en">Finite Risk Reinsurance</span></h3>
+<p><b>유한위험재보험(finite risk reinsurance)</b>의 본질은 <b>재보험자에게 이전되는 위험의 양이 제한된다</b>는 것이다. 이는 전통적 재보험처럼 단순히 보장에 총한도가 있다는 뜻이 아니라, <b>피보험자(출재사)가 시간에 걸쳐 위험을 스스로 금융(self-finance)한다</b>는 뜻이다.</p>
+<p>유한위험재보험 계약에는 <b>경험계정(experience account)</b>이 붙는다. 이는 계약 개시 이후의 누적 잔액으로, 다음을 합산한다.</p>
+<ul>
+<li>재보험료(+)</li>
+<li>재보험 회수금(&minus;)</li>
+<li>재보험자가 공제하는 수수료·비용(&minus;)</li>
+<li>잔액이 양(+)이면 가산이자, 음(&minus;)이면 차감이자</li>
+</ul>
+<p>늦어도 계약 종료 시점에, 경험계정 잔액이 양이면 출재사에게, 음이면 재보험자에게 정산·상환된다. 상환 방식은 여러 가지다. 가장 단순한 형태는 계약 종료 시 지급되는 <b>높은 이익수수료(profit commission)</b>다. 다만 이익수수료는 경험계정 잔액이 양일 때만 지급되므로, 음의 잔액은 재보험자가 떠안게 되어 항상 적합한 것은 아니다.</p>
+<p>더 정교한 계약은 <b>다음 해의 계약 파라미터(자기부담 우선순위, 한도 등)를 이전까지 누적된 경험계정 잔액에 연동</b>한다. 잔액이 양이면 보장을 더, 음이면 덜 제공한다. 다만 해마다 발생하는 클레임이 우연적이므로 이 방식으로 잔액이 0으로 돌아온다는 보장은 없으며, 추가적 안전장치가 필요할 수 있다.</p>
+<p>또 다른 중요한 구분은 <b>선금융(prefinancing)</b> 계약과 <b>후금융(postfinancing)</b> 계약이다. 이는 계약이 출재사에게 자금을 지원하는 시점에 관한 것이다. 선금융 계약은 출재사가 재보험자에게서 받는 <b>대출(loan)</b>과 비슷해 나중에 갚고, 후금융 계약은 출재사가 재보험자에게 맡기는 <b>예치금(deposit)</b>과 비슷해 나중에 찾아 쓴다. 위 일반적 틀 안에서 유한위험재보험은 비례·비비례 어느 쪽도 될 수 있고, 보장은 미래 클레임(예정형, prospective)일 수도, 이미 발생한 클레임(소급형, retrospective)일 수도 있다.</p>
+<p>출재사에게 유한위험재보험은 <b>손해 비용을 시간에 걸쳐 분산</b>해 주며, 사실상 유연한 <b>부외(off-balance sheet) 변동준비금</b>을 흉내 낸다. 위험전가가 유한하다는 점 덕분에, 재보험자는 전통적 계약으로는 <b>보험 불가능(uninsurable)</b>으로 여겨질 위험까지 인수할 수 있다. 대부분의 관할지는 <b>일정 최소 수준 이상의 위험이 재보험자에게 이전될 때만</b> 출재사가 그 계약을 재보험으로 회계처리하도록 허용한다. 그렇지 않으면 경우에 따라 거래를 <b>대출(부채)이나 예치금(자산)</b>으로 인식해야 한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> &ldquo;시간에 걸쳐 결국 비긴다&rdquo; — 유한위험재보험의 핵심</div><p style="margin-bottom:0">전통적 재보험도 사실 출재사와 재보험자가 <b>장기적으로 서로 비기는(getting even over time)</b> 이상을 깔고 있었다. 손해를 봤으면 다음 해 조건을 빡빡하게, 수익이 났으면 너그럽게 매기는 식이다. 유한위험재보험은 이 과정을 <b>경험계정으로 명문화</b>해, 양쪽이 대략 비길 때까지 협상 테이블에 남도록 의무화한 것이다. 그래서 위험전가가 &ldquo;유한&rdquo;하다 — 진짜 보험이 되려면 <b>최소한의 실질 위험이전</b>이 있어야 재보험으로 인정받는다.</p></div>
+<div class="ex"><div class="head"><span class="tag">예제</span> 위험이전이 충분한지 왜 따지는가</div><p class="q">한 보험사가 재보험자에게 보험료를 내지만, 경험계정 구조 때문에 사실상 자기 손해를 자기가 부담하고 나중에 정산받는다. 이 계약을 &lsquo;재보험&rsquo;으로 회계처리할 수 있을까?</p><p style="margin-bottom:0">핵심은 <b>실제로 위험이 재보험자에게 충분히 넘어갔는가</b>이다. 위험이전이 최소 기준에 못 미치면(거의 자기금융이면), 미국 GAAP의 FAS113 등은 이를 재보험이 아니라 <b>대출(부채)이나 예치금(자산)</b>으로 인식하게 한다. 그러면 경험계정 잔액을 자산·부채로 잡아야 하고, 손익을 평탄화하는 효과도 인정받지 못한다. 따라서 설계 단계에서 위험이전 수준을 면밀히 검증해야 한다.</p></div>
+
+<h3>2.3 통합상품 <span class="en">Integrated Products</span></h3>
+<p><b>통합 다중라인(multiline) 상품</b>은 여러 보험종목을 하나의 재보험계약으로 묶는다. 이는 화재·도난·수재 등을 한 증권으로 보장하는 종합주택보험과 비슷하다. 나아가 <b>통합 다년(multiyear) 계약</b>은 1년을 넘겨 운영되며, 재보험자 책임에 전체 한도를 둔다. 통합계약은 흔히 유한위험전가를 포함시켜, 다른 &lsquo;비보험성&rsquo; 위험까지 담을 수 있게 한다.</p>
+<p>통합 다중라인·다년 계약은 출재사가 <b>모든 종목을 아우르는 단일 보유 수준</b>을 자신의 총 위험감내력에 맞게 둘 수 있게 한다. 종목 간·역년(calendar year) 간 평탄화는 재보험자의 실적도 안정시켜, 더 낮은 이윤 마진을 매길 수 있게 해야 한다. 이론적으로는 종목별로 재보험자가 다른 단편적 재보험과 매년 갱신하는 번거로움에 대한 매력적인 대안이 될 법하다.</p>
+<p>그러나 실무에서 통합보장은 별로 자리잡지 못했다. 보험사의 <b>칸막이식 조직 구조</b>가 모든 종목을 아우르는 계약 합의를 어렵게 만들고, <b>둘 이상의 재보험자</b>가 특정 맞춤 패키지에 동의하도록 하기 어렵기 때문이다. 다중라인·다년 보장으로 가려면 출재사는 보통 모든 위험을 한 재보험자(한 바구니)에 몰아야 하는데, 이는 그에 따른 <b>신용위험(credit risk)</b>을 수반한다.</p>
+
+<h3>2.4 다중트리거 상품 <span class="en">Multitrigger Products</span></h3>
+<p>보험사 주주에게는 이익이 <b>보험손해</b>로 줄든 <b>실현 자산손해</b>로 줄든 다를 바 없다. 보험사는 투자수익이 높을 때는 훨씬 높은 손해율도 견디지만, 투자수익이 말라붙은 때는 그럴 여력이 없다. 이것이 <b>다중트리거 상품</b>의 기본 전제다.</p>
+<p>다중트리거 재보험계약은 재보험자 책임이 발동되려면 <b>같은 해에 (적어도) 두 사건이 모두 일어나야</b> 한다고 정한다. 첫 사건은 보통 어떤 보험손해(예: 손해율이 합의된 우선순위를 초과), 둘째 사건은 투자손해(예: 채권수익률이 정해진 폭만큼 상승)다. 출재사는 <b>기술적 결과(보험)와 투자 결과가 모두 나쁠 때만</b> 보상을 청구할 수 있다. 물론 결합하는 사건의 수와 성격에 이론적 제한은 없다.</p>
+<p>다중트리거 재보험의 주된 이점은 <b>출재사가 정말로 필요할 때만 보장이 제공된다</b>는 것이다. 각 구성 트리거 사건의 확률이 낮고 사건들이 서로 독립이라고 가정하면, 재보험 사건이 일어날 확률은 매우 낮아진다. 그래서 더 낮은 요율로 보장을 제공할 수 있다. 다만 분명한 장점에도 불구하고 다중트리거 상품 역시 아직 크게 확산되지는 못했다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 두 악재가 겹쳐야 발동 &rarr; 확률이 낮아 보험료가 싸다</div><p style="margin-bottom:0">사건 A(보험손해)와 사건 B(투자손해)가 독립이고 각각 확률이 낮으면, 둘이 동시에 일어날 확률은 두 확률의 곱이라 훨씬 더 작다. 보험료는 대략 사고확률에 비례하므로 <b>다중트리거 보장은 단일 트리거보다 싸다</b>. 게다가 보험사가 가장 위태로운 순간(보험도 깨지고 투자도 깨진 때)에만 돈이 나오므로 <b>자본의 효율적 사용</b>에 부합한다.</p></div>
+
+<h3>2.5 우발자본 <span class="en">Contingent Capital</span></h3>
+<p><b>우발자본(contingent capital)</b>은 보험사가 <b>심각한 보험손해가 발생했을 때 부채(채권)나 자기자본을 조달할 수 있는 옵션</b>이다. 주목적은 대재해 이후에도 보험사가 영업을 계속할 수 있게 하는 것이다. 발동사건은 물론 보험 관련·투자 관련 트리거 사건의 조합일 수도 있다.</p>
+<p><b>우발부채(contingent debt)</b>는 은행 대출한도와 비슷하나, <b>회사 형편이 나쁠 때 자금이 제공된다</b>는 중요한 차이가 있다(정작 곤경에 빠진 차입자가 찾아오면 은행원 표정이 굳는다). <b>우발지분(contingent equity)</b>은 본질적으로 보험사가 <b>자기 주식을 정해진 가격에 팔 수 있는 풋옵션</b>으로, 대재해 사건에 의해 활성화된다.</p>
+<p>두 경우 모두, 다른 재보험에서 회수한 뒤의 <b>보험손해 전액은 여전히 보험사에 남는다</b>. 우발자본 조달은 순전히 금융 거래이며 손익계산서를 개선하지 않는다. 자본 제공자 입장에서도 이는 보험손해가 결부되지 않은 대출이나 주식 매입일 뿐이다. <b>따라서 우발자본 제공은 보험위험의 이전이 아니다</b>. 다만 자본 제공자는 나중에 보험사가 디폴트할 <b>신용위험</b>을 떠안는다.</p>
+
+<h3>2.6 보험증권화 <span class="en">Insurance Securitization</span></h3>
+<p><b>보험증권화(insurance securitization)</b>는 보험위험을 <b>자본시장에 직접 배치</b>하는 것이다. <b>대재해채권(catastrophe bond)</b>은 보험사가 발행한 채권의 형태를 띤다. 그러나 채권의 <b>이표(coupon) 지급</b>과 때로는 원금 상환의 일부가, 정의된 대재해 사건의 <b>발생(정확히는 미발생)</b>에 따라 좌우된다.</p>
+<p>법규상 목적과 투명성을 위해, 채권 발행자는 보통 보험사가 소유한 <b>특수목적기구(SPV)</b>다. 자본시장에 대해서는 SPV가 여느 부채자본 조달기업처럼 행동하고, 후원 보험사에 대해서는 연간 재보험료를 받고 보장을 제공하는 <b>재보험자처럼</b> 행동한다. 이 재보험료는 채권 보유자에게 줄 연간 이표와 SPV 운영비를 충당할 만큼 충분해야 한다.</p>
+<p>대재해 사건의 정의와 그에 따른 이표·원금 감액을 <b>후원 보험사 자신의 손해에 직접 연동</b>할 수도 있다. 그러나 이 방식은 보험사에 <b>도덕적 해이(moral hazard)</b>를 일으키고, 채권의 작동을 외부 투자자에게 불투명하게 만든다. 투자자는 늘 불투명성을 더 높은 수익률 요구로 응징한다. 그래서 선호되는 방식은 이표·원금 감액을 <b>객관적·물리적 지수</b>(예: 지진 규모, 풍속)에 연동하는 것이다. 다만 이렇게 해도 보험사는 <b>베이시스 위험(basis risk)</b>, 즉 자기 경험이 지수가 예측한 것에서 벗어날 위험을 안는다. 이 위험을 감당할 수 없다면 보완적 재보험이나 다른 ART 솔루션을 마련해야 한다.</p>
+<p>피보험자와 보험사 모두에게 보험증권화의 매력은, 모든 재보험사 자기자본을 합친 것을 압도하는 <b>전 세계 자본시장이라는 위험자본 풀</b>을 여는 데 있다. 금융시장 융합론자에게는 계리사에게 악명 높게 어려운 문제인 <b>대재해 위험 가격결정</b>의 새로운 방법론을 여는 데 매력이 있다. 투자자에게는, 기존 투자와 <b>상관관계가 약한 새로운 자산군</b>이 추가되어 <b>분산투자 이익</b>을 약속한다는 점이 매력이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 대재해채권(Cat bond)이 작동하는 그림</div><p style="margin-bottom:0">보험사가 SPV를 세우고 투자자에게 채권을 판다. 투자자가 낸 원금은 <b>담보로 묶여</b> 있다가, 정해진 대재해(예: 규모 7 이상 지진)가 <b>일어나지 않으면</b> 투자자는 높은 이표를 받고 원금을 돌려받는다. 대재해가 <b>일어나면</b> 이표·원금의 일부 또는 전부가 깎여 그 돈이 보험사 손해 보전에 쓰인다. 즉 투자자가 사실상 <b>재보험자 역할</b>을 한다. 손해 직접연동 대신 <b>물리적 지수</b>를 쓰면 도덕적 해이는 줄지만 보험사에 베이시스 위험이 남는다.</p></div>
+
+<h3>2.7 보험파생상품 <span class="en">Insurance Derivatives</span></h3>
+<p>전통적 파생상품(옵션·선물)은 기초자산(또는 자산 풀)의 성과로 가치가 결정되는 금융상품이다. <b>보험파생상품(insurance derivatives)</b>의 가치는 <b>보험 특화 지수(insurance-specific index)</b>의 성과로 결정된다. 지수는 정의된 사건의 <b>총손해액</b>에 기반하거나, 풍속·기압·지진 강도 같은 <b>물리적 측정치</b>에 기반할 수 있다. 그러면 파생상품의 가치는 지수 값에 미리 정한 금액(틱 가치)을 곱해 계산된다.</p>
+<p>보험사는 해당 <b>대재해 지수에 대한 선물이나 콜옵션을 매수</b>해 자기 대재해 위험을 부분적으로 헤지할 수 있다. 대재해 사건이 일어나면 파생상품 가치가 올라 보험사 자신의 손해를 보전해 준다. 지수가 산업 평균 손해경험이나 물리적 측정치에 기반하므로, 보험사는 여기서도 <b>베이시스 위험</b>을 안는다. 감당할 수 없다면 보완적 재보험·ART를 마련해야 한다. 보험채권과 마찬가지로, 보험파생상품의 궁극적 위험 부담자는 <b>전 세계 금융시장</b>이다. 손해지수에 대한 선물·옵션은 <b>1992년부터 시카고상품거래소(CBOT)</b>에서 거래되었으나, 거래는 여전히 미미하다.</p>
+
+<h2>3. ART의 이점 <span class="en">Benefits of ART</span></h2>
+<p>앞에서 보았듯 ART는 하나의 방법이 아니라, 한쪽의 보험·재보험과 다른 쪽의 금융파생상품이라는 전통적 위험전가 수단을 <b>보완하는 여러 방법의 묶음</b>이다. 자신의 개별 위험프로파일·위험자본·여건에 맞게 위험전가를 재단함으로써, 기업이나 보험사는 다음과 같이 <b>자기 위험자본 사용을 최적화</b>할 수 있다.</p>
+<ul>
+<li>가치를 더하지 못하는 위험을 이전(예: 오래된 부채의 런오프)</li>
+<li>보험에 들기엔 비경제적인 위험을 보유(예: 고빈도 클레임)</li>
+<li>장기적으로 수익성 있는 위험을 보유(예: 주식 익스포저, 장기채)</li>
+<li>재보험 용량을 더 잘 활용(예: 과다보험 축소)</li>
+<li>기존 재보험 프로그램의 빈틈을 메움(예: 보험 불가능 위험)</li>
+<li>새로운 위험자본 원천에 접근(예: 자본시장)</li>
+<li>대형 손해 이후의 생존력을 보호</li>
+<li>손익계산서를 안정화</li>
+<li>지급여력과 신용등급을 개선</li>
+</ul>
+<p>모든 ART 솔루션이 이 모든 이점을 주는 것은 아니다. (원문 표 1은 여러 ART 솔루션의 속성을 비교한다.)</p>
+
+<h2>4. ART의 회계 <span class="en">Accounting for ART</span></h2>
+<p>모든 ART 솔루션은 맞춤형이므로 각각 그 자체의 실질에 비추어 평가해야 한다. 따라서 ART를 어떻게 분석·회계처리해야 하는지에 대한 일반적 처방을 내리기는 어렵다. 몇 가지 쟁점만 짚는다.</p>
+<p>유한위험재보험과 관련한 큰 쟁점은 <b>출재사가 그 계약을 재보험으로 회계처리할 만큼 위험이전이 충분한가</b>이다. 충분하다면 재보험료와 회수금을 출재사의 기술계정으로 처리할 수 있고, 경험계정 잔액을 자산·부채로 인식할 필요가 없다. 충분하지 않다면 경험계정 잔액을 <b>예치금이나 대출</b>로 인식해야 하며, 그 계약은 기술계정을 개선·평탄화하지 못한다. 미국 GAAP에서는 <b>FAS113</b>이 현재 재보험 인식 요건을 규정한다.</p>
+<p>또 다른 쟁점은 <b>이익 인식 시점</b>이다. 할인되지 않은 부채를 할인된 보험료로 이전할 때 문제가 된다. 소급형 보장(이미 발생한 클레임에 대한 보장)의 경우 미국 GAAP은 그 이익을 <b>이연하여 계약 기간에 걸쳐 인식</b>하도록 요구한다. 반면 예정형 보장에는 그에 비견할 제한이 없는데, 이는 사실 일관성 결여다. 이런 변칙은 원칙적으로 새 국제회계기준(IAS)으로 해소되어야 한다. 보험증권·파생상품이 관여하면 금융상품 회계 규정이 적용된다. 무엇보다 <b>형식보다 실질을 우선하라(substance over form)</b>는 원칙을 기억해야 한다.</p>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Catastrophe Derivatives(재해파생상품) · Captives(캡티브) · Insurance-linked Securities / Catastrophe Bonds(보험연계증권(ILS)/대재해채권) · Financial Reinsurance(금융재보험) · Finite Risk Reinsurance(유한위험재보험) · Incomplete Markets(불완비시장) · Reinsurance(재보험)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>대체위험전가 (ART)</b> — 전통적 보험·재보험과 금융파생상품의 기법을 맞춤 결합해, 더 효율적으로 위험을 이전·금융하는 솔루션들의 총칭.</li>
+<li><b>캡티브 (captive)</b> — 비(非)보험기업이 소유해 주로 모회사 위험을 인수하는 전속 (재)보험 수단.</li>
+<li><b>유한위험재보험 (finite risk reinsurance)</b> — 이전되는 위험을 제한하고, 경험계정으로 출재사가 시간에 걸쳐 위험을 자기금융하는 재보험.</li>
+<li><b>경험계정 (experience account)</b> — 보험료에서 회수금·수수료를 빼고 이자를 가감해 누적한 잔액. 종료 시 양·음에 따라 정산.</li>
+<li><b>통합상품 (integrated/multiline·multiyear)</b> — 여러 종목을 한 계약에, 여러 해에 걸쳐 묶고 전체 한도를 두는 재보험.</li>
+<li><b>다중트리거 (multitrigger)</b> — 두 개 이상의 사건(예: 보험손해 + 투자손해)이 함께 일어나야 보장이 발동되는 구조.</li>
+<li><b>우발자본 (contingent capital)</b> — 대재해 시 부채(우발부채)나 자기자본(우발지분, 풋옵션)을 조달할 수 있는 옵션. 보험위험 이전은 아님.</li>
+<li><b>보험증권화 (insurance securitization)</b> — 보험위험을 자본시장에 직접 배치하는 것. 대표 수단이 대재해채권.</li>
+<li><b>대재해채권 (catastrophe bond)</b> — 대재해의 (미)발생에 따라 이표·원금이 좌우되는, SPV가 발행하는 보험연계채권.</li>
+<li><b>베이시스 위험 (basis risk)</b> — 지수에 연동한 보장에서, 보험사 자신의 손해경험이 지수와 어긋날 위험.</li>
+<li><b>도덕적 해이 (moral hazard)</b> — 위험을 넘긴 뒤 인수·정산 관리를 소홀히 하려는 유인 문제.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>대체위험전가(ART)는 전통적 재보험을 넘어 보험위험을 자본시장·특수목적기구로 옮기는 기법으로, 본문의 재해채권(Cat본드)·보험연계증권(ILS)·캡티브가 대표적이다. 국내에서는 Cat본드·ILS 발행 사례가 제한적이고, 캡티브는 아직 본격 도입되지 않아(단계적 허용 논의 중) ART 시장이 해외만큼 발달하지는 않았다.</p>
+<p>대신 국내에서 위험전가·경감의 핵심 수단으로 부상한 것이 <b>공동재보험</b>(2020년 이후)으로, 금리·장수 등 부채 위험을 재보험사에 이전해 K-ICS 요구자본을 경감한다. IFRS17·K-ICS의 위험경감(risk mitigation) 인정 요건이 정비되면서, ART적 사고가 국내에서도 자본관리 도구로 자리잡고 있다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 자본시장으로 가는 위험</div><p>국내 ART는 Cat본드보다 공동재보험을 통한 부채위험 이전이 먼저 확산됐다. 캡티브 허용·ILS 제도화가 진전되면 위험전가 수단이 다양해질 전망이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Alternative Risk Transfer", Walther Neuhaus. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

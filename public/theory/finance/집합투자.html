@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>집합투자 (Collective Investment) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','\B9D1\C740 \ACE0\B515',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 금융·투자</div>
+<h1>집합투자 (풀링)</h1>
+<div class="meta">Collective Investment (Pooling) &nbsp;·&nbsp; 원저자: Andrew J.G. Cairns &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 집합투자란 무엇인가 <span class="en">The Concept of Pooling</span></h2>
+<p><b>집합투자(collective investment)</b>, 즉 <b>풀링(pooling)</b>은 오래전부터 있어 온 개념이다. 역사적 예로, 가족 구성원 같은 한 무리의 사람들이 단일 회사를 사거나 세우려고 <b>자기 자원을 모으는(pool)</b> 경우를 들 수 있다. 이 예에서 어느 한 사람도 혼자 그 일을 해낼 만한 개인 재산이 없으므로, 개별적으로는 이 사업에 참여할 기회를 얻지 못한다. 그러나 <b>자금을 모으면</b> 그 투자에 참여할 수 있게 된다.</p>
+<p>현대에 들어 개별 투자자들의 자금을 모으는 일은 매우 흔해졌다. 한 가지 이유는, 위 예처럼 특정 증권의 <b>단위 가격(unit price)이 너무 커서</b> 소액 투자자의 능력을 한참 넘어서기 때문이다(예: 미국 재무부 단기채권(T-bills)에 대한 투자).</p>
+<p>집합투자의 훨씬 더 흔한 이유는, 투자자가 <b>혼자서는 도달할 수 없는 훨씬 넓은 범위의 증권에 노출(exposure)</b>될 수 있게 해 주기 때문이다. 풀링을 촉진하는 구체적 <b>수단(vehicle)</b>이 흔히 마련되어 있다. 예컨대 미국에는 <b>뮤추얼펀드(mutual funds)</b>가, 영국에는 <b>투자신탁(investment trusts)</b>과 <b>단위신탁(unit trusts)</b>이 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 풀링 = &ldquo;돈을 모아 함께, 더 넓게&rdquo;</div><p style="margin-bottom:0">집합투자의 본질은 여러 투자자의 돈을 한곳에 모아 하나의 큰 펀드를 만들고, 그 펀드가 다수의 자산에 투자한 뒤 성과를 <b>지분(unit, 좌수)</b>에 비례해 나누는 것이다. 소액 투자자도 한 좌만 사면 펀드가 보유한 수백 종목에 <b>동시에 분산투자</b>한 효과를 얻는다. 보험의 <b>단위연계(unit-linked) 상품</b>도 같은 원리로, 보험료를 펀드 좌수로 환산해 운용한다.</p></div>
+
+<h2>2. 풀형 펀드의 전형적 예 <span class="en">Typical Pooled Funds</span></h2>
+<p>풀형 펀드(pooled funds)의 전형적인 예는 다음과 같다.</p>
+<ul>
+<li><b>FTSE-100 추종(tracker) 펀드.</b> 소액 투자자도 FTSE-100 지수에 든 개별 종목에 투자할 수는 있다. 그러나 지수를 그대로 따라가는 포트폴리오(즉 100개 회사에 동시 투자)를 직접 구성·유지하려면, 소액 투자자에게 상대적으로 높은 <b>거래비용</b>과 100개 자산을 관리하는 데 드는 개인 시간 때문에 매우 비싸진다. 풀형 펀드에 투자하면 거래비용을 낮추고 상당한 개인 시간을 아낄 수 있다. 중소 규모의 <b>연금기금</b>도 같은 이유로 이런 풀형 펀드에 투자하는데, 다만 그 무게중심은 거래비용·운용보수 통제 쪽에 더 가 있다.</li>
+<li><b>특화 해외펀드·섹터펀드.</b> 개별 투자자는 특정 국가나 특정 산업 부문의 세부 사항에 대한 전문성을 갖추기 어렵다. 특화 펀드는 이런 전문성을 갖추고 있어, 그런 펀드에 투자함으로써 투자자는 <b>그 전문성을 사들이는</b> 셈이다.</li>
+<li><b>크고 비유동적인 자산에 투자하는 펀드.</b> 부동산이 예인데, 소액 투자자는 개별 부동산을 살 자원이 없고 분산투자는 더더욱 어렵다. <b>벤처캐피털 펀드</b>도 또 다른 예다.</li>
+</ul>
+<div class="ex"><div class="head"><span class="tag">예제</span> 지수를 직접 따라갈까, 추종 펀드를 살까</div><p class="q">소액 투자자가 FTSE-100 지수와 똑같은 수익을 원한다. 100개 종목을 직접 사서 비중을 맞추는 것과, 추종 펀드 한 좌를 사는 것 중 어느 쪽이 합리적인가?</p><p style="margin-bottom:0">직접 구성하면 100개 종목을 사고, 지수가 바뀔 때마다 <b>재조정(rebalancing)</b>하느라 거래비용과 시간이 막대하게 든다. 추종 펀드는 다수 투자자의 자금을 모아 <b>규모의 경제</b>로 거래비용을 낮추고 운용을 대행하므로, 소액 투자자에게는 사실상 추종 펀드가 거의 항상 유리하다.</p></div>
+
+<h2>3. 집합투자의 이점 정리 <span class="en">Summary of Benefits</span></h2>
+<p>요약하면, 집합투자(풀형 펀드 투자)는 다음을 가능하게 한다.</p>
+<ul>
+<li>(a) 거래비용과 운용보수를 낮게 유지하면서 <b>효과적으로 분산투자(diversify)</b>할 수 있게 한다.</li>
+<li>(b) 그렇지 않으면 결코 얻지 못했을 <b>투자 기회에 접근</b>하게 한다.</li>
+<li>(c) 특화 시장에서의 <b>운용 전문성</b>에 상대적으로 낮은 비용으로 접근하게 한다.</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 분산·규모의 경제·전문성 — 세 기둥</div><p style="margin-bottom:0">풀링의 이점은 세 가지로 압축된다. (1) <b>분산</b>: 여러 자산에 나눠 담아 개별 종목 위험을 줄인다(포트폴리오 이론). (2) <b>규모의 경제</b>: 큰 자금이 모이면 단위당 거래비용·관리비가 낮아진다. (3) <b>전문성 접근</b>: 해외·특정 섹터·비유동 자산처럼 개인이 다루기 힘든 영역을, 전문 운용자를 통해 낮은 비용에 접근한다. 보험의 단위연계 상품과 연금 적립도 모두 이 원리에 기댄다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Asset Management(자산운용) · Portfolio Theory(포트폴리오 이론) · Unit-linked Business(단위연계) · Diversification(위험분산)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>집합투자·풀링 (collective investment / pooling)</b> — 여러 투자자의 자금을 모아 함께 운용하고 성과를 지분에 비례해 나누는 방식.</li>
+<li><b>풀형 펀드 (pooled fund)</b> — 모은 자금으로 다수 자산에 투자하는 공동 운용 펀드.</li>
+<li><b>뮤추얼펀드 (mutual fund)</b> — 미국의 대표적 개방형 집합투자 수단.</li>
+<li><b>투자신탁·단위신탁 (investment trust / unit trust)</b> — 영국의 집합투자 수단(각각 폐쇄형·개방형 성격).</li>
+<li><b>단위·좌수 (unit)</b> — 펀드 지분을 나누는 단위. 단위 가격(NAV)에 보유 좌수를 곱해 평가액을 구함.</li>
+<li><b>거래비용 (transaction cost)</b> — 증권을 사고팔 때 드는 수수료·세금 등. 소액·개별 투자일수록 단위당 부담이 큼.</li>
+<li><b>분산투자 (diversification)</b> — 여러 자산에 나눠 담아 전체 위험을 줄이는 것.</li>
+<li><b>규모의 경제 (economies of scale)</b> — 자금 규모가 커질수록 단위당 비용이 낮아지는 효과.</li>
+<li><b>추종(인덱스) 펀드 (tracker / index fund)</b> — 특정 지수(예: FTSE-100)의 성과를 그대로 따라가도록 구성한 펀드.</li>
+<li><b>단위연계 (unit-linked)</b> — 보험료를 펀드 좌수로 환산해 운용하고 그 성과를 보험금에 연계하는 상품.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>집합투자(펀드)는 국내 보험과 두 갈래로 만난다. 첫째, <b>변액보험</b>은 가입자 적립금을 특별계정의 펀드로 운용하는 집합투자형 상품으로, 자본시장법상 집합투자 규제와 보험업 규제를 함께 받는다. 둘째, 보험사는 일반계정 자산의 일부를 펀드·집합투자기구를 통해 운용한다.</p>
+<p>본문이 강조한 '소액 자금을 모아 분산·전문운용한다'는 집합투자의 이점은 변액보험 가입자에게 그대로 적용되며, 운용성과와 위험이 가입자에게 귀속된다는 점이 일반 보험과 다르다. 이 때문에 변액보험은 적합성·설명의무 등 투자자 보호 규제가 강하게 적용된다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 특별계정과 일반계정</div><p>변액보험은 특별계정에서 펀드로 운용되어 성과·위험이 가입자에게 귀속되고, 일반 보험은 일반계정에서 보험사가 위험을 진다. 집합투자 규제는 주로 전자에 적용된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Collective Investment (Pooling)", Andrew J.G. Cairns. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자산부채 모형화 (Asset–Liability Modeling) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 위험관리·금융수리</div>
+<h1>자산부채 모형화 (ALM)</h1>
+<div class="meta">Asset–Liability Modeling &nbsp;·&nbsp; 원저자: Andrew J.G. Cairns &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 정의와 핵심 요건 <span class="en">Definition and Essential Requirement</span></h2>
+<p><b>자산-부채 모형화(asset–liability modeling, 이하 ALM)</b>는 보험계리학에서 취하는 폭넓은 범위의 접근법을 가리킨다. ALM은 <b>손해보험(비생명) 맥락에서는 흔히 동적재무분석(dynamic financial analysis, DFA)</b>이라고 불린다. ALM의 본질적이고 분명한 요건은, 어떤 연구가 <b>자산위험·경제위험과 미래 부채 현금흐름 양쪽 모두</b>에 대한 <b>확률적(stochastic) 모형화</b>를 포함해야 한다는 것이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> ALM = 자산과 부채를 "함께" 확률적으로 본다</div><p style="margin-bottom:0">전통적 분석은 자산(투자)과 부채(보험금·연금)를 따로 다뤘다. ALM의 핵심은 둘을 <b>동시에</b>, 그것도 <b>확률적으로</b>(여러 시나리오·분포로) 모형화한다는 점이다. 손해보험에서 같은 작업을 DFA라 부른다. 한쪽만 보면 놓치는 위험을, 둘을 같은 모형 안에 넣어야 비로소 볼 수 있다.</p></div>
+
+<h2>2. 자산과 부채의 상호작용 <span class="en">Interaction Between Assets and Liabilities</span></h2>
+<p>그러한 연구의 핵심 측면은 <b>자산과 부채 사이의 상호작용(상관 등, interaction such as correlations)</b>이다. 자산 가치 <i>A</i>(<i>t</i>)와 부채 가치 <i>L</i>(<i>t</i>)를 따로 보는 대신, 그 차이인 <b>잉여(surplus)</b>를 함께 보는 것이 자연스럽다.</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVUAAAA6CAYAAAAA2coVAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjksIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvJkbTWQAAAAlwSFlzAAAewgAAHsIBbtB1PgAADSRJREFUeJztnX3QplMZwH8v6zO0sm24sJL1uR9vCDGKVEQjQ02LWh9lGFRbGjIkQr7ZJiUxPhJlmIrCFJMKE2F7LZYsk4+9fMfKN7v79se5n3nPfd7nuT/P87z73Hv9Zt6Z+5znPtc5732d53rOfZ1zrjMwPDyMYRiGEYflxroBhmEYTcKMqmEYRkTMqBqGYUTEjKphGEZEzKgahmFExIyqYRhGRMyoGoZhRGTcWDegLCJyMfD1JHmdqn6pS/XMAH6dJBcAm6rqm92oyyhOr/Sf1GV9YAzpV10PdGPxv4isCGwNbAR8AFgDeAd4HXgKeByYr6pLSsrdBrgbN8JeBGypqo9GbLpf1wAwBxhMsk5R1RO7UZdRjF7qP6nP+sAY0c+6jmZURWQcsA9wOLADsFJOkdeAfwJ/Bn6nqvML1HEHsGOSvFRVv1a9xfmIyOeBPyTJt4FNVPXpbtbZBERkNWA+sHbw0QRV/W8NuT3Vf1Kn9YEAEVkbeNbLWgKsHnMU38+6juJTFZFdcV+ia4BdyDeoAKsDuwJnAvNEZOWcOvZg5CEPA2eVbOOxIjLs/X2mQLEbgQeT65WB48vUuQxzHKMNKsC0qgLr6j+RYX0gDh8N0o9GNqh9revaRlVETgduATZs8/GzwFzciPQxoNODn6eqb+dU9UPv+gZV/XfJpk4P0nPzCqjqMHCOl3WIiGxYst5lChHZAPhOh48rG1Xq6x+sD8QiNKpDkeX3ta5rGVURORv4HjDgZd8DHARMVNV1VXW6qm6nqpNxvtVB4Ns4Q9vivpx6Po3z0ba4sEJz/S/0i6r6fMFy1wCvJNcrALMq1L0scSbuV74dYUcvRCT9g/WBWAwG6aFYgpug68pGNZkt+66XtRj4BrCdql6hqi+GZVR1sarer6qzVXU7YCrwG9IGth3f8q6fxI2My7R1JWBTL+uBomWTEfRVXtbBIrJ6mfqXFUTk48AML+uO4JaqI9Va+gfrA5Hp5ki173VdyagmlZwXZB+uqhckQ+hCqOqDqrqfqv48o65JwB5e1lVlVw0AW5BePlb4ISf80rteAzigZPnGk8yenu9lvQPMJO3y2VJEli8pN4b+wfpAFJLv/keC7KFIshuh66oj1S8C63jpu1X1koqy8tifdDt/W0FGOEIq+5Dvxa1da/GVCm1oOvsB23npn6jqf4CHvbyVgU1Kyo2hf7A+EIvppN19z5V4tc6jEbqualT3DdLXVZRThP29a1XVTP9rB2o95GT0fYOXtUPyq2oAIrIKcIaX9Qrwo+T6oeD2sn7VGPoH6wOxGAzSQxFlN0LXVXdUhY1+oqKcTJJ/ZIqXdVuJsg8Dm3X4+G4R6VT0R6rabinFbcARyfUAsCfws6LtaThHA+t76dNUteXsD43qNJwfPZc6+k/KWx+IT1f8qU3SdemRauI7G7Wou6ycguwWpP9WpFAycppcsc5OSy/+HqR3ryi/UYjIOsCxXtYTwAVe+kHSlBmpVtJ/0i7rA91hMEgPRZLbGF1Xff0PJxtmtL2rPjsF6XsLlpvC6DYWpe2rgqq+APi7K8K2LaucBqzmpY9X1Xe8dLuRalGq6h+sD0RHRFYAtgyyhyKJb4yuS7/+q+qwiDxFerH/J0XkOuAEVX2krMwM/PVqi0lPemTxBNDaQTGV9EqFK0nP7oVkLTR+gJHX3PEisrGqPlawTY1DRAaBA72s+xgJStHiKVzMh5bhXU9E1vTcA1lU1T9YH+gGm5PeLfkGbidlDBqj66o+1T8CRwV5+wL7ishdwO+Bm4EHyiyx8mmz1uzJYATUkWSN7K2JnHC2+QZVvbVKm4BHSC/5mI7bKVYZEbmctGHqFger6uWRZZ5P+m3nmFDfyY/wPGBbL3s68NcswXX0n9TbN32gjwj9qQ9UXPKUomm6rvr6fzowanF/wva4meD7gRdE5FoROUhEPliyjg2C9i3odGMOWwXpqjOKAM8E6Q1ryOprRGRvYGcv62ZV/UuH26u4AGLpH6wPxGIwSA9FktsoXVcyqqr6DPApnCXPYgJuTetlwDMicp2IbF+wmvWD9LNt78rHf614OVk7WZWwDWEblwmS0I5ne1lLgGMyilSZrIqlf7A+EItu7aRqlK4rB6lW1QdFZBpwCM4VMCWnyDici2AfEbkMODIniMr7g/TrZduYfPl9x/qcsjJy2hC2sQpnAb+KICePcLRYh6OAjb305aoaGs6suouMVGvrH/qmD/QL4Y/hUCS5jdJ1rcj/qvoecBFwkYhsBewFfA73a9FpNm4AZ4jXFZE9M3wyqwbptyo0cSouKEKLOq8CMDrK1vtqykNV5wHz6srpFSKyFvB9L+stIC+Yb2hUtxSR5VV1cUaZGPqHpbwPiMhs0vvdu8XJqnpS1cIi8mFgvJe1hPI7lTrRKF1HO6NKVeeo6klJoJS1gL1xBrfTFrbdga+WqGIg/5ZRxPSvVG1D0ziZ9JfrfFXVrAKqugB41cuqsq6w6rO3PhCHwSAdNYZqQF/ruisH/6nqq6p6vaoeDqyHC0gQOn0BDs0QEyosM4h1B8KHXPd1YJUg/UZNeX2FiGwOHOZlvYgL9VeEsttVY+gfrA/EopuRqRql664f/Keqi4CrReQe3ITFit7HH8t4DVwYpKuEWvMf8kJVfbyCDJ/VgvSrbe9qLueS7jM3A9tmbAH0Cf1T03CxKzuxMEhXDbW3tPeBG4GXasooQrhDqCyDQXqopjyfhUG6r3Xds9NUVXW+iFxD+pV/RWBN2neq8GyYddrc05HkzCx/QqTurxbAukH6qboCRWSLNnK7wUOqWnlWVUQ+i/OX+8xM/qqQN1KtpX/ojz6gqrdQIWboGNDNkWqjdN3rI6rbTch0WgHwNM4Z3nJRrFeyri1Iv0bU9a/A6If8RASZx9Cjxf/A5VUKJjFQz43amvwVAHX1D/3TB5ZqksnJ8PkPRayiUbruik81g3B31Wuq2nb5RLKjwt9CtkHe4YABsZ3WMDoKTu65Nw3hUPKXzJVlfREZ3+nDCPoH6wOxCEepMWOoNk7XvR6phl/M+3Puvw+33xjcEq0tKD6sHwzS/ypYLoup3vXCZWHPt4isQfogtkXAlCqHsYnIY6Sjxk8nOxpRHf2D9YFYDAbpoS7U0Rhd98yoisgE3DIrn2tzit1OOur21hR/0P6vzLtALae1iHyI9GvJ7XXktVDVg3AHJS6tnAD4W4wvrXi6JbggGb5RnUa2Ua2jf+iTPtAHdPv0VGiQrgu9/ovIgIgckYT+Kk3ik7uE9GzaS+TvJPpTkP5EiWonetfv5iw0L0JYd9i2xiEiGwHf9LLexK1TrUq4rTlvsqqO/sH6QCwGg/RQF+pojK6L+lQnAz8FHhKR/ZLtYIUQkYm4qFVfCD46WlVfziqrqk+SXt+4S9F6Se/KWE1EdihRth07B+mbasrrB84iHertx0nch6qE4dwyJ6tq6h+sD9QmCQC9aZA9FLueJum66Ot/ywk8GbgaF33qStxSkDvDySZvecMM3CTH+EDe2aqaFePQ52pcIOREtGyjqkUC2M4F/Ad7vYhciNta58fyXKyqmUc3JKcd7OVl/aNmoIalHhHZifRZZC9TfKF/J8KR6hQRWS4nfFxV/YP1gRhMJb3lfBEwSUSqBJJ5LidGRCN0XdSohj6VibhziY4GFovI87jdNe/gjnSdxOjdCOCWTZyqqj8o2kDcGdynMrJlbB+KRQW/GLf7p1VuAuk96y3mMTqaecg2pP0rvQiAMma0OW4a3Fk+dRe6hyPV1nbVLB9tVf2D9YEYhN/9cVR3e5wBHJfxeSN0XfT1/z2c87cdy+PWc03HBSLejPYG9SFgx5IGtfVa4A+99xeR3Har6hzgSFzbsygyS+hvWHiN5n+hZpIOofY0zv1TiyTa/wtBdqZftar+k7LWB+ozGFHWPVkfNkXXRRt8Am50emBSQdFdJAtxZ3fvBkxV1bvKNM5jtnc9iZGjEzJR1QtxbojzcEs2FuKOavAZypKRRCU/wMu6TFX/V6T+fkREVmXkeOkWJ+aEaSxDKb9qwmzvurD+wfpABMKRah2KjDpne9d9qeuB4eFKp52QRPKfjFsisyZuZn8Jzn/xMm5k+nDV41Ta1HcvI6OnG1Q1nPjqCiIyE7giSb4HbLqM+NKWKsZK/0nd1gd6SL/rurJR7TUisgcu+AS4nVmb11gvWabeuYwsAv6Fqh6Wdb/RHcZK/0nd1gd6SL/rutfbVCujqjcBdybJAbKP74iCiOzJyAN+G+dEN8aAsdA/WB8YC/pd131jVBNm4VwMADPbnJwYjWQG/BQv6xxVDaPpGL1lFj3SP1gfGGNm0ae67iujmqxZuzRJjmNkTVs3+DIjTvoFuBNkjTGkx/oH6wNjRj/rum98qoZhGP1AX41UDcMwlnbMqBqGYUTEjKphGEZEzKgahmFExIyqYRhGRMyoGoZhRMSMqmEYRkTMqBqGYUTEjKphGEZEzKgahmFExIyqYRhGRP4PMPGXPIArYLgAAAAASUVORK5CYII=" style="height:0.431in"/></div>
+<p>핵심은 <i>A</i>(<i>t</i>)와 <i>L</i>(<i>t</i>)가 <b>같은 경제 변수에 함께 반응</b>한다는 데 있다. 다음은 그 예들이다.</p>
+<ul>
+<li><b>물가연동 부채</b>: 미래 부채 현금흐름이 소비자물가지수에 연동될 수 있다. 그러면 물가상승률이 자산수익률과 연결되는 지점에서 부채와 자산 사이에 연결고리가 생긴다. 예를 들어 <b>윌키 모형(Wilkie model)</b>에서는 물가상승률이 자산수익률을 포함한 모든 금융변수에 영향을 준다.</li>
+<li><b>투자성과 연동 생명보험</b>: 일부 생명보험계약은 특정 투자펀드의 수익에 연동된 지급을 포함하며, 때로는 <b>최저수익 보증</b>이 붙기도 한다(예: 이익배당부(with-profits) 계약).</li>
+<li><b>이자율 보증</b>: 다른 생명보험계약은 이자율 보증 같은 다른 보증을 가질 수 있으며, 이는 계약의 만기 시점에만 적용될 수도 있다(예: 연금 보증).</li>
+<li><b>물가연동 손해보험금</b>: 손해보험 부채는 흔히 경제변수와의 암묵적 연결을 포함한다. 예를 들어 보험금액은 대체로 물가에 따라 증가한다. 마찬가지로 보상청구는 미래 소득상실의 평가를 요구할 수 있고, 이는 <b>이자율의 기간구조(term-structure)</b>에 대한 지식을 필요로 한다.</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 왜 "상관"이 핵심인가</div><p style="margin-bottom:0">자산만 따로, 부채만 따로 안전해 보여도 위험할 수 있다. 예컨대 물가가 오르면 <b>부채(물가연동 보험금)도 늘지만 자산수익률도 함께</b> 움직인다. 둘이 어떻게 같이 움직이는지(상관)를 모형에 넣어야, 물가·금리·주가가 한꺼번에 불리하게 가는 시나리오에서 잉여 <i>S</i> = <i>A</i> − <i>L</i> 가 얼마나 깎이는지를 제대로 평가할 수 있다.</p></div>
+<div class="ex"><div class="head"><span class="tag">예제</span> 물가연동 부채와 자산의 짝맞춤</div><p class="q">한 보험사의 부채가 물가에 100% 연동된다. 자산을 (a) 명목 고정금리 채권에 두는 경우와 (b) 물가연동채권에 두는 경우, ALM 관점에서 어느 쪽이 잉여 변동을 줄이는가?</p><p style="margin-bottom:0">(b)가 낫다. 물가가 오르면 부채 <i>L</i>이 커지는데, (b)의 물가연동채권은 자산 <i>A</i>도 같은 방향으로 커져 둘이 <b>함께 움직인다(양의 상관)</b>. 따라서 잉여 <i>S</i> = <i>A</i> − <i>L</i>의 변동이 작아진다. (a)는 부채만 물가에 반응하고 자산은 고정이라, 물가 급등 시 잉여가 크게 줄어 위험하다. ALM은 바로 이런 <b>자산-부채 연동(짝맞춤)</b> 여부를 정량적으로 따진다.</p></div>
+
+<h2>3. ALM의 활용 <span class="en">Uses of ALM</span></h2>
+<p>ALM은 다양한 목적에 사용된다.</p>
+<ul>
+<li>특정 <b>전략(strategy)에 따르는 위험</b>을 경영진에게 알려 줄 수 있다.</li>
+<li>경영진이 여러 가능한 전략 가운데서 <b>충분한 정보에 입각한 선택</b>을 하도록 돕는다.</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> ALM은 의사결정 도구</div><p style="margin-bottom:0">ALM의 결과물은 단순한 숫자 하나가 아니라, "이 자산배분·이 상품설계를 택하면 미래에 잉여가 어떤 분포로 흩어지는가"라는 <b>시나리오별 그림</b>이다. 경영진은 이를 보고 자산배분, 보증 설계, 재보험·헤지 전략 등을 비교·선택한다. 즉 ALM은 예측 그 자체보다 <b>전략 비교를 위한 경영 의사결정 도구</b>다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Asset Management(자산운용) · Financial Engineering(금융공학) · Interest-rate Risk and Immunization(금리위험과 면역화) · Parameter and Model Uncertainty(모수·모형 불확실성) · Dynamic Financial Analysis(DFA, 동적재무분석) · Wilkie Investment Model(윌키 투자모형)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>자산-부채 모형화 (ALM)</b> — 자산위험·경제위험과 미래 부채 현금흐름을 함께 확률적으로 모형화하여 둘의 상호작용을 분석하는 기법.</li>
+<li><b>동적재무분석 (DFA)</b> — 손해보험 맥락에서 ALM을 부르는 이름. 회사 전체의 재무상태를 확률적으로 모의실험.</li>
+<li><b>잉여 (surplus)</b> — 자산에서 부채를 뺀 값 <i>S</i> = <i>A</i> − <i>L</i>. ALM이 보호하려는 핵심 지표.</li>
+<li><b>상관 (correlation)</b> — 자산과 부채(또는 여러 경제변수)가 함께 움직이는 정도. ALM의 핵심 분석 대상.</li>
+<li><b>윌키 모형 (Wilkie model)</b> — 물가상승률을 출발점으로 자산수익률 등 금융변수들을 연결해 생성하는 대표적 확률적 경제 시나리오 생성기.</li>
+<li><b>물가연동 (index-linked)</b> — 현금흐름이 소비자물가지수 등 물가에 연동되는 것. 부채와 자산을 잇는 대표적 연결고리.</li>
+<li><b>이익배당부 계약 (with-profits)</b> — 투자성과를 보너스로 배분하며 최저수익 등을 보증할 수 있는 생명보험계약.</li>
+<li><b>이자율 보증 / 연금 보증</b> — 만기 등 특정 시점에 최저 이자율이나 연금전환율을 보장하는 약정.</li>
+<li><b>기간구조 (term-structure)</b> — 만기별 이자율의 구조(수익률 곡선). 미래 소득상실 등 장기 현금흐름 평가에 필요.</li>
+</ul>
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>자산부채관리(ALM)는 IFRS17·K-ICS 체제에서 국내 보험경영의 핵심이다. 보험부채는 만기가 길고 금리에 민감하므로, 자산의 듀레이션·현금흐름을 부채에 맞추는 것이 자본 변동성을 줄이는 출발점이다. K-ICS 금리위험은 자산·부채의 금리민감도 차이(듀레이션 갭)에서 발생하며, 갭이 클수록 요구자본이 커진다.</p>
+<p>국내 보험사는 초장기 국고채 매입, 금리스왑, 그리고 <b>공동재보험</b>(2020년 이후 도입)으로 금리·장수위험을 부채 측에서 경감(risk mitigation)하는 방식으로 ALM을 수행한다. 본문의 동태적 재무분석·시나리오 기반 모형화는 국내 ESG·내부모형·ORSA(자체위험·지급여력평가)로 제도화되어 있다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 듀레이션 갭이 곧 자본위험</div><p>장기 부채 대비 자산 듀레이션이 짧으면 금리 하락 시 부채가 더 늘어 순자산이 줄고 K-ICS 비율이 하락한다. 초장기물 확보와 공동재보험을 통한 부채 헤지가 국내 ALM의 두 축이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Asset–Liability Modeling", Andrew J.G. Cairns. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>
