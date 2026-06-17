@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 베이지안 지급준비금: 진전삼각형에 사전정보를 결합해 준비금 추정 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 진전삼각형(런오프) -->
+<g stroke="#171A20" stroke-width="2.5" fill="#EAF2F9">
+<rect x="120" y="110" width="44" height="28"/><rect x="166" y="110" width="44" height="28"/><rect x="212" y="110" width="44" height="28"/><rect x="258" y="110" width="44" height="28"/>
+<rect x="120" y="140" width="44" height="28"/><rect x="166" y="140" width="44" height="28"/><rect x="212" y="140" width="44" height="28"/>
+<rect x="120" y="170" width="44" height="28"/><rect x="166" y="170" width="44" height="28"/>
+<rect x="120" y="200" width="44" height="28"/>
+</g>
+<!-- 미래(추정) 칸 Sky 점선 -->
+<g stroke="#4A90C2" stroke-width="2.5" stroke-dasharray="4 4" fill="none">
+<rect x="258" y="140" width="44" height="28"/><rect x="212" y="170" width="44" height="28"/><rect x="258" y="170" width="44" height="28"/><rect x="166" y="200" width="44" height="28"/><rect x="212" y="200" width="44" height="28"/><rect x="258" y="200" width="44" height="28"/>
+</g>
+<text x="324" y="156" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2">사전+자료</text>
+<g transform="translate(348 196)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

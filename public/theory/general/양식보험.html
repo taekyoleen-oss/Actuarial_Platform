@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>양식보험 (Aquaculture Insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험·특종</div>
+<h1>양식보험</h1>
+<div class="meta">Aquaculture Insurance &nbsp;·&nbsp; 원저자: John A. Theodorou &amp; Ioannis P. Tzovenis &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 들어가며 <span class="en">Introduction</span></h2>
+<p>현대의 <b>해양 양식업(marine aquaculture)</b>은 수십 년 전, 자연산 어획량이 줄면서 등장했다. 세계 생산량은 1987년부터 1997년 사이에 두 배 이상으로 늘었으며, 특히 유럽에서 앞으로의 성장 전망이 매우 밝다.</p>
+<p>지난 30년간 이 부문은 <b>고위험 활동</b>이었는데, 생산기술이 발전 중이었고(지금도 그렇다) 실험적인 양식장이 많았으며 부화장(hatchery) 대부분이 반(半)학술적 성격을 띠었기 때문이다. 합리적으로 보아 <b>관리 불가능한 위험</b>은 보험을 통해 제3자에게 이전할 수 있었고, 새로운 부문에 자금을 대려는 은행에게 보험 보장이 중요했기에, 양식업은 보험 인수자(underwriter)의 관심을 끌어 사업의 <b>기술·이력·경험·재무건전성·자료 제시·기술적 자질</b>에 초점을 맞추게 했다. 그러나 양식보험은 <b>살얼음 위를 걷는</b> 일이다. 적절한 경험을 가진 독립 컨설턴트가 드물고 손해사정인(loss adjuster)은 더 드물기 때문이다. 또 양식 프로토콜은 가변적이고 흔히 비공개여서, 청구를 확인하거나 관리부실을 가려내기가 어렵다. 따라서 <b>위험의 정의와 적절한 대응책</b>을 마련할 필요가 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 양식보험이 어려운 이유</div><p style="margin-bottom:0">양식보험은 물속에서 자라는 어패류를 대상으로 한다. 손해가 났을 때 (1) 정말 몇 마리가 죽었는지, (2) 죽은 원인이 질병·환경 탓인지 농가의 <b>관리 실수</b> 탓인지 확인하기가 매우 어렵다. 게다가 기술·경험을 갖춘 손해사정인이 적어 <b>정보 비대칭</b>과 <b>도덕적 해이</b> 위험이 크다. 그래서 보장에 앞서 위험을 명확히 정의하고 예방·관리를 강조하는 것이 핵심이다.</p></div>
+
+<h2>2. 양식업의 위험 <span class="en">Aquaculture Risks</span></h2>
+<h3>2.1 생산 의존적 위험 <span class="en">Production Dependent Risks</span></h3>
+<p>다양한 <b>수생동물 질병과 스트레스</b>, 그리고 사료(특히 생사료)·자재·장비·<b>수질</b>의 결함이 생산 손실의 주요 원인이다. <b>병원체(pathogen)</b>는 큰 문제인데, 생산이 늘수록 지식이 함께 발전하고 그 지리적 분포도 가변적이기 때문이다. 농어/도미 산업이 성장하면서 질병으로 인한 손실 비용이 빠르게 늘었으며, 어류의 스트레스는 양식 어군의 <b>복지(welfare)</b>에 중요한 요인이다. 한편 혁신적 생산기술에는 잠재적 위험이 숨어 있다. 예컨대 <b>오존처리 독성(ozonation toxicity)</b>은 일반적으로 받아들여지기 전에 먼저 해결해야 할 문제다.</p>
+<h3>2.2 생산 독립적 위험 <span class="en">Production Independent Risks</span></h3>
+<p>환경오염, 수생동물의 공격, 육상·해상의 기상 영향, 그리고 <b>사보타주(고의 파손)</b>는 생산 프로토콜과 무관하게 발생하는 대규모 손실 사례들이다.</p>
+<p><b>유해 조류 대증식(HAB, Harmful Algal Bloom, 적조 등)</b>은 잘 이해되지 않았고 발생이 늘어나는 추세다. 1987~1992년 미국에서만 HAB의 연간 경제 영향은 약 5천만 달러로 추정되며, 당시 더 작았던 양식 부문과도 큰 관련이 있었다. 그 밖에 유류 유출, 산업·생활 오염 같은 환경위험은 재앙적일 수 있고 상당수가 <b>예측 불가능</b>하다.</p>
+<p><b>포식자(predator)</b>로 인한 손실도 양식장에 치명적일 수 있다. 지중해의 농어/도미 양식장은 주로 몽크물범·바닷새·바다거북의 공격을 받고, 미국·캐나다 연안의 연어·송어 양식장은 바다사자·항만물범·회색물범·강수달·바다수달이 흔한 포식자다. 노르웨이에서는 수달과 일부 새가 가장 큰 손실을 내며, 항만·회색·하프물범과 밍크도 문제다. 태즈메이니아(호주)에서는 수컷 물개가 연어 양식장에 심각한 손실을 일으킨다. 여러 나라 당국은 포식자로 인한 양식장의 연간 재정 손실을 국가 총 수확량 가치의 <b>2~10%</b>로 추정한다.</p>
+<p><b>기상 사건</b>(해상 폭풍, 큰 파도 등)에 따른 물리적 위험은 농어/도미 산업 초기 단계에서 가장 흔한 재난 원인이었다. 그런 사건 후 수십만 마리의 물고기가 탈출(escape)하는데, 그 부정적 결과는 일부 회복계획(예: 탈출한 양식어에 대한 공공 낚시의 어획제한 완화)으로 다루어져 왔다. 가두리(cage)의 구조 설계(크기·모양·재료)와 공학, 계류장치, 새 그물 재료의 사용이 개선되면서 구조 실패에 따른 손실 사고가 계속 줄고 있다. 한편 육상의 기상 영향(폭우, 진흙 산사태, 낙뢰, 산불 등)은 부화장 같은 <b>육상 양식시설</b>에 큰 피해를 줄 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 어떤 위험을 보험으로 다룰까</div><p class="q">한 지중해 농어 양식장이 (가) 여름 적조, (나) 물범의 가두리 습격, (다) 농가의 사료 과다급여로 인한 수질 악화를 겪었다. 보험으로 다루기에 적합한 것과 그렇지 않은 것은?</p><p style="margin-bottom:0">(가) 적조와 (나) 포식자 습격은 <b>관리 불가능·예측 곤란</b>한 외부 위험이라 보험(폐사 담보)으로 이전하기에 적합하다. 반면 (다)는 <b>관리부실(도덕적 해이)</b>에 가까워 보험에서 흔히 면책되거나 다투어진다. 손해사정의 핵심은 폐사 원인이 (가)·(나)인지, 농가의 부주의인지 가려내는 것이다.</p></div>
+
+<h2>3. 상업화 위험 <span class="en">Commercialization Risks</span></h2>
+<p>시장가격 변동, 운송 위험, <b>GMO(유전자변형) 분쟁</b>, 그리고 양식산 대 자연산 품질 분쟁(명예훼손 포함)은 가장 중요한 상업화 위험에 속한다. 기존 양식 제품의 시장 성장은 얼마 지나 <b>성숙기(maturation phase)</b>에 이르러 낮은 가격·낮은 수익성으로 이어지며, 이는 인수·합병 같은 구조적 변화를 낳을 수 있다. 재정난과 현금흐름 문제는 운영 기준에도 영향을 주어 쉽게 재난과 보험금 청구 증가로 이어진다. 이 경우 보험업계는 양식업자의 재무·시장 상황을 고려해 <b>선제적으로</b> 일해야 한다. 좋은 위험관리를 위해 인수자는 위험 회피·예방·축소에 더 주의를 기울여야 하며, 음(&minus;)의 재무상태표·결제 지연 같은 <b>잠재 실패의 신호('약한 신호', weak signals)</b>에 주목하는 것이 중요하다.</p>
+<p>수확된 제품의 <b>운송 손실</b>은 일반 농산업 부문의 경험으로 잘 다루어지지만, 살아있는 치어(fingerling)의 운송 손실에는 이 틀이 부족해 추가 평가가 필요하다. 또 GMO 사용과 자연산 비교를 둘러싼 <b>품질 분쟁</b>은 추가 재무 문제를 일으킬 수 있는 떠오르는 위험으로, 다른 축산 부문처럼 다루어야 할 마케팅 성격의 문제다.</p>
+
+<h2>4. 제3자 위험 <span class="en">Third-party Risks</span></h2>
+<p>양식 시설의 <b>환경 영향</b>과 <b>소비자 건강</b>은 제3자 청구로 기업의 재무 위치를 약화시킬 수 있어, 양식보험 인수자가 특별히 주의해야 하는 가장 중요한 사안이다. 식품산업 스캔들(광우병 BSE, 다이옥신 등) 이후 수산물의 성질·원산지에 대한 상세 정보 수요가 늘고 있으며, 포르말린 같은 일부 화학물질·치료제 사용의 안전성에 대한 의문도 제기된다.</p>
+<p>양식 배출수·퇴적물의 환경 영향도 경우에 따라 상당히 중요할 수 있다. 예컨대 새우 양식의 배출수 오염은 오염물질·질병·외래종을 끌어들여 해양생물에 피해를 주고 미관을 해칠 수 있다. 지중해 가두리 양식장의 환경 반응을 모사하는 <b>MERAMOD</b> 같은 환경 모니터링 예측모형(연어용 DEPOMOD 모형 기반)은 과도한 피해를 막고 보험계약을 합리화하는 데 도움이 된다. <b>환경보증채권(EAB, Environmental Assurance Bonds)</b>은 환경관리 도구로서, 양식 활동과 관련된 환경 피해에 대한 보상을 제공하는 <b>사회보험 메커니즘</b>으로 작동할 수 있으며, 기업이 더 높은 수준의 환경 예방을 하도록 유도하는 예치–환급(deposit–refund) 제도로 보강될 수 있다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">해설</span> 거대위험·재보험과 양식보험</div><p style="margin-bottom:0">적조·폭풍·유류 유출 같은 사건은 한 지역의 여러 양식장에 <b>동시에</b> 큰 손해를 입히는 <b>거대위험(catastrophe)</b> 성격을 띤다. 위험이 상관되어 있어 한 보험사가 다 떠안기 어렵다. 그래서 원수보험사는 <b>재보험(reinsurance)</b>으로 이 거대위험을 다시 분산한다. 원문 결론이 "보험자들은 근본 문제를 다루기보다 위험을 퍼뜨리고 나누어(spread and share) 왔다"고 지적하는 것이 바로 이 재보험을 통한 위험 분산을 말한다.</p></div>
+
+<h2>5. 미래 동향 <span class="en">Future Trends</span></h2>
+<p>위험관리와 생산 프로토콜 <b>표준화</b>를 위해 개발된 관리 도구들은 양식업자와 보험사 모두에게 이익이 된다. 여러 상업화 문제는 <b>ISO 추적성(traceability)</b>으로 다룰 수 있다. 이는 유통 사슬을 따라 제품을 물리적으로 추적할 뿐 아니라, 그 제품이 무엇으로 만들어졌고 무슨 일을 겪었는지에 대한 정보를 제공하여 식품 안전·품질·표시에 모두 중요하다.</p>
+<p>건강한 제품과 자연 보전에 대한 대중의 요구는 인증·표시 제도, 즉 <b>친환경 라벨링(ecolabeling)</b>과 유기농 인증의 발전을 이끌 수 있다. 현재의 <b>HACCP(위해요소 중점관리)</b> 시스템은 최종 제품 검사보다 생산 과정 자체에 초점을 두어 생산자가 식품 안전을 더 잘 보증하게 한다. HACCP는 주요 수입국인 EU·미국 법규상 <b>의무</b>인 반면, ISO 시스템은 <b>자발적</b>이며 어류 양식 전 과정을 하나의 사업으로서 일반 품질관리하는 데 초점을 둔다. ISO 맥락에서 위험은 식별되어 법적 예방조치와 연결되어야 한다. 보험 브로커의 <b>감사(auditing)</b> 측면에서, 정보가 잘 문서화되어 있으므로 ISO 문서화는 작업을 더 '쉽게' 만든다.</p>
+<p>업계는 가용한 과학정보와 위험평가에 기반해 <b>최선관리관행(BMP, Best Management Practices)</b>을 마련하고 주기적으로 갱신해야 한다. BMP는 자발적 수단이므로 규제당국과 관련 기관은 준수 여부를 모니터링할 절차를 마련해야 한다. 가까운 미래에는 <b>어군 손해사정용 IT 추적성 시스템</b>이 보험 인수자에게 쓰일 수 있다. 인터넷에서 어군 프로파일을 내려받고, 같은 출처의 마케팅 자료·가격을 검색하며, 웹카메라로 피해 입은 시설을 들여다봄으로써 재난의 전체 그림을 파악하는 식이다.</p>
+
+<h2>6. 결론 <span class="en">Conclusions</span></h2>
+<p>양식업은 이제 기술의 눈부신 발전에 힘입어 확장·다변화된, 세계적으로 매우 중요한 활동이다. 산업이 '성숙기'에 든 오늘날에는 과거에 부족했던 <b>인적 전문성</b>이 크게 늘었다. 양식장 관리자는 책임 있는 양식, 행동강령·실천규범 같은 새로운 관리 방식을 사업에 접목하는 중요한 역할을 한다. 이 귀중한 자원을 효율적으로 써서 산업의 위험을 최소화해야 한다. 또한 <b>용어·방법·자료의 조화(표준화)</b>는 위험척도의 일반적 수용성과 위험평가 결과의 교차비교 효용을 크게 높일 것이다.</p>
+<p>양식업에서 좋은 위험관리를 이루려면 기업이 위험 회피·예방·축소에 더 주의를 기울여야 한다. 산업의 지속가능성은 (HACCP·ISO 시스템에 의한) 제품 품질관리·안전에 초점을 두며, 최신 과학지식·소비자 인식에 기반한 행동강령·실천규범으로 뒷받침된다. <b>추적성</b>은 장기적으로 미래 재난의 징후가 될 수 있는 약한 신호도 추적해야 한다. 한편 보험자들은 (근본 문제를 다루기보다) 일반적으로 위험을 <b>퍼뜨리고 나누어</b> 왔다.</p>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Crop Insurance(농작물보험) · Catastrophe / Large Risks(거대위험) · Reinsurance(재보험) · Loss Adjustment / Claims Settlement(손해사정)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>양식업 (aquaculture)</b> — 어류·패류 등 수생생물을 인위적으로 길러 생산하는 활동.</li>
+<li><b>폐사 담보 (stock mortality cover)</b> — 양식 어군이 질병·폭풍·산소부족 등으로 죽었을 때의 손실을 보장하는 담보.</li>
+<li><b>부화장 (hatchery)</b> — 알에서 치어까지 키워 내는 초기 양식 시설.</li>
+<li><b>치어 (fingerling)</b> — 손가락 크기 정도의 어린 물고기. 운송 손실 위험이 특히 큼.</li>
+<li><b>유해 조류 대증식 (HAB, 적조)</b> — 식물플랑크톤이 폭발적으로 늘어 산소 결핍·독소로 수생생물을 죽이는 현상.</li>
+<li><b>포식자 위험 (predation)</b> — 물범·바닷새 등이 양식 어군을 잡아먹어 생기는 손실.</li>
+<li><b>손해사정 (loss adjustment)</b> — 손해의 원인·규모를 조사·산정해 보험금을 정하는 과정. 양식에서는 폐사 원인 규명이 어려움.</li>
+<li><b>언더라이팅 (underwriting, 인수심사)</b> — 양식장의 기술·이력·재무건전성 등을 보고 보험을 인수할지 판단하는 과정.</li>
+<li><b>환경보증채권 (EAB)</b> — 환경 피해 보상을 위한 사회보험적 환경관리 도구.</li>
+<li><b>HACCP / ISO / BMP</b> — 위해요소 중점관리, 국제표준화, 최선관리관행. 양식 품질·안전·위험관리의 표준 틀.</li>
+<li><b>추적성 (traceability)</b> — 제품의 생산·유통 이력을 추적·기록하는 체계로 식품 안전·보험 감사에 활용.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>양식보험은 본문처럼 어류·패류 등 양식수산물의 폐사·재해 위험을 보장한다. 국내에서는 정책성 보험인 <b>양식수산물재해보험</b>으로 운영되며, 태풍·적조·고수온·질병 등으로 인한 손해를 보장하고 정부가 보험료를 지원한다. 농작물재해보험과 유사한 공·사 협력 구조다.</p>
+<p>손해의 입증·사정이 까다롭고(폐사 원인 규명), 재해가 특정 시기·해역에 집중되어 거대위험·역선택·도덕적 해이 관리가 핵심이라는 본문의 지적이 국내 운영에도 그대로 적용된다. 이 때문에 자기부담금·가입요건·재보험이 함께 활용된다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 정책보험으로</div><p>국내 양식위험은 정부가 보험료를 지원하는 양식수산물재해보험으로 다뤄진다. 집중재해·입증곤란 때문에 자기부담금과 재보험이 병행된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Aquaculture Insurance", John A. Theodorou &amp; Ioannis P. Tzovenis. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div>
+</div></body></html>

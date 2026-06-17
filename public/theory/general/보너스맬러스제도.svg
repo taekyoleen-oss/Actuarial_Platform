@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 보너스–맬러스: 무사고는 할인(아래로), 사고는 할증(위로) 등급 사다리 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 등급 계단 -->
+<g stroke="#171A20" stroke-width="3" fill="#EAF2F9">
+<rect x="110" y="190" width="56" height="42"/>
+<rect x="170" y="158" width="56" height="74"/>
+<rect x="230" y="126" width="56" height="106"/>
+<rect x="290" y="158" width="56" height="74"/>
+<rect x="350" y="190" width="56" height="42"/>
+</g>
+<!-- 할인 화살표(아래) / 할증 화살표(위) -->
+<path d="M 138 176 L 138 150" stroke="#4A90C2" stroke-width="4" stroke-linecap="round"/>
+<path d="M 138 150 l -5 9 l 10 0 z" fill="#4A90C2"/>
+<text x="138" y="142" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2">할인</text>
+<path d="M 378 176 L 378 150" stroke="#171A20" stroke-width="4" stroke-linecap="round"/>
+<path d="M 378 150 l -5 9 l 10 0 z" fill="#171A20"/>
+<text x="378" y="142" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".6">할증</text>
+<g transform="translate(258 100)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20" stroke="#171A20" stroke-width="2.2" stroke-linejoin="round"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

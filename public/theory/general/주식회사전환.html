@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주식회사 전환 (Demutualization) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 보험경영·일반</div>
+<h1>주식회사 전환 (디뮤추얼라이제이션)</h1>
+<div class="meta">Demutualization &nbsp;·&nbsp; 원저자: Krupa S. Viswanathan &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 주식회사 전환이란 <span class="en">What Demutualization Is</span></h2>
+<p>보험시장에서 회사의 소유구조는 크게 <b>주식회사형(stock)</b>과 <b>상호회사형(mutual)</b>으로 나뉜다. <b>주식회사 전환(demutualization)</b>이란 상호회사가 주식회사 형태로 바뀌는 과정을 말한다.</p>
+<p><b>상호보험회사(mutual insurer)</b>는 그 <b>계약자(policyholder)들이 공동으로 소유</b>하는 회사다. 이 소유권은 보험계약을 사는 순간 부여되며 계약이 종료되면 함께 소멸한다. 반면 <b>주식보험회사</b>에서는 <b>고객(소비자) 기능과 소유 기능이 서로 다른 두 집단</b>에 의해 수행된다(즉 계약자와 주주가 별개다).</p>
+<p>실제로 주식회사로 전환한 회사들이 보여 주듯, 전환의 가장 큰 동기는 <b>자본 조달(access to capital)</b>이다. 규제상 상호회사는 자본 기반을 <b>유보이익(내부 적립)</b>이나 <b>후순위채(subordinated debt) 발행</b>으로만 늘릴 수 있는 반면, 주식회사는 다양한 주식·채권 발행을 통해 자금을 모을 수 있다. 또한 거래 가능한 주식은 <b>인수합병(M&amp;A) 참여</b>를 쉽게 하고, 경영진을 위한 <b>성과보상 제도(인센티브)</b>의 효과를 높여 줄 수 있다.</p>
+<p>1990년대에는 미국·호주·캐나다·일본·남아프리카공화국·영국에서 주식회사 전환이 활발히 일어났다. 전환은 <b>손해·배상책임(property-liability)</b> 보험과 <b>생명·건강(life-health)</b> 보험 양쪽 모두에서 발생했다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 상호회사 vs 주식회사 — 누가 주인인가</div><p style="margin-bottom:0"><b>상호회사</b>는 "보험을 든 사람들이 곧 회사의 주인"인 구조다. 따로 주주가 없고 계약자가 주인이자 고객이다. <b>주식회사</b>는 "돈을 댄 주주가 주인, 보험을 든 사람은 고객"으로 둘이 분리된다. 주식회사 전환은 계약자가 주인이던 회사를 주식·주주 체제로 바꾸는 것이며, 핵심 이유는 <b>외부에서 자본을 끌어오기 쉬워지기 때문</b>이다.</p></div>
+
+<h2>2. 소유구조 선택의 갈등 <span class="en">Ownership Conflicts</span></h2>
+<p>보험회사 안에서는 두 가지 큰 이해 갈등이 존재한다. 하나는 <b>소유주와 계약자 사이의 갈등</b>이다. 소유주는 회사 자기자본의 시장가치를 <b>극대화</b>하고 싶어 하지만, 계약자는 보험료와 보험금 미지급 위험을 <b>최소화</b>하고 싶어 한다. 상호회사에서는 <b>같은 집단이 두 역할을 모두 수행</b>하므로 이런 마찰이 줄어든다.</p>
+<p>또 하나는 <b>소유주와 경영진 사이의 갈등</b>이다. 경영진은 보수와 각종 부가혜택(perquisite) 소비에서 얻는 효용을 극대화하려 하는데, 이는 소유주에게 손해가 될 수 있다. 주식회사의 소유주는 <b>스톡옵션, 위임장 대결(proxy fight), 적대적 인수(takeover) 시장</b>처럼 상호회사에는 없는 여러 <b>시장 기반 장치</b>로 경영진의 행동을 더 효과적으로 통제할 수 있다.</p>
+<p>따라서 어떤 회사가 어떤 조직 구조를 택할지는 <b>소유주–계약자 갈등</b>과 <b>소유주–경영진 갈등</b> 중 어느 쪽이 더 중요한가에 달려 있을 가능성이 크다. 회사가 현재 영위하거나 진입하려는 <b>사업 분야(line of business)</b>도 소유구조 선택에 영향을 줄 수 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 두 갈등의 균형이 구조를 결정한다</div><p style="margin-bottom:0">상호회사는 "주인=고객"이라 <b>소유주–계약자 갈등</b>이 작다. 그러나 외부 주주의 감시·시장 통제가 없어 <b>경영진을 견제하기 어렵다</b>. 주식회사는 반대로 경영진 통제 장치(스톡옵션·인수 위협 등)가 강하지만 주주–계약자 이해가 갈린다. 어느 갈등이 더 비싼 문제인가에 따라 회사가 유리한 구조를 고르게 된다.</p></div>
+
+<h2>3. 전환의 두 방식: 완전 전환과 MHC <span class="en">Full Demutualization vs MHC</span></h2>
+<p>상호회사는 <b>완전 주식회사 전환(full demutualization)</b> 또는 <b>상호지주회사(mutual holding company, MHC) 전환</b> 중 하나로 주식회사 형태가 될 수 있다. 어떤 방식이 허용되는지는 그 회사의 <b>본거지(설립 관할) 규제</b>가 정한다. 어느 방식으로 전환할지는 상호회사의 <b>이사회와 경영진</b>이 선택한다.</p>
+<p>전환하는 회사가 마주하는 주요 과제는 <b>가치평가(valuation), 주식 공모(stock offering), 규제당국·계약자 승인</b>이며, 전환 방식에 따라 <b>잉여금 배분(surplus allocation)</b>도 수행해야 할 수 있다. 보험계리·회계·규제상 고려가 얽혀 있어 전환은 큰 작업이며 <b>완료까지 최대 2년</b>이 걸릴 수 있다.</p>
+<h3>완전 주식회사 전환</h3>
+<p><b>완전 전환</b>에서는 상호회사가 주식회사로 바뀌면서 계약자들이 회사에 대한 <b>공동 소유권을 포기</b>한다. 새로 설립된 주식보험회사의 주식은 <b>공모(public offering)</b>를 통해 매각될 수 있다. 관할지와 그 전환 법령에 따라, 계약자는 이 전환의 <b>대가(compensation)</b>를 받을 수 있다. 즉 그들의 회사 지분을 나타내는 <b>총 잉여금(aggregate surplus)</b>이 자격 있는 계약자들 사이에 나뉜다. 이 대가는 <b>신설 주식지주회사의 주식, 현금, 또는 계약 적립금(policy credit)</b> 형태로 분배될 수 있다. 일부 관할지에서는 전환 회사가 <b>양도 불가능한 청약권(nontransferable subscription rights)</b>만 제공하면 되는데, 이는 계약자가 신설 주식회사의 주식을 <b>공모가에 살 권리</b>를 받는 것이다.</p>
+<h3>상호지주회사(MHC) 전환</h3>
+<p><b>MHC 전환</b>에서는 <b>상호지주회사(MHC)</b>와 그 자회사인 <b>주식보험회사</b>가 만들어진다. 계약자의 모든 소유 지분은 MHC로 이전되고, 보험계약은 주식보험회사로 양도된다. 자본을 모으기 위해 MHC는 주식회사의 주식을 매각할 수 있지만, <b>의결권의 과반</b>은 계속 보유하므로 회사가 적대적 인수로부터 보호된다. 상호회사가 계약자의 사원권(membership right)을 소멸시키지 않았기 때문에 <b>계약자에게 주는 대가는 없다</b>. 또한 완전 전환에서 가장 오래 걸리는 작업인 <b>잉여금 배분이 수행되지 않으므로</b>, MHC 전환은 <b>6개월~1년</b> 안에 끝날 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 완전 전환과 MHC 중 무엇을 고를까</div><p class="q">한 상호생명보험회사가 자본을 빠르게 모으고 싶지만, 경영권을 외부 인수로부터 지키고 잉여금 배분에 드는 긴 시간을 피하고 싶다. 어느 방식이 적합한가?</p><p style="margin-bottom:0"><b>MHC 전환</b>이 적합하다. MHC가 의결권 과반을 유지해 <b>적대적 인수를 차단</b>하고, 사원권을 소멸시키지 않아 <b>잉여금 배분(대가 지급)을 생략</b>할 수 있어 6개월~1년 안에 완료된다. 반면 계약자에게 충분한 보상을 주고 완전히 주주 통제 체제로 가려면 <b>완전 전환</b>이 맞지만 최대 2년이 걸린다.</p></div>
+
+<h2>4. 잉여금 배분 절차 <span class="en">Surplus Allocation</span></h2>
+<p>잉여금 배분 절차에는 <b>보험계리적 판단(actuarial input)</b>이 필수다. 미국 보험산업은 <b>주(state) 단위</b>로 규제되며, 대부분의 주 전환 법령은 잉여금을 어떻게 나눌지 특정 공식을 강제하지 않고 단지 개별 배분이 <b>"공정하고 형평에 맞을(fair and equitable)"</b> 것만을 요구한다. 그렇지만 구체적 공식들이 개발되어 왔고, 완료된 전환 사례들이 보여 주듯 이들은 규제당국이 수용할 만한 것으로 인정된다.</p>
+<p>흔히 쓰이는 배분 공식은 <b>손해·배상책임 보험사</b>와 <b>생명·건강 보험사</b>에서 서로 다르다.</p>
+<h3>손해·배상책임 보험사</h3>
+<p>손해·배상책임 전환에서 널리 쓰이는 공식은, 잉여금을 <b>전환 직전 3년간 자격 계약자가 납입한 보험료(credited premium)에 비례</b>해 배분한다.</p>
+<h3>생명·건강 보험사</h3>
+<p>생명·건강 보험사 전환에서 쓰이는 잉여금 배분 절차는 훨씬 복잡하다. 자격 있는 각 계약자의 분배액은 <b>고정 요소(fixed component)</b>와 <b>변동 요소(variable component)</b>로 구성된다.</p>
+<ul>
+<li><b>고정 요소</b> — 자격 있는 모든 계약자가 <b>의결권을 포기하는 대가로 동일한 금액</b>을 받는다.</li>
+<li><b>변동 요소</b> — 계약자가 <b>잉여금에 기여한 정도</b>를 대리(근사)하는 금액이다.</li>
+</ul>
+<p>변동 요소를 정할 때, 자격 있는 유배당 계약자들은 <b>사업 분야, 여러 요율 특성, 계약 기간</b>에 따라 여러 <b>등급(class)</b>으로 나뉘며, 큰 단체보험 계약자는 각각 하나의 등급이 된다. 그런 다음 특정 등급에 대해 <b>계약 개시 이후의 현금흐름</b>을 추적한다. 즉 보험료와 투자수익을 합한 뒤 그 등급에 해당하는 보험금과 사업비를 빼는데, 그 <b>누적 가치가 그 등급의 과거 잉여금 기여분</b>이 된다. 등급의 <b>미래 잉여금 기여분</b>을 구하기 위해서는 미래의 보험료 활동, 해지율(lapse rate), 보험금, 사업비에 대한 기댓값을 추정한다. 이 <b>과거 기여분과 미래 기여분을 더한 값</b>을, <b>모든 등급의 기여분 총합에 대한 비율</b>로 나타내면, 그것이 그 등급이 전체 잉여금 분배에서 차지하는 <b>보험계리적 형평 지분(actuarial equity share)</b>이 된다. 특정 등급 안의 각 계약자는 이 배정분을 <b>균등하게</b> 나눠 갖는다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> "얼마나 기여했나"를 돈으로 환산하기</div><p style="margin-bottom:0">생명보험 전환의 핵심 아이디어는 단순하다. <b>각 계약(등급)이 회사 잉여금에 얼마나 보태 왔는지</b>를 계산해, 많이 보탠 사람이 많이 받게 하자는 것이다. 보탠 정도는 (받은 보험료+투자수익) − (지급 보험금+사업비)의 누적치(과거)에 미래 기대 기여까지 더해 측정한다. 그 비율이 곧 분배 지분이 된다. 의결권 포기 자체에 대해서는 모두 동일한 <b>고정액</b>을 받는다.</p></div>
+
+<h2>5. 기업공개(IPO)와 효력 발생 <span class="en">IPO and Effectiveness</span></h2>
+<p>전환 회사가 주식의 <b>기업공개(IPO)</b>를 체계적으로 실행하기 시작한 것은 비교적 최근의 일이다. 전환하는 상호회사는 <b>설립 정관(certificate of incorporation)</b>에서 발행이 인가된 <b>보통주와 우선주의 총 수</b>를 선언한다. 계약자가 사원권을 포기하는 대가로 받는 <b>주식 보상분만큼 공모로 팔 수 있는 물량은 줄어든다</b>. 회사의 <b>조직 개편 계획(plan of reorganization)</b>이 이사회·규제당국·(필요한 경우) 계약자의 승인을 받으면 효력이 발생하고, 상호회사는 주식회사 정관 체제로 전환된다.</p>
+
+<h2>6. 어떤 회사가 전환하는가 — 실증 연구 <span class="en">Empirical Evidence</span></h2>
+<p>회사가 주식회사 전환을 결정하는 데는 <b>시장 상황과 회사 특성</b>이 영향을 준다. 모든 상호회사가 전환을 택하는 것은 아니므로, 실제로 개편하는 상호회사들은 <b>차별적 특성</b>을 보일 수 있다.</p>
+<p>미국 전환에 대한 연구들은 <b>손해·배상책임 전환</b>이 <b>성장 잠재력, 자본 필요, 경영진의 사적 이해(management self-interest)</b>에 의해 동기 부여된다는 점을 밝혔다. 또한 <b>생명·건강 전환</b>은 <b>자본 필요</b>와 <b>잉여현금흐름(free cash flow)을 통제할 기회</b>에 영향을 받는다는 증거가 제시되었다. 이 연구들은 60년이 넘는 기간에 걸친 전환을 살핀 것이다.</p>
+<p>전환하지 않은 회사와 비교했을 때, <b>전환한 손해·배상책임 보험사는 전환 직전 몇 년간 잉여금 대비 자산 비율(surplus-to-assets ratio)이 유의하게 낮았다</b>. 전환한 생명·건강 보험사는 <b>자본은 충분했지만 유동성이 상대적으로 낮았다</b>. 전환으로 얻은 자본이 이런 제약을 풀어 준다. 또한 전환한 생명·건강 회사는 <b>분리계정(separate account) 상품</b>(변액종신·변액연금, 기업·고액자산가 대상 투자운용 등)에 더 활발한 것으로 나타났다. 전환으로 갖게 된 자본 조달 능력은 이런 <b>전문적 구매자에게 경쟁력 있는 서비스</b>를 제공할 수 있게 해 준다. 더불어 경영진은 이런 복잡한 활동에 대한 노력의 대가로 <b>주식 기반 보상</b>을 받을 수 있는데, 이것도 하나의 동기가 된다.</p>
+<p>주식회사 전환을 통해 금융시장은 보험사에 <b>영업과 성장에 필요한 자본을 공급</b>할 수 있으며, 주식보험회사는 <b>효율적 경영에 대한 보상</b>도 받을 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 전환 직전 재무지표 해석</div><p class="q">한 손해보험 상호회사가 전환을 앞두고 있고, 동종 비전환 회사들보다 <b>잉여금 대비 자산 비율이 뚜렷이 낮다</b>. 이 사실은 전환 동기에 대해 무엇을 시사하는가?</p><p style="margin-bottom:0">잉여금 대비 자산 비율이 낮다는 것은 <b>자본 여력(완충장치)이 얇다</b>는 뜻이다. 연구가 보여 주듯 이런 회사일수록 <b>자본 조달이 절실</b>하다. 상호회사는 유보이익·후순위채로만 자본을 늘릴 수 있어 한계가 있으므로, 주식·채권을 폭넓게 발행할 수 있는 <b>주식회사로 전환해 자본 제약을 푸는 것</b>이 주요 동기임을 시사한다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> 유배당보험 (Participating Business) · 보험회사 (Insurance Company) · 잉여금 (Surplus) · 상호회사 (Mutuals)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>상호회사 (mutual company)</b> — 별도 주주 없이 보험 계약자들이 공동으로 소유하는 보험회사. 소유권은 계약 가입 시 생겨 계약 종료와 함께 소멸한다.</li>
+<li><b>주식회사 (stock company)</b> — 주주가 소유하는 보험회사. 소유(주주)와 고객(계약자)이 분리된다.</li>
+<li><b>주식회사 전환 (demutualization)</b> — 상호회사가 주식회사 형태로 바뀌는 과정.</li>
+<li><b>잉여금 (surplus)</b> — 자산에서 부채를 뺀 차액으로, 계약자(상호회사)의 회사 지분을 나타내는 자본 완충장치.</li>
+<li><b>상호지주회사 (MHC, mutual holding company)</b> — 전환 시 만들어지는 상위 지주회사로, 자회사 주식보험회사의 의결권 과반을 유지해 인수를 막는다.</li>
+<li><b>잉여금 배분 (surplus allocation)</b> — 완전 전환에서 회사 잉여금을 자격 계약자들에게 공정·형평하게 나누는 절차.</li>
+<li><b>청약권 (subscription rights)</b> — 계약자가 신설 주식회사의 주식을 공모가에 살 수 있는 권리(양도 불가형도 있음).</li>
+<li><b>유배당 계약자 (participating policyholder)</b> — 회사 이익(잉여금) 분배에 참여할 자격이 있는 계약자.</li>
+<li><b>분리계정 (separate account)</b> — 변액보험·변액연금 등 투자성과를 계약자에게 직접 귀속시키는 계정.</li>
+<li><b>잉여현금흐름 (free cash flow)</b> — 필요한 투자 후 남는 현금. 경영진의 재량 사용이 문제가 될 수 있어 소유구조 논의에서 중요하다.</li>
+</ul>
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>주식회사 전환(demutualization)은 상호회사(계약자가 곧 회원)가 주식회사로 조직을 바꾸는 것이다. 해외(미국·영국·일본 등)에서는 자본조달·M&A·지배구조 효율을 위해 대형 상호생명보험사가 주식회사로 전환한 사례가 많다. 본문은 그 동기와 잉여금·계약자 지분 배분 문제를 다룬다.</p>
+<p>국내는 사정이 다르다. 대부분의 보험회사가 처음부터 <b>주식회사</b> 형태이고 상호회사가 거의 없어, 본문의 전환 이슈가 직접 발생하지는 않는다. 다만 상호회사 제도의 도입 가능성, 상장·자본확충·지배구조 논의의 맥락에서 본문의 개념은 비교 참고가 된다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 국내는 대부분 주식회사</div><p>해외와 달리 국내 보험사는 대부분 설립부터 주식회사여서 상호→주식 전환 이슈가 드물다. 상호회사 제도는 도입 논의 단계의 주제다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Demutualization", Krupa S. Viswanathan. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>손해사정비 (ALAE) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>손해사정비 (ALAE)</h1>
+<div class="meta">ALAE (Allocated Loss Adjustment Expenses) &nbsp;·&nbsp; 원저자: Christopher W. Hurst &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 정의: ALAE와 ULAE <span class="en">Definition</span></h2>
+<p>전통적으로 <b>배분된 손해사정비(ALAE, Allocated Loss Adjustment Expenses)</b>는 특정 클레임(청구)의 <b>합의·종결에 직접 할당할 수 있는 손해사정비</b>로 정의되어 왔다. 이는 그 밖의 모든 손해사정비로 느슨하게 정의되어 온 <b>미배분 손해사정비(ULAE, Unallocated Loss Adjustment Expenses)</b>와 구별된다.</p>
+<p>일부 보험종목에서는 보험사의 책임한도(limits of liability)가 <b>손해(손해금) 부분에만</b> 적용되고, 손해사정비에는 한도를 두지 않는다. 따라서 보험사가 특정 클레임의 성격을 조사하는 데 손해사정비를 쓰고도, 결국 그 클레임의 손해 부분은 보상하지 않게 되는 일도 얼마든지 있을 수 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> ALAE vs ULAE 한 줄 구분</div><p style="margin-bottom:0"><b>ALAE</b>는 “이 사고(클레임) 때문에 쓴 돈”이라고 콕 집어서 말할 수 있는 비용(예: 특정 소송의 변호사·감정 비용)이고, <b>ULAE</b>는 특정 클레임에 명확히 나눌 수 없는 일반 운영·인력 비용(예: 손해사정 부서의 상시 직원 급여)이다.</p></div>
+<h2>2. NAIC의 재정의(1998) <span class="en">NAIC Redefinition</span></h2>
+<p>1998년 1월 1일부로 미국 보험감독관협회(NAIC)는 ALAE를 더 명확하게, <b>방어(defense)·소송(litigation)·의료비 억제(medical cost containment)와 관련된 비용</b>으로 정의했다. 이때 해당 비용이 외부에서 발생했는지 내부에서 발생했는지는 따지지 않는다. 따라서 “특정 비용을 한 클레임에 할당할 수 있는가”라는 점은 더 이상 ALAE와 ULAE를 가르는 결정적 기준이 아니게 되었다.</p>
+<p>NAIC가 제시한 ALAE 예시는 (1) 소송관리 비용, (2) 클레임 방어를 위해 일하는 경우의 감정인·사설탐정가·심리 대리인·재검사인·사기조사관의 수수료나 급여, (3) 감시(surveillance) 비용 등이다. ULAE는 여전히 “ALAE로 명시적으로 정의되지 않은 나머지 손해사정비”로 남았다.</p>
+<h2>3. 요율산정에서의 처리 <span class="en">Treatment in Ratemaking</span></h2>
+<p>계리적으로 타당한 요율수준 지표(rate-level indication)를 산출하려면, 특정 기간의 기초 손해경험에 손해사정비(배분·미배분 모두)를 가산(load)하고, 그것을 <b>최종 종결가(ultimate settlement value)로 발전(develop)</b>시킨 뒤, 미래 요율적용기간의 중간점으로 <b>추세 반영(trend)</b>해야 한다. 이렇게 계산된 손해액을 예상 사업비·이윤·보험료와 결합해 요율 변경이 필요한지 판단한다.</p>
+<p>ALAE는 앞서 정의한 대로 특정 클레임에 쉽게 할당할 수 있기 때문에 일반적으로 <b>기초 손해 데이터에 포함</b>된다. 반면 ULAE는 특정 클레임에 쉽게 할당할 수 없으므로, (손해 + ALAE) 합계에 <b>ULAE 부가율(load)</b>을 적용해 미래 기간의 총 기대손해를 구한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> ULAE 부가율 적용 (원문 예시)</div><p class="q">2001 사고연도의 최종 손해(ALAE 포함)가 120만 달러이고, ULAE 부가율(총 손해+ALAE 대비 ULAE 비율)이 12%라면 최종 손해는?</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,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" style="height:0.389in"/></div><p style="margin-bottom:0">즉 ULAE를 포함한 최종 손해는 <b>1,344,000달러</b>다. 여기서 12%라는 부가율은 통상 <b>과거의 총 ULAE와 총 (손해+ALAE) 사이의 관계</b>로부터 도출한다.</p></div>
+<h2>4. ALAE의 종결값 발전 <span class="en">Developing ALAE to Ultimate</span></h2>
+<p>필요 보험료 수준을 정확히 평가하려면, 앞서 말한 여러 손해발전법(loss development methods)으로 기초 손해를 최종 수준으로 발전시킨다. 마찬가지로 ALAE도 요율산정 계산에 쓰이기 전에 최종 수준으로 끌어올려야 한다. 이는 두 가지 주요 방법으로 할 수 있다.</p>
+<ul>
+<li><b>(1) 합산 발전</b> — ALAE를 기초 손해와 함께 포함시켜 그 합계를 최종 수준으로 발전시킨다.</li>
+<li><b>(2) 분리 발전</b> — ALAE만 따로 최종 수준으로 발전시킨 뒤, 그 값을 최종 기초 손해액에 더한다.</li>
+</ul>
+<p>후자(분리 발전)의 경우, Resony[2]와 그 논문에 대한 Petz의 토론은 이러한 가능한 방법들을 논의하는데, 이는 시간에 따른 <b>기지급 ALAE 대 기지급 손해의 비율</b> 발전을 분석하는 방법부터 더 복잡한 접근법까지 폭넓게 걸쳐 있다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">해설</span> 왜 따로 발전하기도 하나</div><p style="margin-bottom:0">ALAE의 지급 패턴(소송비 등)은 손해금 자체의 지급 패턴과 다르게 움직일 수 있다. 이 둘을 섞어 놓으면 발전계수(loss development factor) 추정이 왜곡될 수 있으므로, ALAE/손해 비율을 별도로 몇 해 동안 추적해 예측하면 더 안정적일 수 있다. 이것이 분리 발전의 동기다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Reserving in Non-life Insurance(손해보험 준비금 산정) · Loss Ratio(손해율) · Expense Ratio(사업비율)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>ALAE (배분된 손해사정비)</b> — 특정 클레임에 직접 할당되는 손해사정비(방어·소송·의료비 억제 등).</li>
+<li><b>ULAE (미배분 손해사정비)</b> — 특정 클레임에 할당하기 어려운 일반 운영·인력성 손해사정비.</li>
+<li><b>손해사정비 (LAE)</b> — 보험금 자체가 아니라, 청구를 조사·평가·합의·방어하는 데 드는 비용.</li>
+<li><b>NAIC</b> — 미국 보험감독관협회. 주(state) 감독기관들의 조정 기구.</li>
+<li><b>책임한도 (limits of liability)</b> — 보험사가 지급할 수 있는 최대 금액. 종목에 따라 손해액에만 적용되고 LAE에는 적용되지 않기도 한다.</li>
+<li><b>손해발전 (loss development)</b> — 초기 평가액을 최종 종결값으로 보정·추정하는 과정. 발전계수를 이용.</li>
+<li><b>추세 반영 (trending)</b> — 인플레이션 등 시간적 변화를 미래 시점 수준으로 조정하는 것.</li>
+<li><b>부가율 (load)</b> — 기초값 위에 일정 비율을 더해주는 가산 계수(예: ULAE 12%).</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>손해사정비(ALAE)는 개별 클레임에 직접 결부되는 조사·사정·소송 비용으로, 국내에서는 손해조사비로 불리며 지급준비금 산정 시 함께 적립된다. 본문처럼 ALAE가 큰 보종(배상책임·자동차 대인 등 분쟁·소송이 많은 영역)에서는 손해액과 ALAE를 함께 모형화하는 것이 중요하다.</p>
+<p>IFRS17 최선추정에는 보험금뿐 아니라 이러한 직접 사정비의 미래 현금흐름도 포함되므로, ALAE의 진전·예측이 준비금 적정성에 영향을 준다. 손해사정 위탁·전문화가 진행된 국내에서는 ALAE 관리가 손해율 관리의 한 축이다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 손해조사비도 준비금</div><p>국내에서 손해조사비(ALAE)는 보험금과 함께 지급준비금에 반영된다. 분쟁이 잦은 보종일수록 ALAE 비중과 그 진전 관리가 중요하다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “ALAE”, Christopher W. Hurst. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

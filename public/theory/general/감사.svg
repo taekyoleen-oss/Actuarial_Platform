@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 감사: 장부를 돋보기로 들여다보고 체크 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 장부 -->
+<rect x="150" y="96" width="120" height="150" rx="6" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+<line x1="168" y1="124" x2="252" y2="124" stroke="#171A20" stroke-width="2.5" stroke-opacity=".5"/>
+<line x1="168" y1="146" x2="252" y2="146" stroke="#171A20" stroke-width="2.5" stroke-opacity=".5"/>
+<line x1="168" y1="168" x2="234" y2="168" stroke="#171A20" stroke-width="2.5" stroke-opacity=".5"/>
+<!-- 체크 -->
+<path d="M 176 196 l 12 12 l 22 -26" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- 돋보기(Sky) -->
+<circle cx="296" cy="160" r="34" fill="none" stroke="#4A90C2" stroke-width="5"/>
+<line x1="320" y1="184" x2="350" y2="214" stroke="#4A90C2" stroke-width="6" stroke-linecap="round"/>
+<g transform="translate(120 130)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/></g>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>묶음판매 (Bundling) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 보험상품·마케팅</div>
+<h1>묶음판매 (번들링)</h1>
+<div class="meta">Bundling &nbsp;·&nbsp; 원저자: Derek A. Jones &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 정의 <span class="en">Definition</span></h2>
+<p><b>묶음판매(bundling)</b>란 개별적으로 인수할 수도 있는 <b>여러 보험담보(coverage)를 하나의 보험계약으로 결합</b>하는 것을 말한다. 이러한 계약을 흔히 <b>결합보험(combination policy)</b> 또는 <b>패키지보험(package policy)</b>이라고 부른다. 이는 단 하나의 위험(peril)에서 오는 손해만 보장하는 <b>단종(monoline) 보험</b>과 대비된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> “따로 살 수 있는 것을 한 봉지에 담기”</div><p style="margin-bottom:0">화재보험, 배상책임보험을 각각 가입할 수도 있지만, 이를 한 장의 계약서로 묶어 파는 것이 번들링이다. 통신사의 “인터넷+TV+휴대폰 결합상품”을 떠올리면 쉽다. 반대 개념인 <b>단종보험</b>은 위험 하나만 보장하는 단품이다.</p></div>
+<h2>2. 대표 예시 <span class="en">Common Examples</span></h2>
+<p>번들링의 대표 예는 기업보험의 <b>특종 다중위험(special multi-peril) 보험</b>이다. 이 보험에 가입하려면 피보험자는 <b>재산담보</b>(화재 및 ‘확장담보(extended coverage)’ 위험에 대한 보호)와 <b>배상책임담보</b>를 모두 사야 한다.</p>
+<p>그 밖의 예로는 개인의 경우 <b>주택종합보험과 개인용 자동차보험</b>의 결합, 기업의 경우 <b>상업용 자동차보험 + 일반배상책임 + 산업재해보상</b>의 결합 등이 있다.</p>
+<h2>3. 장단점 <span class="en">Advantages & Disadvantages</span></h2>
+<p>번들링은 보험사와 계약자 양쪽에 잠재적 이점을 준다.</p>
+<h3>계약자 입장</h3>
+<ul>
+<li><b>비용 절감(주된 동기)</b> — 보험사는 여러 위험을 한꺼번에 담보하는 계약에 대해 <b>패키지 할인(package discount)</b>을 자주 제공한다.</li>
+<li><b>단점</b> — 보험사가 계약자에게 <b>평소라면 사지 않았을 담보까지 사도록 요구</b>할 수 있다.</li>
+</ul>
+<h3>보험사 입장</h3>
+<ul>
+<li><b>취득비용 절감</b> — 청구·인수(underwriting) 같은 계약 취득비용이 줄어든다.</li>
+<li><b>계약자당 보험료 증가</b> — 최소 담보 요건이 있으면 계약자당 보험료가 더 높아질 수 있다.</li>
+<li><b>역선택 완화</b> — 패키지 계약자에게 최소한의 보장을 사도록 요구하면, <b>나쁜 위험만 특정 담보를 골라 사는</b> 역선택(antiselection) 가능성이 줄어든다.</li>
+<li><b>익스포저 감사 효율</b> — 여러 담보의 익스포저(노출 규모)를 <b>한 번에 감사</b>할 수 있어 시간·비용이 절감된다.</li>
+</ul>
+<div class="note adv"><div class="head"><span class="tag adv">해설</span> 번들링이 역선택을 줄이는 원리</div><p style="margin-bottom:0">위험이 높은 사람만 특정 담보(예: 홍수)를 골라 가입하면 그 담보의 손해율이 치솟는다. 번들링으로 “여러 담보를 최소한씩 모두 사도록” 강제하면, 위험이 낮은 사람들도 함께 가입하게 되어 <b>위험 풀(pool)이 평균화</b>된다. 이것이 교차보조(cross-subsidy)와 역선택 완화 효과의 핵심이다.</p></div>
+<h2>4. 계리적 고려사항 <span class="en">Actuarial Considerations</span></h2>
+<p>계리사에게는 번들링과 관련해 추가로 고려할 점이 있다.</p>
+<ul>
+<li><b>패키지 할인계수 결정(가장 중요)</b> — 이 계수는 묶는 담보의 종류와 <b>각 담보의 상대적 보장 규모</b>에 따라 달라진다.</li>
+<li><b>익스포저 통합</b> — 보험료 산정을 위해 익스포저를 하나로 합쳐 <b>단일 번들 요율</b>을 계산하는 방안은 가격산정을 단순화한다는 점에서 매력적이다. 그러나 적절한 <b>익스포저 기준(exposure base)</b>을 고르기 어렵고, 묶을 각 담보별로 그 익스포저 자료를 확보하기 어렵다는 문제가 있다. 그 결과, 번들 계약에서 익스포저를 통합하는 경우는 흔하지 않다.</li>
+</ul>
+<div class="ex"><div class="head"><span class="tag">예제</span> 패키지 할인은 왜 정당화되나</div><p class="q">보험사가 재산담보(개별요율 100)와 배상책임담보(개별요율 80)를 묶어 팔면서 10% 패키지 할인을 준다. 이 할인의 계리적 근거는?</p><p style="margin-bottom:0">두 담보를 함께 팔면 (1) 청구·인수·익스포저 감사 등 <b>취득·관리비용이 절감</b>되고, (2) 최소 담보 요건으로 <b>역선택이 완화</b>되어 손해율이 안정된다. 절감된 사업비와 개선된 손해율만큼을 계약자에게 할인으로 돌려주는 것이므로, 할인계수는 <b>실제 비용·손해 절감분 범위 내</b>에서 정해져야 한다. 즉 100+80=180에 단순히 임의의 비율을 적용하는 것이 아니라, 묶음에서 비롯된 절감 효과를 근거로 산정한다.</p></div>
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Commercial Multi-Peril Insurance(상업용 다중위험보험) · Pricing(가격결정) · Cross-selling(교차판매) · Antiselection, Non-life(역선택) · Coverage(담보)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>번들링 (bundling)</b> — 개별 가입 가능한 여러 담보를 한 계약으로 묶어 파는 것.</li>
+<li><b>패키지·결합보험 (package/combination policy)</b> — 번들링으로 만들어진 다담보 보험계약.</li>
+<li><b>단종보험 (monoline policy)</b> — 위험 하나만 보장하는 단품 보험.</li>
+<li><b>특종 다중위험보험 (special multi-peril)</b> — 재산담보와 배상책임담보를 함께 묶은 기업용 패키지.</li>
+<li><b>확장담보 (extended coverage)</b> — 화재 외에 폭풍·폭발 등 추가 위험까지 넓힌 재산담보.</li>
+<li><b>역선택 (antiselection)</b> — 위험이 높은 사람만 특정 담보를 골라 가입하여 풀이 악화되는 현상.</li>
+<li><b>패키지 할인 (package discount)</b> — 여러 담보를 묶어 사는 계약자에게 주는 보험료 할인.</li>
+<li><b>익스포저 기준 (exposure base)</b> — 보험료 산정의 단위가 되는 노출 규모(매출액, 차량 수 등).</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>묶음판매(번들링)는 국내에서 통합보험·패키지보험(여러 담보를 한 증권에 결합)으로 구현된다. 본문이 설명한 묶음의 이점 — 거래비용 절감, 교차보조, 위험 분산 — 은 국내 장기인보험·통합보험에서 사망·진단·입원·실손 등을 결합하는 방식으로 나타난다.</p>
+<p>다만 국내에서는 대출 등 금융거래에 보험을 끼워 파는 <b>구속성보험(꺾기)</b>이 규제로 금지되어, 우월적 지위를 이용한 강제 묶음은 제한된다. 즉 소비자 선택에 기반한 묶음은 허용하되, 강제·기만적 결합은 막는 것이 국내 규제의 방향이다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 통합보험과 꺾기 규제</div><p>국내 묶음판매는 통합·패키지 상품으로 활성화되어 있으나, 대출에 보험을 강제로 끼우는 구속성보험은 금지된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Bundling”, Derek A. Jones. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>
