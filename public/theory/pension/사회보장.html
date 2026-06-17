@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사회보장 (Social Security) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 사회보험</div>
+<h1>사회보장</h1>
+<div class="meta">Social Security &nbsp;·&nbsp; 원저자: Tor Eriksen &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 사회보장이라는 개념 <span class="en">What "Social Security" Means</span></h2>
+<p><b>사회보장(social security)</b>은 매우 다양한 방식으로 해석될 수 있는 개념이며, 따라서 극도로 신중하게 사용해야 한다. 바(Barr)는 같은 용어가 나라마다 다른 것을 가리킨다고 지적한다. 미국에서는 <b>노령연금(retirement pension)</b>을 뜻하고, 영국에서는 <b>현금급여 제도 전체</b>를 뜻하며, 유럽 대륙에서는 (국제노동기구(ILO)의 관행에 따라) <b>모든 현금급여에 더해 의료(건강보험)까지</b> 포함하는 개념으로 쓰인다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 같은 단어, 다른 범위</div><p style="margin-bottom:0">"사회보장"은 나라마다 가리키는 범위가 다르다. 미국은 노령연금만, 영국은 현금급여 전부, 유럽 대륙은 현금급여 + 의료까지를 의미한다. 그래서 이 용어를 쓸 때는 <b>어떤 범위를 말하는지 먼저 명확히</b> 해야 오해가 없다.</p></div>
+
+<h2>2. 사회보장의 구성요소 <span class="en">Components of the System</span></h2>
+<p>바는 사회보장 제도를 여러 현금급여가 가진 <b>목적</b>의 관점에서 설명한다. 그에 따르면 구성요소는 다음과 같다.</p>
+<ul>
+<li><b>사회보험(social insurance)</b>: 소득심사 없이, 개인의 <b>기여 이력</b>과 실업이나 특정 연령 도달 같은 <b>특정 사건의 발생</b>을 근거로 지급된다. 사회보험의 본질은 적어도 원칙적으로는 <b>보험가능한 위험(insurable risk)</b>에 대한 보호를 제공한다는 점이다.</li>
+<li><b>보편급여(universal benefits)</b>: 소득이나 기여 이력과 무관하게, 단지 특정 사건의 발생만을 근거로 지급된다. 가족수당이나 무상의료가 그 예다.</li>
+<li><b>사회부조(social assistance)</b>: <b>소득심사</b>를 거쳐 특정 사건이 발생했을 때 지급되며, 기여 여부는 따지지 않는다.</li>
+</ul>
+<p>결과적으로 사회보장은 질병, 실업, 노령 등의 경우에 <b>경제적 보상</b>을 제공하는 여러 제도를 한데 묶은 <b>포괄적 개념</b>으로 볼 수 있다.</p>
+<p>국가 법률로 수립되어 공공당국이 운영하는 <b>강제 제도</b> 위에, 흔히 <b>노동시장 당사자(노사) 간 합의에 기초한 보충적 제도</b>가 존재한다. 이러한 합의 제도도 사회보험 개념에 포함될 수 있는데, 이는 강제 제도의 대안 내지 보완을 구성하기 때문이다. 재원은 <b>일반 급여세, 근로자 기여금, 조세, 혹은 기여금과 조세의 결합</b>으로 충당할 수 있다.</p>
+
+<h2>3. 비스마르크형과 베버리지형 <span class="en">Bismarck vs Beveridge</span></h2>
+<p>사회보험 제도를 분류하는 널리 쓰이는 방식은 <b>비스마르크(Bismarck)형</b>과 <b>베버리지(Beveridge)형</b>으로 나누는 것이다. 이 분류는 19세기 말 독일에서 비스마르크가 도입한 <b>소득연계형 근로자 보험</b>과, 1940년 발표된 보고서에서 베버리지가 제안한 <b>동일 기여·동일 급여의 일반 보험</b>을 가리킨다. 그러나 이 분류에는 문제가 있는데, 실제로 두 원리 중 어느 하나에 따라 순수하게 설계된 사회보험 제도는 거의 없다는 점이다. 보험 제도는 대개 <b>소득연계형 급여에 최저보장 수준이 내장된 혼합형</b>이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 두 가지 원형(原型)</div><p style="margin-bottom:0"><b>비스마르크형</b>은 "낸 만큼·번 만큼 받는다"는 <b>소득비례·기여기반</b> 모델이고, <b>베버리지형</b>은 "모두 똑같이 내고 똑같이 받는다"는 <b>균일급여·보편</b> 모델이다. 현실의 제도는 대부분 이 둘을 섞은 형태다.</p></div>
+
+<h2>4. 왜 강제보험인가 <span class="en">Why Compulsory Insurance?</span></h2>
+<p>사람들은 대개 스스로를 위험에 노출시키는 데 일종의 거부감을 느낀다. 특정 위험을 항상 피할 수 있거나 늘 피하고 싶어하지는 않더라도(예: 여러 스포츠 활동), 사고로 인한 부정적 경제효과로부터는 자신을 보호하려 한다. 이는 사고·질병·실업·노령 등에 대해 개인에게 맞춘 보험을 <b>공개 보험시장</b>에서 가입함으로써 가능하다. 그렇다면 개인의 선택 여지가 제한되거나 아예 없는 <b>강제보험</b>은 왜 존재하는가? 흔히 제시되는 이유는 다음과 같다.</p>
+<ul>
+<li><b>시장 불완전성(market imperfection)</b>: 어떤 사람들은 건강 상태 때문에 합리적인 가격에 보험을 제공하려는 보험자를 찾지 못한다.</li>
+<li><b>근시안(myopia)</b>: 어떤 사람들은 재정적 필요와 보험을 장기적 관점에서 계획하는 능력이 전혀 없다.</li>
+<li><b>무임승차(free riders)</b>: 경제적 자원이 부족하거나 소비성향이 강한 사람들은 사회가 필요한 도움을 줄 것이라 믿고 스스로 대비하지 않을 수 있다.</li>
+<li><b>역선택(adverse selection)</b>: 스스로를 위험에서 자유롭다고 여기는 사람들이 보험에 들지 않으면, 집단보험의 위험과 비용이 높아진다.</li>
+</ul>
+<p><b>강제 사회보험</b>은 사람들이 부득이 또는 자의로 무보험 상태가 되는 것을 막는 한 가지 방법이며, 그 결과 위험과 비용을 <b>평준화·안정화</b>한다. 이렇게 보험료 비용을 평준화하기 때문에, 사회보험은 보험이 실제로 적용되는지 여부와 무관하게 사람들 사이에 일정한 <b>경제적 재분배</b>를 일으킨다. 이 재분배는 영향력과 지배의 문제까지 포함할 수 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 강제보험이 푸는 두 가지 시장실패</div><p style="margin-bottom:0">민간 보험시장만 있으면 <b>역선택</b>(건강한 사람은 빠지고 위험한 사람만 남음)과 <b>시장 불완전성</b>(고위험자는 보험을 못 삼)이 생긴다. 모두를 강제로 가입시키면 위험이 한 풀(pool)에 모여 평준화되고, 그 과정에서 <b>건강한 사람 → 아픈 사람, 젊은 층 → 노령층</b>으로의 재분배가 자연스럽게 일어난다.</p></div>
+
+<h2>5. 사회보험과 민간보험의 비교 <span class="en">Social vs Private Insurance</span></h2>
+<p>사회보험을 단지 모든 사람에게 시장 접근 기회를 주는 수단으로만 본다면, 사회보험은 적어도 민간 보험회사가 제공하는 수준의 <b>안전성</b>은 제공해야 한다. 민간 보험회사의 영업은 <b>공공 감독당국</b>이 면밀히 감시하므로, 환급이나 환급이자를 임의로 처리하거나 광고에서 그렇게 내세울 수 없다. 민간 보험업계에는 <b>안전을 중시하는 사고방식</b>이 있으며, 이는 무엇보다 사망률과 이자율에 대한 <b>보수적 가정</b>으로 보험 준비금에 표현된다. 다만 최근 몇 년 사이 보험계리사에게서 <b>재무관리자(financial managers)</b>로 영향력이 다소 이동한 듯 보이지만, 이러한 보수성은 여전히 사실로 남아 있다.</p>
+<p>반면 정치인들은 늘 그에 상응하는 비판적 사고를 하지는 않으며, 일반 연금 제도를 다룰 때 적절한 책임을 담보하는 데 필요한 <b>장기적 관점</b>이 결여된 결정을 내리는 경우가 흔하다. 사회보험 제도의 설계가 정치적 결정의 산물이라는 사실 때문에, 그 결과는 <b>이념적 타협</b>이나 정당 간 실제 권력관계에 좌우될 수 있다.</p>
+<p>사회보험이 보험시장이 제대로 작동하지 않아 생겨났다는 통념은 의문시되어 왔다. 앳킨슨(Atkinson)은 시장 논거들을 분석하여, 그것들이 안전이라는 정의된 개념보다는 <b>보험계리적 위험(actuarial risk)</b>에서 비롯된 것이라고 결론짓는다. 앳킨슨은 그 논거들이 <b>예측 불가능한 우발사건</b>이나 미래에 대한 두려움에 사회보험을 제공한다는 중요한 기능을 간과한다고 본다. 다시 말해, 일반(공적) 제도는 <b>합리적인 후생 분배를 보장</b>한다는 더 포괄적인 책임 때문에 민간시장보다 더 큰 책임을 진다.</p>
+
+<h2>6. 보험계리가 필요한 부분과 그렇지 않은 부분 <span class="en">Where Actuaries Are (and Aren’t) Needed</span></h2>
+<p>여러 나라의 사회보험 제도에 포함된 여러 프로그램은 사실 <b>보험이 아니라 이전(transfer)을 위한 사회 제도</b>다. 급여가 보험 위험에 연결되어 있지 않은 프로그램에는 <b>보험계리적 참여가 필요 없다</b>. 그러한 계산의 책임은, 흔히 단기 추세 분석에 기초하기 때문에, 통계학자나 경제학자에게 맡겨져 왔다. 예측의 선택을 좌우하는 기초 경제 가정은 정부가 결정하며, 계산은 종종 여러 시나리오에 기초하므로 <b>예측이라기보다는 산술 예시</b>에 가깝다고 할 수 있다.</p>
+<p>사회 제도 가운데 <b>보험계리적 관여가 필요한 부분</b>은 각종 연금과 노령연금에 연결된 부분이다. 이는 연금이 가진 <b>장기적 성격의 약속</b>과 연결되어 있다.</p>
+<p>노령연금 외에도 제도는 흔히 질병으로 인한 근로능력 저하 시의 <b>장애연금(invalidity pension)</b>을 포함한다. 여러 나라에서 이는 다루기 어려운 문제가 되었다. <b>스웨덴과 네덜란드</b>가 모두 경고가 되는 사례다. 피보험자들이 더 이른 나이에 연금을 받을 수 있으리라 기대하면서 연금 제도에 경제적 부담이 가중되었다. 두 나라 모두 노동시장 문제가 연금 제도에 좋지 않은 영향을 미쳐 이제는 통제 불능 상태로 보인다. 보험 위험은 시간상 안정성이 없고, 정치적 논쟁에 좌우되는 <b>불확실성</b>의 성격을 다소 띠게 되었다. 이 문제를 흔히 <b>"네덜란드 병(The Dutch Disease)"</b>이라 부른다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 무엇이 "보험"이고 무엇이 "이전"인가</div><p style="margin-bottom:0">급여가 <b>보험 위험(예: 사망·장애·생존)</b>에 연결되어 미래 현금흐름을 확률적으로 추정해야 하면 계리사가 필요하다. 반면 단순히 한 집단에서 다른 집단으로 돈을 옮기는 <b>이전(transfer) 프로그램</b>은 보험 위험이 없어 계리가 아니라 통계·경제 분석의 영역이다.</p></div>
+
+<h2>7. 적립방식과 부과방식, 그리고 균형식 <span class="en">Funding vs PAYG and the Balance Equation</span></h2>
+<p>사회는 법을 제정하는 등으로 사회보험에 책임을 지지만, 보험의 <b>운영(관리)</b>까지 늘 책임지지는 않는다. 운영은 흔히 고용주에게 맡겨진다. 고용주가 그런 책임을 떠맡도록 유도하려면 <b>조세 보조</b>가 필요하며, 연금기금이 그 사업에 남아 있는 한 사회가 <b>재보험을 요구하거나 공급</b>할 필요가 생길 수도 있다.</p>
+<p>고용주에 결부된 연금 정산은 원칙적으로 <b>완전적립(fully funded)</b>이며, 이는 책임 있는 보험계리사를 요구한다. 반면 연금 비용이 기여금이나 조세로 <b>지속적으로 충당</b>되는 이른바 <b>분배(부과)방식</b>에서는 그렇지 않다. 이 방식에서는 연금 준비금을 명시적으로 계산하지 않고, 필요한 <b>기여금 규모</b>를 계산한다. 다만 연금 지급의 변동에 충분히 대응하고 기여금 규모를 시간 여유를 두고 조정할 수 있도록 <b>완충기금(buffer fund)</b>을 미리 조성하는 것이 권장된다. 따라서 완충기금의 크기는 명확히 정의된 요건으로 정해질 수 없다.</p>
+<p>바에 따르면, 균형 잡힌 분배(부과)방식 제도는 다음과 같이 표현할 수 있다.</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,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" style="height:0.389in"/></div>
+<p>여기서 <i>s</i>는 부과방식(PAYG) 사회보장 기여율, <i>W</i>는 평균 명목임금, <i>L</i>은 근로자 수, <i>P</i>는 평균 명목연금, <i>N</i>은 연금수급자 수이다. 즉 <b>걷는 돈(기여율 × 임금 × 근로자 수) = 주는 돈(연금 × 수급자 수)</b>이 되어야 한다.</p>
+<p>기여율 <i>s</i>의 계산은 인구학적 전개에 관한 가정뿐 아니라 <b>노동시장 참여율과 임금 추세</b>에도 달려 있다. 이는 기본적으로 노동력 이주를 비롯한 여러 형태의 이주에 관한 정치적 입장을 포함하는 결정이다. EU의 노동 이동성 정책 같은 조건도 필요한 기여율 수준에 영향을 줄 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 부과방식 기여율 계산</div><p class="q">근로자 <i>L</i> = 1,000만 명, 평균임금 <i>W</i> = 4,000만 원, 연금수급자 <i>N</i> = 400만 명, 평균연금 <i>P</i> = 2,000만 원일 때, 균형 부과방식 기여율 <i>s</i>는?</p><p style="margin-bottom:0"><i>s</i> · <i>W</i> · <i>L</i> = <i>P</i> · <i>N</i> 에서 <i>s</i> = (<i>P N</i>) / (<i>W L</i>) = (2,000만 × 400만) / (4,000만 × 1,000만) = (8 × 10<sup>13</sup>) / (4 × 10<sup>14</sup>) = <b>0.20</b>, 즉 임금의 <b>20%</b>를 걷어야 한다. 이 식은 <b>고령화로 <i>N</i>/<i>L</i>(부양비)가 커지면 기여율 <i>s</i>가 곧바로 올라간다</b>는 부과방식의 본질을 보여준다.</p></div>
+<p>분배(부과)방식의 연금 보장은 많은 경우 직역연금에서 가장 흔히 쓰이는 모델, 즉 연금이 원칙적으로 <b>최종소득(final earnings)</b>에 따라 계산되는 방식으로 설계되어 왔다. 부과방식에서는 이것이 피보험자의 경제적으로 가장 유리한 소득연도들의 <b>평균소득</b>에 따라 연금을 계산하는 형태로 나타날 수 있다. 완전 연금을 받으려면 노동시장에서 <b>최소 가입연수</b>가 요구된다.</p>
+<p>연금 제도의 수입과 지출을 계산하려면 노동력 참여율, 소득 규모, 장애연금 발생빈도, 이주 규모를 추정해야 한다. 스웨덴 행정부문에서는 이러한 계산을 가능하게 하는 <b>대규모 시뮬레이션 모델</b>이 개발되었고, 이 모델은 다른 여러 나라에서도 실제로 채택되었다. 스웨덴 정부는 여러 시나리오 관점에서 수행된 계산 결과를 평가하며, 기여금은 의회가 정한다. 운영은 자율적인 보험자에게 맡겨지지 않는다.</p>
+
+<h2>8. 국제 동향: 세계은행 보고서와 논쟁 <span class="en">International Debate</span></h2>
+<p>위 연금 제도들 외에, 주로 옛 영국 식민지에서 발견되는 강제저축 프로그램인 <b>적립기금(Provident Funds)</b>도 있다. 적립된 자본은 <b>일시금</b>이나 <b>종신연금(life-long annuity)</b>으로 지급될 수 있다.</p>
+<p>1994년 세계은행은 <b>『노령위기의 회피(Averting the Old Age Crisis)』</b> 보고서를 발표했다. 이 보고서는 연금 분야에 대해 다음 세 부분으로 된 <b>3층(three-part) 모델</b>을 주장했다.</p>
+<ul>
+<li>적립 없이 <b>조세로 재원을 마련하는 제한적 기초보장</b>,</li>
+<li>완전적립되고 <b>민간 보험자가 운영하는 법정 적립 제도</b>,</li>
+<li><b>자발적이고 완전적립된 민간보험</b>.</li>
+</ul>
+<p>세계은행의 제안은 규범적인 것으로 해석되었다는 이유로 여러 나라와 ILO·ISSA 같은 국제기구로부터 강한 반발을 불러일으켰다. 이 반발은 어느 정도 세계은행이 칠레에서 시행된 연금 개혁을 옹호하고 이를 다른 라틴아메리카 국가들로 확산하려 한 점, 그리고 동유럽 연금 제도 개혁에 관여한 점에서 비롯되었다.</p>
+<p>이 논쟁의 연장선에서 ISSA는 여러 연금 제도에 존재하는 문제들을 더 깊이 논의하는 데 앞장섰다. 문제를 안고 있는 나라의 예로 독일이 있으며, 노르웨이에서도 연금 약속의 재원 마련을 위해 이른바 <b>"석유기금(oil fund)"</b>의 사용을 검토하고 있다.</p>
+<p>비록 다소 단순화된 것이지만, 이 논쟁에서 다음과 같은 결론을 끌어낼 수 있다. (1) <b>적립(funding)은 인구구조 변화의 문제를 해결하지 못한다</b>, (2) 퇴직금(severance pay)에 기초한 급여보다 <b>생애 누적소득에 기초한 연금</b>이 더 나은 대안일 수 있다, (3) <b>기여확정형(DC) 제도</b>가 급여확정형(DB) 제도보다 아마 더 낫다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 적립도 인구문제를 못 푼다?</div><p style="margin-bottom:0">미래의 연금 수급자가 받는 재화·서비스는 결국 <b>그 시점의 현역 세대가 생산</b>한다. 따라서 돈을 미리 쌓아두는 적립방식이라도, 고령자가 많고 일하는 사람이 적으면 실물 생산이 부족해진다. 즉 적립은 위험을 분산·완충할 수는 있어도 <b>인구 고령화 자체</b>를 해결하지는 못한다는 것이 핵심 메시지다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Pensions(연금) · 연금수학(Pension Mathematics) · Disability Insurance(소득보상보험/장애보험) · Health Insurance(건강보험) · Unemployment Insurance(실업보험) · Workers’ Compensation Insurance(산재보험)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>사회보장 (social security)</b> — 질병·실업·노령 등에 경제적 보상을 제공하는 여러 제도를 묶은 포괄 개념. 나라마다 범위가 다름.</li>
+<li><b>사회보험 (social insurance)</b> — 기여 이력과 특정 사건(실업·노령 등)에 근거해, 소득심사 없이 지급되는 보험가능 위험에 대한 보호.</li>
+<li><b>사회부조 (social assistance)</b> — 소득심사를 거쳐 지급되는 급여. 기여를 요구하지 않음.</li>
+<li><b>비스마르크형 / 베버리지형</b> — 소득비례·기여기반 모델(비스마르크) vs 균일기여·균일급여 모델(베버리지).</li>
+<li><b>부과방식 (PAYG, pay-as-you-go)</b> — 현재 근로자의 기여금으로 현재 수급자의 연금을 곧바로 지급하는 방식. 균형식 <i>s W L = P N</i>.</li>
+<li><b>적립방식 (funded)</b> — 미래 급여에 대비해 기금을 미리 쌓아두는 방식. 완전적립이면 책임계리사가 필요.</li>
+<li><b>완충기금 (buffer fund)</b> — 부과방식에서 지급 변동에 대응하고 기여율 조정에 시간 여유를 주기 위한 예비 기금.</li>
+<li><b>장애연금 (invalidity pension)</b> — 질병으로 근로능력이 줄었을 때 지급되는 연금.</li>
+<li><b>기여확정형(DC) / 급여확정형(DB)</b> — 낸 기여금으로 급여가 결정되는 방식(DC) vs 받을 급여를 먼저 약속하는 방식(DB).</li>
+<li><b>역선택 (adverse selection)</b> — 위험이 낮다고 생각하는 사람이 가입을 회피해 풀의 평균위험과 비용이 높아지는 현상.</li>
+</ul>
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>한국의 사회보장은 본문이 개관한 국가 제공 체계에 해당하며, 4대 사회보험(<b>국민연금·국민건강보험·고용보험·산업재해보상보험</b>)과 공공부조(기초생활보장)·기초연금·노인장기요양보험으로 구성된다. 전 국민 강제가입과 소득재분배(저소득층에 유리한 급여산식)라는 본문의 특징이 국내 제도에도 그대로 적용된다.</p>
+<p>보험회사의 상품은 이 공적 보장을 보완하는 위치에 선다. 대표적으로 <b>실손의료보험</b>은 국민건강보험 급여 후 본인부담과 비급여를 보장해 공·사 의료보장의 경계를 메우며, 5세대 실손(2026.5 출시)은 비중증 비급여의 자기부담을 높여 공보험 재정·도덕적 해이 문제와의 균형을 다시 설계했다. 산재·고용보험 영역에서는 단체상해·소득보상보험이, 국민연금 영역에서는 사적연금이 같은 보완 역할을 한다.</p>
+<p>본문이 다루는 '공·사 보험의 경계'는 국내에서 건강보험 보장성 강화 정책과 실손보험 손해율·요율 조정이 맞물리는 지점으로 늘 현안이 된다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 보완형 민영보험</div><p>국내 민영보험은 사회보험을 대체하지 않고 보완한다. 건강보험(실손·진단비), 국민연금(연금보험), 산재(단체상해·배상책임), 고용(소득보상)이 각각 짝을 이루며, 공보험 제도 변화가 곧 민영상품 설계·요율의 변수로 작용한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Social Security", Tor Eriksen. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>
