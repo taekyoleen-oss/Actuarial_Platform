@@ -27,7 +27,24 @@ export function DbErdView({
   erd: DbErd;
   riskSpec?: RiskFieldSpec | null;
 }) {
-  const [selected, setSelected] = useState<string>(erd.tables[0]?.name ?? "");
+  // 초기 선택 = 연결이 가장 많은 허브 테이블(예: 명세서·가입자 대장) → 핵심 연결을 먼저 보여줌
+  const [selected, setSelected] = useState<string>(() => {
+    const cnt: Record<string, number> = {};
+    for (const r of erd.relations) {
+      cnt[r.from] = (cnt[r.from] ?? 0) + 1;
+      cnt[r.to] = (cnt[r.to] ?? 0) + 1;
+    }
+    let best = erd.tables[0]?.name ?? "";
+    let max = -1;
+    for (const t of erd.tables) {
+      const c = cnt[t.name] ?? 0;
+      if (c > max) {
+        max = c;
+        best = t.name;
+      }
+    }
+    return best;
+  });
   const [riskOnly, setRiskOnly] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const boxRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -241,8 +258,8 @@ export function DbErdView({
               d={c.d}
               fill="none"
               stroke={c.active ? "var(--brand-sky)" : "var(--text-tertiary)"}
-              strokeOpacity={c.dim ? 0.07 : c.active ? 0.95 : 0.5}
-              strokeWidth={c.active ? 2.4 : 1.6}
+              strokeOpacity={c.dim ? 0.06 : c.active ? 0.95 : 0.3}
+              strokeWidth={c.active ? 2.6 : 1.3}
               markerEnd={
                 c.dim
                   ? undefined
@@ -284,16 +301,13 @@ export function DbErdView({
           style={{ width: svgSize.w || "100%", height: svgSize.h || "100%" }}
           aria-hidden
         >
+          {/* 키값 라벨은 '선택한 테이블'의 연결에만 표시(클릭 시 노출) */}
           {conns.map((c) =>
-            c.dim ? null : (
+            !c.active || c.dim ? null : (
               <span
                 key={`lbl-${c.key}`}
                 style={{ left: c.mx, top: c.my }}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-1.5 py-px font-mono text-[10px] font-medium shadow-card ${
-                  c.active
-                    ? "border-brand-sky bg-brand-sky text-white"
-                    : "border-border bg-white text-tertiary"
-                }`}
+                className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-brand-sky bg-brand-sky px-1.5 py-px font-mono text-[10px] font-medium text-white shadow-card"
               >
                 {c.via}
               </span>
@@ -302,25 +316,51 @@ export function DbErdView({
         </div>
       </div>
 
-      {/* 연계관계 범례 (모바일·접근성) */}
-      <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
-        {erd.relations.map((r) => (
-          <li
-            key={`${r.from}-${r.to}-${r.via}`}
-            className="flex items-center gap-2 text-[13px] text-tertiary"
-          >
-            <span
-              aria-hidden
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-sky"
-            />
-            <span className="font-mono text-foreground">{r.from}</span>
-            <span aria-hidden>→</span>
-            <span className="font-mono text-foreground">{r.to}</span>
-            <span className="text-placeholder">·</span>
-            <span>{r.label}</span>
-          </li>
-        ))}
-      </ul>
+      {/* 선택한 테이블의 연결 목록 — 클릭한 DB(테이블)에 대해서만 표시 */}
+      {(() => {
+        const rels = erd.relations.filter(
+          (r) => r.from === selected || r.to === selected
+        );
+        return (
+          <div className="mt-4">
+            <p className="mb-2 text-[12.5px] text-tertiary">
+              <span className="font-semibold text-foreground">
+                {selectedTable?.label ?? selected}
+              </span>
+              <span className="text-placeholder"> 의 연결</span> — 키값으로 이어지는
+              테이블 {rels.length}개
+            </p>
+            {rels.length === 0 ? (
+              <p className="text-[13px] text-placeholder">
+                이 테이블에서 직접 연결되는 다른 테이블이 없습니다.
+              </p>
+            ) : (
+              <ul className="grid gap-1.5 sm:grid-cols-2">
+                {rels.map((r) => {
+                  const other = r.from === selected ? r.to : r.from;
+                  const outgoing = r.from === selected;
+                  return (
+                    <li
+                      key={`${r.from}-${r.to}-${r.via}`}
+                      className="flex items-center gap-2 text-[13px] text-tertiary"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-sky"
+                      />
+                      <span aria-hidden>{outgoing ? "→" : "←"}</span>
+                      <span className="font-mono text-foreground">{other}</span>
+                      <span className="rounded bg-chip-blue-bg px-1.5 py-0.5 font-mono text-[11px] font-semibold text-chip-blue-fg">
+                        {r.via}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        );
+      })()}
 
       {/* 선택 테이블 컬럼 설명 */}
       {selectedTable && (
@@ -379,27 +419,34 @@ function ErdBox({
       <p className="mt-0.5 font-mono text-[11px] text-placeholder">
         {table.name} · {table.unit}
       </p>
-      <ul className="mt-2 flex flex-wrap gap-1">
-        {table.columns.map((c) => {
-          const isRisk = riskCols.has(`${table.name}.${c.name}`);
-          // 강조 모드: 위험률 필드는 sky로 부각, 나머지는 흐리게.
-          const cls = riskOn
-            ? isRisk
-              ? "bg-brand-sky font-semibold text-white"
-              : "bg-surface text-tertiary opacity-35"
-            : c.key
-              ? "bg-chip-blue-bg font-semibold text-chip-blue-fg"
-              : "bg-surface text-tertiary";
-          return (
-            <li
-              key={c.name}
-              className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${cls}`}
-            >
-              {c.name}
-            </li>
-          );
-        })}
-      </ul>
+      {/* 박스는 컴팩트하게 — 평소엔 키 컬럼, 위험률 모드엔 위험률 필드만 칩으로.
+          전체 컬럼은 박스를 누르면 아래 상세 패널에서 본다(연결선 가독성 확보). */}
+      {(() => {
+        const shown = riskOn
+          ? table.columns.filter((c) => riskCols.has(`${table.name}.${c.name}`))
+          : table.columns.filter((c) => c.key);
+        const hidden = table.columns.length - shown.length;
+        const chipCls = riskOn
+          ? "bg-brand-sky font-semibold text-white"
+          : "bg-chip-blue-bg font-semibold text-chip-blue-fg";
+        return (
+          <ul className="mt-2 flex flex-wrap items-center gap-1">
+            {shown.map((c) => (
+              <li
+                key={c.name}
+                className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${chipCls}`}
+              >
+                {c.name}
+              </li>
+            ))}
+            {hidden > 0 && (
+              <li className="rounded px-1.5 py-0.5 font-mono text-[11px] text-placeholder">
+                +{hidden}
+              </li>
+            )}
+          </ul>
+        );
+      })()}
     </button>
   );
 }
