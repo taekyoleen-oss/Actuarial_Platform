@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 탈퇴분석: 생존자 수 l_x가 여러 탈퇴원인으로 줄어듦 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 생존자 감소 계단(Sky) -->
+<path d="M 84 92 L 150 92 L 150 124 L 216 124 L 216 160 L 282 160 L 282 196 L 348 196 L 348 220 L 392 220" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="92" y="84" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">l_x</text>
+<!-- 탈퇴 화살표(원인별) -->
+<g stroke="#171A20" stroke-width="2.5" stroke-linecap="round"><line x1="150" y1="108" x2="174" y2="118"/><line x1="216" y1="142" x2="240" y2="152"/><line x1="282" y1="178" x2="306" y2="188"/></g>
+<text x="396" y="252" text-anchor="end" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">연령 x</text>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

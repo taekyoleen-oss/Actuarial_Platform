@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>렉시스 도표 (Lexis Diagram) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.fig { border:1px solid #ddd; background:#fcfcfc; padding:10pt 12pt; margin:11pt 0; }
+.fig .cap { font-size:9pt; color:#777; margin-top:6pt; text-align:center; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 인구·생명표</div>
+<h1>렉시스 도표</h1>
+<div class="meta">Lexis Diagram &nbsp;·&nbsp; 원저자: Tom A. Moultrie &amp; Robert Dorrington &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 개요와 좌표 설정 <span class="en">Introduction</span></h2>
+<p><b>렉시스 도표(Lexis diagram)</b>는 1875년 이를 처음 제시한 통계학자 빌헬름 렉시스의 이름을 딴 것으로[2], 한 개인이 <b>연령</b>과 <b>달력 시간(calendar time)</b>을 따라 살아가는 경로를 편리하게 나타내는 방법이다. 이 도표는 <b>기간(period)</b>과 <b>코호트(cohort)</b> 사이의 관계를 명확히 해 주며, 이런 명료화는 보험계리 업무에서 종종 중요하다.</p>
+<div class="fig">
+<svg viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
+<defs></defs>
+<!-- axes -->
+<line x1="55" y1="250" x2="430" y2="250" stroke="#333" stroke-width="1.4"/>
+<line x1="55" y1="250" x2="55" y2="25" stroke="#333" stroke-width="1.4"/>
+<!-- vertical period gridlines -->
+<line x1="155" y1="250" x2="155" y2="30" stroke="#ddd" stroke-width="1"/>
+<line x1="255" y1="250" x2="255" y2="30" stroke="#ddd" stroke-width="1"/>
+<line x1="355" y1="250" x2="355" y2="30" stroke="#ddd" stroke-width="1"/>
+<!-- horizontal age gridlines -->
+<line x1="55" y1="180" x2="420" y2="180" stroke="#ddd" stroke-width="1"/>
+<line x1="55" y1="110" x2="420" y2="110" stroke="#ddd" stroke-width="1"/>
+<!-- lifelines (45 deg) -->
+<line x1="55" y1="210" x2="215" y2="50" stroke="#1565c0" stroke-width="1.6"/>
+<line x1="115" y1="250" x2="295" y2="70" stroke="#1565c0" stroke-width="1.6"/>
+<line x1="195" y1="250" x2="375" y2="70" stroke="#1565c0" stroke-width="1.6"/>
+<!-- a death marker (lifeline ends) -->
+<circle cx="295" cy="70" r="3.5" fill="#c62828"/>
+<text x="300" y="66" font-size="10" fill="#c62828">사망</text>
+<!-- point C -->
+<circle cx="215" cy="50" r="3.5" fill="#1565c0"/>
+<text x="220" y="48" font-size="10" fill="#1565c0">C</text>
+<!-- axis labels -->
+<text x="240" y="278" font-size="11" fill="#333" text-anchor="middle">달력 시간 (period) →</text>
+<text x="20" y="140" font-size="11" fill="#333" text-anchor="middle" transform="rotate(-90 20,140)">연령 (age) →</text>
+</svg>
+<div class="cap">렉시스 도표의 기본 구조 — 가로축은 달력 시간, 세로축은 연령. 각 개인의 삶은 시간이 흐를수록 나이도 같이 드는 <b>45° 기울기의 생명선(lifeline)</b>으로 그려진다. 생명선이 끝나는 점은 사망을 뜻한다. (개념 설명용 그림 — 원문 그림을 단순화함)</div>
+</div>
+<p>원문 그림 1의 예에서는 <i>x</i>축이 <b>기준일(reference date) 이전의 경과 연수</b>(예: 조사 시행일, 또는 일정 기간 수집한 자료에 근거한 사망조사의 종료일)를 나타낸다. 다른 경우(그림 2 등)에는 <i>x</i>축이 그냥 달력 시간을 나타낸다. <i>y</i>축은 기준일(즉 <i>x</i> = 0일 때)에서 개인의 연령을 보여 준다. 예컨대 그림 1의 점 ‘C’는 지금 40세인 사람이 15년 전에는 25세였음을 나타낸다. 이 선들을 시간을 따라 좇아가면, 도표에 담긴 정보를 <b>코호트·기간·코호트–기간</b>의 세 가지로 해석해 구분할 수 있다.</p>
+<p>사실 렉시스[2]는 원래 <i>x</i>축에 출생 연도, <i>y</i>축에 연령을 두는 약간 다른 방식으로 도표를 제시했지만, 원래 방식과 현대적 관례는 분명히 동일한 정보를 전달한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 왜 생명선이 45° 기울기인가</div><p style="margin-bottom:0">달력 시간이 1년 흐르면 누구나 나이도 정확히 1살 든다. 가로축(시간)과 세로축(나이)이 같은 속도로 늘기 때문에, 한 사람의 삶은 항상 <b>기울기 1(45°)의 직선</b>으로 그려진다. 이 직선을 <b>생명선(lifeline)</b>이라 부른다. 선이 시작되는 점이 출생, 끝나는 점이 사망(또는 탈퇴)이다. 같은 해 태어난 사람들의 생명선은 모두 나란히(평행하게) 올라간다 — 이것이 바로 한 <b>코호트</b>다.</p></div>
+
+<h2>2. 세 가지 해석 — 코호트·기간·코호트–기간 <span class="en">Cohort / Period / Cohort–Period</span></h2>
+<p><b>코호트 해석</b>이 가장 직관적이다. 원문 그림 1의 평행사변형 FBCG는 ‘기준일로부터 25~30년 전에 15세에 도달한 생명들’을 가리키며, 이들을 10년 동안 추적한다. 주의할 점은, 이 영역 안의 사람들의 <b>연령</b>은 기준일 기준 40~45세로 5년 폭에 걸쳐 있지만, 이들을 추적하는 <b>달력 시간</b>의 폭은 30년 전(F점)부터 15년 전(C점)까지 15년에 걸쳐 있다는 것이다.</p>
+<p>이와 대조적으로 <b>기간 해석</b>은 주어진 시점들에서의 인구 경험을 본다. 원문 그림 1의 직사각형 ABHG는 ‘기준일로부터 20~25년 전에 15~25세였던 모든 생명’을 가리킨다. 이 경험에는 분명히 <b>서로 다른 코호트</b>의 개인들이 섞여 있다(ABHG에는 기준일 기준 35~40세, 40~45세, 45~50세인 세 코호트의 요소가 포함된다). 이런 의미에서 기간 기준으로 계산한 지표는 <b>합성 코호트(synthetic cohort)</b>의 경험을 반영한다. 이는 출생 시 기대여명 <i>e</i><sub>0</sub>가 “지금 태어난 아이가 장차 각 연령에 이를 때 현재 그 연령대 사람들의 사망률을 그대로 겪는다고 가정했을 때”의 기대수명을 나타내는 것과 같은 이치다. 바꿔 말해, 코호트를 나타내는 양 같지만 실은 기간 계산에 근거한 지표(예: 합계출산율이나 <sub>45</sub><i>q</i><sub>15</sub>)는 매우 신중하게 해석해야 한다.</p>
+<p>한편 때로는 율(rate)의 <b>장기(secular, 즉 달력) 추세</b>도 중요하다. 이럴 때는 <b>코호트–기간 율(cohort–period rate)</b>이 특히 유용하다. 원문 그림 1에서 이는 앞서 말한 코호트 노출과 기간 노출이 교차하는 영역(빗금친 DBEG)으로 표현된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 도표를 ‘대각선’으로 vs ‘세로’로 읽기</div><p style="margin-bottom:0">렉시스 도표 위에서 <b>대각선 띠</b>(평행사변형)를 따라 읽으면 <b>코호트</b>(같은 출생집단을 나이 들며 추적)가 되고, <b>세로 띠</b>(특정 시점의 모든 연령)를 잘라 읽으면 <b>기간</b>(한 시점의 단면)이 된다. 둘이 겹치는 작은 영역이 <b>코호트–기간</b>이다. 같은 자료라도 어느 방향으로 읽느냐에 따라 결과 해석이 크게 달라질 수 있어, 둘을 혼동하면 안 된다.</p></div>
+
+<h2>3. m형·q형 사망지표의 유도 <span class="en">Deriving m- and q-type Measures</span></h2>
+<p>증가나 사망 외의 탈퇴가 없는 <b>폐쇄인구(closed population)</b>를 가정하면, 힌데(Hinde)[1]를 따라 렉시스 도표로 두 종류의 사망지표—이른바 ‘중심(central)’ 사망률 <b>m형</b>과 ‘초기(initial)’ 사망률 <b>q형</b>(엄밀히는 둘 다 진짜 ‘율’은 아니다)—의 차이를 명확히 할 수 있다. 원문 그림 2에서 기간 <i>t</i>~<i>t</i>+1 동안 연령 <i>x</i>~<i>x</i>+1인 사람들의 사망은 정사각형 ABCD 안에서 일어난다. 반면 ‘만 나이(last birthday)’ <i>x</i>세인 사람들의 사망은 평행사변형 EFGH 안에서 일어난다.</p>
+<h3>m형(중심노출) <span class="en">central exposed-to-risk</span></h3>
+<p>중심(m형) 지표의 분모는 <b>중심노출(central exposed-to-risk)</b>로 주어진다. 이동이 없는 폐쇄인구에서, 그리고 ‘각 연령 1년 안에서 사망이 균등 분포’하고 ‘시간에 따라 사력이 변하지 않는다’는 가정 아래, 정사각형 ABCD(연령 <i>x</i>~<i>x</i>+1, 기간 <i>t</i>~<i>t</i>+1)에 분류된 사망에 대응하는 노출은 <b>이 영역 안에서 인구가 살아낸 시간의 총량</b>이다. 이는 인구가 시간에 따라 선형으로 변한다는 가정하에, 시점 <i>t</i>+0.5에서 연령 <i>x</i>~<i>x</i>+1인 인구(원문 그림 2의 선 FH)로 근사할 수 있다.</p>
+<h3>q형(초기노출) <span class="en">initial exposed-to-risk</span></h3>
+<p>마찬가지로 사망확률(q형)은 다음과 같이 유도된다. 시점 <i>t</i>를 중심으로 한 1년 동안 연령 <i>x</i>에 도달하는 인구는 선 EH 위에 있다. 위에서 말했듯 이 기간에 연령 <i>x</i>에 도달한 사람들의 사망 수는 평행사변형 EFGH로 주어진다. 따라서 사망확률은 사망 수를 <b>초기노출(initial exposed-to-risk)</b>, 즉 선 EH 위의 사람 수로 나눈 값이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> m형 vs q형 — 분모가 다르다</div><p style="margin-bottom:0"><b>m형(중심사망률)</b>의 분모는 ‘그 해 동안 위험에 노출된 평균 인원(살아낸 사람-시간)’이고, <b>q형(사망확률)</b>의 분모는 ‘그 해 처음에 연령 <i>x</i>에 도달한(노출을 시작한) 인원’이다. 한 해 동안 일부가 사망해 줄어들기 때문에, 초기 인원(q의 분모)이 중간 시점 평균 인원(m의 분모)보다 약간 많다. 이 차이가 아래의 m–q 변환식을 만든다.</p></div>
+
+<h2>4. m과 q의 근사 관계 <span class="en">The m–q Relation</span></h2>
+<p>이 정식화로부터, 다시 힌데를 따라 q형과 m형 사망지표 사이의 근사 관계를 유도할 수 있다. ‘각 연령 1년 안 사망의 균등성’과 ‘시간에 따른 사망률 불변’을 가정하고, 영역 ABCD와 EFGH의 넓이가 같다는 사실을 쓰면, 두 영역의 사망 수(θ<sub>x</sub>)는 같다고 볼 수 있다. 그러면 삼각형 EFH의 사망 수는 EFGH 전체 사망 수의 절반, 즉 ½θ<sub>x</sub>이다.</p>
+<p>중심노출은 중점 인구(선 FH)로 근사되고 초기노출은 선 EH의 인구와 같으므로, FH는 ‘연령 <i>x</i>에 도달한 초기 EH 인구의 생존자’에 해당한다. 따라서 <b>q형의 분모 = m형의 분모 + ½θ<sub>x</sub></b>가 된다. 한편 <i>m</i><sub>x</sub> = θ<sub>x</sub> / (FH 인구)이므로 정리하면 분모는 θ<sub>x</sub>/<i>m</i><sub>x</sub>이고, 초기(q형) 율의 분모는 θ<sub>x</sub>/<i>m</i><sub>x</sub> + ½θ<sub>x</sub>가 되어, m과 q 사이의 관용적 관계식이 나온다.</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,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" style="height:0.706in"/></div>
+<p>마지막으로, 진입·탈퇴(예: 전입이나 해약) 같은 다른 이동이 인구에 존재한다면, 노출의 추정에는 그 이동들의 성격과 시점에 관한 <b>추가 가정</b>이 필요하다는 점을 분명히 해 둔다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> m에서 q로 변환하기</div><p class="q">어떤 연령에서 중심사망률 <i>m</i><sub>x</sub> = 0.10일 때, 위 관계식으로 사망확률 <i>q</i><sub>x</sub>를 구하라.</p><p style="margin-bottom:0"><i>q</i><sub>x</sub> = <i>m</i><sub>x</sub> / (1 + ½<i>m</i><sub>x</sub>) = 0.10 / (1 + 0.05) = 0.10 / 1.05 ≈ <b>0.0952</b>. <i>q</i><sub>x</sub>가 <i>m</i><sub>x</sub>보다 약간 작은 이유는, q형의 분모(초기 노출)가 m형의 분모(중간 평균 노출)보다 ½θ<sub>x</sub>만큼 크기 때문이다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> 탈퇴분석(Decrement Analysis) · 코호트(Cohort) · 생명표(Life Table) · 중심노출/초기노출(Exposed-to-Risk) · 발생/노출률(Occurrence/Exposure Rate)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>렉시스 도표 (Lexis diagram)</b> — 가로축 달력 시간·세로축 연령에 개인의 생명선을 그려, 코호트·기간 관계를 시각화한 도표.</li>
+<li><b>생명선 (lifeline)</b> — 한 개인의 (시간, 나이) 경로. 시간과 나이가 같이 늘어 기울기 1(45°)의 직선이 된다.</li>
+<li><b>코호트 (cohort)</b> — 같은 시기에 같은 사건(흔히 출생)을 공유한 집단. 렉시스 도표에선 대각선 띠로 표현된다.</li>
+<li><b>기간 / 합성 코호트 (period / synthetic cohort)</b> — 특정 시점의 모든 연령을 한꺼번에 본 단면. 여러 코호트가 섞인 ‘가상의 코호트’.</li>
+<li><b>코호트–기간 율 (cohort–period rate)</b> — 코호트 노출과 기간 노출이 교차하는 영역의 율. 장기 추세 분석에 유용.</li>
+<li><b>중심노출 / m형 (central exposed-to-risk)</b> — 한 해 동안 살아낸 사람-시간 총량을 분모로 하는 중심사망률 <i>m</i><sub>x</sub>의 기준.</li>
+<li><b>초기노출 / q형 (initial exposed-to-risk)</b> — 연령에 막 도달한 초기 인원을 분모로 하는 사망확률 <i>q</i><sub>x</sub>의 기준.</li>
+<li><b>폐쇄인구 (closed population)</b> — 사망 외에는 진입·탈퇴가 없다고 가정한 인구. 노출 계산을 단순화한다.</li>
+<li><b>기대여명 <i>e</i><sub>0</sub> (life expectancy)</b> — 보통 기간(단면) 사망률에 근거해 계산되는, 출생 시 기대수명.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>렉시스 도표는 연령(세로)과 달력시간(가로)을 함께 표시해 개인의 생애선과 사건을 나타내는 도구로, 국내 <b>경험분석·위험률 산출</b>에서 노출과 사건을 연령·기간·코호트로 정확히 배분하는 데 쓰인다. 본문처럼 한 사람의 관측이 연령칸과 연도칸을 대각선으로 가로지른다.</p>
+<p>경험생명표·발생률 산출에서 특정 연령·연도의 노출(중앙노출)을 정확히 계산하려면 렉시스 도표적 사고가 필요하다. 공공 의료데이터로 입원율·발생률을 추정할 때도 추적기간을 연령·기간으로 분해하는 데 활용된다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 노출의 정확한 배분</div><p>경험위험률은 노출을 연령·기간으로 정확히 나눠야 한다. 렉시스 도표가 그 배분(중앙노출 등)의 사고틀을 제공한다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Lexis Diagram", Tom A. Moultrie &amp; Robert Dorrington. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

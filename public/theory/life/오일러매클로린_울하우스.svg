@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 오일러–매클로린/울하우스: 연속적분을 이산합으로 보정 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 연속 곡선(Sky) -->
+<path d="M 84 200 Q 220 100 392 96" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+<!-- 이산 계단 막대(근사) -->
+<g stroke="#171A20" stroke-width="2" fill="#EAF2F9" fill-opacity=".5">
+<rect x="100" y="176" width="40" height="56"/>
+<rect x="160" y="150" width="40" height="82"/>
+<rect x="220" y="126" width="40" height="106"/>
+<rect x="280" y="110" width="40" height="122"/>
+<rect x="340" y="100" width="40" height="132"/>
+</g>
+<text x="100" y="92" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2">∫ ≈ Σ + 보정항</text>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

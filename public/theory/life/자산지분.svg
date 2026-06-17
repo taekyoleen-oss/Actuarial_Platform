@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 자산지분: 계약별로 누적된 자산의 몫이 시간에 따라 쌓임 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 누적 막대(점점 커짐) -->
+<g stroke="#171A20" stroke-width="2.5" fill="#EAF2F9">
+<rect x="108" y="200" width="34" height="32"/>
+<rect x="158" y="172" width="34" height="60"/>
+<rect x="208" y="146" width="34" height="86"/>
+<rect x="258" y="120" width="34" height="112"/>
+<rect x="308" y="98" width="34" height="134"/>
+</g>
+<!-- 자산지분 성장선(Sky) -->
+<path d="M 125 196 L 175 168 L 225 142 L 275 116 L 325 94" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="110" y="92" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2">자산지분 누적</text>
+<text x="396" y="252" text-anchor="end" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">경과연도</text>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 하텐도르프 정리: 손실의 분산을 연도별로 분해(서로 무상관) -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<line x1="72" y1="232" x2="408" y2="232" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="72" y1="232" x2="72" y2="64" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 총분산 = 연도별 기여 합(누적 막대) -->
+<g stroke="#171A20" stroke-width="2.5">
+<rect x="120" y="170" width="46" height="62" fill="#4A90C2" fill-opacity=".5"/>
+<rect x="180" y="150" width="46" height="82" fill="#4A90C2" fill-opacity=".4"/>
+<rect x="240" y="166" width="46" height="66" fill="#4A90C2" fill-opacity=".3"/>
+<rect x="300" y="186" width="46" height="46" fill="#4A90C2" fill-opacity=".2"/>
+</g>
+<!-- 합계 표시 -->
+<path d="M 120 158 L 346 158" stroke="#171A20" stroke-width="2" stroke-dasharray="5 4" stroke-opacity=".5"/>
+<text x="120" y="120" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">Var(L) = Σ Var_t</text>
+<text x="396" y="252" text-anchor="end" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">연도 t</text>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
