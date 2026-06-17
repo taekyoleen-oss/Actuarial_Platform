@@ -57,9 +57,13 @@ export interface DbProfile {
   cautions: string[];
   uses: string[];
   sources: DbSource[];
+  /** ERD가 원본 스키마가 아니라 공개자료 기반 추정(논리) 모델일 때 true → '추정 ERD' 표시 */
+  estimated?: boolean;
+  /** 네이티브 ERD(JSON) 대신 완성형 HTML 문서를 ERD로 임베드할 때의 경로(public 기준) */
+  embedHtml?: string;
 }
 
-export const DB_ORDER = ["nsc2", "nps", "hps", "knhanes", "knhanes_cod"] as const;
+export const DB_ORDER = ["nsc2", "nps", "hps", "knhanes", "knhanes_cod", "jmdc"] as const;
 
 export const PROFILES: Record<string, DbProfile> = {
   nsc2: {
@@ -312,6 +316,51 @@ export const PROFILES: Record<string, DbProfile> = {
       },
     ],
   },
+  jmdc: {
+    id: "jmdc",
+    shortName: "JMDC 클레임DB(일본)",
+    fullName: "JMDC Claims Database (일본 민간 의료데이터) — 추정 논리 ERD",
+    provider: "JMDC, Inc.(일본) · 한일 구조 비교 레퍼런스",
+    tagline:
+      "일본 건강보험조합(직장가입) 기반 민간 의료 빅데이터 — 가입자 고유 ID 하나로 레세프트(청구)·건강검진·DPC·PHR을 결합한다. 본 ERD는 공개 자료로 재구성한 논리(추정) 모델이다.",
+    structure: "민간 클레임(청구) 결합 DB · 추정 논리 ERD",
+    estimated: true,
+    embedHtml: "/db/jmdc-korea-erd.html",
+    summary: [
+      "JMDC Claims Database는 일본의 다수 건강보험조합(직장가입)에서 수집한 민간 의료 빅데이터로, 가입자 대장을 허브로 레세프트(입원·외래·DPC·조제)·건강검진·특정보건지도·PHR을 단일 가입자 ID(加入者ID)로 결합한다. 한국 국민건강보험공단(NHIS) 자료와 구조가 유사해, 위험률·예측모형 연구의 해외 비교 기준으로 자주 인용된다.",
+      "아래 임베드한 ERD는 JMDC의 실제 물리 스키마가 아니라, 공개된 데이터 구성 설명과 일본 레세프트(진료보수청구) 전산 표준 포맷을 바탕으로 5개 레이어·15개 엔티티로 재구성한 논리(개념) 모델이다. 실제 컬럼명·키는 비공개(NDA) 데이터 사양서와 다를 수 있다. 같은 문서에 한국 NHIS 대응 매핑(자격·진료·검진·요양기관 DB)과 비교 시 유의점을 함께 정리했다.",
+    ],
+    facts: [
+      { label: "자료 성격", value: "민간 클레임(청구) 결합 DB — 가입자 ID 종단 결합" },
+      { label: "ERD 구성", value: "5개 레이어 · 15개 엔티티 (논리·추정 모델)" },
+      { label: "연결키", value: "加入者ID(가입자 ID) 단일 허브" },
+      { label: "청구유형", value: "입원 · 외래 · DPC · 조제 (4종)" },
+      { label: "코드체계", value: "상병 ICD-10 / 약물 YJ코드 (↔ KCD / 주성분코드)" },
+      { label: "ERD 출처", value: "공개자료 기반 재구성 — 추정 논리모델(원본 아님)" },
+    ],
+    strengths: [
+      "가입자 ID로 레세프트·건강검진이 결합 → 치료이력과 건강상태(검진수치)를 함께 보는 분석 가능(한국 NHIS와 동일 강점)",
+      "입원 DPC·원외 조제·문진/특정보건지도까지 포함해 진료 전 과정을 추적",
+      "한국 NHIS 자료와 구조가 유사 → 한일 비교·해외 위험률 벤치마크에 적합",
+    ],
+    cautions: [
+      "본 ERD는 실제 스키마가 아닌 공개자료 기반 추정 논리모델 — 실제 신청 시 데이터 사양서(データ仕様書)로 검증 필요",
+      "건보조합(직장) 기반이라 은퇴 후 고령자 데이터가 단절 → 고령질환 종단분석에 한계",
+      "일본 DPC(입원 포괄)는 한국 DRG(7개 질병군 부분적용)와 입자도가 달라 입원 비교 시 주의",
+      "특정보건지도·PHR 레이어는 한국 공단 DB에 직접 대응이 약함(마이헬스웨이 등 별도 체계)",
+    ],
+    uses: [
+      "한일 의료데이터 구조 비교·해외 위험률 벤치마크",
+      "검진–청구 결합 기반 질병 자연사·의료이용 분석 설계 참조",
+      "ICD/KCD·ATC 표준 레벨 매핑을 통한 국가 간 분석 호환성 검토",
+    ],
+    sources: [
+      {
+        label: "JMDC, Inc. — 医療ビッグデータ(JMDC Claims Database)",
+        url: "https://www.jmdc.co.jp/",
+      },
+    ],
+  },
 };
 
 export function listDbs(): DbProfile[] {
@@ -320,9 +369,11 @@ export function listDbs(): DbProfile[] {
 
 export function getDb(
   id: string
-): { profile: DbProfile; erd: DbErd } | null {
+): { profile: DbProfile; erd: DbErd | null } | null {
   const profile = PROFILES[id];
-  const erd = ERD[id];
-  if (!profile || !erd) return null;
+  if (!profile) return null;
+  const erd = ERD[id] ?? null;
+  // 네이티브 ERD(JSON)가 없어도 임베드 HTML이 있으면 유효(JMDC 추정 ERD 등).
+  if (!erd && !profile.embedHtml) return null;
   return { profile, erd };
 }

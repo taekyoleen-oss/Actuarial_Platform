@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정신질환 보장 여정 지도 — 보장의 경계선, 그리고 한·일 비교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64; --gold:#B8862F;
+  --p1:#7A9A8E; --p2:#3E6FB0; --p3:#5E8AC0; --p4:#C99A2E; --p5:#8E5BA8; --p6:#55504B;
+  --green:#2E8B6E; --sex:#8E5BA8; --age:#B8862F; --child:#2E8B6E; --jp:#B5384D;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Pretendard',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.mono{font-family:'JetBrains Mono',monospace}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.12;letter-spacing:-.01em}
+
+header{padding:72px 0 34px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+h1{font-size:clamp(32px,5vw,56px);margin:0 0 18px}
+h1 em{font-style:italic;color:var(--p2)}
+.sub{font-size:clamp(16px,2vw,20px);font-weight:500;max-width:780px;margin:0 0 18px}
+.lead{font-size:15px;color:var(--muted);max-width:780px;margin:0 0 14px}
+.lead b{color:var(--ink)}
+.scope{font-size:13px;color:var(--muted);background:#fff;border:1px solid var(--line);border-left:3px solid var(--p2);border-radius:8px;padding:12px 15px;max-width:820px;margin:16px 0 0}
+.scope b{color:var(--ink)}
+.axes{display:flex;flex-wrap:wrap;gap:14px;margin:24px 0 0}
+.axis{flex:1;min-width:260px;border-left:3px solid var(--p2);padding:8px 0 8px 16px}
+.axis:nth-child(2){border-left-color:var(--p4)}
+.axis .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.axis .v{font-size:14.5px;font-weight:600;margin-top:3px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.nav a{font-family:'JetBrains Mono',monospace;font-size:11.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:#fff;transition:.15s}
+.nav a:hover{border-color:var(--ink);transform:translateY(-1px)}
+.nav a:focus-visible{outline:2px solid var(--p2);outline-offset:2px}
+.nav a.jp{border-color:var(--jp);color:var(--jp)}
+
+.timeline{padding:40px 0 6px}
+.spine-wrap{position:relative;overflow-x:auto}
+.spine{display:flex;min-width:680px;gap:0}
+.snode{flex:1;text-align:center;position:relative;padding-top:30px}
+.snode::before{content:'';position:absolute;top:9px;left:0;right:0;height:4px;background:var(--c)}
+.snode:first-child::before{left:50%}
+.snode:last-child::before{right:50%}
+.snode .d{position:absolute;top:3px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:var(--c);border:3px solid var(--cream)}
+.snode .ph{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.snode .nm{font-size:12.5px;font-weight:600;margin-top:2px}
+
+/* signature: insurability frontier */
+.sig{padding:40px 0 34px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:30px}
+.sig h2{font-size:clamp(21px,3vw,29px);margin:0 0 6px}
+.sig .cap{font-size:14px;color:var(--muted);max-width:740px;margin:0 0 26px}
+.frontier{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.fz{padding:18px 18px 16px}
+.fz1{background:#F4ECEC;border-right:1px solid var(--line)}
+.fz2{background:#FBF6EC;border-right:1px solid var(--line)}
+.fz3{background:#ECF3EF}
+.fz .fk{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:7px}
+.fz1 .fk{color:#A24759} .fz2 .fk{color:var(--gold)} .fz3 .fk{color:#1f6b53}
+.fz h3{font-size:15px;margin:0 0 7px}
+.fz p{margin:0;font-size:12.7px;color:var(--ink)}
+.ladder{margin-top:24px}
+.ladder .lh{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.rungs{display:flex;flex-wrap:wrap;gap:8px}
+.rung{flex:1;min-width:150px;border-radius:10px;padding:11px 13px;color:#fff;font-size:12.5px}
+.rung b{display:block;font-size:13px;margin-bottom:2px}
+.r1{background:#9FB3AC} .r2{background:#6E94BE} .r3{background:#C99A2E} .r4{background:#8E5BA8} .r5{background:#55504B}
+
+section.phase{padding:44px 0 8px;border-bottom:1px solid var(--line)}
+.phase-head{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap;margin-bottom:4px}
+.phase-no{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#fff;border-radius:6px;padding:3px 9px}
+.phase-head h2{font-size:clamp(20px,2.7vw,27px);margin:0}
+.phase-sub{font-size:14px;color:var(--muted);max-width:800px;margin:4px 0 22px}
+.phase-sub b{color:var(--ink)}
+.p1 .phase-no{background:var(--p1)} .p2 .phase-no{background:var(--p2)} .p3 .phase-no{background:var(--p3)}
+.p4 .phase-no{background:var(--p4)} .p5 .phase-no{background:var(--p5)} .p6 .phase-no{background:var(--p6)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:15px;margin-bottom:18px}
+.card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;padding:17px 17px 15px;display:flex;flex-direction:column}
+.p1 .card{border-left-color:var(--p1)} .p2 .card{border-left-color:var(--p2)} .p3 .card{border-left-color:var(--p3)}
+.p4 .card{border-left-color:var(--p4)} .p5 .card{border-left-color:var(--p5)} .p6 .card{border-left-color:var(--p6)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.card-name{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.card-type{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;padding-top:3px}
+.card-trig{font-size:12.8px;margin:0 0 9px}
+.card-trig .tg{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--gold);font-weight:600}
+.card-ins{font-size:12.3px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px;margin-top:auto}
+.card-ins b{color:var(--gold);font-weight:600}
+.tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.04em;padding:2px 7px;border-radius:999px;margin-left:5px;vertical-align:middle}
+.tag-sex{color:var(--sex);background:rgba(142,91,168,.1);border:1px solid rgba(142,91,168,.3)}
+.tag-age{color:var(--age);background:rgba(184,134,47,.1);border:1px solid rgba(184,134,47,.3)}
+.tag-child{color:var(--child);background:rgba(46,139,110,.1);border:1px solid rgba(46,139,110,.3)}
+.tag-gap{color:#A24759;background:rgba(162,71,89,.09);border:1px solid rgba(162,71,89,.3)}
+
+.demosec{padding:44px 0 10px;border-bottom:1px solid var(--line)}
+.demosec h2{font-size:clamp(21px,3vw,29px);margin:0 0 6px}
+.demosec .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 22px}
+.demo-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.demo-col{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;border-top:4px solid var(--child)}
+.demo-col.c-age{border-top-color:var(--p2)} .demo-col.c-sex{border-top-color:var(--sex)}
+.demo-col .dt{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:3px}
+.demo-col .dm{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-bottom:13px}
+.demo-col p{margin:0;font-size:13.3px}
+.demo-col .ins{margin-top:11px;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px}
+.demo-col .ins b{color:var(--gold)}
+
+.refsec{padding:44px 0 12px;border-bottom:1px solid var(--line)}
+.refsec h2{font-size:clamp(21px,3vw,29px);margin:0 0 6px}
+.refsec .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 20px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;-webkit-overflow-scrolling:touch}
+table.reftable{border-collapse:collapse;width:100%;min-width:880px;font-size:12.6px;background:#fff}
+table.reftable th,table.reftable td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+table.reftable thead th{background:var(--navy);color:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+table.reftable tbody th{font-weight:700;font-size:12.8px;white-space:nowrap}
+table.reftable tbody tr:last-child td,table.reftable tbody tr:last-child th{border-bottom:none}
+.d-ins{color:var(--gold);font-weight:600}
+.reffoot{font-size:11.5px;color:var(--muted);margin-top:10px}
+
+.kj{padding:50px 0 14px;border-bottom:1px solid var(--line)}
+.kj h2{font-size:clamp(22px,3.2vw,32px);margin:0 0 6px}
+.kj h2 .jpflag{color:var(--jp)}
+.kj .cap{font-size:14px;color:var(--muted);max-width:760px;margin:0 0 26px}
+.kjrow{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:14px;background:#fff}
+.kjrow .side{padding:18px 20px}
+.kjrow .kr{border-right:1px solid var(--line)}
+.kjrow .jp{background:#FCF6F7;border-left:3px solid var(--jp)}
+.kjrow .flag{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.kjrow .kr .flag{color:var(--p2)} .kjrow .jp .flag{color:var(--jp)}
+.kjrow .topic{grid-column:1/-1;background:var(--navy);color:#fff;padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.kjrow h3{font-size:15px;margin:0 0 6px}
+.kjrow p{margin:0 0 8px;font-size:13px}
+.kjrow .ins{font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:4px}
+.kjrow .ins b{color:var(--gold);font-weight:600}
+.kjrow .jp .ins b{color:var(--jp)}
+.spotlight{background:#fff;border:1px solid var(--jp);border-radius:14px;padding:20px 22px;margin-top:8px}
+.spotlight .h{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--jp);font-weight:600;margin-bottom:8px}
+.spotlight p{margin:0;font-size:13.5px}
+.spotlight .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.spotlight .row>div{font-size:12.8px}
+.spotlight .row .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+
+.gapsec{padding:46px 0 14px;border-bottom:1px solid var(--line)}
+.gapsec h2{font-size:clamp(21px,3vw,29px);margin:0 0 8px}
+.gapsec .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 22px}
+.gap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.gap-item{background:#fff;border:1px solid var(--green);border-left:4px solid var(--green);border-radius:12px;padding:18px}
+.gap-item h3{font-size:15px;margin:0 0 8px;color:#1f6b53}
+.gap-item .row{font-size:12.8px;margin:5px 0}
+.gap-item .row .k{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:block}
+.gap-item .status{margin-top:9px;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+
+.notes{background:var(--navy);color:#EDEBE3;border-radius:18px;padding:34px 30px;margin:46px 0}
+.notes h2{color:#fff;font-size:22px;margin:0 0 20px}
+.points{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 26px}
+.point{display:flex;gap:12px}
+.point .pn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);font-weight:600;flex-shrink:0;padding-top:2px}
+.point p{margin:0;font-size:13.3px;color:#DDE0E7}
+.point b{color:#fff}
+
+.care{background:#fff;border:1px solid var(--line);border-left:4px solid var(--green);border-radius:12px;padding:16px 18px;margin:30px 0 0;font-size:13px;color:var(--ink)}
+.care b{color:#1f6b53}
+
+footer{padding:30px 0 64px}
+.foot{font-size:11.8px;color:var(--muted);line-height:1.7;border-top:1px solid var(--line);padding-top:22px}
+.foot b{color:var(--ink)}
+
+@media (max-width:680px){
+  header{padding:48px 0 28px}
+  .frontier{grid-template-columns:1fr}
+  .fz1,.fz2{border-right:none;border-bottom:1px solid var(--line)}
+  .kjrow{grid-template-columns:1fr}
+  .kjrow .kr{border-right:none;border-bottom:1px solid var(--line)}
+  .spotlight .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="wrap">
+  <div class="eyebrow">질병 여정 지도 · 만성 관리형 · 한·일 비교</div>
+  <h1>보장의 <em>경계선</em>에 선 병</h1>
+  <p class="sub">정신질환은 가장 흔해진 질환이면서도, 오랫동안 보험에서 가장 멀리 밀려나 있었다. 손상되는 것은 장기가 아니라 '기능과 소득'이고, 가입 자체가 첫 번째 관문이다.</p>
+  <p class="lead">이 지도는 정신질환의 <b>여정(전조→진단→관리·재발→기능저하·소득상실→중증·돌봄→위기)</b> 위에 한국 담보를 올리고, 같은 자리에서 <b>일본의 유사 상품</b>을 비교한다. 모든 담보에는 검증된 대표 판매사를 표기한다.</p>
+
+  <div class="scope">
+    <b>'정신질환'의 범위</b> — 우울장애·불안장애·공황장애·강박장애·외상후스트레스(PTSD)·양극성장애(조울)·조현병·섭식장애·중독·ADHD 등 <b>F코드(정신·행동 장애, F00~F99)</b> 질환을 묶는다. 인지·돌봄 중심의 치매·장기요양은 별도 여정 지도에서 다루므로, 여기서는 정서·사고·행동 장애에 초점을 둔다.
+  </div>
+
+  <div class="axes">
+    <div class="axis">
+      <div class="k">시그니처 축 ① — 손상되는 것</div>
+      <div class="v">장기가 아니라 '기능·소득' — 휴직·실직·취업불능이 핵심 피해</div>
+    </div>
+    <div class="axis">
+      <div class="k">시그니처 축 ② — 보장 가능성</div>
+      <div class="v">기본 약관의 정신장애 제외 → 부분 개방 → 정면 보장으로 이동 중</div>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="섹션 이동">
+    <a href="#signature">보장 경계선</a>
+    <a href="#p1">① 전조·검진</a>
+    <a href="#p2">② 진단·초기치료</a>
+    <a href="#p3">③ 관리·재발</a>
+    <a href="#p4">④ 소득상실</a>
+    <a href="#p5">⑤ 중증·돌봄</a>
+    <a href="#p6">⑥ 위기</a>
+    <a href="#demo">인구집단 렌즈</a>
+    <a href="#verify">검증 표</a>
+    <a href="#kj" class="jp">🇰🇷↔🇯🇵 한·일 비교</a>
+    <a href="#gap">기획 제안</a>
+  </nav>
+</div>
+</header>
+
+<div class="wrap timeline">
+  <div class="spine-wrap">
+    <div class="spine">
+      <div class="snode" style="--c:var(--p1)"><span class="d"></span><div class="ph">PHASE 1</div><div class="nm">전조·검진</div></div>
+      <div class="snode" style="--c:var(--p2)"><span class="d"></span><div class="ph">PHASE 2</div><div class="nm">진단·초기치료</div></div>
+      <div class="snode" style="--c:var(--p3)"><span class="d"></span><div class="ph">PHASE 3</div><div class="nm">관리·재발</div></div>
+      <div class="snode" style="--c:var(--p4)"><span class="d"></span><div class="ph">PHASE 4</div><div class="nm">소득상실</div></div>
+      <div class="snode" style="--c:var(--p5)"><span class="d"></span><div class="ph">PHASE 5</div><div class="nm">중증·돌봄</div></div>
+      <div class="snode" style="--c:var(--p6)"><span class="d"></span><div class="ph">PHASE 6</div><div class="nm">위기</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- signature -->
+<section class="sig" id="signature">
+<div class="wrap">
+  <h2>정신질환의 자(尺) — '얼마나 아픈가'보다 '보장이 닿는가'</h2>
+  <p class="cap">신체질환의 자가 장기·중증도라면, 정신질환의 자는 두 가지다. 하나는 <b>보장 가능성(가입과 약관이 받아주는가)</b>, 다른 하나는 <b>기능·소득 손상의 깊이</b>. 진단비보다 '일할 수 없게 됨'이 더 큰 피해이기 때문이다.</p>
+
+  <div class="frontier">
+    <div class="fz fz1">
+      <div class="fk">과거 · 배제</div>
+      <h3>기본 약관에서 제외</h3>
+      <p>대다수 건강·입원 담보는 정신장애(F00~F99)를 <b>지급 대상에서 제외</b>. 우울증 입원비는 '회색지대'로 미지급 분쟁이 잦았다.</p>
+    </div>
+    <div class="fz fz2">
+      <div class="fk">전환 · 부분 개방</div>
+      <h3>실손·특약으로 일부 보장</h3>
+      <p><b>2016년 실손 표준약관 개정</b>으로 우울·조울·조현·ADHD·틱 등 F코드 <b>급여 부분</b> 실비 청구 가능(2016 이후 가입자, 비급여·약제·상담 제외).</p>
+    </div>
+    <div class="fz fz3">
+      <div class="fk">현재 · 정면 보장</div>
+      <h3>정신질환 특화 담보</h3>
+      <p>정신질환 진단비·입원일당·통원일당을 명시 보장하는 특화 상품 등장(2025). 가입 가능성과 보장이 동시에 넓어지는 국면.</p>
+    </div>
+  </div>
+
+  <div class="ladder">
+    <div class="lh">기능·소득 손상 사다리 — 보장 수요는 오른쪽으로 갈수록 커진다</div>
+    <div class="rungs">
+      <div class="rung r1"><b>통원 관리</b>약물·상담, 일상 유지</div>
+      <div class="rung r2"><b>입원</b>단기 입원 치료</div>
+      <div class="rung r3"><b>휴직·소득감소</b>일을 쉬어야 하는 상태</div>
+      <div class="rung r4"><b>장기 취업불능</b>정신질환으로 근로 불가</div>
+      <div class="rung r5"><b>중증·정신장애</b>정신장애 등록·장기 돌봄</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 1 -->
+<section class="phase p1" id="p1">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 1</span><h2>전조·검진</h2></div>
+  <p class="phase-sub">스트레스·번아웃·수면문제 단계. 아직 진단 전이라 약물 없이 상담만 받으면 <b>Z코드</b>로 분류돼 실손 대상에서 빠진다. 이 시점에 <b>건강할 때 미리 가입</b>해 두는 것이 이후 보장의 출발선이다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">표준심사 사전 가입</span><span class="card-type">예방·설계형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> F코드 진단 전 건강체 상태에서 가입. 진단 이력이 생기면 제한·할증·거절 위험이 커지므로 시점이 핵심.</p>
+      <p class="card-ins">대표 · <b>전 생·손보 공통</b>(일반심사 건강·종합보험 — 정신과 진단 후 신규가입 제한)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">정신과 통원 실손(급여)</span><span class="card-type">실손 / 통원</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 2016년 이후 실손 가입자가 F코드 진단 후 급여 진료. 약물 없는 상담(Z코드)·비급여는 제외.</p>
+      <p class="card-ins">대표 · <b>전 손보 공통</b>(실손의료비 — 2016 표준약관 개정 적용분)</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 2 -->
+<section class="phase p2" id="p2">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 2</span><h2>진단·초기치료</h2></div>
+  <p class="phase-sub">정신건강의학과에서 F코드 진단확정 + 약물·인지행동치료 시작. 진단 시점에 비로소 <b>정신질환 특화 진단비·통원 담보</b>가 발동한다. 동시에 이 진단 이력이 향후 다른 보험 가입의 고지·심사 대상이 된다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">정신질환 진단비 <span class="tag tag-gap">신생영역</span></span><span class="card-type">진단형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 우울·불안·공황 등 약관상 정신질환 진단확정. 1회 일시금으로 초기 치료·생활 보전.</p>
+      <p class="card-ins">대표 · <b>DB손해보험(DB멘탈케어 건강보험, 정신질환 진단비)</b> — 2025.4 신규</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">정신질환 통원일당</span><span class="card-type">일당형 / 통원</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 중증 정신질환으로 통원(연간 12회 한도 예). 지속 외래 관리 비용을 정액으로 보전.</p>
+      <p class="card-ins">대표 · <b>DB손해보험(DB멘탈케어 건강보험, 통원일당·중증정신질환 한정)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">종합건강보험 정신질환 특약</span><span class="card-type">특약 / 진단·입원</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 종합·건강보험에 부가한 정신질환 특약 발동. 기본 약관이 F00~F99를 제외하므로 특약 유무가 지급을 가른다.</p>
+      <p class="card-ins">대표 · <b>일부 손보(추가 확인 필요)</b> — 정신질환 특약 포함 종합건강보험, 보장 범위 상품별 상이</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 3 -->
+<section class="phase p3" id="p3">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 3</span><h2>관리·재발</h2></div>
+  <p class="phase-sub">정신질환은 재발·만성화가 흔하다. 지속 약물·심리치료, 때로 <b>입원</b>이 필요하다. 그러나 기본 입원 담보는 정신장애를 제외하는 경우가 많아, <b>정신질환 한정 입원일당</b> 같은 명시 담보가 실질을 좌우한다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">정신질환 입원일당</span><span class="card-type">일당형 / 입원</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 정신질환으로 입원(연간 20일 한도 예). 기본 약관 제외분을 명시 담보로 보전.</p>
+      <p class="card-ins">대표 · <b>DB손해보험(DB멘탈케어 건강보험, 입원일당·정신질환 한정)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">실손 입원(급여)</span><span class="card-type">실손 / 입원</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 2016 이후 실손 가입자의 F코드 입원 급여 진료. 비급여·약제·정신요법 일부는 제한.</p>
+      <p class="card-ins">대표 · <b>전 손보 공통</b>(실손의료비 — 정신질환 급여 보장분, 한도·자기부담 약관 확인)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">유병자 간편고지 가입</span><span class="card-type">간편고지 / 유병자</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 이미 정신과 치료 이력이 있는 사람이 추가 보장을 들 때. 3·N·5 간편고지로 부담보·할증 없이 인수(통과 시).</p>
+      <p class="card-ins">대표 · <b>KB손해보험·현대해상·삼성생명·미래에셋생명</b>(간편고지 건강·종합보험)</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 4 -->
+<section class="phase p4" id="p4">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 4</span><h2>기능저하·소득상실</h2></div>
+  <p class="phase-sub">정신질환의 가장 큰 경제적 타격은 치료비가 아니라 <b>일을 못 하게 되는 것</b>이다. 휴직·실직으로 소득이 끊긴다. 그런데 한국의 소득보장(취업불능) 담보는 <b>정신질환을 대부분 제외</b>한다 — 여기가 가장 큰 보장 공백이다(일본 비교 참조).</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">소득보장·취업불능(정신질환 제외) <span class="tag tag-gap">공백</span></span><span class="card-type">생활비형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 질병·상해로 취업불능 상태. 다만 다수 약관이 <b>정신질환을 면책</b>하여 우울·번아웃성 휴직은 보장 밖.</p>
+      <p class="card-ins">대표 · <b>일부 생·손보(취업불능·소득보장 특약)</b> — 정신질환 보장 여부 약관 확인(통상 제외)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">질병 후유장해</span><span class="card-type">장해형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 질병으로 장해상태. 정신질환의 기능손상은 장해 인정이 까다로워 실효는 제한적.</p>
+      <p class="card-ins">대표 · <b>전 손보 공통</b>(질병후유장해 특약 — 정신장애 장해 인정 기준 엄격)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">공적 소득·치료비 지원</span><span class="card-type">공적 연계·보완형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 중증·위기 상황의 응급입원·행정입원·외래치료. 소득보다 치료비 본인부담 경감 중심.</p>
+      <p class="card-ins">출처 · <b>정신질환자 치료비 지원 사업(보건복지부·정신건강복지센터)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 5 -->
+<section class="phase p5" id="p5">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 5</span><h2>중증·장해·돌봄</h2></div>
+  <p class="phase-sub">조현병·중증 양극성 등은 장기 입원·반복 입원과 <b>돌봄</b>이 필요하다. 이 단계는 공적 제도(치료비 지원·정신건강복지)가 중심이고, 민간은 입원일당·간병·후유장해로 일부 보완한다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">중증정신질환 입·통원 보장</span><span class="card-type">일당형 / 중증한정</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 중증 정신질환의 입원·통원. 연간 한도 내 정액 일당. 장기·반복 입원의 한도 주의.</p>
+      <p class="card-ins">대표 · <b>DB손해보험(DB멘탈케어 건강보험)</b> · 일부 손보</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">간병·간병인 사용 일당</span><span class="card-type">서비스·일당형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 입원 중 간병 필요. 정신질환 자체보다 동반 신체질환·재활기 부담 보전에 활용.</p>
+      <p class="card-ins">대표 · <b>전 손보 공통</b>(간병인사용 입원일당·간호간병통합 입원일당)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">중증 치료비 공적 지원</span><span class="card-type">공적 연계·보완형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 응급·행정입원, 외래치료 지원 대상. 소득기준 무관 본인일부부담 지원(제도 기준).</p>
+      <p class="card-ins">출처 · <b>정신질환자 치료비 지원 사업(2025)</b> — 공적 제도, 민간 보장의 기준선</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PHASE 6 -->
+<section class="phase p6" id="p6">
+<div class="wrap">
+  <div class="phase-head"><span class="phase-no">PHASE 6</span><h2>위기</h2></div>
+  <p class="phase-sub">정신질환의 가장 무거운 국면. 보험에서는 <b>자살 면책 조항</b>이 핵심 구조다. 일반사망 보장은 가입 후 일정기간(통상 2년)이 지나면 지급되도록 설계돼, 위기 이후 유족 보호의 최소선을 둔다(아래는 약관 구조에 대한 설명이다).</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">일반사망 보장(자살 면책 구조)</span><span class="card-type">사망형 / 약관 구조</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 사망. 표준약관상 가입 후 <b>2년 경과 후</b>의 자살은 일반사망 보험금 지급 대상이 되도록 설계(재해사망은 별도). 고지의무 위반 시 분쟁 소지.</p>
+      <p class="card-ins">대표 · <b>전 생·손보 공통</b>(종신·정기 — 면책기간·지급요건 약관별 상이)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">간편·무심사 사망보장</span><span class="card-type">간편·무심사 / 사망</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 정신과 진단 이력으로 표준 가입이 어려울 때의 대안. 간편고지 종신 또는 무심사 사망(가입 후 일정기간 질병사망 감액 흔함).</p>
+      <p class="card-ins">대표 · <b>라이나생명(THE간편고지종신보험)</b> · 무심사는 일부 생·손보(추가 확인 필요)</p>
+    </div>
+  </div>
+
+  <div class="care">
+    <b>도움이 필요하다면.</b> 이 항목은 보험 약관 구조에 대한 정보 제공이며, 정신적으로 힘든 상황이라면 혼자 견디지 않아도 됩니다. 한국에서는 <b>정신건강 위기상담 1577-0199</b>, <b>자살예방 상담전화 109</b>를 통해 24시간 도움을 받을 수 있습니다.
+  </div>
+</div>
+</section>
+
+<!-- DEMOGRAPHIC LENS -->
+<section class="demosec" id="demo">
+<div class="wrap">
+  <h2>인구집단 렌즈 — 정신질환도 대상을 가린다</h2>
+  <p class="cap">유병률·발병 시기·핵심 피해가 집단마다 다르다. 보장 설계도 이 분포를 따라가야 한다.</p>
+  <div class="demo-cols">
+    <div class="demo-col c-child">
+      <div class="dt">청소년·청년</div>
+      <div class="dm">YOUTH-ONSET</div>
+      <p>우울·불안·자해, ADHD·틱이 청소년기 급증. 학업·취업 스트레스가 겹친다. ⚠ 15세 미만 사망보험은 무효(상법 732조) → 진단·치료·통원 중심 설계.</p>
+      <div class="ins">대표 · <b>어린이보험 정신·발달 특약</b>(일부 손보, F코드·발달지연 일부 보장)</div>
+    </div>
+    <div class="demo-col c-age">
+      <div class="dt">직장인(생산연령)</div>
+      <div class="dm">WORKING-AGE</div>
+      <p>번아웃·우울·공황이 휴직·실직으로 이어져 <b>소득상실</b>이 핵심 피해. 정신질환 대응 소득보장의 1차 수요층(일본 就業不能의 표적).</p>
+      <div class="ins">대표 · <b>(공백) 정신질환 보장 소득·취업불능 담보 부족</b> — 일본 대비 한국 빈칸</div>
+    </div>
+    <div class="demo-col c-sex">
+      <div class="dt">여성·주산기</div>
+      <div class="dm">FEMALE · PERINATAL</div>
+      <p>우울·불안 유병률이 높고, 임신·출산 전후 <b>산후우울</b> 등 주산기 정신건강 부담. 여성·태아 담보와 결합 여지가 크다.</p>
+      <div class="ins">대표 · <b>여성·태아보험 + 정신질환 특약</b>(전 손보, 주산기 특화는 신생영역)</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- VERIFICATION TABLE -->
+<section class="refsec" id="verify">
+<div class="wrap">
+  <h2>검증 표 — 담보 × 지급기준 × 판매사 × 가입금액</h2>
+  <p class="cap">여정 카드가 '존재·판매사·형태'를 보였다면, 이 표는 '지급기준과 금액의 깊이'를 본다. 가입금액·한도는 예시이며 상품·특약·연령별로 상이하다.</p>
+  <div class="scroll">
+    <table class="reftable">
+      <thead>
+        <tr><th>담보</th><th>지급기준(트리거)</th><th>대표 판매사 (예시)</th><th>가입금액·한도(예시)</th><th>주요 특징</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>정신질환 진단비</th>
+          <td>약관상 정신질환 진단확정</td>
+          <td class="d-ins">DB손해보험(DB멘탈케어 건강보험)</td>
+          <td>일시금(상품별)</td>
+          <td>2025.4 신규, 보장 질환·감액 약관 확인</td>
+        </tr>
+        <tr>
+          <th>정신질환 입원일당</th>
+          <td>정신질환으로 입원</td>
+          <td class="d-ins">DB손해보험(DB멘탈케어)</td>
+          <td>연간 20일 한도(예)</td>
+          <td>기본 약관 F00~F99 제외분을 명시 보전</td>
+        </tr>
+        <tr>
+          <th>(중증)정신질환 통원일당</th>
+          <td>중증 정신질환 통원</td>
+          <td class="d-ins">DB손해보험(DB멘탈케어)</td>
+          <td>연간 12회 한도(예)</td>
+          <td>지속 외래 관리비 정액 보전</td>
+        </tr>
+        <tr>
+          <th>정신과 실손(급여)</th>
+          <td>F코드 급여 진료(2016 이후 가입)</td>
+          <td class="d-ins">전 손보 공통(실손의료비)</td>
+          <td>급여 자기부담 제외분</td>
+          <td>비급여·약제·Z코드 상담 제외</td>
+        </tr>
+        <tr>
+          <th>소득보장·취업불능</th>
+          <td>취업불능 상태(통상 정신질환 면책)</td>
+          <td class="d-ins">일부 생·손보(추가 확인 필요)</td>
+          <td>월 생활비형</td>
+          <td>정신질환 보장 여부 약관 확인 — 통상 제외</td>
+        </tr>
+        <tr>
+          <th>유병자 간편고지 가입</th>
+          <td>간편고지 3·N·5 통과</td>
+          <td class="d-ins">KB·현대해상·삼성생명·미래에셋생명</td>
+          <td>일반 대비 30~50%↑ 보험료</td>
+          <td>치료 이력자 추가 보장, 감액기간 존재</td>
+        </tr>
+        <tr>
+          <th>일반사망(자살 면책 구조)</th>
+          <td>사망(가입 2년 경과 후 자살 지급 설계)</td>
+          <td class="d-ins">전 생·손보 공통(종신·정기)</td>
+          <td>사망보험금(상품별)</td>
+          <td>면책기간·지급요건·고지의무 약관별 상이</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="reffoot">판매사는 해당 유형 담보를 운영하는 <b>검증된 예시</b>이며, 동일 명칭이라도 보장·금액·조건은 상품·약관별로 다릅니다. 한도·감액·면책은 가변값으로 단정하지 않습니다.</p>
+</div>
+</section>
+
+<!-- ============ KOREA-JAPAN COMPARISON ============ -->
+<section class="kj" id="kj">
+<div class="wrap">
+  <h2>한·일 비교 — 정신질환을 '소득'으로 보는 나라 <span class="jpflag">🇯🇵</span></h2>
+  <p class="cap">한국이 정신질환을 주로 '진단·입원'으로 본다면, 일본은 <b>就業不能(취업불능·소득상실)</b>의 렌즈로 정면 보장한다. 같은 여정 위에서 공적 기준선·가입 가능성·진단입원·소득상실의 네 지점이 또렷하게 갈린다.</p>
+
+  <div class="kjrow">
+    <div class="topic">① 공적 기준선 — 정신과 진료비 경감</div>
+    <div class="side kr">
+      <div class="flag">🇰🇷 한국 · 치료비 지원</div>
+      <h3>정신질환자 치료비 지원 + 건강보험 급여</h3>
+      <p>응급입원·행정입원·외래치료 지원(소득기준 무관 항목 존재). 건강보험 급여로 약물·일부 치료 보장. 비급여·상담은 본인부담 큼.</p>
+      <p class="ins">출처 · <b>보건복지부·정신건강복지센터</b>(공적 제도)</p>
+    </div>
+    <div class="side jp">
+      <div class="flag">🇯🇵 일본 · 自立支援医療</div>
+      <h3>自立支援医療制度(정신통원)</h3>
+      <p>정신질환 <b>통원 본인부담을 1할로 경감</b>. 단 통원·데이케어·방문간호 중심이라 <b>입원·보험외 케어는 대상 외</b>.</p>
+      <p class="ins">출처 · <b>厚生労働省</b>(공적 제도)</p>
+    </div>
+  </div>
+
+  <div class="kjrow">
+    <div class="topic">② 보장 가능성 — 진단 이력자를 받는 법</div>
+    <div class="side kr">
+      <div class="flag">🇰🇷 한국 · 고지·간편고지</div>
+      <h3>F코드 고지 → 제한·간편고지 우회</h3>
+      <p>정신과 기록만으로 거절은 위법 소지이나, 치료기간·중증도에 따라 할증·제한·거절. 어려우면 간편고지(3·N·5)로 우회.</p>
+      <p class="ins">대표 · <b>KB·현대해상·삼성생명·미래에셋생명</b>(간편고지)</p>
+    </div>
+    <div class="side jp">
+      <div class="flag">🇯🇵 일본 · 引受基準緩和·無選択</div>
+      <h3>引受基準緩和型 / 無選択型</h3>
+      <p>うつ병 치료 중·5년 내 치료력이면 일반 가입 어려움 → 인수완화형(3~5 告知, 過去1~2년 입원 없으면)부터. 더 어려우면 無選択型.</p>
+      <p class="ins">대표 · <b>メットライフ生命·オリックス生命·アフラック</b>(인수완화형)</p>
+    </div>
+  </div>
+
+  <div class="kjrow">
+    <div class="topic">③ 진단·입원 — 명시 보장</div>
+    <div class="side kr">
+      <div class="flag">🇰🇷 한국 · 정신질환 특화</div>
+      <h3>정신질환 진단비·입원일당</h3>
+      <p>정신질환을 콕 집은 진단비 + 입원일당(연 20일)·통원일당(연 12회). 기본 약관 제외분을 명시 담보로 메우는 신생 영역.</p>
+      <p class="ins">대표 · <b>DB손해보험(DB멘탈케어 건강보험, 2025.4)</b></p>
+    </div>
+    <div class="side jp">
+      <div class="flag">🇯🇵 일본 · 医療保険 입원</div>
+      <h3>의료보험 정신질환 입원(한도 주의)</h3>
+      <p>양극성·조현병 등도 입원 시 의료보험 보장 가능. 단 <b>입원일수 한도</b>(예: 60일형)가 장기 입원에 걸릴 수 있어 한도 설계가 핵심.</p>
+      <p class="ins">대표 · <b>オリックス生命·メットライフ生命 등</b>(의료보험, 입원일수 한도 약관 확인)</p>
+    </div>
+  </div>
+
+  <div class="kjrow">
+    <div class="topic">④ 소득상실 — 일을 못 하게 됐을 때</div>
+    <div class="side kr">
+      <div class="flag">🇰🇷 한국 · (공백)</div>
+      <h3>정신질환 소득보장 거의 없음</h3>
+      <p>취업불능·소득보장 담보가 <b>정신질환을 대부분 면책</b>. 우울·번아웃성 휴직의 소득상실은 민간 보장 밖에 놓인다. 최대 공백.</p>
+      <p class="ins">현황 · <b>신규 영역(추가 확인 필요)</b> — 정신질환 대응 소득보장 부재</p>
+    </div>
+    <div class="side jp">
+      <div class="flag">🇯🇵 일본 · 就業不能保険</div>
+      <h3>就業不能保険 精神疾患 보장</h3>
+      <p>우울·조현·적응·섭식장애 등으로 취업불능 시 <b>매월 급부 + 精神疾患就業不能一時金</b>(월액 3배, 2년 1회·최대 5회). 정신질환을 정면으로 다룬다.</p>
+      <p class="ins">대표 · <b>ライフネット生命(働く人への保険3)</b> · <b>太陽生命(保険組曲BestMYWAY/働けなくなったときの保険)</b> · <b>アクサ生命(働けないときの安心)</b></p>
+    </div>
+  </div>
+
+  <div class="spotlight">
+    <div class="h">🇰🇷↔🇯🇵 가장 큰 차이 — '소득상실'을 보는가</div>
+    <p>신체질환에서는 양국이 비슷했지만(간편고지=引受緩和), 정신질환에서는 갈린다. 일본은 정신질환의 핵심 피해를 <b>'일할 수 없게 됨'</b>으로 보고 就業不能으로 정면 보장한다. 한국은 진단·입원 보장이 막 열렸지만 <b>소득상실 보장은 여전히 빈칸</b>이다. 이 빈칸이 가장 큰 기획 기회다.</p>
+    <div class="row">
+      <div>
+        <div class="lbl">🇰🇷 한국 — 현재 무게중심</div>
+        진단비 · 입원일당 · 통원일당(DB멘탈케어) / 소득상실은 공백
+      </div>
+      <div>
+        <div class="lbl">🇯🇵 일본 — 현재 무게중심</div>
+        就業不能(소득상실) 중심 + 精神疾患就業不能一時金 / 통원은 공적 自立支援
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- GAP -->
+<section class="gapsec" id="gap">
+<div class="wrap">
+  <h2>기획 제안 — 정신질환 보장의 빈 칸</h2>
+  <p class="cap">암·뇌·심 보장 세트와 일본 상품을 기준선으로, 정신질환 여정에서 비용·소득은 나는데 보장이 빈 구간을 짚는다. 출시 항목은 검증된 판매사를 명시한다.</p>
+  <div class="gap-grid">
+    <div class="gap-item">
+      <h3>정신질환 소득보장(취업불능)</h3>
+      <div class="row"><span class="k">왜 필요한가</span>정신질환의 최대 피해는 휴직·실직의 소득상실인데 한국은 거의 미보장.</div>
+      <div class="row"><span class="k">기준선</span>일본 就業不能保険 精神疾患就業不能一時金을 벤치마크.</div>
+      <div class="status">현황 · 신규 영역(추가 확인 필요) — 정신질환 면책이 표준, 정면 보장 부재.</div>
+    </div>
+    <div class="gap-item">
+      <h3>정신과 입원 한도 확대</h3>
+      <div class="row"><span class="k">왜 필요한가</span>중증·반복 입원은 장기인데 연 20일 한도로는 부족.</div>
+      <div class="row"><span class="k">기준선</span>신체 7대질병 입원 가중(일본) 방식의 정신질환판.</div>
+      <div class="status">현황 · 일부 출시 — <b>DB손해보험(DB멘탈케어)</b> 입원일당 존재하나 한도 확대 여지.</div>
+    </div>
+    <div class="gap-item">
+      <h3>회복·재활·심리상담 보장</h3>
+      <div class="row"><span class="k">왜 필요한가</span>비급여 심리상담·인지행동치료·재활 프로그램이 보장 사각.</div>
+      <div class="row"><span class="k">기준선</span>암 재활·회복 담보를 정신건강에 이식.</div>
+      <div class="status">현황 · 신규 영역 — 비급여 상담·재활 전용 담보 미흡.</div>
+    </div>
+    <div class="gap-item">
+      <h3>청년 마음건강 조기개입</h3>
+      <div class="row"><span class="k">왜 필요한가</span>청소년·청년 우울·자해 급증, 조기개입이 예후를 좌우.</div>
+      <div class="row"><span class="k">기준선</span>어린이보험 + 정신·발달 특약 확대.</div>
+      <div class="status">현황 · 부분 출시 — 어린이 F코드·발달 특약 존재, 청년 전용은 미흡.</div>
+    </div>
+    <div class="gap-item">
+      <h3>주산기 정신건강(산후우울)</h3>
+      <div class="row"><span class="k">왜 필요한가</span>임신·출산 전후 우울·불안 부담이 큰데 여성·태아 담보와 분리.</div>
+      <div class="row"><span class="k">기준선</span>여성·태아보험 + 주산기 정신건강 결합.</div>
+      <div class="status">현황 · 신규 영역(추가 확인 필요) — 주산기 특화 정신 담보 부재.</div>
+    </div>
+    <div class="gap-item">
+      <h3>약관 정신장애 제외조항 명확화</h3>
+      <div class="row"><span class="k">왜 필요한가</span>기본 입원 담보의 F00~F99 제외가 '회색지대' 분쟁을 키움.</div>
+      <div class="row"><span class="k">기준선</span>제외 범위·예외(특약)를 약관에서 명시·표준화.</div>
+      <div class="status">현황 · 제도·약관 영역 — 명확화·소비자 고지 강화 여지.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- DESIGN NOTES -->
+<div class="wrap">
+  <div class="notes">
+    <h2>설계 핵심 6</h2>
+    <div class="points">
+      <div class="point"><span class="pn">01</span><p><b>자(尺)는 '보장 가능성'과 '소득'.</b> 장기·중증도가 아니라, 가입·약관이 받아주는가와 일할 수 있는가를 축으로 삼았다.</p></div>
+      <div class="point"><span class="pn">02</span><p><b>경계선의 이동을 시각화.</b> 배제(기본약관 제외)→부분개방(2016 실손)→정면보장(2025 특화)으로 보장 프런티어가 움직인다.</p></div>
+      <div class="point"><span class="pn">03</span><p><b>소득상실 단계를 독립 phase로.</b> 정신질환의 최대 피해인 휴직·취업불능을 별도 단계로 세워 공백을 드러냈다.</p></div>
+      <div class="point"><span class="pn">04</span><p><b>한·일의 결정적 차이.</b> 일본은 就業不能(소득)으로, 한국은 진단·입원으로 본다 — 4지점 비교로 명시.</p></div>
+      <div class="point"><span class="pn">05</span><p><b>위기 단계는 약관 구조로만.</b> 자살 면책은 정보 제공에 한정하고, 도움 자원을 함께 안내했다.</p></div>
+      <div class="point"><span class="pn">06</span><p><b>모든 담보에 검증된 판매사.</b> 실명은 확인분만, 보편은 '전 손보 공통', 미확인·공백은 '추가 확인 필요'로 정직하게.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+<div class="wrap">
+  <p class="foot">
+    <b>면책·참고 고지.</b> 본 자료는 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계나 의학적 조언이 아닙니다. 담보 정의·지급기준·보장 질환·코드·한도·감액·면책·금액·판매사는 회사·상품·약관 및 제도 변경에 따라 달라지므로, 실제 가입·보장 판단 시 반드시 <b>해당 상품 약관·상품설명서 원문</b>을 확인해야 합니다. 한국 표기 담보·판매사(DB손해보험 DB멘탈케어 건강보험 등)와 일본 표기 상품(ライフネット生命 働く人への保険3, 太陽生命 働けなくなったときの保険/保険組曲BestMYWAY, アクサ生命 働けないときの安心, メットライフ生命·オリックス生命·アフラック 引受基準緩和型 등)은 해당 유형을 운영하는 <b>검증된 예시</b>로서 동일 명칭이라도 보장·금액·조건은 상품·약관별로 다릅니다. 정신과 실손은 2016년 표준약관 개정 이후 가입자의 급여 부분에 한정되며, 자살 관련 보험금 지급은 약관의 면책기간·고지의무 등에 따라 달라집니다. <b>이 자료는 정신건강 보험 구조에 대한 정보 제공이며, 정신적 어려움을 겪고 있다면 정신건강 위기상담(1577-0199)·자살예방 상담전화(109) 등 전문기관의 도움을 받을 수 있습니다.</b>
+  </p>
+</div>
+</footer>
+
+</body>
+</html>

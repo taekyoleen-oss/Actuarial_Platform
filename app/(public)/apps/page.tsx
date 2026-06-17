@@ -281,9 +281,16 @@ export default function AppsPage() {
               <p className="mt-2 flex-1 text-sm leading-relaxed text-body">
                 {db.tagline}
               </p>
-              <span className="mt-3 w-fit rounded bg-chip-blue-bg px-2 py-0.5 text-[12px] font-medium text-chip-blue-fg">
-                {db.structure}
-              </span>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <span className="w-fit rounded bg-[var(--chip-blue-bg)] px-2 py-0.5 text-[12px] font-medium text-[var(--chip-blue-fg)]">
+                  {db.structure}
+                </span>
+                {db.estimated && (
+                  <span className="w-fit rounded bg-[var(--chip-amber-bg)] px-2 py-0.5 text-[12px] font-semibold text-[var(--chip-amber-fg)]">
+                    추정 ERD
+                  </span>
+                )}
+              </div>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
                 DB 구조 보기 <ArrowRight size={15} />
               </span>

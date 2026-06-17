@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Target, ExternalLink } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Target, ExternalLink, Info } from "lucide-react";
 import { DbErdView } from "@/components/feature/db/DbErd";
 import { DB_ORDER, getDb } from "@/lib/publicDb";
 
@@ -68,7 +68,26 @@ export default async function PublicDbDetailPage({
         <span className="rounded bg-chip-blue-bg px-2.5 py-1 font-medium text-chip-blue-fg">
           {profile.structure}
         </span>
+        {profile.estimated && (
+          <span className="inline-flex items-center gap-1 rounded bg-[var(--chip-amber-bg)] px-2.5 py-1 font-semibold text-[var(--chip-amber-fg)]">
+            <Info size={13} /> 추정 ERD
+          </span>
+        )}
       </div>
+
+      {/* 추정 ERD 안내 — 원본 스키마가 아닌 공개자료 기반 추정(논리) 모델 */}
+      {profile.estimated && (
+        <div className="mt-6 flex max-w-3xl items-start gap-2.5 rounded-cover border border-[var(--chip-amber-fg)]/25 bg-[var(--chip-amber-bg)] px-4 py-3.5 text-[13.5px] leading-relaxed text-[var(--chip-amber-fg)]">
+          <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+          <p>
+            <b className="font-semibold">추정 ERD 안내 —</b> 이 ERD는 데이터 제공처의
+            실제 물리 스키마가 아니라, 공개된 데이터 구성 설명과 표준 청구 포맷을
+            바탕으로 <b className="font-semibold">재구성한 논리(추정) 모델</b>입니다.
+            실제 컬럼명·키·테이블 구성은 정식(NDA) 데이터 사양서와 다를 수 있으며,
+            아래 문서에 한국 유사 데이터와의 대응 매핑·비교 분석을 함께 정리했습니다.
+          </p>
+        </div>
+      )}
 
       {/* 개요 */}
       <div className="mt-10 max-w-3xl space-y-4 text-[15px] leading-relaxed text-body">
@@ -114,14 +133,43 @@ export default async function PublicDbDetailPage({
 
       {/* DB 구조(ERD) */}
       <section className="mt-16">
-        <SectionTitle>DB 구조 (ERD)</SectionTitle>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
-          좌→우로 개인·명세서(허브)에서 세부내역·기관으로 이어집니다. 테이블 박스를
-          누르면 아래에 컬럼·설명이 표시되고, 선이 연결된 테이블이 강조됩니다.
-        </p>
-        <div className="mt-6">
-          <DbErdView erd={erd} />
-        </div>
+        <SectionTitle>DB 구조 (ERD){profile.estimated && " · 추정"}</SectionTitle>
+        {profile.embedHtml ? (
+          <>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
+              공개 자료로 재구성한 논리(추정) ERD와 한국 유사 데이터(NHIS) 대응 매핑·비교
+              분석을 담은 레퍼런스 문서입니다. 실제 물리 스키마와 다를 수 있습니다.
+            </p>
+            <div className="mt-6 flex justify-end">
+              <a
+                href={profile.embedHtml}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                새 탭에서 전체 보기 <ExternalLink size={14} />
+              </a>
+            </div>
+            <div className="mt-2 overflow-hidden rounded-cover border border-border bg-white shadow-card">
+              <iframe
+                src={profile.embedHtml}
+                title={`${profile.fullName} ERD`}
+                className="h-[820px] w-full border-0 bg-white"
+                loading="lazy"
+              />
+            </div>
+          </>
+        ) : erd ? (
+          <>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-tertiary">
+              좌→우로 개인·명세서(허브)에서 세부내역·기관으로 이어집니다. 테이블 박스를
+              누르면 아래에 컬럼·설명이 표시되고, 선이 연결된 테이블이 강조됩니다.
+            </p>
+            <div className="mt-6">
+              <DbErdView erd={erd} />
+            </div>
+          </>
+        ) : null}
       </section>
 
       {/* 출처 */}

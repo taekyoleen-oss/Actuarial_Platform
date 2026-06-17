@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가입조건의 사다리 — 건강체부터 무심사까지, 언더라이팅 강도별 보장 횡단 분석</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAFAF7; --ink:#0A0A0A; --navy:#1B2845; --line:#E4E2DB; --muted:#6B6A64;
+  --gold:#B8862F;
+  /* underwriting tier ramp: health → impairment */
+  --t1:#2E8B6E; --t2:#5B8C7E; --t3:#3E6FB0; --t4:#C99A2E; --t5:#C25E4A; --t6:#A24759; --t7:#55504B;
+  --green:#2E8B6E; --purple:#8E5BA8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--cream); color:var(--ink);
+  font-family:'Pretendard',system-ui,-apple-system,sans-serif;
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.mono{font-family:'JetBrains Mono',monospace}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.12;letter-spacing:-.01em}
+
+/* ---------- header ---------- */
+header{padding:72px 0 36px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+h1{font-size:clamp(34px,5.2vw,58px);margin:0 0 18px}
+h1 em{font-style:italic;color:var(--t3)}
+.sub{font-size:clamp(17px,2.1vw,21px);color:var(--ink);max-width:760px;margin:0 0 22px;font-weight:500}
+.lead{font-size:15.5px;color:var(--muted);max-width:760px;margin:0 0 26px}
+.lead b{color:var(--ink)}
+.axes{display:flex;flex-wrap:wrap;gap:14px;margin:26px 0 4px}
+.axis{flex:1;min-width:260px;border-left:3px solid var(--t3);padding:8px 0 8px 16px}
+.axis:nth-child(2){border-left-color:var(--t5)}
+.axis .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.axis .v{font-size:15px;font-weight:600;margin-top:3px}
+
+/* anchor nav */
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.nav a{font-family:'JetBrains Mono',monospace;font-size:11.5px;text-decoration:none;color:var(--ink);
+  border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:#fff;transition:.15s}
+.nav a:hover{border-color:var(--ink);transform:translateY(-1px)}
+.nav a:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+
+/* ---------- signature spectrum ---------- */
+.sig{padding:46px 0 30px;border-bottom:1px solid var(--line)}
+.sig h2{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+.sig .cap{font-size:14px;color:var(--muted);margin:0 0 30px;max-width:680px}
+.spectrum{position:relative;margin:8px 0 0}
+.bar{height:18px;border-radius:999px;
+  background:linear-gradient(90deg,var(--t1) 0%,var(--t2) 16%,var(--t3) 33%,var(--t4) 50%,var(--t5) 66%,var(--t6) 83%,var(--t7) 100%)}
+.ends{display:flex;justify-content:space-between;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.ends .l{color:var(--t1)} .ends .r{color:var(--t7)}
+.stops{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:18px}
+.stop{text-align:center;border-top:2px solid var(--line);padding-top:10px}
+.stop .dot{width:11px;height:11px;border-radius:50%;margin:-16px auto 8px;border:2px solid var(--cream)}
+.stop b{display:block;font-size:12.5px;line-height:1.25}
+.stop span{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px}
+.s1 .dot{background:var(--t1)} .s2 .dot{background:var(--t2)} .s3 .dot{background:var(--t3)}
+.s4 .dot{background:var(--t4)} .s5 .dot{background:var(--t5)} .s6 .dot{background:var(--t6)} .s7 .dot{background:var(--t7)}
+.tradeoff{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.tcard{flex:1;min-width:240px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.tcard .h{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.tcard p{margin:0;font-size:13.5px;color:var(--ink)}
+
+/* ---------- code decoder ---------- */
+.decoder{background:var(--navy);color:#EDEBE3;border-radius:16px;padding:30px 28px;margin:40px 0 0}
+.decoder h3{color:#fff;font-size:21px;margin:0 0 6px}
+.decoder .dsub{font-size:13.5px;color:#B9C2D6;margin:0 0 22px}
+.code3{display:flex;gap:10px;flex-wrap:wrap}
+.cseg{flex:1;min-width:170px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px}
+.cseg .num{font-family:'Fraunces',serif;font-size:40px;font-weight:600;color:var(--gold);line-height:1}
+.cseg .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9FB0CC;margin:8px 0 6px}
+.cseg p{margin:0;font-size:13px;color:#E2E4EA}
+.decoder .keyline{margin-top:18px;font-size:13px;color:#CBD3E3;border-top:1px solid rgba(255,255,255,.13);padding-top:14px}
+.decoder .keyline b{color:#fff}
+
+/* ---------- tier sections ---------- */
+section.tier{padding:46px 0 8px;border-bottom:1px solid var(--line)}
+.tier-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.tier-no{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#fff;border-radius:6px;padding:3px 9px}
+.tier-head h2{font-size:clamp(21px,2.8vw,28px);margin:0}
+.tier-sub{font-size:14.5px;color:var(--muted);max-width:780px;margin:4px 0 24px}
+.tier-sub b{color:var(--ink)}
+.t1 .tier-no{background:var(--t1)} .t2 .tier-no{background:var(--t2)} .t3 .tier-no{background:var(--t3)}
+.t4 .tier-no{background:var(--t4)} .t5 .tier-no{background:var(--t5)} .t6 .tier-no{background:var(--t6)} .t7 .tier-no{background:var(--t7)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin-bottom:20px}
+.card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;padding:18px 18px 16px}
+.t1 .card{border-left-color:var(--t1)} .t2 .card{border-left-color:var(--t2)} .t3 .card{border-left-color:var(--t3)}
+.t4 .card{border-left-color:var(--t4)} .t5 .card{border-left-color:var(--t5)} .t6 .card{border-left-color:var(--t6)} .t7 .card{border-left-color:var(--t7)}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.card-name{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card-type{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.card-trig{font-size:13px;color:var(--ink);margin:0 0 9px}
+.card-trig .tg{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);font-weight:600}
+.card-ins{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px;margin-top:auto}
+.card-ins b{color:var(--gold);font-weight:600}
+.tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.05em;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.tag-age{color:var(--gold);background:rgba(184,134,47,.1);border:1px solid rgba(184,134,47,.3)}
+.tag-new{color:var(--gold);background:rgba(184,134,47,.1);border:1px solid rgba(184,134,47,.35)}
+
+/* ---------- deep-dive criteria ---------- */
+.deep{padding:48px 0 12px;border-bottom:1px solid var(--line)}
+.deep h2{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+.deep .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 28px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.qcard .qn{font-family:'Fraunces',serif;font-size:46px;font-weight:600;color:var(--line);position:absolute;top:8px;right:16px;line-height:1}
+.qcard .qk{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.qcard h3{font-size:16.5px;margin:6px 0 10px;position:relative;z-index:1}
+.qcard ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--ink)}
+.qcard ul li{margin-bottom:6px}
+.qcard .warn{font-size:12.5px;color:var(--t5);margin-top:11px;border-top:1px solid var(--line);padding-top:9px}
+.qcard .warn b{color:var(--t5)}
+.midnote{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:16px 18px;margin-top:18px;font-size:13.5px;color:var(--ink)}
+.midnote b{color:var(--gold)}
+
+/* ---------- matrix ---------- */
+.matrix{padding:48px 0 14px;border-bottom:1px solid var(--line)}
+.matrix h2{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+.matrix .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 22px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;-webkit-overflow-scrolling:touch}
+table.cmp{border-collapse:collapse;width:100%;min-width:920px;font-size:12.8px;background:#fff}
+table.cmp th,table.cmp td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+table.cmp thead th{background:var(--navy);color:#fff;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;position:sticky;top:0}
+table.cmp tbody th{font-weight:700;font-size:13px;white-space:nowrap}
+table.cmp tbody tr:last-child td,table.cmp tbody tr:last-child th{border-bottom:none}
+.pill{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.cm-ins{color:var(--gold);font-weight:600}
+.lvl{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.lvl.lo{color:var(--t1)} .lvl.mid{color:var(--t4)} .lvl.hi{color:var(--t5)} .lvl.xhi{color:var(--t6)}
+
+/* ---------- baseline 3-col ---------- */
+.base{padding:48px 0 14px;border-bottom:1px solid var(--line)}
+.base h2{font-size:clamp(22px,3vw,30px);margin:0 0 22px}
+.bcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.bcol{border:1px solid var(--line);border-radius:14px;padding:22px;background:#fff}
+.bcol.b1{border-top:4px solid var(--t1)} .bcol.b2{border-top:4px solid var(--t4)} .bcol.b3{border-top:4px solid var(--t7)}
+.bcol .bt{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin-bottom:2px}
+.bcol .bm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px}
+.bcol dl{margin:0} .bcol dt{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:11px}
+.bcol dd{margin:2px 0 0;font-size:13.5px}
+
+/* ---------- cautions ---------- */
+.cautions{padding:48px 0 14px;border-bottom:1px solid var(--line)}
+.cautions h2{font-size:clamp(22px,3vw,30px);margin:0 0 22px}
+.clist{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.citem{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+.citem .cn{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t5);font-weight:600;letter-spacing:.08em}
+.citem h3{font-size:15.5px;margin:5px 0 7px}
+.citem p{margin:0;font-size:13.3px;color:var(--ink)}
+
+/* ---------- gap / proposals ---------- */
+.gapsec{padding:48px 0 14px;border-bottom:1px solid var(--line)}
+.gapsec h2{font-size:clamp(22px,3vw,30px);margin:0 0 8px}
+.gapsec .cap{font-size:14px;color:var(--muted);max-width:720px;margin:0 0 24px}
+.gap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.gap-item{background:#fff;border:1px solid var(--green);border-left:4px solid var(--green);border-radius:12px;padding:18px}
+.gap-item h3{font-size:15.5px;margin:0 0 8px;color:#1f6b53}
+.gap-item .row{font-size:13px;margin:5px 0}
+.gap-item .row .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block}
+.gap-item .status{margin-top:9px;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+
+/* ---------- design notes ---------- */
+.notes{background:var(--navy);color:#EDEBE3;border-radius:18px;padding:34px 30px;margin:48px 0}
+.notes h2{color:#fff;font-size:23px;margin:0 0 20px}
+.points{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 26px}
+.point{display:flex;gap:12px}
+.point .pn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);font-weight:600;flex-shrink:0;padding-top:2px}
+.point p{margin:0;font-size:13.5px;color:#DDE0E7}
+.point b{color:#fff}
+
+/* ---------- footer ---------- */
+footer{padding:38px 0 64px}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;border-top:1px solid var(--line);padding-top:22px}
+.foot b{color:var(--ink)}
+
+@media (max-width:640px){
+  header{padding:48px 0 28px}
+  .stops{grid-template-columns:repeat(2,1fr);gap:12px}
+  .stop{border-top:none}
+  .stop .dot{margin:0 auto 6px}
+  .code3{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="wrap">
+  <div class="eyebrow">보장 방법별 횡단 분석 · 가입조건 렌즈</div>
+  <h1>가입조건의 <em>사다리</em></h1>
+  <p class="sub">슈퍼건강체부터 무심사까지 — 같은 사람을 두고 보험사가 묻는 "건강의 자(尺)"가 어디서 멈추는지에 따라 보험료·보장·가입가능성이 갈린다.</p>
+  <p class="lead">이 지도는 질병이 아니라 <b>언더라이팅(인수심사) 강도</b>를 하나의 축으로 고정한다. 왼쪽 끝은 <b>표준체보다 건강함을 증명해 할인받는 경쟁</b>(건강체 할인), 오른쪽 끝은 <b>아무것도 묻지 않는 무심사</b>다. 그 사이를 간편고지(유병자) 보험이 <b>고지기간(3·N·5)</b>으로 잘게 나눠 채운다.</p>
+
+  <div class="axes">
+    <div class="axis">
+      <div class="k">축 ① — 건강 요구 수준</div>
+      <div class="v">건강을 더 증명할수록 보험료↓ · 거절 위험↑</div>
+    </div>
+    <div class="axis">
+      <div class="k">축 ② — 고지기간 트레이드오프</div>
+      <div class="v">고지기간이 길수록(3·10·10) 보험료↓ · 짧을수록(3·1·1) 더 아픈 사람도 가입</div>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="섹션 이동">
+    <a href="#spectrum">스펙트럼</a>
+    <a href="#decoder">3·N·5 해독</a>
+    <a href="#t1">① 건강체 할인</a>
+    <a href="#t2">② 표준체</a>
+    <a href="#t3">③ 초경증</a>
+    <a href="#t4">④ 경증</a>
+    <a href="#t5">⑤ 표준 유병자</a>
+    <a href="#t6">⑥ 중등증·맞춤</a>
+    <a href="#t7">⑦ 무심사</a>
+    <a href="#criteria">가입기준 정밀</a>
+    <a href="#matrix">차이 매트릭스</a>
+    <a href="#baseline">3종 비교</a>
+    <a href="#cautions">주의점</a>
+    <a href="#gap">기획 제안</a>
+  </nav>
+</div>
+</header>
+
+<!-- ================= SIGNATURE SPECTRUM ================= -->
+<section class="sig" id="spectrum">
+<div class="wrap">
+  <h2>하나의 축, 일곱 칸</h2>
+  <p class="cap">가장 건강한 사람(슈퍼건강체)부터 보험에서 가장 멀어졌던 사람(무심사 대상 고령·중증 병력자)까지를 한 줄로 세우면, 모든 상품이 이 축의 한 지점을 점유한다.</p>
+
+  <div class="spectrum">
+    <div class="bar" role="img" aria-label="건강체에서 무심사로 이어지는 언더라이팅 강도 그라데이션"></div>
+    <div class="ends"><span class="l">◀ 건강 증명 ↑ · 보험료 최저 · 가입 거절 가능</span><span class="r">묻지 않음 · 보험료 최고 · 보장 최소 ▶</span></div>
+
+    <div class="stops">
+      <div class="stop s1"><div class="dot"></div><b>슈퍼건강체<br>·건강체</b><span>할인 ~43%</span></div>
+      <div class="stop s2"><div class="dot"></div><b>표준체</b><span>기준선</span></div>
+      <div class="stop s3"><div class="dot"></div><b>간편 초경증</b><span>3·10·10 · 3·10·5</span></div>
+      <div class="stop s4"><div class="dot"></div><b>간편 경증</b><span>3·5·5 · 3·6·5</span></div>
+      <div class="stop s5"><div class="dot"></div><b>간편 표준</b><span>3·2·5 · 3·3·5</span></div>
+      <div class="stop s6"><div class="dot"></div><b>간편 중등증</b><span>3·1·1 · 맞춤형</span></div>
+      <div class="stop s7"><div class="dot"></div><b>무심사</b><span>고지 0 · 사망 위주</span></div>
+    </div>
+  </div>
+
+  <div class="tradeoff">
+    <div class="tcard">
+      <div class="h">왼쪽 절반 — 건강 경쟁</div>
+      <p>건강을 <b>입증</b>해 표준체보다 싸게 든다. 비흡연·혈압·BMI·혈당 기준을 통과하면 생보 최대 약 42%, 손보 최대 약 34%까지 할인. 단, 기준 미달이면 할인 탈락·심사 거절 위험.</p>
+    </div>
+    <div class="tcard">
+      <div class="h">오른쪽 절반 — 병력 수용</div>
+      <p>병력을 <b>덜 묻는</b> 대신 보험료를 더 받는다. 금감원 예시(50대 남·20년·5천만원) 기준 일반 월 66,800원 vs 간편 96,550원. 고지기간이 짧을수록 더 아픈 사람을 받지만 더 비싸다.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= 3·N·5 DECODER ================= -->
+<section class="wrap" id="decoder">
+  <div class="decoder">
+    <h3>상품명 속 숫자, 3·N·5 해독</h3>
+    <p class="dsub">'3·2·5', '3·5·5', '3·10·10', '오텐텐(5·10·10)'… 간편보험 이름의 세 숫자는 곧 가입기준이다. 회사·상품마다 세부 문구는 다르지만 뼈대는 동일하다.</p>
+    <div class="code3">
+      <div class="cseg">
+        <div class="num">3</div>
+        <div class="lbl">첫 자리 · 개월</div>
+        <p>최근 <b>3개월</b> 이내 입원·수술·추가검사(재검사) 필요 소견, 질병 확정진단·의심소견 여부. 거의 모든 상품 공통 고정값.</p>
+      </div>
+      <div class="cseg">
+        <div class="num">N</div>
+        <div class="lbl">가운데 · 년</div>
+        <p>최근 <b>N년</b> 이내 질병·사고로 입원 또는 수술 여부. 통상 1·2·3·5년, 일부 10년까지. <b>N이 클수록</b> 고지기간이 길어 보험료가 낮아진다.</p>
+      </div>
+      <div class="cseg">
+        <div class="num">5</div>
+        <div class="lbl">끝 자리 · 년</div>
+        <p>최근 <b>5년</b> 이내 암·뇌졸중·심근경색·협심증·간경화 등 중대질병 진단·입원·수술 여부. 상품에 따라 10년으로 확대.</p>
+      </div>
+    </div>
+    <p class="keyline">핵심 직관: 가운데 숫자가 <b>클수록(3·10·10)</b> "그만큼 오래 깨끗했어야" 가입되므로 <b>덜 아픈 사람</b>만 모이고 → 손해율이 낮아 <b>보험료가 싸다</b>. 반대로 <b>작을수록(3·1·1)</b> 더 최근까지 아팠던 사람도 받으므로 보험료가 비싸진다. 즉 가운데 숫자는 곧 "받아주는 병력의 깊이" 다이얼이다.</p>
+  </div>
+</section>
+
+<!-- ================= TIER 1 — 건강체 할인 ================= -->
+<section class="tier t1" id="t1">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 01</span><h2>표준체보다 건강한 경쟁 — 건강체·비흡연체 할인</h2></div>
+  <p class="tier-sub">유병자보험의 정반대 끝. 병력이 없는 것을 넘어 <b>비흡연·정상 혈압·정상 BMI·정상 혈당</b>을 증명하면 표준체보다 싸게 가입한다. 종신·정기·암·CI 등 보장성 상품의 <b>건강체 할인특약(우량체 할인)</b> 형태이며, 회사가 슈퍼건강체·건강체·비흡연체로 등급을 나눌수록 할인폭이 커진다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">슈퍼건강체 등급할인</span><span class="card-type">정기·종신 / 할인특약</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 비흡연(직전 1년+)·혈압·BMI·총콜레스테롤·혈당 전 기준 충족. 가장 엄격한 한 칸.</p>
+      <p class="card-ins">대표 · <b>KB라이프(KB착한정기보험Ⅱ, 약 40.6% 할인)</b> · <b>교보라이프플래닛((무)라이프플래닛e정기보험Ⅱ, 슈퍼건강체 약 43.5%)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">건강체(우량체) 할인</span><span class="card-type">보장성 / 할인특약</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 비흡연 + 혈압 약 139/89 이하 + BMI 약 18.5~26 충족 시 위험률 인하.</p>
+      <p class="card-ins">대표 · <b>삼성생명(삼성정기보험, 약 15.4%)</b> · <b>한화생명(스마트CEO정기보험, 약 14.7%)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">건강등급·건강나이 할인</span><span class="card-type">디지털 / 등급재산정</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 앱으로 건강검진 데이터 제출 → 건강등급/건강나이 산출. 등급 오르면 추가 할인(내려가도 인상 없음 구조 흔함).</p>
+      <p class="card-ins">대표 · <b>한화손해보험(LIFEPLUS 건강등급 건강보험, 최대 약 38%)</b> · <b>하나생명(손안에건강나이스보험, 최대 약 31%)</b> · <b>삼성화재(다이렉트 건강관리보험, 최대 약 15%)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">비흡연체 단일 할인</span><span class="card-type">정기·치아 등 / 간이</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 직전 1년 비흡연만 충족(혈압·BMI 미요구). 가장 통과하기 쉬운 건강할인.</p>
+      <p class="card-ins">대표 · <b>흥국생명(온라인 정기보험, 약 15%)</b> · <b>미래에셋생명(온라인 비흡연 딱딱 치아보험, 약 29.5%)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 2 — 표준체 ================= -->
+<section class="tier t2" id="t2">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 02</span><h2>표준체 — 기준선</h2></div>
+  <p class="tier-sub">일반심사(표준형) 보험. 고지항목이 통상 <b>10개 이상</b>으로 가장 촘촘하다(3개월·1년·5년 기준 다층 질문 + 직업·운전·음주·흡연). 통과하면 가장 넓은 보장을 가장 합리적인 보험료로 받지만, 병력·검진 이상 소견이 있으면 <b>부담보(특정 부위·질병 제외)·할증·거절</b>로 이어진다. 다른 모든 칸은 이 기준선과의 거리로 정의된다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">일반심사 종합·건강·종신</span><span class="card-type">표준형 / 전 담보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 다층 고지 전부 통과. 이상 시 부위별 부담보·보험료 할증 가능. 건강체 충족 시 Tier 01 할인 연결.</p>
+      <p class="card-ins">대표 · <b>전 생·손보 공통</b> (표준 인수기준 — 회사·상품·연령별 인수 가이드 상이)</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">표준형 실손의료보험</span><span class="card-type">표준형 / 실손</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 3개월·1년·5년 고지 통과. 유병력자실손(아래 제안 참고)보다 자기부담 낮고 보장 넓음.</p>
+      <p class="card-ins">대표 · <b>전 손보 공통</b> (표준화 상품 — 갱신·자기부담 구조 약관 확인 필요)</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 3 — 초경증 ================= -->
+<section class="tier t3" id="t3">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 03</span><h2>간편 초경증 — 3·10·10 / 3·10·5</h2></div>
+  <p class="tier-sub">유병자보험의 가장 건강한 칸. 입원·수술 고지기간을 <b>10년</b>으로 늘려, "오래전 한 번 아팠지만 근래엔 건강한" 초경증 유병자를 표적한다. 고지기간이 길어 모집단이 건강 → 간편보험 중 <b>보험료가 가장 낮다</b>. 표준심사 거절자와 일반 간편 사이의 틈을 메운다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">M-케어 건강보험 (3·10·5)</span><span class="card-type">간편고지 / 갱신·비갱신</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 3개월 소견 + <b>10년</b> 내 질병·사고 입원·수술(제왕절개 제외) + 5년 내 7대질병(암·협심증·심근경색·간경화·심장판막증·투석 만성신장·특정뇌혈관) 여부.</p>
+      <p class="card-ins">대표 · <b>미래에셋생명(M-케어 건강보험 3.10.5 간편고지)</b> · 만 15~75세, 최대 100세 보장</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">KB 오텐텐 / 삼텐텐</span><span class="card-type">간편고지 / 손보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 입원·수술 및 중대질병 고지기간을 <b>10년</b>까지 확대(첫 자리 표기는 회사별 상이). 3개월 소견·5년 중증 기록 시 가입 제한.</p>
+      <p class="card-ins">대표 · <b>KB손해보험(KB 5·10·10 오텐텐 / KB 3·10·10 삼텐텐 슬기로운 간편건강보험)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 4 — 경증 ================= -->
+<section class="tier t4" id="t4">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 04</span><h2>간편 경증 — 3·5·5 / 3·6·5</h2></div>
+  <p class="tier-sub">입원·수술 고지기간 <b>5~6년</b>. 표준 간편(3·2·5)보다 깨끗한 기간을 더 요구하는 대신 보험료를 낮춘다. 같은 시리즈 안에서 고객이 3·1·5 ~ 3·6·5처럼 가운데 숫자를 골라 <b>자기 보험료를 스스로 선택</b>하게 하는 구조가 흔하다.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">KB 3N5 슬기로운 간편건강보험</span><span class="card-type">간편고지 / 선택형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 가운데 숫자를 3·1·5부터 3·5·5/3·6·5까지 선택. 숫자가 클수록 더 긴 무사고 기간을 조건으로 보험료 인하.</p>
+      <p class="card-ins">대표 · <b>KB손해보험(KB 3N5 슬기로운 간편건강보험, 3.1.5~3.6.5)</b> — 암·뇌·심 진단·치료·수술·간병 담보</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">간편한 355 건강보험</span><span class="card-type">간편고지 / 손보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 3개월 소견 + 5년 입원·수술 + 5년 중대질병. 305·311·333·355 라인 중 가장 저렴한 칸.</p>
+      <p class="card-ins">대표 · <b>현대해상(간편한 305·311·333·355 건강보험)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">M-케어 (3·5·5 / 3·0·5)</span><span class="card-type">간편고지 / 생보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 3·0·5는 입원·수술 항목 자체를 면제(0)하고 3개월 소견 + 5년 중증만 확인하는 더 너른 변형.</p>
+      <p class="card-ins">대표 · <b>미래에셋생명(M-케어 건강보험, 3.0.5~3.5.5 간편고지)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 5 — 표준 유병자 ================= -->
+<section class="tier t5" id="t5">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 05</span><h2>간편 표준 — 3·2·5 / 3·3·5</h2></div>
+  <p class="tier-sub">유병자보험의 <b>대표 표준형</b>이자 시장 점유율의 중심. 3개월 소견 + <b>2년</b> 입원·수술 + 5년 중대질병의 세 질문만 통과하면 가입. 고혈압·당뇨 복용자, 2~3년 전 수술 이력자가 주 고객. 부위·질병 제외(부담보) 없이, 할증 없이 받는 것이 표준심사와의 핵심 차이.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">간편보험 새로고침 100세</span><span class="card-type">간편고지 / 선택형</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 가운데 입원·수술 기간을 <b>1·2·3·4·5년 중 선택</b>. 3대질병 진단비·수술비 + 골절·화상 등 일상 위험 보장.</p>
+      <p class="card-ins">대표 · <b>삼성화재(간편보험 새로고침 / 새로고침 100세)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">S간편 종합보장보험</span><span class="card-type">간편고지 / 생보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 기본 고지 3개. 2년 내 수술·5일 이하 입원 이력은 고지 없이 가입 가능(완화). 5년 내 8대 중증·2년 내 동일질병 30일 투약 시 제한.</p>
+      <p class="card-ins">대표 · <b>삼성생명(S간편 종합보장보험)</b> — 부담보·할증 없이 인수</p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">간편한 333 / THE간편고지</span><span class="card-type">간편고지 / 건강·종신</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 3개월 소견 + 3년 입원·수술 + 5년(또는 3년) 중대질병. 사망보장 중심 종신형도 동일 골격.</p>
+      <p class="card-ins">대표 · <b>현대해상(간편한 333 건강보험)</b> · <b>라이나생명(THE간편고지종신보험)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 6 — 중등증·맞춤 ================= -->
+<section class="tier t6" id="t6">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 06</span><h2>간편 중등증·맞춤형 — 3·1·1 / 305 / 311 / 35유형</h2></div>
+  <p class="tier-sub">고지기간을 <b>1년</b>까지 좁히거나(3·1·1) 중대질병 기간을 1년으로 줄여, 더 최근까지 아팠던 <b>중등증 유병자</b>까지 수용한다. 받아주는 병력이 깊은 만큼 보험료는 간편 중 가장 높다. 최근에는 입원·수술 고지를 분리하고 청구이력을 반영해 <b>치료 이력별로 보험료를 차등</b>하는 맞춤형이 확산.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">나에게맞춘 초경증 간편건강보험 (3·1·1)</span><span class="card-type">간편고지 / 손보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 입원·수술·중대질병 고지기간을 <b>1년</b>으로 단축. 고혈압·당뇨·고지혈증·근래 수술·입원 이력자도 간편심사 가입.</p>
+      <p class="card-ins">대표 · <b>DB손해보험(나에게맞춘 초경증 간편건강보험 3.1.1 / 나에게맞춘플러스 간편건강보험)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">내삶엔(3N)맞춤 간편건강보험 <span class="tag tag-new">2025 신규</span></span><span class="card-type">맞춤형 / 손보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 입원·수술 고지기간을 각각 5년까지 <b>분리</b> → 총 35가지 가입유형. 청구이력 기반 맞춤 안내. 무사고 시 매년 더 싼 유형으로 전환(최대 9년·약 38%↓).</p>
+      <p class="card-ins">대표 · <b>현대해상(내삶엔 3N맞춤 간편건강보험, 2025.11 출시)</b></p>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-name">간편한 305 / 311</span><span class="card-type">간편고지 / 손보</span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 305는 입원·수술 항목을 면제(0)하되 중대질병 5년 확인, 311은 입원·수술·중대질병 모두 1년으로 좁힌 변형.</p>
+      <p class="card-ins">대표 · <b>현대해상(간편한 305·311 건강보험)</b></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= TIER 7 — 무심사 ================= -->
+<section class="tier t7" id="t7">
+<div class="wrap">
+  <div class="tier-head"><span class="tier-no">TIER 07</span><h2>무심사 — 고지 0 · 사망 위주</h2></div>
+  <p class="tier-sub">스펙트럼의 끝. <b>계약 전 알릴 의무·건강검진 없이</b> 누구나 가입하고 보험사는 거절할 수 없다. 대신 보장은 <b>사망(정기·종신) 소액</b>으로 한정되고, 가입 후 일정기간(통상 2년) 내 질병 사망 시 보험금 대신 기납입보험료를 돌려주는 구조가 흔하다. 고령·중증 병력으로 간편보험조차 어려운 경우의 마지막 수단.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="card-name">무심사 사망보장 (정기·종신)</span><span class="card-type">무심사 / 사망 <span class="tag tag-age">고령</span></span></div>
+      <p class="card-trig"><span class="tg">트리거</span> 고지·심사 없음. 가입연령 통상 <b>50~80세</b>, 사망보험금 한도 통상 <b>1,000~3,000만원</b>. 가입 후 2년 내 질병사망 시 감액(기납입보험료 환급) 구조 흔함.</p>
+      <p class="card-ins">대표 · <b>일부 생·손보(추가 확인 필요)</b> — 과거 라이나생명·AIA생명·KB생명·DB손해보험·AIG손해보험·처브(ACE) 등 출시. 상품명에 "무심사·무사통과·바로가입" 표기</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= DEEP-DIVE CRITERIA ================= -->
+<section class="deep" id="criteria">
+<div class="wrap">
+  <h2>가입기준 정밀 — 간편고지 3대 질문, 무엇이 걸리나</h2>
+  <p class="cap">간편보험은 "3가지만 묻는다"지만, 그 안에 함정이 많다. 같은 표현이라도 무엇이 입원·수술로 잡히는지가 가입과 보험금을 가른다. 아래는 시장 통용 골격이며 <b>회사·상품·약관·가입시점별로 달라진다.</b></p>
+
+  <div class="qgrid">
+    <div class="qcard">
+      <div class="qn">1</div>
+      <div class="qk">최근 3개월 · 의사 소견</div>
+      <h3>입원·수술·재검사 필요 소견</h3>
+      <ul>
+        <li>3개월 내 의사로부터 <b>입원·수술·추가검사(재검사)</b> 필요 소견을 받았는가</li>
+        <li>3개월 내 <b>질병 확정진단 또는 의심소견</b>을 받았는가 (예: 당뇨 의심)</li>
+        <li>"소견"은 실제 시행 여부와 무관 — 권유받은 사실만으로 해당</li>
+      </ul>
+      <p class="warn"><b>함정</b> 건강검진 결과 "재검사 요망"도 여기에 걸릴 수 있다.</p>
+    </div>
+
+    <div class="qcard">
+      <div class="qn">2</div>
+      <div class="qk">최근 N년 · 입원·수술</div>
+      <h3>질병·사고로 입원 또는 수술</h3>
+      <ul>
+        <li>N년(1·2·3·5·10년, 상품선택) 내 질병·상해로 <b>입원 또는 수술</b> 이력</li>
+        <li><b>제왕절개</b>는 포함/제외가 상품마다 다름 — 반드시 확인</li>
+        <li>일부 상품은 6일 이상 입원, 30일 이상 투약 등으로 문턱을 둠</li>
+      </ul>
+      <p class="warn"><b>함정</b> 대장내시경 중 <b>용종 제거</b>는 '수술'로 잡혀 여기에 해당될 수 있다.</p>
+    </div>
+
+    <div class="qcard">
+      <div class="qn">3</div>
+      <div class="qk">최근 5년(또는 10년) · 중대질병</div>
+      <h3>주요 질병 진단·입원·수술</h3>
+      <ul>
+        <li>암·뇌졸중(뇌출혈·뇌경색)·심근경색·협심증·심장판막증·간경화 등</li>
+        <li>상품에 따라 투석 중 만성신장질환·파킨슨병·루게릭병·백혈병 등 추가</li>
+        <li>이 질병군에 걸리면 대개 가장 좁은 칸(3·1·1)·무심사로 밀려남</li>
+      </ul>
+      <p class="warn"><b>함정</b> "같은 이름의 진단비라도 보장 질병코드 범위가 상품마다 다르다."</p>
+    </div>
+  </div>
+
+  <div class="midnote">
+    <b>간편고지의 진짜 장점</b> — 표준심사는 병력이 있으면 해당 <b>부위·질병을 보장에서 제외(부담보)</b>하거나 보험료를 <b>할증</b>한다. 간편보험은 위 3대 질문만 통과하면 <b>부담보·할증 없이</b> 전체를 인수한다. 그래서 "건강검진에서 이상 소견이 잡힌 부위를 빼지 않고 보장받으려는" 경증 유병자에게도 합리적 선택이 된다. 다만 직업·운전·음주·흡연 등 기본 고지는 간편보험에도 남아있다.
+  </div>
+</div>
+</section>
+
+<!-- ================= DIFFERENCE MATRIX ================= -->
+<section class="matrix" id="matrix">
+<div class="wrap">
+  <h2>차이 매트릭스 — 같은 사람, 다른 칸</h2>
+  <p class="cap">가입조건이라는 하나의 니즈를 7개 칸으로 가로질러, 트리거·대상·연령·한도·보험료·감액을 한 표로 대조한다. 판매사는 각 유형을 운영하는 <b>검증된 예시</b>이며 보장·금액·조건은 상품·약관별로 다르다.</p>
+  <div class="scroll">
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th>칸 (가입조건)</th>
+          <th>가입 트리거</th>
+          <th>주 대상</th>
+          <th>가입연령(통상)</th>
+          <th>보장·한도 경향</th>
+          <th>보험료 수준</th>
+          <th>감액·면책</th>
+          <th>대표 판매사 (예시)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th><span class="pill" style="background:var(--t1)"></span>① 슈퍼건강체·건강체</th>
+          <td>비흡연+혈압+BMI(+혈당·콜레스테롤) 충족 입증</td>
+          <td>표준체보다 건강한 사람</td>
+          <td>20세~</td>
+          <td>표준과 동일·넓음</td>
+          <td><span class="lvl lo">최저(할인 ~43%)</span></td>
+          <td>표준 약관 따름</td>
+          <td><span class="cm-ins">KB라이프·교보라이프플래닛·한화손보·삼성생명</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t2)"></span>② 표준체</th>
+          <td>다층 고지(3개월·1년·5년) 전부 통과</td>
+          <td>병력 없는 일반 가입자</td>
+          <td>0~70세대</td>
+          <td>가장 넓음(기준선)</td>
+          <td><span class="lvl lo">기준선</span></td>
+          <td>담보별 면책·감액</td>
+          <td><span class="cm-ins">전 생·손보 공통</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t3)"></span>③ 간편 초경증 (3·10·x)</th>
+          <td>10년 무입원·무수술 + 5년 무중증</td>
+          <td>오래전 1회 병력·근래 건강</td>
+          <td>15~75세</td>
+          <td>핵심담보 + 특약</td>
+          <td><span class="lvl mid">간편 중 최저</span></td>
+          <td>1년 이내 50% 흔함</td>
+          <td><span class="cm-ins">미래에셋생명·KB손해보험</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t4)"></span>④ 간편 경증 (3·5·5)</th>
+          <td>5~6년 무입원·무수술 + 5년 무중증</td>
+          <td>5년 전후 수술·입원 이력자</td>
+          <td>15~75세대</td>
+          <td>3대질병 중심</td>
+          <td><span class="lvl mid">중</span></td>
+          <td>1년 이내 50% 흔함</td>
+          <td><span class="cm-ins">KB손해보험·현대해상·미래에셋생명</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t5)"></span>⑤ 간편 표준 (3·2·5)</th>
+          <td>2~3년 무입원·무수술 + 5년 무중증</td>
+          <td>고혈압·당뇨 복용, 최근 수술 이력</td>
+          <td>30~70세대</td>
+          <td>부담보·할증 없이 인수</td>
+          <td><span class="lvl hi">높음(일반 대비 30~50%↑)</span></td>
+          <td>1년 이내 50% 흔함</td>
+          <td><span class="cm-ins">삼성화재·삼성생명·현대해상·라이나생명</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t6)"></span>⑥ 간편 중등증·맞춤 (3·1·1)</th>
+          <td>1년 무입원·무수술·무중증 / 청구이력 반영</td>
+          <td>근래까지 치료한 중등증 유병자</td>
+          <td>40~80세 근접</td>
+          <td>담보·한도 제한 큼</td>
+          <td><span class="lvl xhi">간편 중 최고</span></td>
+          <td>감액기간 + 보장범위 제한</td>
+          <td><span class="cm-ins">DB손해보험·현대해상</span></td>
+        </tr>
+        <tr>
+          <th><span class="pill" style="background:var(--t7)"></span>⑦ 무심사</th>
+          <td>고지·심사 없음(거절 불가)</td>
+          <td>고령·중증 병력자</td>
+          <td>50~80세</td>
+          <td>사망 1~3천만 소액</td>
+          <td><span class="lvl xhi">최고(보장 대비)</span></td>
+          <td>2년 내 질병사망 시 보험료 환급</td>
+          <td><span class="cm-ins">일부 생·손보(추가 확인 필요)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<!-- ================= BASELINE 3-COL ================= -->
+<section class="base" id="baseline">
+<div class="wrap">
+  <h2>일반심사 ↔ 간편심사 ↔ 무심사</h2>
+  <div class="bcols">
+    <div class="bcol b1">
+      <div class="bt">일반심사 (표준)</div>
+      <div class="bm">STANDARD UNDERWRITING</div>
+      <dl>
+        <dt>고지항목</dt><dd>통상 10개 이상 (다층)</dd>
+        <dt>병력 처리</dt><dd>부담보·할증·거절 가능</dd>
+        <dt>보험료</dt><dd>가장 저렴 (건강체 추가할인)</dd>
+        <dt>보장</dt><dd>가장 넓음</dd>
+        <dt>적합</dt><dd>병력 없는 사람 — <b>항상 먼저 시도</b></dd>
+      </dl>
+    </div>
+    <div class="bcol b2">
+      <div class="bt">간편심사 (유병자)</div>
+      <div class="bm">SIMPLIFIED ISSUE · 3·N·5</div>
+      <dl>
+        <dt>고지항목</dt><dd>핵심 3가지 (3개월·N년·5년)</dd>
+        <dt>병력 처리</dt><dd>통과 시 부담보·할증 없이 인수</dd>
+        <dt>보험료</dt><dd>일반 대비 30~50%↑ (최대 2배+)</dd>
+        <dt>보장</dt><dd>3대질병 중심, 다소 좁음·감액기간</dd>
+        <dt>적합</dt><dd>일반심사 거절·부담보 받은 경증~중등증</dd>
+      </dl>
+    </div>
+    <div class="bcol b3">
+      <div class="bt">무심사</div>
+      <div class="bm">GUARANTEED ISSUE</div>
+      <dl>
+        <dt>고지항목</dt><dd>없음 (심사 없음)</dd>
+        <dt>병력 처리</dt><dd>거절 불가</dd>
+        <dt>보험료</dt><dd>보장 대비 최고</dd>
+        <dt>보장</dt><dd>사망 1~3천만 소액 위주</dd>
+        <dt>적합</dt><dd>간편보험도 어려운 고령·중증</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= CAUTIONS ================= -->
+<section class="cautions" id="cautions">
+<div class="wrap">
+  <h2>가입 전 점검 — 함정과 주의점</h2>
+  <div class="clist">
+    <div class="citem">
+      <div class="cn">CAUTION 01</div>
+      <h3>일반보험을 먼저 확인하라</h3>
+      <p>간편보험 가입 후 "사실 일반보험에 들 수 있었다"는 걸 뒤늦게 알아도 보험사에 책임을 물을 수 없다. 표준심사 → 부담보 감수 → 간편 → 무심사 순으로 위에서부터 시도하는 게 원칙.</p>
+    </div>
+    <div class="citem">
+      <div class="cn">CAUTION 02</div>
+      <h3>감액기간이 있다</h3>
+      <p>가입 후 1년(또는 일정기간) 이내 진단 시 약속 금액의 50%만 지급되는 구조가 흔하다. "가입 즉시 100% 보장"으로 오인하지 말 것.</p>
+    </div>
+    <div class="citem">
+      <div class="cn">CAUTION 03</div>
+      <h3>대부분 갱신형 — 인상 위험</h3>
+      <p>간편·무심사는 갱신형이 많아 갱신 시점에 보험료가 오를 수 있다. 무심사는 보험사 자체 손해율로 갱신돼 인상폭이 클 수 있다.</p>
+    </div>
+    <div class="citem">
+      <div class="cn">CAUTION 04</div>
+      <h3>'수술'의 정의를 확인하라</h3>
+      <p>대장내시경 용종 제거, 백내장, 점 제거 등도 약관상 '수술'로 잡혀 고지 대상이 될 수 있다. 제왕절개 포함 여부도 상품마다 다르다.</p>
+    </div>
+    <div class="citem">
+      <div class="cn">CAUTION 05</div>
+      <h3>고지의무 위반 = 보장 무력화</h3>
+      <p>간소화됐다고 대충 답하면 "계약 전 알릴의무 위반"으로 계약 해지·보험금 거절될 수 있다. 적게 묻는 만큼 각 항목의 무게가 크다.</p>
+    </div>
+    <div class="citem">
+      <div class="cn">CAUTION 06</div>
+      <h3>건강할인은 자동이 아니다</h3>
+      <p>Tier 01 할인은 신청·증빙(비흡연 검사 등)이 필요하다. 생·손보협회 공시실에서 상품별 할인율·조건을 비교한 뒤 신청해야 놓치지 않는다.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= GAP / PROPOSALS ================= -->
+<section class="gapsec" id="gap">
+<div class="wrap">
+  <h2>기획 제안 — 사다리의 빈 칸</h2>
+  <p class="cap">암·뇌·심 보장 세트를 기준선으로, 이 가입조건 축에서 아직 비어있거나 막 채워지는 구간을 짚는다. 출시된 항목은 검증된 판매사를 명시한다.</p>
+  <div class="gap-grid">
+    <div class="gap-item">
+      <h3>건강관리 연동 동적 전환</h3>
+      <div class="row"><span class="k">왜 필요한가</span>가입 시점 병력으로 보험료가 고정되면, 이후 건강을 회복해도 혜택이 없다.</div>
+      <div class="row"><span class="k">기준선</span>건강체 할인의 '등급 재산정'을 유병자 칸에 이식.</div>
+      <div class="status">현황 · 일부 출시 — <b>현대해상 내삶엔 3N(무사고 계약전환, 최대 9년·38%↓)</b>. 다른 칸으로 확산 여지.</div>
+    </div>
+    <div class="gap-item">
+      <h3>고지유형 분리·맞춤 가격</h3>
+      <div class="row"><span class="k">왜 필요한가</span>입원만 한 사람과 수술까지 한 사람을 같은 보험료로 묶는 통합 고지는 불공정.</div>
+      <div class="row"><span class="k">기준선</span>입원·수술 고지기간 분리 + 청구이력 반영 차등.</div>
+      <div class="status">현황 · 출시 초기 — <b>현대해상(35유형 분리)</b>. 생보·타 손보 확대 미흡.</div>
+    </div>
+    <div class="gap-item">
+      <h3>초경증 비갱신 장기 고정</h3>
+      <div class="row"><span class="k">왜 필요한가</span>갱신형 인상 위험이 유병자 부담의 핵심. 초경증층은 비갱신 수요가 크다.</div>
+      <div class="row"><span class="k">기준선</span>3·10·x 초경증 + 비갱신 30년 고정.</div>
+      <div class="status">현황 · 일부 출시 — <b>미래에셋생명 M-케어(3.10.5 비갱신→갱신 라인)</b>. 손보권 비갱신 옵션 확대 여지.</div>
+    </div>
+    <div class="gap-item">
+      <h3>유병력자 실손의 문턱 완화</h3>
+      <div class="row"><span class="k">왜 필요한가</span>진단·수술비 간편보험은 많지만, 실제 치료비를 메우는 유병자 실손은 자기부담·보장이 박하다.</div>
+      <div class="row"><span class="k">기준선</span>유병력자실손(자기부담 30%·입원 10만/통원 2만) 완화·확대.</div>
+      <div class="status">현황 · 표준화 운영 중(전 손보) — 보장 범위·자기부담 개선은 제도 영역.</div>
+    </div>
+    <div class="gap-item">
+      <h3>중대질병 진단 후 '재기' 상품</h3>
+      <div class="row"><span class="k">왜 필요한가</span>암·뇌·심 진단 이력자는 3·1·1조차 5년·중증 항목에서 막혀 무심사로 밀린다.</div>
+      <div class="row"><span class="k">기준선</span>관해·안정기 기준의 별도 인수(예: 완치 후 N년) 트랙.</div>
+      <div class="status">현황 · 신규 영역(추가 확인 필요) — 표준화 이전, 보장 공백 큼.</div>
+    </div>
+    <div class="gap-item">
+      <h3>무심사–간편 사이 '초간편 단일고지'</h3>
+      <div class="row"><span class="k">왜 필요한가</span>무심사는 사망 소액뿐, 간편 최저칸도 1년 고지가 필요. 그 사이 진단·간병 수요가 빈다.</div>
+      <div class="row"><span class="k">기준선</span>"현재 입원·수술 예정 여부" 1문항형 + 진단·간병 소액 담보.</div>
+      <div class="status">현황 · 부분 출시(일부 생·손보 초간편) — 진단·간병 담보 결합은 미흡.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= DESIGN NOTES ================= -->
+<div class="wrap">
+  <div class="notes">
+    <h2>설계 핵심 6</h2>
+    <div class="points">
+      <div class="point"><span class="pn">01</span><p><b>축은 질병이 아니라 심사 강도다.</b> 건강체 할인과 무심사를 같은 자 위에 놓으면 모든 상품이 한 지점을 점유한다.</p></div>
+      <div class="point"><span class="pn">02</span><p><b>가운데 숫자 = 받아주는 병력의 깊이.</b> 3·10·10은 덜 아픈 사람·저렴, 3·1·1은 더 아픈 사람·고가. 역설을 명시했다.</p></div>
+      <div class="point"><span class="pn">03</span><p><b>경증→중증을 고지기간으로 정렬.</b> 초경증(10년)→경증(5년)→표준(2년)→중등증(1년)→무심사(0)로 한 방향.</p></div>
+      <div class="point"><span class="pn">04</span><p><b>왼쪽엔 '건강 경쟁'을 대등하게.</b> 슈퍼건강체·건강체·비흡연체·건강나이를 별도 칸으로 세워 표준체보다 건강한 시장을 분석.</p></div>
+      <div class="point"><span class="pn">05</span><p><b>3대 질문의 함정을 정밀화.</b> 용종 제거=수술, 제왕절개 포함 여부, 재검사 소견 등 실제 거절 포인트를 명시.</p></div>
+      <div class="point"><span class="pn">06</span><p><b>모든 칸에 검증된 판매사.</b> 실명은 확인분만, 보편 항목은 '전 생·손보 공통', 미확인은 '추가 확인 필요'로 정직하게.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+<div class="wrap">
+  <p class="foot">
+    <b>면책·참고 고지.</b> 본 자료는 보험 보장 구조를 한눈에 파악하기 위한 <b>교육·기획용 참고 자료</b>이며, 특정인을 위한 가입 권유·재무 설계가 아닙니다. 가입조건·고지항목·고지기간·감액기간·할인율·보장한도·판매사는 회사·상품·약관·가입시점 및 제도 변경에 따라 달라지므로, 실제 가입·보장 판단 시 반드시 <b>해당 상품 약관 및 상품설명서 원문</b>과 생명보험협회·손해보험협회 공시실을 확인해야 합니다. 표기된 판매사·상품·할인율(예: 슈퍼건강체 ~43%, KB라이프 ~40.6%, 간편 일반 대비 30~50%↑, 금감원 50대 남·20년·5천만원 예시 등)은 해당 유형을 운영하는 <b>검증된 예시</b>로서 동일 명칭이라도 보장·금액·조건은 상품·약관별로 다릅니다. 숫자 코드(3·N·5 등)의 세부 정의와 중대질병 목록은 상품마다 상이합니다. 무심사 상품의 현재 판매사는 추가 확인이 필요합니다.
+  </p>
+</div>
+</footer>
+
+</body>
+</html>
