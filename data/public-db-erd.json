@@ -2002,16 +2002,19 @@
         "columns": [
           {
             "name": "保険者ID",
+            "ko": "보험자 ID",
             "key": true,
             "desc": "보험자 ID — 건강보험조합 식별자(PK). 한국 NHIS는 단일 보험자라 직장/지역 구분으로 대응."
           },
           {
             "name": "保険者名",
+            "ko": "보험자명",
             "key": false,
             "desc": "보험자명."
           },
           {
             "name": "業種区分",
+            "ko": "업종 구분",
             "key": false,
             "desc": "업종 구분."
           }
@@ -2027,26 +2030,31 @@
         "columns": [
           {
             "name": "加入者ID",
+            "ko": "가입자 ID",
             "key": true,
             "desc": "가입자 ID — 전 레이어를 잇는 단일 결합 허브키(PK). 한국 NSC2의 RN_INDI에 대응. 위험률 산출의 개인 단위."
           },
           {
             "name": "世帯ID",
+            "ko": "세대 ID",
             "key": true,
             "desc": "세대 ID — 가족 단위 결합키(FK)."
           },
           {
             "name": "保険者ID",
+            "ko": "보험자 ID",
             "key": true,
             "desc": "보험자 ID(FK) — 보험자 연결키."
           },
           {
             "name": "性別 / 生年月 / 続柄",
+            "ko": "성별 / 생년월 / 관계(본인·가족)",
             "key": false,
             "desc": "성별·생년월·관계(본인/가족) — 연령·성별 위험률 산출의 기본 인구변수."
           },
           {
             "name": "資格取得·喪失年月",
+            "ko": "자격 취득·상실 연월",
             "key": false,
             "desc": "자격 취득·상실 연월 — 관찰기간(노출) 산정·중도절단 처리에 사용."
           }
@@ -2062,26 +2070,31 @@
         "columns": [
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID — 청구 1건 식별(PK). 상병·행위·약·DPC를 잇는 청구 단위 허브. 한국 NSC2의 RN_KEY에 대응."
           },
           {
             "name": "加入者ID",
+            "ko": "가입자 ID",
             "key": true,
             "desc": "가입자 ID(FK) — 개인 결합키."
           },
           {
             "name": "医療機関ID",
+            "ko": "의료기관 ID",
             "key": true,
             "desc": "의료기관 ID(FK) — 요양기관 연결키."
           },
           {
             "name": "レセプト種別",
+            "ko": "레세프트 종별(입원/외래/DPC/조제)",
             "key": false,
             "desc": "레세프트 종별 — 입원/외래/DPC/조제 구분. 입원·통원 구분(발생률 트랙)의 핵심."
           },
           {
             "name": "診療年月 / 請求点数",
+            "ko": "진료 연월 / 청구 점수",
             "key": false,
             "desc": "진료 연월(발생 시점)·청구 점수(진료비)."
           }
@@ -2097,26 +2110,31 @@
         "columns": [
           {
             "name": "傷病ID",
+            "ko": "상병 ID",
             "key": true,
             "desc": "상병 ID(PK)."
           },
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID(FK) — 청구건 연결키."
           },
           {
             "name": "ICD10コード",
+            "ko": "ICD10 코드",
             "key": false,
             "desc": "상병코드(ICD-10) — 특정질병 식별의 핵심 컬럼(한국 KCD에 대응)."
           },
           {
             "name": "主傷病/疑い · 転帰",
+            "ko": "주상병/의심 · 전귀",
             "key": false,
             "desc": "주상병/의심·전귀 — 확정진단 식별(의심상병 제외)에 사용."
           },
           {
             "name": "診療開始日",
+            "ko": "진료 개시일",
             "key": false,
             "desc": "진료 개시일 — 발생 시점(최초발생률·washout 산정)."
           }
@@ -2132,26 +2150,31 @@
         "columns": [
           {
             "name": "行為ID",
+            "ko": "행위 ID",
             "key": true,
             "desc": "행위 ID(PK)."
           },
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID(FK) — 청구건 연결키."
           },
           {
             "name": "診療行為コード",
+            "ko": "진료행위 코드",
             "key": false,
             "desc": "진료행위 코드 — 수술·시술 코드 식별(수술 건수 산출)."
           },
           {
             "name": "点数 / 回数",
+            "ko": "점수 / 횟수",
             "key": false,
             "desc": "점수/횟수 — 수술·시술 실시 횟수(수술 건수)."
           },
           {
             "name": "実施年月日",
+            "ko": "실시 연월일",
             "key": false,
             "desc": "실시 연월일."
           }
@@ -2167,26 +2190,31 @@
         "columns": [
           {
             "name": "医薬品明細ID",
+            "ko": "의약품 명세 ID",
             "key": true,
             "desc": "의약품 명세 ID(PK)."
           },
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID(FK)."
           },
           {
             "name": "医薬品コード(YJ)",
+            "ko": "의약품 코드(YJ)",
             "key": false,
             "desc": "의약품 코드(YJ) — 한국 주성분코드에 대응."
           },
           {
             "name": "用量 / 投与日数",
+            "ko": "용량 / 투여 일수",
             "key": false,
             "desc": "용량/투여 일수."
           },
           {
             "name": "点数",
+            "ko": "점수",
             "key": false,
             "desc": "점수."
           }
@@ -2202,21 +2230,25 @@
         "columns": [
           {
             "name": "器材ID",
+            "ko": "기재 ID",
             "key": true,
             "desc": "기재 ID(PK)."
           },
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID(FK)."
           },
           {
             "name": "特定器材コード",
+            "ko": "특정기재 코드",
             "key": false,
             "desc": "특정기재 코드."
           },
           {
             "name": "名称 / 数量",
+            "ko": "명칭 / 수량",
             "key": false,
             "desc": "명칭/수량."
           }
@@ -2232,16 +2264,19 @@
         "columns": [
           {
             "name": "医療機関ID",
+            "ko": "의료기관 ID",
             "key": true,
             "desc": "의료기관 ID(PK) — 요양기관 마스터키. 한국 요양기관 현황 DB에 대응."
           },
           {
             "name": "名称 / 種別",
+            "ko": "명칭 / 종별",
             "key": false,
             "desc": "명칭/종별(병원·의원 등)."
           },
           {
             "name": "地域(都道府県)",
+            "ko": "지역(도도부현)",
             "key": false,
             "desc": "지역(도도부현)."
           }
@@ -2257,26 +2292,31 @@
         "columns": [
           {
             "name": "DPCID",
+            "ko": "DPC ID",
             "key": true,
             "desc": "DPC ID(PK)."
           },
           {
             "name": "レセプトID",
+            "ko": "레세프트 ID",
             "key": true,
             "desc": "레세프트 ID(FK) — 입원 레세프트 1:0..1 연결."
           },
           {
             "name": "診断群分類コード",
+            "ko": "진단군분류 코드(14자리)",
             "key": false,
             "desc": "진단군분류 코드(14자리) — 입원 질병군. 한국 DRG와 입자도 차이 유의."
           },
           {
             "name": "入院日 / 退院日",
+            "ko": "입원일 / 퇴원일",
             "key": false,
             "desc": "입원일/퇴원일 — 입원일수(재원일수) 산출의 핵심."
           },
           {
             "name": "入院経路 / 退院転帰",
+            "ko": "입원 경로 / 퇴원 전귀",
             "key": false,
             "desc": "입원 경로/퇴원 전귀(치료결과·사망 포함)."
           }
@@ -2292,21 +2332,25 @@
         "columns": [
           {
             "name": "健診ID",
+            "ko": "건진 ID",
             "key": true,
             "desc": "건진 ID(PK)."
           },
           {
             "name": "加入者ID",
+            "ko": "가입자 ID",
             "key": true,
             "desc": "가입자 ID(FK) — 개인 결합키."
           },
           {
             "name": "実施年月日",
+            "ko": "실시 연월일",
             "key": false,
             "desc": "실시 연월일."
           },
           {
             "name": "健診種別",
+            "ko": "건진 종별(정기/특정건진)",
             "key": false,
             "desc": "건진 종별(정기/특정건진)."
           }
@@ -2322,26 +2366,31 @@
         "columns": [
           {
             "name": "健診ID",
+            "ko": "건진 ID",
             "key": true,
             "desc": "건진 ID(FK)."
           },
           {
             "name": "身長·体重·BMI / 腹囲",
+            "ko": "신장·체중·BMI / 복위",
             "key": false,
             "desc": "신장·체중·BMI/복위 — 위험요인."
           },
           {
             "name": "血圧 / 脂質(LDL·HDL·TG)",
+            "ko": "혈압 / 지질(LDL·HDL·TG)",
             "key": false,
             "desc": "혈압/지질 — 위험요인."
           },
           {
             "name": "血糖·HbA1c / 肝(AST·ALT·γGTP)",
+            "ko": "혈당·HbA1c / 간기능(AST·ALT·γGTP)",
             "key": false,
             "desc": "혈당/간기능 — 위험요인."
           },
           {
             "name": "eGFR",
+            "ko": "사구체여과율",
             "key": false,
             "desc": "사구체여과율."
           }
@@ -2357,21 +2406,25 @@
         "columns": [
           {
             "name": "健診ID",
+            "ko": "건진 ID",
             "key": true,
             "desc": "건진 ID(FK)."
           },
           {
             "name": "喫煙 / 飲酒",
+            "ko": "흡연 / 음주",
             "key": false,
             "desc": "흡연/음주 — 건강행태."
           },
           {
             "name": "運動習慣",
+            "ko": "운동 습관",
             "key": false,
             "desc": "운동 습관."
           },
           {
             "name": "服薬状況",
+            "ko": "복약 상황(혈압·혈당·지질)",
             "key": false,
             "desc": "복약 상황(혈압·혈당·지질)."
           }
@@ -2387,21 +2440,25 @@
         "columns": [
           {
             "name": "指導ID",
+            "ko": "지도 ID",
             "key": true,
             "desc": "지도 ID(PK)."
           },
           {
             "name": "加入者ID",
+            "ko": "가입자 ID",
             "key": true,
             "desc": "가입자 ID(FK)."
           },
           {
             "name": "支援レベル",
+            "ko": "지원 레벨(적극적/동기부여)",
             "key": false,
             "desc": "지원 레벨(적극적/동기부여)."
           },
           {
             "name": "実施状況 / 実施日",
+            "ko": "실시 상황 / 실시일",
             "key": false,
             "desc": "실시 상황/실시일."
           }
@@ -2417,21 +2474,25 @@
         "columns": [
           {
             "name": "PHRID",
+            "ko": "PHR ID",
             "key": true,
             "desc": "PHR ID(PK)."
           },
           {
             "name": "加入者ID",
+            "ko": "가입자 ID",
             "key": true,
             "desc": "가입자 ID(FK)."
           },
           {
             "name": "歩数 / 心拍数 / 体重",
+            "ko": "걸음 수 / 심박수 / 체중",
             "key": false,
             "desc": "걸음 수/심박수/체중 — 웨어러블 자가측정."
           },
           {
             "name": "記録日",
+            "ko": "기록일",
             "key": false,
             "desc": "기록일."
           }

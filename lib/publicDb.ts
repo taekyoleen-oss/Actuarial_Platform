@@ -9,6 +9,8 @@ export interface DbColumn {
   name: string;
   key: boolean;
   desc: string;
+  /** 한글 병기 라벨 — 외국어 필드명(JMDC 등)에 한글을 함께 표시할 때 사용 */
+  ko?: string;
 }
 export interface DbTable {
   id: string;

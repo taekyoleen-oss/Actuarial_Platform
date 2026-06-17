@@ -419,9 +419,44 @@ function ErdBox({
       <p className="mt-0.5 font-mono text-[11px] text-placeholder">
         {table.name} · {table.unit}
       </p>
-      {/* 박스는 컴팩트하게 — 평소엔 키 컬럼, 위험률 모드엔 위험률 필드만 칩으로.
-          전체 컬럼은 박스를 누르면 아래 상세 패널에서 본다(연결선 가독성 확보). */}
       {(() => {
+        // 한글 병기(ko)가 있는 DB(JMDC 등) → 모든 필드를 작은 글씨로 한글과 함께 표시.
+        const bilingual = table.columns.some((c) => c.ko);
+        if (bilingual) {
+          return (
+            <ul className="mt-1.5 space-y-px">
+              {table.columns.map((c) => {
+                const isRisk = riskCols.has(`${table.name}.${c.name}`);
+                const dim = riskOn && !isRisk;
+                return (
+                  <li
+                    key={c.name}
+                    className={`leading-snug ${dim ? "opacity-30" : ""}`}
+                  >
+                    <span
+                      className={`font-mono text-[9.5px] ${
+                        riskOn && isRisk
+                          ? "font-semibold text-brand-sky"
+                          : c.key
+                            ? "font-semibold text-chip-blue-fg"
+                            : "text-foreground"
+                      }`}
+                    >
+                      {c.key ? "● " : ""}
+                      {c.name}
+                    </span>
+                    {c.ko && (
+                      <span className="ml-1 text-[8.5px] text-tertiary">
+                        {c.ko}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        }
+        // 그 외 DB는 컴팩트하게 — 평소엔 키 컬럼, 위험률 모드엔 위험률 필드만.
         const shown = riskOn
           ? table.columns.filter((c) => riskCols.has(`${table.name}.${c.name}`))
           : table.columns.filter((c) => c.key);
@@ -482,21 +517,28 @@ function ColumnDetail({
                 dimmed ? "opacity-40" : ""
               } ${riskOn && isRisk ? "-mx-2 rounded bg-chip-blue-bg px-2" : ""}`}
             >
-              <dt className="flex shrink-0 items-center gap-1.5 sm:w-44">
-                {c.key && (
-                  <KeyRound size={12} className="shrink-0 text-brand-sky" />
-                )}
-                <span
-                  className={`font-mono text-[13px] ${
-                    c.key ? "font-semibold text-chip-blue-fg" : "text-foreground"
-                  }`}
-                >
-                  {c.name}
-                </span>
-                {riskOn && isRisk && (
-                  <span className="rounded-full bg-brand-sky px-1.5 py-0.5 text-[9px] font-bold text-white">
-                    위험률
+              <dt className="flex shrink-0 flex-col gap-0.5 sm:w-48">
+                <span className="flex items-center gap-1.5">
+                  {c.key && (
+                    <KeyRound size={12} className="shrink-0 text-brand-sky" />
+                  )}
+                  <span
+                    className={`font-mono text-[13px] ${
+                      c.key
+                        ? "font-semibold text-chip-blue-fg"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {c.name}
                   </span>
+                  {riskOn && isRisk && (
+                    <span className="rounded-full bg-brand-sky px-1.5 py-0.5 text-[9px] font-bold text-white">
+                      위험률
+                    </span>
+                  )}
+                </span>
+                {c.ko && (
+                  <span className="text-[11.5px] text-tertiary">{c.ko}</span>
                 )}
               </dt>
               <dd className="text-[14px] leading-relaxed text-body">{c.desc}</dd>
