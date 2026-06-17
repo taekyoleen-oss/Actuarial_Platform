@@ -8,9 +8,12 @@ import path from "node:path";
  */
 export const THEORY_TOPICS = [
   { slug: "life", name: "생명보험" },
+  { slug: "pension", name: "연금" },
   { slug: "general", name: "손해보험" },
   { slug: "reinsurance", name: "재보험" },
-  { slug: "statistics", name: "보험통계" },
+  { slug: "risk", name: "위험·파산이론" },
+  { slug: "finance", name: "금융·투자" },
+  { slug: "statistics", name: "확률·통계" },
 ] as const;
 
 export type TheoryTopicSlug = (typeof THEORY_TOPICS)[number]["slug"];

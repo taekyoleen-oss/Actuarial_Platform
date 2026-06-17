@@ -272,7 +272,7 @@ export default async function HomePage() {
                   THEORY · 보험이론 사전
                 </div>
                 <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  생명·손해·재보험·통계 {theoryCount}편 해설서
+                  생명·연금·손해·재보험·위험·금융·통계 {theoryCount}편 해설서
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
                   이론과 한국 보험시장 현황을 함께 다루는 학습 해설서
