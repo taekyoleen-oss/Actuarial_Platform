@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>확률적 투자모형 (Stochastic Investment Models) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 금융·투자</div>
+<h1>확률적 투자모형</h1>
+<div class="meta">Stochastic Investment Models &nbsp;·&nbsp; 원저자: Andrew J.G. Cairns &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 개요 <span class="en">Introduction</span></h2>
+<p><b>확률적 투자모형(stochastic investment models)</b>은 다양한 보험계리 업무에서 점점 더 중요한 구성요소가 되고 있다. 대표적인 활용 예는 다음과 같다.</p>
+<ul>
+<li><b>위험평가(risk assessment)</b></li>
+<li><b>위험관리(risk management)</b></li>
+<li><b>불일치준비금(mismatching reserves)</b>의 산정</li>
+<li>복잡한 금융 특성을 가진 보험계약의 <b>보험료 책정</b></li>
+<li><b>부채의 평가</b>(예: 공정가치, fair value)</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> "확률적" 모형이 필요한 이유</div><p style="margin-bottom:0">결정론적(deterministic) 현금흐름 투영은 "최선 추정" 시나리오 하나만 그린다. 그러나 그것만으로는 <b>위험의 크기</b>를 알 수 없다. 확률적 모형은 미래 경제변수가 무작위로 변동한다고 보고 <b>수많은 가능한 경로</b>를 모의실험(simulation)하여, 결과의 <b>분포</b>(평균뿐 아니라 꼬리 위험까지)를 보여 준다.</p></div>
+
+<h2>2. 모형의 구성요소 <span class="en">Features of the Model</span></h2>
+<p>확률적 투자모형은 다음 특징의 일부 또는 전부를 포함하는 모형이다.</p>
+<p>개별 자산군(asset class)에 대해서는,</p>
+<ul>
+<li><b>총수익률(total returns)</b>에 대한 모형, 또는</li>
+<li>총수익률을 추론할 수 있게 해 주는 <b>관련 시계열</b>에 대한 모형(예: 배당과 배당수익률을 통해 주식 총수익률을 추론).</li>
+</ul>
+<p>그밖에 다음 요소를 포함한다.</p>
+<ul>
+<li><b>금리, 물가상승률, 임금상승률</b> 등 다른 경제변수에 대한 모형 — 자산과의 <b>상관관계</b>를 포함하는 방식으로.</li>
+<li>둘 이상의 <b>국가·경제권</b>과, 국가 간 상관을 가진 <b>환율 과정</b>을 포함할 수 있는 가능성.</li>
+</ul>
+<p>실무에서 이러한 경제·자산 시계열은 흔히 <b>자기회귀(autoregressive)·시계열(time-series) 구조</b>로 표현된다. 예컨대 어떤 변수 <i>X</i>(<i>t</i>)가 장기 평균 <i>μ</i> 로 되돌아가려는 성질(평균회귀)을 갖는 1차 자기회귀, AR(1) 과정은 다음과 같이 쓸 수 있다.</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,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" style="height:0.444in"/></div>
+<p>여기서 <i>a</i> 는 자기회귀(평균회귀 속도) 모수, <i>σ</i> 는 충격의 표준편차, <i>z</i>(<i>t</i>)는 표준정규 백색잡음이다. 이런 형태는 다음에 설명할 윌키 모형을 비롯한 여러 보험계리용 모형의 기본 단위가 된다.</p>
+
+<h2>3. 역사적 배경과 윌키 모형 <span class="en">Origins and the Wilkie Model</span></h2>
+<p>제대로 된 확률적 투자모형을 필요로 한 가장 이른 연구 중 하나는 <b>만기보증 워킹파티(MGWP, Maturity Guarantees Working Party, 1980)</b>의 보고서였다. MGWP의 목표는 금융보증이 포함된 <b>유닛링크(unit-linked) 생명보험계약</b>의 <b>분위수 준비금(quantile reserves)</b>을 계산하는 것이었다. 이를 위해 여러 금융변수에 대한 새로운 시계열 모형을 개발해야 했고, 이 작업은 곧바로 <b>윌키 모형(Wilkie model)</b>의 발표로 이어졌다.</p>
+<p>윌키 모형은 오랫동안 <b>벤치마크</b> 역할을 해 왔다. 그 이유 중 하나는, 모형과 그 추정(역사적 자료에 적합시킨 방법)에 대한 상세한 설명까지 포함하여 <b>공개된 영역(public domain)에서 완전히 문서화된 몇 안 되는 모형</b>이기 때문이다. 윌키의 뒤를 이은 다른 모형으로는 Yakoubov 외, Whitten &amp; Thomas, Hardy 등의 모형이 있다. 이 중 일부(Whitten &amp; Thomas, Hardy)는 수익률의 상대적 동질성과 정규성 같은 <b>윌키 모형에 대한 구체적 비판</b>에 대응한다는 특징이 있다.</p>
+
+<h2>4. 새로운 세대의 모형 <span class="en">A New Generation of Models</span></h2>
+<p>최근에는 <b>새로운 세대의 모형</b>이 등장하고 있는데, 이들은 다중자산·윌키형 모형의 장점과 <b>차익거래 없는(arbitrage-free) 동학</b>을 결합하려 한다. 이런 모형은 보험부채의 <b>공정가치 평가</b>에 필수적이지만, 더 일반적인 목표는 다음 특징들을 포함하는 것이다.</p>
+<ul>
+<li>앞서 설명한 자산·경제변수.</li>
+<li><b>연속시간(continuous time)</b>으로 설정된 모형.</li>
+<li>파생상품 가격결정과 동적 헤지를 가능하게 하는, 현실적이고 <b>차익거래 없는 단기 동학</b>.</li>
+<li>장기 위험관리 문제를 다룰 수 있게 하는, 현실적인 <b>장기 동학</b>.</li>
+</ul>
+<div class="note"><div class="head"><span class="tag">해설</span> 보험계리용 모형 vs 시장정합(market-consistent) 모형</div><p style="margin-bottom:0">윌키형 확률적 투자모형은 실세계(real-world) 확률 하에서 <b>장기간(수십 년)의 자산·부채를 투영</b>하기 위한 것이다. 반면 금융경제학의 <b>시장정합 모형</b>은 위험중립(risk-neutral) 확률 하에서 단기 파생상품을 정밀하게 가격결정하기 위한 것이다. 새로운 세대 모형은 이 둘의 장점을 한데 모으려는 시도다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Wilkie Investment Model(윌키 투자모형) · Asset Management(자산운용) · Time Series(시계열) · Asset–Liability Modeling(자산부채 모형화) · Interest-rate Modeling(금리 모형화)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>확률적 투자모형 (stochastic investment model)</b> — 미래 경제·자산 변수를 무작위 과정으로 모형화해 결과의 분포를 산출하는 모형.</li>
+<li><b>결정론적 투영 (deterministic projection)</b> — 하나의 "최선 추정" 가정으로 미래 현금흐름을 단일 경로로 그리는 방식.</li>
+<li><b>총수익률 (total return)</b> — 자본이득과 배당·이자를 모두 합한 자산 수익률.</li>
+<li><b>자기회귀 AR(1) (autoregression)</b> — 현재 값이 직전 값과 평균에 의존하며 무작위 충격을 받는 시계열 구조. 평균회귀 성질을 가진다.</li>
+<li><b>불일치준비금 (mismatching reserve)</b> — 자산과 부채의 만기·성격 불일치에서 생기는 위험에 대비해 쌓는 준비금.</li>
+<li><b>분위수 준비금 (quantile reserve)</b> — 부채를 일정 확률(예: 99%)로 충당할 수 있도록 분포의 분위수로 설정한 준비금.</li>
+<li><b>유닛링크 (unit-linked)</b> — 보험금이 투자 펀드의 성과에 연동되며, 흔히 최저보증이 붙는 생명보험.</li>
+<li><b>공정가치 (fair value)</b> — 시장과 정합적인 방식으로 산정한 자산·부채의 가치.</li>
+<li><b>차익거래 없음 (arbitrage-free)</b> — 위험 없이 확실한 이익을 얻는 기회가 존재하지 않는다는 가격결정 원칙.</li>
+</ul>
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>확률적 투자모형은 국내 보험산업에서 <b>경제시나리오생성기(ESG)</b>라는 이름으로 직접 구현되어 쓰인다. IFRS17과 K-ICS는 보험계약부채를 최선추정 및 위험조정(RA)으로 측정하고, 내재 옵션·보증의 시장정합 평가를 요구하므로, 현실세계(P)와 위험중립세계(Q) 시나리오를 동시에 생성하는 ESG가 필수 인프라가 되었다. 금리·주식·신용 스프레드 등 주요 위험 변수에 대한 확률모형을 ESG에 내장하고, 수만 개의 경로를 생성해 준비금과 요구자본을 산출한다.</p>
+<p>윌키(Wilkie) 모형은 원형적 확률적 투자모형으로, 국내에서도 ESG 설계의 참조 틀로 활용된다. 다만 국내 보험 계리 실무는 Hull-White·CIR 계열 금리모형과 GBM 기반 주식모형을 결합한 ESG를 더 선호한다. 장기 금리의 UFR(최종선도금리) 수렴 가정은 K-ICS 할인율 체계와 연동되며, 금리 시나리오 생성 시 UFR 수렴 조건을 반드시 충족해야 한다.</p>
+<p>확률적 투자모형의 현실세계 시나리오는 보험사의 장기 재무건전성 스트레스 테스트에도 활용된다. 금리 급등·주가 급락·신용 위기 등 복합 시나리오를 구성해 미래 K-ICS 비율 변동 범위를 추정하고, 이를 자본계획과 배당 정책 수립에 반영하는 ORSA(Own Risk and Solvency Assessment) 체계가 국내에 도입되어 있다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> ESG와 K-ICS 위험중립 시나리오</div><p>K-ICS 내부모형 인가를 받으려면 위험중립 시나리오의 무차익 조건 충족과 시장가격 교정(calibration) 결과를 감독당국에 제출해야 한다. 금리는 시장 스왑곡선, 주식 내재변동성 서피스를 기준으로 교정하며, UFR 수렴 구간에서 금리가 자연스럽게 조정되도록 Nelson-Siegel-Svensson 등 외삽 방법론을 사용한다. 시나리오 수가 최소 수천 개 이상 필요하며, 수렴 안정성 검증이 내부모형 심사의 핵심 항목이다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Stochastic Investment Models", Andrew J.G. Cairns. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 위험최소화: 헤지 잔여비용 곡선의 최솟값 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 축 -->
+<line x1="80" y1="60" x2="80" y2="250" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="70" y1="240" x2="430" y2="240" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+<!-- 잔여비용 U자 곡선 -->
+<path d="M 110 100 C 160 260 200 260 250 200 C 300 140 330 150 390 90" fill="none" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 핵심: 최솟값 포인트 강조 곡선 -->
+<path d="M 190 230 C 220 200 260 178 290 180" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+<!-- 최솟값 점 -->
+<circle cx="248" cy="195" r="9" fill="#4A90C2" stroke="#FAFAF7" stroke-width="2.5"/>
+<!-- 점선 (최솟값) -->
+<line x1="80" y1="195" x2="248" y2="195" stroke="#171A20" stroke-width="2" stroke-dasharray="5,4" stroke-linecap="round"/>
+<line x1="248" y1="195" x2="248" y2="240" stroke="#171A20" stroke-width="2" stroke-dasharray="5,4" stroke-linecap="round"/>
+<!-- 레이블 -->
+<text x="66" y="58" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">C</text>
+<text x="434" y="244" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">θ</text>
+<text x="258" y="192" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2" fill-opacity=".9">min</text>
+<!-- 캐릭터 -->
+<g transform="translate(248 265)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20"/></g>
+<!-- tkLeen 시그니처 -->
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

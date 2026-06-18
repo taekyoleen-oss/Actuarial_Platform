@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자가보험 (Self-insurance) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 위험관리·보험</div>
+<h1>자가보험</h1>
+<div class="meta">Self-insurance &nbsp;·&nbsp; 원저자: Roger Wade &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 자가보험이란 <span class="en">Definition</span></h2>
+<p>‘자가보험(self-insurance)’이라는 용어는 여러 상황을 묘사하는 데 쓰인다. 어떤 조직이 보험을 사지 않기로 <b>의도적으로 결정</b>했거나, 또는 자신이 미처 인지하지 못한 위험을 <b>보유</b>하고 있다면, 그 조직은 자가보험 상태에 있는 것이다. 따라서 자가보험에는 (1) 조직이 아예 무보험인 경우, (2) <b>자기부담금(deductible)</b>이나 손해보유(loss retention)를 통해 위험을 일부 보유한 경우, 그리고 (3) 미국 일부 주의 산재보상 규정처럼 자가보험을 위한 <b>공식적 제도</b>가 있는 경우나 <b>캡티브 보험회사</b>를 이용하는 경우까지 모두 포함된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 한 줄 요약</div><p style="margin-bottom:0">자가보험은 위험을 외부 보험사에 넘기는 대신 <b>스스로 보유하고 손해를 내부에서 충당</b>하는 것이다. ‘아무것도 안 한 무보험’부터 ‘자기부담금 설정’, ‘정식 자가보험 기금·캡티브 운영’까지 폭이 넓다.</p></div>
+
+<h2>2. 위험보유 수준의 결정 <span class="en">Choosing the Retention</span></h2>
+<p>자가보험을 택한 조직은 흔히 <b>초과보험(excess insurance)</b>을 함께 구매하여 위험을 제한한다. 계리사는 다양한 <b>사고당 보유수준(per-occurrence retention)</b>에서 보유손해를 추정함으로써 이런 조직을 자주 돕는다. 이렇게 하면 <b>기대 보유손해</b>와 <b>상업보험 구매 가격</b>을 비교할 수 있다. 조직은 자신의 <b>위험선호(appetite for risk)</b>를 바탕으로 적절한 손해보유 수준을 선택할 수 있다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 보유수준 선택</div><p class="q">한 조직이 사고당 10만 달러까지 보유할지, 25만 달러까지 보유할지 고민 중이다. 무엇을 비교해야 하는가?</p><p style="margin-bottom:0">각 보유수준에서의 <b>기대 보유손해</b>를 추정하고, 그 위 구간을 막아주는 <b>초과보험료</b>와 더한다. 보유수준을 높이면 기대 보유손해는 늘지만 초과보험료는 줄어든다. 조직의 위험선호(변동성을 감내할 여력)에 맞춰 총비용·변동성이 균형을 이루는 지점을 고른다.</p></div>
+
+<h2>3. 세무·회계상 고려 <span class="en">Tax & Accounting</span></h2>
+<p>미국에서는 세제 규정이 ‘위험을 보유할지, 보험을 살지’ 결정에 큰 영향을 준다. 보험료는 지급 시점에 곧바로 비용 처리되어 <b>즉시 세무 공제</b>를 받는다. 반면 보험을 사지 않으면, 재무제표일 이전에 발생한 사건에 대한 <b>미지급 부채</b>를 적립(accrue)해야 하므로 순이익이 줄지만, 이 부채는 클레임이 <b>실제로 지급될 때까지</b> 세무상 비용으로 인정되지 않는다. 그 결과 자가보험 프로그램에는 <b>세무상 불이익(이연법인세 효과)</b>이 생긴다. 다만 자가보험은 <b>관리비 절감</b>과 <b>클레임 처리 과정의 통제권</b>이라는 긍정적 요인이 있어, 이연법인세의 부정적 효과를 상쇄할 수 있다.</p>
+<p>계리사는 여러 대안의 <b>위험금융 분석(risk-financing analysis)</b>을 위해 자가보험 조직의 미지급 손해부채를 추정하도록 자주 돕는다. 자가보험 프로그램이 일단 도입되면, 계리사는 대차대조표에 유지해야 할 미지급손해 적립액 규모를 결정하는 일을 돕는다. 이 손해액은 흔히 미국 계리기준위원회(ASB)의 ASOP #20(손해·손해사정비 준비금 할인) 원칙에 따라 <b>화폐의 시간가치만큼 할인</b>된다. 미래 손해 예측은 흔히 노출기준(exposure base) 대비 손해율로 이루어지는데, 자동차보험은 차량 대수, 일반배상책임은 매출, 산재보상은 급여총액이 노출기준으로 쓰인다. 이는 조직의 예산 편성을 더 정확하게 만들어준다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">해설</span> 왜 자가보험에 세무 불이익이 있나</div><p style="margin-bottom:0">보험을 사면 보험료 전액을 <b>지금 당장</b> 비용으로 인정받는다. 자가보험은 손해부채를 회계상 미리 쌓아도, 세법은 <b>실제 보험금이 나갈 때</b>에야 비용으로 인정한다. 그만큼 공제 시점이 늦춰져(이연) 현금흐름 측면에서 불리하다. 대신 외부 보험사의 사업비·이윤 마진을 아끼고 클레임을 직접 통제하는 이점으로 이를 상쇄한다.</p></div>
+
+<h2>4. 위험 통제와 캡티브 <span class="en">Risk Control & Captives</span></h2>
+<p>여러 위험에 대해 자가보험 상태인 조직은 <b>헤지(hedging) 거래</b>, 계약상 책임 제한, 개선된 <b>손해통제·손해예방 활동</b>을 통해 이 위험들을 추가로 줄일 수 있다. 일반론으로 말하면, <b>스스로 자가보험하고 있음을 인지한 조직</b>은 보험을 구매하는 조직보다 자기 위험을 더 성실하게 통제하는 경향이 있다. 자가보험을 더 공식화·전문화한 형태가 바로 <b>캡티브 보험회사</b>이다.</p>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Captives(캡티브) · Risk Retention(위험보유) · Deductible(자기부담금) · Alternative Risk Transfer(대체위험전가)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>자가보험 (self-insurance)</b> — 외부 보험에 들지 않고 위험을 스스로 보유·충당하는 방식.</li>
+<li><b>위험보유 (risk retention)</b> — 위험을 이전하지 않고 조직이 떠안는 것.</li>
+<li><b>자기부담금 (deductible)</b> — 손해 중 피보험자가 먼저 부담하는 금액. 그만큼 위험을 보유한다.</li>
+<li><b>초과보험 (excess insurance)</b> — 보유수준을 넘는 손해만 보장하는 상위 계층 보험.</li>
+<li><b>보유수준 (retention)</b> — 조직이 사고당·연간 스스로 부담하기로 정한 손해 한도.</li>
+<li><b>위험금융 분석 (risk-financing analysis)</b> — 보유·보험·캡티브 등 위험조달 대안의 비용·효과를 비교하는 분석.</li>
+<li><b>미지급손해 적립 (loss accrual / reserve)</b> — 이미 발생했으나 아직 지급되지 않은 손해에 대비해 쌓는 부채.</li>
+<li><b>이연법인세 효과 (deferred tax)</b> — 세무상 비용 인정 시점이 늦춰져 생기는 현금흐름상 불이익.</li>
+<li><b>캡티브 (captive)</b> — 모회사의 위험만 인수하려고 세운 전속 보험회사. 자가보험을 제도화한 형태.</li>
+</ul>
+<h2>한국보험시장 현황 <span class=”en”>Korea Market Practice</span></h2>
+<p>한국에서 자가보험은 보험법상 인가된 별도 법인 형태를 갖추기 어렵다. 캡티브 보험회사를 세우려면 보험업 인가를 받아야 하나, 국내 법체계에서 <b>캡티브 허용</b>은 아직 단계적 검토 수준에 머물러 있다(2026.6 기준). 따라서 국내 대기업이 위험을 내부화하는 주된 방법은 ① 자기부담금(공제) 설정을 통한 부분 위험보유, ② 초과손해 재보험 구매와 하위 층 보유의 결합, ③ 대규모 재물·배상책임 보험에서 고공제 조건으로 계약하는 구조 등이다.</p>
+<p>산업재해보상보험(산재보험)은 한국에서 국가가 운영하는 의무보험으로, 본문의 '미국 일부 주에서 자가보험을 위한 공식 제도'와는 다른 방향으로 제도화되어 있다. 일반 민간 기업이 산재 위험을 자가보험 방식으로 직접 보유하는 것은 현행 법령상 허용되지 않는다. 다만 대기업 집단이 계열사 전체의 재물·배상책임 위험을 한 보험계약으로 묶어 <b>보험사에 위험을 통합 이전</b>하는 방식은 경험요율과 결합해 활발히 이용된다.</p>
+<p>본문에서 강조한 '자가보험 상태임을 인지한 조직은 위험 통제에 더 성실하다'는 명제는 한국 <b>K-ICS 자본 규제</b>에서도 간접적으로 구현된다. IFRS17·K-ICS 체계 아래 보험사 자신이 보유하는 위험(예: 재보험 미부보 구간)에 대해 더 많은 요구자본을 적립해야 하므로, 보험사는 재보험 프로그램의 공제 수준과 보유 손해 분포를 면밀히 분석하게 된다.</p>
+<div class=”note”><div class=”head”><span class=”tag”>실무</span> 재물보험 고공제 구조와 보험계리 역할</div><p style=”margin-bottom:0”>국내 대형 제조업체나 에너지 기업은 재물종합보험(IAR/EAR) 등에서 <b>수억~수십억 원 규모의 고공제</b>를 설정하고 초과 구간만 보험사에 이전하는 구조를 채택하는 경우가 있다. 이 경우 계리사는 다양한 공제 수준에서 기대 보유손해를 추정하고, 그 보유손해 적립금을 재무제표에 반영하는 데 관여한다. IFRS17 도입 이후 보험사는 이 보유 구간에 해당하는 부채 또한 최선추정 방식으로 별도 구분하여 측정해야 한다.</p></div>
+<div class=”src”>[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Self-insurance”, Roger Wade. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

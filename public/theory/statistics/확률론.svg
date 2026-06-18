@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 확률론: 표본공간 Ω 원 안에 사건 A(Sky)와 캐릭터 — (Ω, F, P) 삼위일체 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 표본공간 Ω 큰 원 -->
+  <circle cx="230" cy="155" r="115" fill="#EAF2F9" fill-opacity=".45" stroke="#171A20" stroke-width="3"/>
+  <!-- 사건 A (Sky 원) -->
+  <circle cx="200" cy="148" r="55" fill="#4A90C2" fill-opacity=".18" stroke="#4A90C2" stroke-width="3"/>
+  <!-- 사건 B (Ink 점선) -->
+  <circle cx="268" cy="168" r="42" fill="none" stroke="#171A20" stroke-width="2" stroke-dasharray="7 5" opacity=".4"/>
+  <!-- 라벨 Ω -->
+  <text x="318" y="72" font-family="ui-monospace,Consolas,monospace" font-size="18" fill="#171A20" opacity=".65">Ω</text>
+  <!-- 라벨 A -->
+  <text x="178" y="138" font-family="ui-monospace,Consolas,monospace" font-size="15" fill="#4A90C2" opacity=".85">A</text>
+  <!-- 라벨 B -->
+  <text x="272" y="162" font-family="ui-monospace,Consolas,monospace" font-size="13" fill="#171A20" opacity=".55">B</text>
+  <!-- P(A) 라벨 -->
+  <text x="154" y="220" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".5">P(A)</text>
+  <!-- 캐릭터 (Ω 원 안, 오른쪽) -->
+  <g transform="translate(308 150)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

@@ -1,0 +1,36 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 거래비용: 매수·매도 스프레드 사이에 갇힌 거래 비용 갭 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <line x1="72" y1="240" x2="420" y2="240" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <line x1="72" y1="240" x2="72" y2="60" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 매도가(Ask) 수평선 Sky -->
+  <line x1="84" y1="120" x2="400" y2="120" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- 매수가(Bid) 수평선 Ink -->
+  <line x1="84" y1="165" x2="400" y2="165" stroke="#171A20" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 5"/>
+  <!-- 스프레드 채움 -->
+  <rect x="84" y="120" width="316" height="45" fill="#EAF2F9" fill-opacity=".7"/>
+  <!-- 스프레드 라벨 -->
+  <text x="244" y="148" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">spread</text>
+  <!-- 갭 표시 화살 -->
+  <line x1="230" y1="122" x2="230" y2="163" stroke="#171A20" stroke-width="2" stroke-opacity=".45"/>
+  <!-- 캐릭터: 갭 위에서 고민 -->
+  <g transform="translate(310 105)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- 축 라벨 -->
+  <text x="408" y="257" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">t</text>
+  <text x="56" y="116" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">ask</text>
+  <text x="56" y="167" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">bid</text>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

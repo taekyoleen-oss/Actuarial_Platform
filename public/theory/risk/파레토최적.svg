@@ -1,0 +1,36 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 파레토 최적: 두 당사자의 효용 프런티어(계약곡선) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 좌표축 -->
+<line x1="70" y1="250" x2="420" y2="250" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="70" y1="250" x2="70" y2="55" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 파레토 프런티어 (파레토 최적 집합) -->
+<path d="M 90 240 Q 180 180 260 130 Q 330 90 400 70" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- 프런티어 아래 Sky Pastel -->
+<path d="M 90 240 Q 180 180 260 130 Q 330 90 400 70 L 400 250 Z" fill="#EAF2F9" fill-opacity=".4"/>
+<!-- 내부 열등점 -->
+<circle cx="230" cy="200" r="6" fill="#171A20" fill-opacity=".3"/>
+<text x="240" y="205" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".45">열등점</text>
+<!-- 프런티어 위 최적점 -->
+<circle cx="255" cy="130" r="6" fill="#4A90C2"/>
+<!-- 캐릭터 두 명 -->
+<g transform="translate(120 195)">
+  <circle r="13" fill="#EEF4FF" stroke="#171A20" stroke-width="3"/>
+  <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+  <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<g transform="translate(370 105)">
+  <circle r="13" fill="#FFF7ED" stroke="#171A20" stroke-width="3"/>
+  <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+  <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<!-- 축 라벨 -->
+<text x="425" y="254" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">u₁</text>
+<text x="56" y="53" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">u₂</text>
+<!-- tkLeen 픽셀 시그니처 -->
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

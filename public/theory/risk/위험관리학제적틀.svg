@@ -1,0 +1,36 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 위험관리학제적틀: 4개 위험요소(결과·확률·선호·집합)를 연결하는 학제적 사각 프레임 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 중앙 Sky 프레임 사각형 -->
+  <rect x="130" y="90" width="220" height="130" rx="8" fill="none" stroke="#4A90C2" stroke-width="5"/>
+  <!-- 4개 코너 블록 -->
+  <rect x="110" y="70" width="60" height="38" rx="5" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="116" y="93" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".7">Cons.</text>
+  <rect x="310" y="70" width="60" height="38" rx="5" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="316" y="93" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".7">Prob.</text>
+  <rect x="110" y="202" width="60" height="38" rx="5" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="115" y="225" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".7">Pref.</text>
+  <rect x="310" y="202" width="60" height="38" rx="5" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5"/>
+  <text x="315" y="225" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".7">Pool</text>
+  <!-- 연결선 (코너 → 프레임) -->
+  <line x1="170" y1="108" x2="170" y2="125" stroke="#171A20" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <line x1="310" y1="108" x2="310" y2="125" stroke="#171A20" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <line x1="170" y1="202" x2="170" y2="185" stroke="#171A20" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <line x1="310" y1="202" x2="310" y2="185" stroke="#171A20" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <!-- 중심 캐릭터 -->
+  <g transform="translate(240 155)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- Risk 레이블 -->
+  <text x="218" y="150" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" opacity=".45">Risk</text>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

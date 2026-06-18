@@ -1,0 +1,32 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 확산근사: 점프 잉여과정을 매끄러운 브라운 운동으로 근사 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 좌표축 -->
+<line x1="70" y1="200" x2="420" y2="200" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<line x1="70" y1="60" x2="70" y2="260" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+<!-- 점프 과정 (계단형, 잉여금) -->
+<polyline points="85,120 120,120 120,140 160,140 160,115 200,115 200,135 240,135 240,105 270,105 270,160 300,160 300,195" fill="none" stroke="#171A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+<!-- 확산(브라운) 근사 곡선 -->
+<path d="M 85 120 Q 150 118 200 128 Q 260 140 300 175 Q 340 200 390 210" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- 확산 띠 (불확실성 범위) Sky Pastel -->
+<path d="M 85 108 Q 150 105 200 116 Q 260 128 300 162 Q 340 188 390 198 L 390 222 Q 340 212 300 188 Q 260 152 200 140 Q 150 131 85 132 Z" fill="#EAF2F9" fill-opacity=".6"/>
+<!-- 파산 수준 0선 -->
+<line x1="70" y1="200" x2="420" y2="200" stroke="#171A20" stroke-width="1.5" stroke-dasharray="6 4" opacity=".3"/>
+<!-- 축 라벨 -->
+<text x="425" y="204" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">t</text>
+<text x="56" y="58" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">U</text>
+<!-- 근사 라벨 -->
+<text x="395" y="205" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#4A90C2" fill-opacity=".8">BM</text>
+<!-- 캐릭터 -->
+<g transform="translate(200 95)">
+  <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+  <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+  <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<!-- tkLeen 픽셀 시그니처 -->
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

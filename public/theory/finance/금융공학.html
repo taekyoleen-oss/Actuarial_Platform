@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>금융공학 (Financial Engineering) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 금융수리</div>
+<h1>금융공학</h1>
+<div class="meta">Financial Engineering &nbsp;·&nbsp; 원저자: Patrick Brockett &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 정의와 위상 <span class="en">Definition</span></h2>
+<p><b>금융공학(financial engineering)</b>은 '수리금융(mathematical finance)', '계산금융(computational finance)', '금융수학(financial mathematics)'이라는 이름으로도 불리는, <b>수학과 금융이 겹치는 비교적 새로운 하위분야</b>다. 이 분야는 <b>여러 고급 수학·통계 기법을 금융 문제에 응용</b>하는 데 전념한다. 그 기법에는 다음과 같은 것들이 있다.</p>
+<ul>
+<li><b>확률미분방정식(stochastic differential equations)</b></li>
+<li><b>시계열 모형화(time series modeling)</b></li>
+<li><b>두꺼운 꼬리 확률모형(heavy-tailed probability models)</b>과 확률과정(예: 안정분포, 레비(Lévy) 과정)</li>
+<li><b>마팅게일 방법(martingale methods)</b></li>
+<li><b>변분법(variational calculus)</b></li>
+<li><b>운용과학(operations research)·최적화 기법(optimization methods)</b></li>
+</ul>
+<p>이밖에도 유용한 수학적 기법의 목록은 상당히 넓고, 실무자들이 새로운 문제에 부딪혀 새로운 분석 방법을 요구함에 따라 계속 확장되고 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 한 줄 핵심: "맞춤 금융상품을 설계·구축·가격결정하는 공학"</div><p style="margin-bottom:0">금융공학은 마치 토목·전자공학처럼, <b>수학·통계라는 도구로 금융이라는 대상을 설계·제작</b>하는 분야다. 목표는 옵션·파생상품 같은 복잡한 금융상품을 <b>합리적으로 가격 매기고</b>, 헤지를 짜서 <b>위험을 관리</b>하며, 현금흐름을 기업 목적에 맞게 <b>재구성</b>하는 것이다.</p></div>
+
+<h2>2. 목적과 응용 <span class="en">Purpose and Applications</span></h2>
+<p>이러한 수학 응용의 목적은 <b>실무적 금융 문제</b>에 대해 실용적 통찰과 계산 결과를 얻는 것이다. 대표적으로 다음과 같은 <b>파생상품·금융상품의 가치평가</b>가 있다.</p>
+<ul>
+<li>옵션(options), 조건부청구권 계약(contingent claims contracts)</li>
+<li>선물(futures)·선도(forward) 계약</li>
+<li>이자율 스왑(interest rate swaps), 캡(caps)과 플로어(floors)</li>
+<li>그밖의 금융상품 및 투자상품의 가치평가</li>
+</ul>
+<p>금융공학은 <b>옵션과 옵션가격결정 연구에서 자라났고</b>, 파생형 자산은 가격을 매기기가 가장 어렵고 위험도 가장 클 수 있으므로 지금도 이 분야의 큰 비중을 차지한다. 그러나 금융공학은 <b>금융 위험관리</b>에도 쓰인다. 즉 (1) 위험을 줄이는 <b>헤지(hedge)를 구성</b>하는 법, (2) 기업 목적에 맞게 현금흐름을 재구성하도록 금융상품을 <b>활용하거나 새로 만드는</b> 법, (3) 자산의 <b>합리적 가격결정</b> 방법, (4) 위험을 통제하면서 <b>포트폴리오를 운용</b>하는 법을 보여준다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 금융공학으로 위험을 재구성하기</div><p class="q">한 보험사가 변동금리 자산을 보유해 금리 하락 시 수익이 줄어드는 위험에 노출돼 있다. 금융공학은 어떻게 돕는가?</p><p style="margin-bottom:0"><b>이자율 스왑</b>으로 변동금리 현금흐름을 고정금리로 바꾸거나, <b>금리 플로어(floor) 옵션</b>을 매입해 금리가 일정 수준 아래로 떨어져도 최소 수익을 보장받도록 현금흐름을 재구성할 수 있다. 이렇게 기존 상품을 조합하거나 새 상품을 만들어 <b>원하는 위험-수익 구조를 맞춤 설계</b>하는 것이 금융공학의 전형적 작업이다.</p></div>
+
+<h2>3. 핵심 개념틀: 무차익가격결정과 불완비시장 <span class="en">Core Frameworks</span></h2>
+<p>지금까지 전개된 수학적 분석의 상당 부분을 떠받치는 주요 개념틀은 <b>무차익가격결정(arbitrage-free pricing)</b> 방법의 사용이다. 또한 거대재해보험옵션, 날씨 파생상품, 신용 파생상품처럼 새로 등장하는 파생상품과 관련하여 현재 관심을 끄는 주제는 <b>불완비시장(incomplete markets)에서의 자산 가격결정</b>이다.</p>
+<p>무차익 원리 아래에서 파생상품의 가격은, 위험중립측도 <i>Q</i> 하의 만기지급액 <i>f</i>(<i>S<sub>T</sub></i>)를 무위험률 <i>r</i>로 할인한 기대값으로 표현된다. 금융공학의 많은 계산이 이 형태로 귀착된다.</p>
+<div class="eq"><img alt="수식" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWsAAABACAYAAADcWlY5AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjksIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvJkbTWQAAAAlwSFlzAAAewgAAHsIBbtB1PgAAE6BJREFUeJztnXm4ZdOVwH8vVQpNCUURlpkKUYqHClo+CUXShiTGpgwhEkmXoVs+QhtCECW+kKQk5qkMoVOtkKZLSEujzUE8Q5UpUmVYKoVQxjLU0H+sfdx997vDOeeec9+9r/bv++5XZ++zp7rvnnX2XnuttXsWLVpEJBKJRDqbzwz0ACKRSCTSnCisI5FIpAuIwjoSiUS6gCisI5FIpAuIwjoSiUS6gCisI5FIpAuIwjoSiUS6gCisI5FIpAuIwjoSiUS6gCisI5FIpAsYOtADiHQnIrI0sBewK7AZsDqwJPAmMBO4C7hcVZ/P2O7lwME1bj2iqlu3MubBgIgcClxaQFMXqOoRBbQTSYmI7ANcV+f2Kqr690b1o7COZEJEPgMcDvwYWKlGkZXdZyvgWBG5ADhGVT9O2cUQ9/kLsIeXPy/3oAcXWxXUzp8KaieSntuBXi+9G3CGu+5pVjkK60hqRGQFYCowzmV95NK3A88DHwOrAl8DDgX+ATgS2FBEdlbV+Rm6+0hVnypq7IOIicC5de6N8+5dA/ysQTszixxUpDmq+jbwdpIWkbFZ6kdhHUmFiKyEqTZGu6zfA99X1VdqFJ8mIr8C/gCsC+wInA6c2IahDmpUdVa9eyKyp5e8K77sBhdRWEea4lQfN1IR1JcCE1R1Yb06qvqCiOwNPIot8Y4SkUmq+lrpA1582cy7/nNRjYrIZ4GDsJfuJsCKwLJUlu6Pq2pvUOdSbHUFMFVV/7mo8Qw0IjIe+A+XfAXYQFU/KLvfKKwjaTgB2NZd3wEc1khQJ6jqYyJyG7AzphL5JnBZaaPsYkSkB1siDwemqOp4EdkY+BdMrbQGsDRwqKpeXqeZzd2/HwPTCxrX3tjLefkGxR4P6owFvuOS84GTWhzDMGALbJU2AlgOU8G9B7wEvAA8n+Y3WRBTgH/H9M+rA8cDp5TdaRTWXYrTH79ZYJNrqurLNfpZA9tMBHs4DlHVBRna/SMmrAG2IQrrenweE9QAT4jIaZjaKHxGa86YRWQEsKZLPqWqn7Q6IBH5BiaYmpn4PhGkJ3l1rlbV53L0PRTYE5iA/W6WbFLlXRH5E6Z6uymrFVIWVHWRiJwM3OKyjhWRS2s9P0UShXX30ltgW3Ma/NB+CCzhrn9dR0fdCL/dz2Ue2eLD5t71vpi64RngPCqqpLHUnzH79R9rdTAisgw2o/YF9e3A9YBiM+aEJ7x6uwBfcslFNN7krNf3DthLfe0M1YYDO7jPRBEZrqofZu07A9OAp4CNgaWw1cOEEvuLwrqL2ax5kdQ8XCvT2VJ/1yUXAL/K0bY/C282O1qc8f+emwBXYPsC/gz5gZT1i9BXHwqs4qV/qapHp6h3und9s6o+m6VTEfkppmKoZco2G3gd+BBTh6yGqddCZpQsqJPZ9TnAlS7rOyJyVqMN4FaJwrp7CYX1z4Hbcrb1Up387YBl3PXdqvq3HG37ttgNjf4Xc/yZ8TRMN53lgNRCZ9bAgd71O6TQyYrIjphuOeHCLB2KyNnYSs7nYeB84FZVfT0oPwSb2W4P7Ads6W49mqXfFpgC/BJYAVt9/sB9SiEK6+4lFNY3qGqjmVcedvCu/y9nG2O861n5hzKwiMg4as/isvKYqmqN/OTv+TG2gZv1JOuk/kKCDb+siMjKmMol4TZVfS9F1aO86xeB/8nQ53iqBfUCTPCdX++7cHsnj7vPJLchexJtcvhR1Q9F5FrMlwDgEBE5WVXfLaO/KKy7EBFZCtjAy1pI/02eIljbu34yZxtf9q7vyz+UAecKYK0C2vkW8Bs/Q0TWxpb1YJtjmTaqRGRZYJRLPluAGVnoJdl0EiAiawG7eFnXprXOEJHhwC+C7Amqmmkz2tmV75elTgFcTUVYLwccAFxURkcxkFN3MobqF+0Lqvp+Cf34G4KZVRgiMprKzPp94M4iBjUI8VdJ03LU35TKs1yEvjr0rEszEdifanlyY4b+9sY8XxMeyiqoB5BHMFvrhAPrFWyVOLPuTkIVSEvL3gb4m1t5Xuz+htR1qvpOi+PJhIiMwRx5RmJOHG8BzwH359iA2ppinpda5pa+vvn+HG0Wra8eE6TTeELu712rqmbRG+8VpKdmqDuguI3Gm7F4OQDbiMhaqvpi0X1l/vGJyB5ke2um5VRVPa2Edgcj7RLWc7zr1bNUdLPqg1xyHnBmUYNq0u+6wLHA7tQ3FZwnIpcAE8NNq3rk3FxNSyJs56rqCznqt2QJIiL/SmNLnzkiUit/RVV906lANvbys66gNgnSszLWH2jupCKse7BIlBcU3Ume2dI2RQ/CkWdGsbjSG6T7SurH/5uMq1sqwOnUr6IyGTizTJMm1+cwETkXeBazd21k0700thn2qIj0ljmulCTCOq8Ko9WZ9UY56vxNVZNVwj8F9+5O24jz3Az/VrWiOXYy4eb7TmV0kkdY/2Pho7ANsodKaHfQ4eJ0hDORsmbWv6OiCtnXzaAaIiJLYBtoiQnXbZQ8qxaRzwH3Av9G/9XiLMz860nMPtdnDeA2Ecm0aigSN/ZEWGU2OXOu2Imwnamqc3MM4ws56vjOOdsG9x7J2NaQID0++3AGDhfvxt8UDr+PQsijgzsBc25YEfitl/8o5iPfiGuxWMcAH2DxXMHCYbZVn9nFbEC1CdmbZbm5qupLInIZcBg2G73JhTqdU6u8iIwCJlPxYHsA2K/MmA3O7f4PVOtZFTgb05O/7pUdhrkwnwMk6/pVMC/B3csaYxP8WXFWIQf2/048TPPqq0+k8pv6KnCcd+8czHMx5FXv2retXgA8nbZjp/N9iWrLo6+IyFTgR6r6TNq2BpgnsZc/wPIisr6q/qXIDjILa1W9Bz51CfW5V1XvqFfPmeeM9LKebFS+nYjIldQ+naRoDlHVK1tsI9RXz3bOCHm4P4WZ1zGYdcAXXd9Pi8jFmJ7uNUyIb4jp6Xaj8puaChxcZjQyt4T+DdWC+nrMoaTfy98dgPBbEbkbeJBKLI3dROQLqppayBSIL6zzOHO07Lmoqp+qu0Tka8Ht61W1rt2yiCxJtRnpi6r6UcYh/DcV87eEvYC9RORBbIX3e0xmZLU/bxfPUG26uCl2gEZhtLK73Ruk+1KU911Im5WP1CYU1qPJ4HzgsQCzC22Iqs4Tke0xb7QDMW+t46m/ipoJnKCqU3KMKStHUP2AXAd8q9lMXlVni8gPgf/0snchw4ywQFrdXCzaEsSfJc+nudnemlSrU7PGjgH4KRYPZWSNe1u7z1nAGyJyF2beOC3t5nCbeDVIr110B63YWfcG6b4m5UMh06x8pDa9BbUzI+2sV1XfV9WDMF35z7Hl+htUB/MBcwYY1Q5B7bzsJnpZTwPfzaByuQXzFkzYvF7Bkkmei7ybi0XHBPHbezqFieMaQXp21g5V9VVsA7uZymMlzCZ7MvCqiEwVkU45lzP8f4ffS8sUNbP+BJjRpHwnC+ufEXiVlUQRMYaLCuCUWT/qPMSqYjc4E71HsMhj+2BnytVypy6ao6leGRyVxXbauQrPofJQ1ZrVlY6qrtNi/cI2/EVkHWzllJBGLfPZIJ3GLb0fqvqUiGyCxcE+kmpTwFoMxVQle4rIZOCIsoM3NSH8f4ffS8vkEtZOT7WhlzUjxYGovd51We7RuVDVGTR/2Qw4Lrb0il7WXFVdoV75dqCq00XkRMxdeARwlYh8tUzdovv9fd/LekxV86iClvKumx5YuhgQri7SzNTDeCm5DzZ2EQYvBi4Wkc2xwyp2xlQzocVIQg8m4FcTkV3beABBSLhKXaZmqRbIO7PeOKjb16iw24Uf7WU9n2YJLiLLY8bme2CnRCyN6YbuBC7K6CU1GAhn1XnjdRTNJODr2FJ2B2z2fXaJ/e1E9QxwMxFp9eUwt8X6g4EtgnQetUohLz1V/bPr/1R3rNh2mODenerQrQk7YXFXrvIzReRQLC53q1ygqkc0uF/6yz6vznrTIN3XpPxoKuZFacojIltiwmgiZo0wAhPW62Gxdh9ypzUsTvQG6Y5YnbhZ9MHAae4z1Nlbl0VosVAEpZ7y0SX4M+uFpFNVhpOupWqWagFVfVtV/0tVJ2CetAfQf0MP4Hs18sKgVHlpFslv6SBdeKyevDPr3iDd16R8Jn21cxmehm0oLAIuwUyy3sO+/OOxwC+ni8hcVf11mkEPAsLvsSOENYA7QebUNnVX1APo0/FqsDbgC+vnUgYHmxukh9cqVBSqOh+4TkQexmKWDPNuf1FEhgTHzk0Ezq3T3Djv3jU0PtVmZpOhLRuk325SPjMdKawx/WficjpBVS/x7j0kIjdhmx8jgbNE5Aa3o5wLEdkIO3WibKaraubdco+OFdZtZpR3PZNq/XVeijB761rcfoi/yZpWBRKuSFatWapgVPV5EZmCqT4ShmHqsTe8crPqtSEie3rJu9wGel5C+VHvQI/c5Ank1EO1u/OLKVxce4N0X4P2N6Li2XhvIKgBUNWX3abWpdgGx1HYUUB5OY42OcVQOQYoE85Tz3f3XkTn6KzbhjtqzLcCeaZTnKu6nDybi2DCeiEVlWo7XfdrrYayWIQUafYYCutZLbbXjzw663WoNkvpa1TYCXdfxz2nSQSzvb3rRhsD11LRl+3doNxgIZxV/7WkGNadTrjL3vIp3hEgp7B23or+OYtrukBe7SDcVH435Yk2Ccn/+WNaN6vdMEgXvurNI6x7g3Rfk/LrU63Halb+K971/9YrpKrzMJdhgHXdMm4w0xukF1cVSPiCqmUZEMlOKKyzqIV8q6wh5Ivil4fQFjt1QDMRGUEl3MBTwcHEefBDHswtOi4I5NNZZ7UEyaqvTkz83nGbVo2YQSV050bk3NFX1W8D385Tt41EfTWfur+/R2VDZzMRGV7WuXeLEb7Z3l8zRu+7h+oTUragGG/KuojISvQPvnV9hiYKc9MXkVWoVv/c00p79WjHzDr12885OyQzpTSC1y9TxPl4nUwU1hX8MwGHUX1QayQjTtj4G4NZBW0Yle/LNUtV+usRkcPzmne6U80vo9oC4w2yeSEXqa8O/7+1ohS2TKvCem6KoPKhLqdReV9dkkb35M+mSjUZGkicDrB0nVgXcVOQPkVEvp6lARHZWkRKOdi0C2nJGcYdYeXrfLdvUmUUcD4wXUT2c05zqXAxYX5HxQgh4RjvMIQ0FBkAa7sgfWuL7dUkkxrEWSSs6WWl0RGFp0A0Eqq+YXkz93UAPxRjaJQ+mBhDtbvtfGAddyp2Hp5wAdO7lSswW/vkt7gEcLOLvX0eNUJpishy2Pe4IxZTYgwWmjOS3xLE5zoqgbVERMaqar34M0l/o1y910TkGix65H3hJqGIDMUs0MZjji/LB+2drapXZxxvMrNeSAuHdzgDim96WQ+oajOb7Fxk1Vn3Bum+FHXCpc55InIhJnCmBELDjyuQ5m27ZJ26g41QBTIUC7ifl7FYLOquRFU/EpHxwB+pvKR7sAf5e8BbIvIy9psYjj3cq9LfJbivHePtAopwM78WC+KVfMd7Uj9YWPh7XhmLm34MsMAF2Hodm4wth6k4a03GFgJnqOqPswxURJalYqv/bIsx18dSra8uLSBcVjVIb5DuS1EnPOV3FOb08gv6qzp8tUboEVQLv8xg3mAqKtIe2APQ9SoUVX0AixVRK8LfCthMbCts43k1+gvqRTR3IV5c8GfWr+SJE+1UIf7yf393BF0tPqH+ynkI9vfaFNgSU//VEtTTgS9lFdSOTanIvlb11b5Tzrt0kLDOagkCFuSnlj3w9PCN5mw2kxlfGlM8XyVTuMdQB1GksH6iADOljkBV78bUGSeTbkP6A2w2fhywtqreUuLwugIRWZHq56gV4TXJu14LOyKsH6r6I2w2fTAm3NI+u3OBG7EDeseo6oONi9elEH21M4g4wMuaXObxhJnUIHlM3FT1QXc23y6Y/voDzEX43jpVpmN/yOVEZPUm5nu+PWcRsaI7ElXtlADrHYeqvoUtv88QkfWxB3FlzHFrPjbbmQ08h8W7GBQvqqJQ1b9TXKS8O0TkUSpqlcOpYxmhqm8DV7sPIjISW3Wvh62MlsXUHG8Bb2LP99MFhd4tyhJkXyzAHNhqYVILbTWllcMHUuPiYVyesvjdVHaTt8cCrPTDuR0nQmxmWYfGRroH54hQuDNCJBOnYEHYAL4hIhuo6rONKgA41cvrwP3NyhZAUZYg/kEck8vaWExo5VivspjqXdcKeZiwP5XA51MblItEIm1CVW8F7nPJHqpPSh9wnJlgsiKfmdH5x29nVypeix9iq7tS6ThhrarTsfPxALYVkX4R1Zxr+ZkuOY/6IRAjkUj7+QGmwgA4SEQ+P4BjCRlDxUIt16zamev9xMs6px0r+44T1o6jMT0VwEUicqGIjBORLUXkSOAhTC8JcKKqtuPMv0gkkgJnX32FSw6l+mDjgaYIffW+XjuvYKezl07PokWlHZXXEu7U4huoH2d6IfATVT21bYOKlI6IXEklXK0fRP6RuNEaaRURuQA4zCV3dWqbdvW9D+YElNBDZcI8UlXf6F+rQls2GPPgrEhGA0dgZzCuhx0ZNBs7g/HCBh5Ske7lJOCcGvmD2ekp0j6KjAmSldvp76uS8Fazyh07s45EIpFIhU7VWUcikUjEIwrrSCQS6QKisI5EIpEuIArrSCQS6QKisI5EIpEuIArrSCQS6QKisI5EIpEuIArrSCQS6QL+H8Kcz3Yak3xMAAAAAElFTkSuQmCC" style="height:0.500in"/></div>
+<p>이 백과사전의 다른 표제어들은 금융수학을 이루는 각 구성요소의 수학을 상세히 다룬다. 즉 <b>옵션이론, 파생상품 가격결정(과 이색옵션), 헤징, 포트폴리오 이론, 차익거래 가격결정, 이자율 모형</b> 등이다. 독자는 관심 있는 구체적 응용에 대해 해당 표제어를 참고하면 된다. 이 주제들은 <b>자산-부채 매칭(asset–liability matching)</b>과 위험 감축 전략을 수행하는 보험사에게 특히 중요하다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 보험계리와 금융공학</div><p style="margin-bottom:0">보험사는 부채(보험금 지급의무)와 자산(투자 포트폴리오)을 함께 관리해야 한다. 금융공학의 파생상품 가격결정·헤징·이자율 모형은 보험사가 <b>자산-부채를 매칭(immunization)하고 금리·시장 위험을 줄이는</b> 데 직접 활용된다. 그래서 현대 계리사에게 금융공학은 필수 도구가 되었다.</p></div>
+
+<h2>4. 학술지와 학회 <span class="en">Journals and Associations</span></h2>
+<p>금융공학 주제를 전문으로 다루는 여러 학술지가 발전했다. 대표적으로 <i>Mathematical Finance</i>, <i>Journal of Computational Finance</i>, <i>Journal of Risk</i>, <i>Finance and Stochastics</i>, <i>Quantitative Finance</i>, <i>Applied Mathematical Finance</i>, <i>Review of Derivatives Research</i> 등이 있다.</p>
+<p>전통적인 재무·경제 관련 학회 외에, 수리금융과 금융공학에 전념하는 학회들도 생겼다. 관심을 끄는 세 곳은 <b>국제금융공학자협회(IAFE)</b>, <b>바슐리에 금융학회(Bachelier Finance Society)</b>, 그리고 <b>산업응용수학회(SIAM)의 금융수학·공학 분과(SIAG)</b>이다.</p>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> 파생증권(Derivative Securities) · 헤징과 위험관리(Hedging and Risk Management) · 금융수리(Mathematical Finance) · 구조화상품(Structured Products) · 위험관리(Risk Management) · 파생상품 가격결정의 수치해법(Derivative Pricing, Numerical Methods) · 금융시장(Financial Markets) · 불완비시장(Incomplete Markets)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>금융공학 (financial engineering)</b> — 고급 수학·통계 기법으로 금융상품을 설계·가격결정·위험관리하는 분야. 수리금융·계산금융과 동의어.</li>
+<li><b>파생상품 (derivative)</b> — 가치가 다른 기초자산에 의존하는 금융상품(옵션·선물·선도·스왑 등).</li>
+<li><b>조건부청구권 (contingent claim)</b> — 특정 사건의 발생 여부에 따라 지급액이 달라지는 청구권.</li>
+<li><b>이자율 스왑 (interest rate swap)</b> — 고정금리와 변동금리 현금흐름을 서로 교환하는 계약.</li>
+<li><b>캡·플로어 (caps / floors)</b> — 금리가 상한(캡)을 넘거나 하한(플로어) 아래로 가는 것을 막아주는 금리 옵션.</li>
+<li><b>확률미분방정식 (SDE)</b> — 무작위 항을 포함해 자산가격의 시간 변화를 기술하는 방정식.</li>
+<li><b>레비 과정 (Lévy process)·안정분포</b> — 점프와 두꺼운 꼬리를 표현하는 확률과정·분포. 극단적 손실 모형화에 유용.</li>
+<li><b>마팅게일 방법 (martingale methods)</b> — 위험중립측도 아래 할인가격을 마팅게일로 두어 가격을 매기는 기법.</li>
+<li><b>무차익가격결정 (arbitrage-free pricing)</b> — 위험 없는 공짜 이익이 없다는 원리에 기반한 가격결정의 개념틀.</li>
+<li><b>불완비시장 (incomplete markets)</b> — 모든 위험을 거래로 완전히 헤지할 수 없는 시장. 가격이 유일하지 않을 수 있음.</li>
+<li><b>헤지 (hedge)</b> — 보유 위험을 상쇄하기 위해 반대 포지션을 취해 위험을 줄이는 거래.</li>
+<li><b>자산-부채 매칭 (asset–liability matching)</b> — 자산과 부채의 만기·금리민감도를 맞춰 위험을 줄이는 전략.</li>
+</ul>
+
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>금융공학은 국내 보험사의 위험 경감 수단 개발과 K-ICS 자산·부채 최적화에 핵심 역할을 한다. 금리스왑(IRS), 통화스왑(CRS), 이자율 상한(cap)·하한(floor) 등 파생상품을 활용한 헤징 구조는 금융공학의 직접 응용이다. IFRS17 도입 이후 보험부채의 공정가치 민감도가 직접 손익에 반영되면서, 이를 관리하기 위한 금융공학적 헤지 설계의 필요성이 크게 높아졌다.</p>
+<p>국내 보험사는 파생상품 회계(IFRS9)와 IFRS17 간의 회계 불일치(accounting mismatch)를 줄이기 위해 OCI 옵션, 헤지 회계(hedge accounting) 지정 등 금융공학적 구조를 채택한다. 특히 장기 고정금리 부채를 보유한 생명보험사는 금리스왑을 통해 자산의 금리 노출을 조정하며, 이 스왑의 가치 변동이 재무제표에 미치는 영향을 금융공학 모형으로 사전 시뮬레이션한다.</p>
+<p>재해파생상품(catastrophe derivative)·보험연계증권(ILS) 등 대체위험전가(ART) 수단도 금융공학의 산물이다. 국내에서는 아직 보험사 직접 발행보다는 글로벌 ILS 시장 참여(코리안리 등)가 주를 이루지만, K-ICS 위험경감 기법 인정 요건이 명확해지면서 국내 보험사의 ART 활용이 점진적으로 확대되는 추세다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> K-ICS와 금융공학적 위험경감 기법</div><p>K-ICS는 파생상품·재보험 등 위험경감 기법(Risk Mitigation Technique)의 효과를 요구자본 산출에 반영하도록 허용한다. 단, 경감 효과가 인정되려면 법적 유효성, 신용위험 이전 여부, 기초 위험(basis risk) 수준 등을 충족해야 한다. 금리스왑은 이자율 위험 경감 기법으로 인정되어 듀레이션 갭 감소 → 금리위험 요구자본 감소로 연결된다. 이 계산 구조를 정확히 설계하는 것이 금융공학 실무의 핵심 영역이다(2026.6 기준).</p></div>
+
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Financial Engineering", Patrick Brockett. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

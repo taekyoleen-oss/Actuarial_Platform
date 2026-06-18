@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — TITLE: 브라운운동 MOTIF: 무작위경로+신뢰띠 -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- x-axis (time) -->
+  <line x1="60" y1="200" x2="430" y2="200" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sky Pastel confidence band (widening toward right) -->
+  <polygon points="60,200 130,175 180,155 240,140 300,120 360,100 420,80 420,160 360,168 300,175 240,180 180,190 130,195 60,200" fill="#EAF2F9"/>
+  <!-- Brownian path W(t) zigzag in Sky stroke-width 5 -->
+  <polyline points="60,200 90,185 110,195 140,165 160,180 190,150 210,165 240,135 260,150 290,120 310,140 340,105 365,125 390,108 420,118" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- W(t) label monospace -->
+  <text x="85" y="75" font-family="monospace" font-size="18" fill="#171A20" font-weight="bold">W(t)</text>
+  <!-- Character at path end (~380, 105) -->
+  <g transform="translate(380 92)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen sky pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

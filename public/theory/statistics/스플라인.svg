@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 스플라인: 매듭점에서 매끄럽게 이어지는 조각별 다항식 곡선 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <line x1="60" y1="240" x2="420" y2="240" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="60" x2="60" y2="240" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <!-- 스플라인 곡선 (Sky) -->
+  <path d="M 80 200 C 120 80 160 80 200 160 C 240 240 280 80 330 120 C 360 148 390 200 400 180" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 곡선 아래 면 -->
+  <path d="M 80 200 C 120 80 160 80 200 160 C 240 240 280 80 330 120 C 360 148 390 200 400 180 L 400 240 L 80 240 Z" fill="#EAF2F9" fill-opacity=".6"/>
+  <!-- 매듭점(knots) -->
+  <circle cx="200" cy="160" r="5" fill="#171A20"/>
+  <circle cx="330" cy="120" r="5" fill="#171A20"/>
+  <text x="195" y="178" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">&#x3be;&#x2081;</text>
+  <text x="325" y="112" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">&#x3be;&#x2082;</text>
+  <!-- 자료점 -->
+  <circle cx="110" cy="174" r="4" fill="#171A20" fill-opacity=".5"/>
+  <circle cx="160" cy="112" r="4" fill="#171A20" fill-opacity=".5"/>
+  <circle cx="260" cy="198" r="4" fill="#171A20" fill-opacity=".5"/>
+  <circle cx="370" cy="158" r="4" fill="#171A20" fill-opacity=".5"/>
+  <!-- 캐릭터 -->
+  <g transform="translate(90 120)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

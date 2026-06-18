@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — TITLE: 베타함수 MOTIF: α,β 모수에 따른 베타 밀도 곡선들 -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+
+  <!-- x-axis [0,1] -->
+  <line x1="60" y1="220" x2="420" y2="220" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- y-axis -->
+  <line x1="80" y1="240" x2="80" y2="60" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- x-axis labels -->
+  <text x="80" y="238" font-family="monospace" font-size="11" fill="#171A20" text-anchor="middle">0</text>
+  <text x="420" y="238" font-family="monospace" font-size="11" fill="#171A20" text-anchor="middle">1</text>
+
+  <!-- B(α,β) label -->
+  <text x="85" y="75" font-family="monospace" font-size="14" fill="#171A20">B(α,β)</text>
+
+  <!-- Curve 2 (bell, α=β=3): Sky Pastel fill underneath first, then Sky stroke on top -->
+  <!-- Bell peaks near x=250 (midpoint of [80,420] domain), y=130 -->
+  <path d="M 80 220 C 100 220 130 210 160 185 C 185 165 210 148 250 130 C 290 148 315 165 340 185 C 370 210 400 220 420 220 Z" fill="#EAF2F9"/>
+  <path d="M 80 220 C 100 220 130 210 160 185 C 185 165 210 148 250 130 C 290 148 315 165 340 185 C 370 210 400 220 420 220" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Curve 1 (U-shape, α<1, β<1): dashed Sky, goes high at edges low in middle -->
+  <path d="M 82 95 C 100 130 130 180 160 210 C 200 225 290 225 340 210 C 370 180 400 130 418 95" fill="none" stroke="#4A90C2" stroke-width="4" stroke-dasharray="2,4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Curve 3 (right-skew, α=2, β=5): Ink, peaks around x=160-180, drops gradually right -->
+  <path d="M 82 218 C 100 205 130 165 170 140 C 200 125 230 130 270 155 C 310 180 360 205 418 218" fill="none" stroke="#171A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- character at peak of bell curve (~x=250, y=118) -->
+  <g transform="translate(250 118)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- tkLeen sky pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

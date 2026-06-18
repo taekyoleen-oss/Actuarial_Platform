@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보험증권 (Policy) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 보험일반</div>
+<h1>보험증권 (계약)</h1>
+<div class="meta">Policy &nbsp;·&nbsp; 원저자: Amanda Aitken &amp; Arlene Forker &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 보험증권이란 무엇인가 <span class="en">A Policy as a Legal Contract</span></h2>
+<p><b>보험증권(policy)</b>는 보험회사와, 보험을 구입하는 주체 — 즉 <b>보험계약자(policyholder)</b> — 사이에 맺은 <b>합의된 조건(terms and conditions)</b>을 말한다. 이 합의된 조건은 보통 증권 문서(policy document) 또는 계약서에 명시된다. 많은 관할권에서는 이 공식 문서를 법률로 요구한다. 그 형식이 어떻든, 보험증권은 보험자와 보험계약자 사이의 <b>법적으로 강제력 있는 계약(legally enforceable contract)</b>이다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 한마디로</div><p style="margin-bottom:0">보험증권은 단순한 “종이”가 아니라 <b>보험사와 가입자 사이의 약속(계약) 그 자체</b>다. 증권 문서는 그 계약을 글로 적어둔 증거일 뿐, 법적으로 중요한 것은 “양쪽이 무엇을 약속했는가”라는 <b>합의</b> 자체다. 그래서 문서에 쓰여 있지 않아도 <b>관습법(common law)</b>으로 당연히 따라붙는 조건들이 있다.</p></div>
+<p>증권 문서에 적힌 조건이 모든 것을 망라하는 것은 아니다. 많은 조건이 <b>관습법에 의해 묵시적으로 적용</b>되기 때문이다.</p>
+
+<h2>2. 증권 문서의 구성 요소 <span class="en">Components of a Policy Document</span></h2>
+<p>일반적으로 보험증권 문서는 다음을 담는다.</p>
+<ul>
+<li>계약 <b>당사자(parties)</b>의 세부 정보를 제시한다.</li>
+<li>보험이 <b>유효한 상황(담보 조건)</b>을 정의한다.</li>
+<li><b>면책 사항(exclusions)</b>을 열거한다(→ 담보 참고).</li>
+<li>무엇이 <b>보험금 청구(claim)</b>에 해당하는지를 정의한다.</li>
+<li>청구가 발생했을 때의 <b>절차</b>를 정한다.</li>
+<li>계약 <b>기간(term), 보험료(premium)</b>, 그리고 <b>보상 한도(limits)</b>를 명시한다.</li>
+<li><b>증권(식별) 번호</b>를 부여한다.</li>
+</ul>
+<p>증권 문서는 계약자가 <b>이해할 수 있어야</b> 하는 동시에, 의도치 않은 책임 노출을 피하도록 담보 위험을 <b>빠짐없이(thorough)</b> 다루어야 한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 면책 조항의 의미</div><p class="q">주택 화재보험 증권에 “전쟁·테러로 인한 손해는 보상하지 않는다”는 문구가 있다. 이 문구는 문서의 어떤 구성 요소인가?</p><p style="margin-bottom:0">이는 <b>면책 사항(exclusion)</b>이다. 보험이 유효한 범위를 정하고 보상 대상에서 제외되는 상황을 명시함으로써, 보험사가 인수한 위험의 경계를 분명히 한다. 면책 조항이 불분명하면 보험사는 의도치 않은 배상책임에 노출될 수 있다.</p></div>
+
+<h2>3. 가적용 · 가계약 <span class="en">Binders and Cover Notes</span></h2>
+<p>새로 발행된 보험 담보는 <b>가계약(binder)</b> 또는 <b>가적용 확인서(cover note)</b> 형태일 수 있다. 이는 <b>일정 기간에만 효력이 있는 임시 증권</b>으로, 청약 시점에 발행되어 <b>인수심사(underwriting)</b>가 진행되는 동안 피보험자의 이익을 보호한다.</p>
+
+<h2>4. 계약으로서의 일반 원칙 <span class="en">General Contractual Principles</span></h2>
+<p>보험증권은 계약이므로 일반 계약 원칙을 따른다. 우선 모든 당사자의 <b>합의(청약과 승낙)</b>가 있어야 하고, 합의의 성격을 모두가 이해해야 한다. <b>사기(fraud), 부실표시(misrepresentation), 강박(duress), 착오(error)</b>가 어느 한쪽의 승낙에 영향을 미쳤다면 그 계약은 구속력이 없다. 또한 <b>불법 행위</b>에 관한 계약(예: 마약 밀매업자의 화물 손실을 보상하는 계약)은 강제할 수 없으며, 계약이 함의하는 행위는 <b>물리적으로 수행 가능</b>해야 한다.</p>
+
+<h2>5. 보험계약 특유의 원칙 <span class="en">Principles Specific to Insurance</span></h2>
+<p>일반 계약 원칙 외에도 대부분의 지역에 보험계약 고유의 법률이 있다. 세부 내용은 다르지만, 다음 원칙들이 보험증권에 특히 적용된다.</p>
+<h3>최대선의(uberrima fides)</h3>
+<p><b>최대선의(utmost good faith)</b>란 보험계약 당사자가 <b>위험이나 계약에 관해 알고 있는 모든 정보를 명확히 알려야 할 의무</b>를 말한다. 이는 상대방의 위험 판단에 영향을 줄 수 있는 정보이다. 이 원칙은 일반 계약의 <b>“매수인 주의”(caveat emptor)</b> 원칙을 제친다. 잠재 계약자는 보험자의 인수·거절·보험료 결정에 영향을 줄 만한 모든 <b>중요한 사실(material facts)</b>을 알려야 한다. 예를 들면 개인에 관한 사실(사고 이력, 범죄 기록)과 위험의 빈도·심도에 영향을 주는 사실(건물의 자물쇠·경보장치 유무, 산불 위험 지역과의 근접성 등)이 있다.</p>
+<h3>피보험이익 · 손해보상 · 대위</h3>
+<p><b>피보험이익(insurable interest)</b>: 계약자는 보험사고가 발생할 때 <b>실제로 경제적 손실을 입는</b> 지위에 있어야 한다. <b>손해보상(실손보상, indemnity)</b>: 보험사고 이후의 경제적 상태를 사고 이전과 같게 되돌리는 개념이다. 이 원칙은 피보험자가 청구의 빈도·심도에 영향을 미치도록 유인되는 <b>도덕적 위험(moral hazard)</b>를 억제한다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 손해보상 원칙이 막는 것</div><p style="margin-bottom:0">손해보상 원칙은 “보험으로 <b>이득을 보아서는 안 된다</b>”는 생각이다. 손해만큼만 되갑아 주면, 일부러 사고를 내고 싶은 유인(도덕적 위험)이 줄어든다. 피보험이익 요건도 비슷한 역할을 한다 — 손해를 입지 않는 사람이 남의 자산에 보험을 걸고 사고를 바라는 상황을 막는다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> 담보(Coverage) · 보험약관(Policy Conditions) · 보험계약(Insurance Contract) · 면책(Exclusions)
+<div class="refs"><b>참고문헌.</b> Hart, D.G., Buchanan, R.A. &amp; Howe, B.A. (1996). <i>Actuarial Practice of General Insurance</i>, Institute of Actuaries of Australia, Sydney.</div></div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>보험증권 (policy)</b> — 보험사와 계약자 사이의 법적 구속력 있는 계약(그 합의 내용 자체).</li>
+<li><b>보험계약자 (policyholder)</b> — 보험을 구입하고 보험료를 내는 계약 당사자.</li>
+<li><b>면책 사항 (exclusions)</b> — 보험이 보상하지 않는다고 명시한 상황·손해.</li>
+<li><b>가계약 (binder) / 가적용 확인서 (cover note)</b> — 인수심사 중 피보험자를 보호하는 임시 증권.</li>
+<li><b>최대선의 (utmost good faith, uberrima fides)</b> — 위험에 관한 중요 사실을 완전히 알려야 할 의무.</li>
+<li><b>중요한 사실 (material facts)</b> — 보험사의 인수·보험료 결정에 영향을 줄 수 있는 사실.</li>
+<li><b>피보험이익 (insurable interest)</b> — 보험사고로 실제 경제적 손실을 입는 지위.</li>
+<li><b>손해보상 (indemnity)</b> — 사고 이후를 사고 이전과 같은 경제 상태로 되돌리는 원칙.</li>
+<li><b>대위 (subrogation)</b> — 보험금을 지급한 보험사가 가해자에 대한 계약자의 권리를 승계하는 것.</li>
+<li><b>도덕적 위험 (moral hazard)</b> — 보험 때문에 사고의 빈도·심도를 키우려는 유인.</li>
+</ul>
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>한국의 보험증권(약관)은 금융위원회가 표준약관을 인가하는 <b>표준약관 체계</b>를 근간으로 한다. 생명보험과 손해보험 각각의 표준약관이 존재하며, 보험사는 이를 기초로 자사 상품약관을 금융감독원에 신고·인가 후 사용한다. 본문이 설명하는 보험증권의 구성 요소 — 당사자·담보 조건·면책 사항·청구 절차·보험료·보상 한도 — 는 한국 약관에도 동일하게 반영되어 있으며, 상법 제4편(보험편)이 보험계약의 법적 기초를 규율한다.</p>
+<p>한국 보험계약의 중요한 특징 중 하나는 <b>청약·승낙 구조와 가계약 관행</b>이다. 청약자가 청약서를 작성하고 초회보험료를 납입하면 가계약이 성립하며, 보험사는 청약일로부터 일정 기간(통상 30일) 안에 승낙 여부를 결정한다. 이 구조는 본문의 '가적용(cover note)'에 해당하며, 소비자 보호 차원에서 청약 철회권(청약 후 15일 이내)도 법정으로 보장된다. <b>최대선의 원칙</b>은 한국에서도 고지의무(상법 제651조)로 법제화되어 있어, 계약자가 중요한 사실을 알리지 않거나 허위 고지하면 보험사는 계약을 해지할 수 있다.</p>
+<p>IFRS17 시행(2023) 이후 보험증권의 <b>계약 경계(contract boundary)</b> 개념이 실무에서 중요해졌다. 보험사는 각 증권이 보장하는 현금흐름을 계약 경계 안으로 한정하고, 그 범위 내에서 최선추정부채(BEL)와 계약서비스마진(CSM)을 산출해야 한다. 갱신형 실손보험처럼 매년 갱신되는 상품은 계약 경계를 단기로 설정하는 반면, 종신형 상품은 보험기간 전체를 계약 경계로 잡아 부채 산출에 반영한다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> 약관 분쟁과 작성자불이익 원칙</div><p style="margin-bottom:0">약관의 뜻이 명확하지 않을 때 한국 법원은 <b>작성자불이익 원칙</b>을 적용해 보험사에 불리하게 해석한다(약관규제법 제5조). 이는 보험사가 약관을 작성하는 우월적 지위에 있으므로 불명확한 조항의 불이익은 작성자가 부담해야 한다는 취지다. 따라서 손해보험 증권에서 면책 조항이나 보상 한도를 서술할 때 명확성이 법적으로도 중요한 의미를 갖는다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Policy", Amanda Aitken &amp; Arlene Forker. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

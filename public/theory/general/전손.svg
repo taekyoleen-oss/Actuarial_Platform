@@ -1,0 +1,38 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 전손: 완전히 불타/침몰한 재물 위에 보험금액 전액 지급 표시 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 지평선(바닥선) -->
+  <line x1="60" y1="205" x2="420" y2="205" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 무너진/불탄 건물 잔해 -->
+  <rect x="160" y="150" width="80" height="55" rx="2" fill="#FAFAF7" stroke="#171A20" stroke-width="2"/>
+  <!-- 부서진 지붕 -->
+  <path d="M 152 150 L 200 110 L 248 150" fill="none" stroke="#171A20" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+  <!-- 연기/불 Sky 곡선 -->
+  <path d="M 185 145 Q 195 120 200 100 Q 205 120 215 145" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- 전손 표기 -->
+  <text x="175" y="185" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">TL</text>
+  <!-- 보험금액 표시판 -->
+  <rect x="295" y="115" width="100" height="50" rx="5" fill="#EAF2F9" stroke="#4A90C2" stroke-width="2.5"/>
+  <text x="315" y="143" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">100%</text>
+  <!-- 화살표(지급 방향) -->
+  <path d="M 248 175 L 295 150" stroke="#4A90C2" stroke-width="3" stroke-linecap="round"/>
+  <!-- 잔존물 이전 화살표 -->
+  <path d="M 248 195 L 340 195" stroke="#171A20" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 3"/>
+  <!-- 캐릭터(손실 확인) -->
+  <g transform="translate(108 225)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -4.5 5 L 4.5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- 땀방울(충격) -->
+  <path d="M 122 210 q 3.5 4.5 0 7 q -3.5 -2.5 0 -7" fill="#4A90C2"/>
+  <!-- tkLeen pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

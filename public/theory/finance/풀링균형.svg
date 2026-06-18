@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 풀링 균형: 정보 비대칭 아래 여러 유형의 계약자가 하나의 보험계약으로 풀링 -->
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 큰 원(풀링 영역) -->
+<circle cx="240" cy="148" r="88" fill="#EAF2F9" stroke="#4A90C2" stroke-width="5"/>
+<!-- 풀 라벨 -->
+<text x="240" y="84" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">Pool</text>
+<!-- 저위험 계약자 3명 (흰 얼굴) -->
+<g transform="translate(192 148)"><circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/></g>
+<g transform="translate(240 148)"><circle r="13" fill="#EEF4FF" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/></g>
+<!-- 고위험 계약자 (파스텔 얼굴, 땀방울) -->
+<g transform="translate(288 148)"><circle r="13" fill="#FFF7ED" stroke="#171A20" stroke-width="3"/><circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/><path d="M -4.5 5 L 4.5 5" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/><path d="M 17 -11 q 3.5 4.5 0 7 q -3.5 -2.5 0 -7" fill="#4A90C2"/></g>
+<!-- 하나의 계약 → 화살표 -->
+<line x1="240" y1="240" x2="240" y2="262" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="192" y="262" width="96" height="24" rx="4" fill="#171A20"/>
+<text x="240" y="278" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#FAFAF7">P*</text>
+<!-- 외부 정보 불가 표시 -->
+<text x="68" y="100" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">?type</text>
+<line x1="104" y1="100" x2="148" y2="118" stroke="#171A20" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

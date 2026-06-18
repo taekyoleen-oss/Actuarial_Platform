@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전손 (Total Loss) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>전손</h1>
+<div class="meta">Total Loss &nbsp;·&nbsp; 원저자: Robert Buchanan &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 전손의 정의 <span class="en">Definition</span></h2>
+<p>글자 그대로 보면, <b>전손(total loss)</b>은 부보된 재산(피보험 목적물)이 <b>완전히 멸실</b>되거나, 손실·도난으로 인해 소유자가 <b>전혀 접근할 수 없게 된</b> 경우에 발생한다. 또는 손상이 너무 심해 <b>수리 비용이 그 재산의 보험금액보다 크다고 인정</b>되는 경우도 전손에 해당하는데, 이를 <b>추정전손(constructive total loss)</b>이라 한다. 어느 경우든 보험증권상 부보된 금액(보험금액) 전액이 지급된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 실제전손 vs 추정전손</div><p style="margin-bottom:0"><b>실제전손(actual total loss)</b>은 목적물이 물리적으로 사라지거나 회복 불가능해진 경우다(예: 침몰·전소·도난). <b>추정전손</b>은 형태는 남아 있지만 <b>고치는 비용이 보험금액을 넘어</b> 경제적으로 고칠 가치가 없는 경우다. 둘 다 결과적으로 보험금액 전액을 받는다. 이와 대비되는 개념이 일부만 손상된 <b>분손(partial loss)</b>이다.</p></div>
+
+<h2>2. 잔존물의 소유권 이전 <span class="en">Salvage & Subrogation of Title</span></h2>
+<p>동산(movable property)의 경우, 보험증권은 흔히 <b>전손이 발생하면 그 재산의 소유권이 보험자에게 넘어간다</b>고 정한다. 따라서 도난당하거나 분실되었던 보석이 나중에 회수되면, 그것은 (이미 전손 보험금을 지급한) 보험자의 소유가 된다.</p>
+<div class="note adv"><div class="head"><span class="tag adv">해설</span> 왜 소유권이 보험자에게 가나</div><p style="margin-bottom:0">전손으로 보험금 전액을 받은 뒤에도 피보험자가 회수된 물건까지 가지면 <b>이중 이득</b>이 된다. 이를 막기 위해 잔존물(salvage)의 소유권이 보험자에게 이전된다. 보험자는 그 잔존물을 처분해 지급 보험금의 일부를 회수할 수 있다. 이는 손해보험의 <b>이득금지 원칙</b>을 구현하는 장치다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> Partial Loss(분손) · Replacement Value(재조달가액) · Loss Adjustment(손해사정) · Marine Insurance(해상보험)</div>
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>전손 (total loss)</b> — 목적물이 멸실·접근불능이 되거나 수리비가 보험금액을 넘어 전부 손실로 보는 경우.</li>
+<li><b>실제전손 (actual total loss)</b> — 목적물이 물리적으로 완전히 멸실·회복불능이 된 전손.</li>
+<li><b>추정전손 (constructive total loss)</b> — 수리비가 보험금액을 초과해 경제적으로 전손으로 처리하는 경우.</li>
+<li><b>분손 (partial loss)</b> — 목적물의 일부만 손상되어 전손에 이르지 않은 손해.</li>
+<li><b>보험금액 (amount insured / sum insured)</b> — 증권에 정한 보장 한도이자 전손 시 지급되는 금액.</li>
+<li><b>잔존물 (salvage)</b> — 전손 처리 후 남은 목적물. 전손 시 그 소유권이 보험자에게 이전된다.</li>
+<li><b>동산 (movable property)</b> — 보석·차량 등 옮길 수 있는 재산. 전손 시 소유권 이전 조항이 흔하다.</li>
+</ul>
+<h2>한국보험시장 현황 <span class=”en”>Korea Market Practice</span></h2>
+<p>한국 손해보험에서 전손 개념은 종목에 따라 구체적 기준이 다르게 정의된다. <b>자동차보험</b>에서는 수리비가 차량 가액(보험개발원 기준가액)을 초과하는 경우 추정전손(전부손해)으로 처리하며, 이 경우 보험사는 차량 기준가액을 지급하고 잔존차량의 소유권을 취득한다. <b>재물보험</b>에서는 수리비가 보험가입금액을 넘는 경우 또는 재물이 완전히 멸실된 경우 전손으로 인정한다. 해상보험에서는 MIA(해상보험법)와 국제 관행을 준용하여 실제전손과 추정전손을 구분한다.</p>
+<p>본문이 강조한 <b>잔존물(salvage) 소유권 이전</b>은 한국에서도 자동차보험 전손 처리에서 핵심 절차다. 전손 보험금 지급 후 보험사는 차량 소유권을 이전받아 잔존물 경매 등을 통해 회수금을 확보하며, 이 회수금은 손해사정 과정에서 순 지급 손해액을 결정하는 데 반영된다. 피보험자가 잔존차량을 계속 보유하고 싶다면 잔존물 평가액을 공제한 금액만을 보험금으로 받는 방식을 선택할 수 있다.</p>
+<p>IFRS17 관점에서 전손 클레임은 <b>이미 발생한 클레임(incurred claims)</b>으로 발생사고부채(LIC)에 반영된다. 대형 재물 전손 사고처럼 단건 손해가 큰 경우, 준비금 산출 시 개별추산(case reserve)으로 평가하며, 잔존물 회수 가능성은 그 추산 금액에서 차감하여 순부채를 결정한다. K-ICS 요구자본 산출에서도 거대 재물 전손의 집중 위험(concentration risk)이 자연재해 위험 요구자본에 반영된다.</p>
+<div class=”note”><div class=”head”><span class=”tag”>실무</span> 자동차 전손과 대물·자차 연동 처리</div><p style=”margin-bottom:0”>자동차보험에서 전손이 발생하면 <b>자차손해 담보</b>와 <b>대물배상 담보</b>가 동시에 관여하는 경우가 많다. 과실 비율에 따라 상대방 대물배상과 자차손해 처리가 분리되며, 전손 기준가액은 보험개발원 차량기준가액표를 기준으로 한다. 이 가액과 실제 시장 거래가격의 차이가 분쟁을 유발하는 경우가 있어, 손해사정사의 역할과 계리적 가액 산정 방법론이 중요하다.</p></div>
+<div class=”src”>[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), “Total Loss”, Robert Buchanan. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

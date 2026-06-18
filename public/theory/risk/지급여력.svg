@@ -1,0 +1,32 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 지급여력: 자산이 부채를 초과하는 마진(솔벤시) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+<defs>
+<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern>
+</defs>
+<rect width="480" height="300" fill="#FAFAF7"/>
+<rect width="480" height="300" fill="url(#dots)"/>
+<!-- 자산 막대 -->
+<rect x="130" y="80" width="80" height="160" rx="4" fill="#EAF2F9" stroke="#4A90C2" stroke-width="3"/>
+<!-- 부채 막대 -->
+<rect x="270" y="130" width="80" height="110" rx="4" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+<!-- 솔벤시 마진 화살표 (자산 상단 - 부채 상단 차이) -->
+<line x1="210" y1="80" x2="270" y2="80" stroke="#171A20" stroke-width="2" stroke-dasharray="5 4" opacity=".5"/>
+<line x1="210" y1="130" x2="270" y2="130" stroke="#171A20" stroke-width="2" stroke-dasharray="5 4" opacity=".5"/>
+<!-- U 마진 화살표 -->
+<line x1="246" y1="82" x2="246" y2="128" stroke="#4A90C2" stroke-width="3" stroke-linecap="round"/>
+<polygon points="240,126 246,140 252,126" fill="#4A90C2"/>
+<text x="252" y="110" font-family="ui-monospace,Consolas,monospace" font-size="13" fill="#4A90C2">U</text>
+<!-- 라벨 -->
+<text x="170" y="72" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2" fill-opacity=".8" text-anchor="middle">자산 A</text>
+<text x="310" y="122" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".6" text-anchor="middle">부채 L</text>
+<!-- 캐릭터: 뿌듯한 표정 (솔벤시 마진 큼) -->
+<g transform="translate(170 228)">
+  <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+  <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+  <path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20"/>
+</g>
+<!-- K-ICS 라벨 -->
+<text x="240" y="265" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".4" text-anchor="middle">K-ICS 150%+</text>
+<!-- tkLeen 픽셀 시그니처 -->
+<g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

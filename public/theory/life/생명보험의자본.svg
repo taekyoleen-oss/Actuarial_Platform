@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 생명보험의자본: 자산이 부채를 넘어서는 여유자산(자본) 적층 구조 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 스택 구조: 하단=부채, 중간=요구자본, 상단=여유자산(capital) -->
+  <!-- 부채 층 (가장 아래, Ink 윤곽) -->
+  <rect x="130" y="178" width="220" height="72" fill="#EAF2F9" stroke="#171A20" stroke-width="2.5" rx="4"/>
+  <!-- 요구자본 층 -->
+  <rect x="130" y="120" width="220" height="56" fill="#FAFAF7" stroke="#171A20" stroke-width="2.5" rx="4"/>
+  <!-- 여유자산 층 (Sky, 핵심) -->
+  <rect x="130" y="64" width="220" height="54" fill="#4A90C2" stroke="#171A20" stroke-width="2.5" rx="4"/>
+  <!-- 레이블 -->
+  <text x="220" y="198" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">L</text>
+  <text x="207" y="152" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" opacity=".55">SCR</text>
+  <text x="200" y="95" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#FFFFFF" opacity=".9">Capital</text>
+  <!-- 총자산 라인 상단 -->
+  <line x1="110" y1="64" x2="378" y2="64" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 총부채+자본 하단 -->
+  <line x1="110" y1="250" x2="378" y2="250" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 양방향 화살표: 여유자산 -->
+  <line x1="365" y1="64" x2="365" y2="120" stroke="#4A90C2" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 360 73 L 365 64 L 370 73" fill="none" stroke="#4A90C2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 360 111 L 365 120 L 370 111" fill="none" stroke="#4A90C2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 캐릭터: 여유자산 위에서 미소 -->
+  <g transform="translate(390 48)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 3 Q 0 9.5 5 3 Z" fill="#171A20"/>
+  </g>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

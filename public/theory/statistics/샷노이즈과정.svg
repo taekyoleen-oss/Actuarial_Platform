@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — TITLE: 샷노이즈과정 MOTIF: 충격점프+지수감쇠 -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- x-axis -->
+  <line x1="60" y1="220" x2="430" y2="220" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- y-axis -->
+  <line x1="60" y1="220" x2="60" y2="50" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- Spike 1 at x=120: vertical line up to y=80 -->
+  <line x1="120" y1="220" x2="120" y2="80" stroke="#4A90C2" stroke-width="4" stroke-linecap="round"/>
+  <!-- Decay 1: from (120,80) exponential down to (220,215) -->
+  <path d="M 120,80 C 140,95 160,140 185,180 C 200,200 212,213 220,215" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- Sky Pastel fill under decay 1 -->
+  <path d="M 120,80 C 140,95 160,140 185,180 C 200,200 212,213 220,215 L 220,220 L 120,220 Z" fill="#EAF2F9"/>
+  <!-- Spike 2 at x=220: vertical line up to y=120 -->
+  <line x1="220" y1="220" x2="220" y2="120" stroke="#4A90C2" stroke-width="4" stroke-linecap="round"/>
+  <!-- Decay 2: from (220,120) exponential down to (320,215) -->
+  <path d="M 220,120 C 240,135 260,165 285,192 C 300,207 312,215 320,216" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- Sky Pastel fill under decay 2 -->
+  <path d="M 220,120 C 240,135 260,165 285,192 C 300,207 312,215 320,216 L 320,220 L 220,220 Z" fill="#EAF2F9"/>
+  <!-- Spike 3 at x=320: vertical line up to y=100 -->
+  <line x1="320" y1="220" x2="320" y2="100" stroke="#4A90C2" stroke-width="4" stroke-linecap="round"/>
+  <!-- Decay 3: from (320,100) exponential down to (420,217) -->
+  <path d="M 320,100 C 340,115 360,155 385,190 C 400,207 412,215 420,217" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- Sky Pastel fill under decay 3 -->
+  <path d="M 320,100 C 340,115 360,155 385,190 C 400,207 412,215 420,217 L 420,220 L 320,220 Z" fill="#EAF2F9"/>
+  <!-- λ(t) label monospace -->
+  <text x="68" y="75" font-family="monospace" font-size="18" fill="#171A20" font-weight="bold">&#955;(t)</text>
+  <!-- Character at top of first spike (translate 120, 67) -->
+  <g transform="translate(120 67)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen sky pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

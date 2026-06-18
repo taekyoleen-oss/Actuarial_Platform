@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>재조달가액 (Replacement Value) — 학습 해설서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>html{background:#fff;} body{font-family:'Nanum Gothic','Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;}
+* { box-sizing:border-box; }
+body { color:#1a1a1a; font-size:10.7pt; line-height:1.78; margin:0; }
+.wrap { max-width:760px; margin:0 auto; padding:8px 4px 40px; }
+h1 { font-size:23pt; margin:0 0 2pt 0; letter-spacing:-0.5px; }
+.entrynum { display:inline-block; background:#111; color:#fff; font-weight:bold; font-size:12pt; padding:1pt 8pt; margin-bottom:6pt; }
+.meta { font-size:9.3pt; color:#777; margin-top:2pt; }
+.rule { border:0; border-top:2px solid #111; margin:9pt 0 12pt 0; }
+.legend { font-size:9pt; color:#666; background:#f7f7f7; border:1px solid #e3e3e3; padding:8pt 10pt; margin:0 0 14pt 0; }
+h2 { font-size:13pt; margin:18pt 0 6pt 0; padding-bottom:3pt; border-bottom:1px solid #ccc; }
+h2 .en { font-size:9.5pt; color:#999; font-weight:normal; }
+h3 { font-size:11.5pt; margin:13pt 0 4pt; }
+p { margin:0 0 8pt 0; text-align:justify; }
+ul { margin:4pt 0 9pt 0; padding-left:18pt; } li { margin:2pt 0; }
+.eq { text-align:center; margin:9pt 0; } .eq img { vertical-align:middle; }
+.tag { font-size:9.5pt; font-weight:bold; color:#fff; background:#111; padding:1pt 7pt; margin-right:6pt; white-space:nowrap; }
+.tag.adv { background:#6a6a6a; }
+.note { background:#f5f5f5; border-left:4px solid #222; padding:9pt 12pt; margin:10pt 0; }
+.note.adv { background:#fbfbfb; border-left:4px solid #9a9a9a; }
+.note .head { font-weight:bold; margin-bottom:3pt; }
+.ex { border:1.2px solid #bbb; padding:10pt 12pt; margin:11pt 0; }
+.ex .head { font-weight:bold; margin-bottom:4pt; } .ex .q { color:#333; }
+.xref { font-size:9.1pt; color:#555; background:#fafafa; border:1px solid #eee; padding:7pt 10pt; }
+.refs { font-size:9.1pt; color:#444; margin-top:6pt; }
+.src { font-size:8.8pt; color:#999; margin-top:14pt; border-top:1px solid #eee; padding-top:6pt; }
+</style></head><body><div class="wrap"><div class="entrynum">표제어 · 손해보험</div>
+<h1>재조달가액</h1>
+<div class="meta">Replacement Value &nbsp;·&nbsp; 원저자: Robert Buchanan &nbsp;·&nbsp; 출처: <i>Encyclopedia of Actuarial Science</i> (Wiley, 2004)</div>
+<hr class="rule">
+<div class="legend"><b>읽는 법.</b> 본문은 원문 표제어의 내용을 그대로 옮긴 것입니다. 회색 <span class="tag">해설</span> · <span class="tag">예제</span> 상자는 학부 입문 학습을 돕기 위해 <b>새로 추가한 부분</b>이며 원문에는 없습니다. 모르는 용어는 글 끝 <b>부록</b>을 참고하세요.</div>
+
+<h2>1. 실손보상 vs 재조달가액 <span class="en">Indemnity versus Replacement Value</span></h2>
+<p><b>재물보험(property insurance)</b>는 전통적으로 <b>실손보상(indemnity, 손해보상) 기준</b>으로 인수된다. 즉, 재물은 <b>손해 발생 시점의 가치(시가)</b>로 보험에 든다. 그런데 <b>전손(total loss)</b>이 발생하면 이 시가가 <b>재조달 비용보다 훨씬 적을</b> 수 있다. 이 문제를 풀기 위해, 일부 보험은 <b>재조달가액(replacement value) 기준</b>으로 인수된다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 시가와 재조달가액의 차이</div><p style="margin-bottom:0"><b>시가(actual cash value)</b>는 “지금 그 물건의 가치”로, <b>감가상각(낡음)을 뺀</b> 값이다. 5년 쓴 보일러는 새것보다 값이 떨어져 있다. 반면 <b>재조달가액</b>은 “<b>같은 새 물건으로 다시 마련하는 데 드는 비용</b>”으로 감가상각을 빼지 않는다. 그래서 전손 때 시가 기준으로 받으면 같은 물건을 새로 살 돈이 모자라기 쉽고, 재조달가액 기준이면 그 부족분까지 메워준다.</p></div>
+<p>건물처럼 적절한 경우에는, 재조달가액에 <b>철거비, 잔해 제거비, 행정 수수료</b> 등 부수적인 <b>간접비용(indirect costs)</b>를 포함할 수 있다.</p>
+
+<h2>2. 재조달가액 약정의 형태 <span class="en">Forms of the Provision</span></h2>
+<p>이러한 약정의 한 형태는, <b>발행 시점에 재조달가액을 미리 합의</b>하여 <b>보험가입금액(sum insured)</b>로 명시하는 것이다. 다른 방식으로는, 보험자가 <b>재조달에 필요한 만큼 무엇이든 지급</b>하거나, 경우에 따라 <b>현물 재조달(physical replacement)</b>을 제공하도록 증권에 정할 수 있다. 현물 재조달은 보험자가 자신의 <b>구매력</b>이나 다른 수단을 통해 대체 재물을 좋은 조건으로 확보할 수 있다면 매력적인 선택이 된다.</p>
+
+<h2>3. 동종교환 vs 신구교환 <span class="en">Like-for-like versus New-for-old</span></h2>
+<p>재물의 성격과 보험자의 정책에 따라, 재조달은 보험 목적물의 <b>상태를 고려한 동종교환(like-for-like)</b> 기준일 수도, <b>신구교환(new-for-old)</b> 기준일 수도 있다. 증권이 동종교환을 정한 경우, 보험자는 보험 목적물을 새 물건으로, 또는 적어도 <b>원래 것보다 나쁘지 않은</b> 물건으로 대체하기로 선택할 수 있다.</p>
+<div class="note"><div class="head"><span class="tag">해설</span> 동종교환과 신구교환</div><p style="margin-bottom:0"><b>동종교환</b>은 “비슷한 상태의 같은 물건”으로 바꿔주는 것(낡은 것은 낡은 정도를 감안), <b>신구교환</b>은 낡았어도 “<b>새것</b>”으로 바꿔주는 것이다. 신구교환이 가입자에게 더 유리하지만, 바로 그 점이 도덕적 위험을 키울 수 있다.</p></div>
+
+<h2>4. 도덕적 위험과 제한 <span class="en">Moral Hazard and Restrictions</span></h2>
+<p>낡거나 손상된 재물을 <b>신구교환 기준</b>으로 인수할 때는, 이것이 피보험자로 하여금 <b>전손을 일부러 유도할 유인</b>을 지나치게 키우지 않도록 주의가 필요하다. 예를 들어 <b>자동차</b>의 경우, 완전한 신구교환은 보통 <b>약 1년</b> 정도의 기간으로 제한되며, <b>건물</b>은 양호한 상태여야 한다.</p>
+<div class="ex"><div class="head"><span class="tag">예제</span> 신구교환이 위험한 이유</div><p class="q">10년 된 노후 차량을 무제한 신구교환 기준으로 보험에 들 수 있다고 하자. 어떤 문제가 생기는가?</p><p style="margin-bottom:0">차량의 시가는 매우 낮은데 사고가 나면 <b>새 차</b>를 받게 되므로, 피보험자는 사고(전손)를 통해 오히려 <b>이득</b>을 본다. 이는 손해보상 원칙에 어긋나고 <b>도덕적 위험</b>을 키운다. 그래서 실무에서는 신구교환을 차량 출고 후 약 1년으로 제한하고, 그 이후에는 시가 기준으로 보상한다.</p></div>
+
+<h2>참고 및 관련 표제어</h2>
+<div class="xref"><b>관련 표제어.</b> 전손(Total Loss) · 시가(Actual Cash Value) · 손해사정(Loss Adjustment) · 재물보험(Property Insurance) · 담보(Coverage)</div>
+
+<h2>부록. 이 글에 나온 용어 <span class="en">(배경지식 보충)</span></h2>
+<ul>
+<li><b>재조달가액 (replacement value/cost)</b> — 같은 새 물건으로 다시 마련하는 데 드는 비용(감가상각 미차감).</li>
+<li><b>실손보상 (indemnity, 손해보상)</b> — 손해 발생 직전의 경제 상태로 되돌리는 보상 원칙.</li>
+<li><b>시가 (actual cash value)</b> — 손해 시점의 실제 가치, 곧 재조달가액에서 감가상각을 뺀 값.</li>
+<li><b>전손 (total loss)</b> — 재물이 완전히 멸실되거나 수리가 무의미할 만큼 손상된 상태.</li>
+<li><b>보험가입금액 (sum insured)</b> — 증권에 명시된 보상 한도 금액.</li>
+<li><b>현물 재조달 (physical replacement)</b> — 현금 대신 보험사가 직접 대체 물건을 제공하는 방식.</li>
+<li><b>동종교환 (like-for-like)</b> — 비슷한 상태·종류의 물건으로 대체(상태 고려).</li>
+<li><b>신구교환 (new-for-old)</b> — 낡은 물건을 새 물건으로 대체(감가상각 미반영).</li>
+<li><b>간접비용 (indirect costs)</b> — 철거·잔해 제거·행정 수수료 등 재조달에 따르는 부수 비용.</li>
+<li><b>도덕적 위험 (moral hazard)</b> — 보험 때문에 손해의 빈도·심도를 키우려는 유인.</li>
+</ul>
+
+<h2>한국보험시장 현황 <span class="en">Korea Market Practice</span></h2>
+<p>한국 재물보험에서 보험가입금액(보험금액)은 전통적으로 <b>시가(실손보상) 기준</b>과 <b>재조달가액(신가) 기준</b> 두 가지로 나뉜다. 화재보험을 비롯한 일반 재물보험은 기본적으로 손해 발생 시점의 시가를 기준으로 보상하나, 계약자가 별도로 <b>신가 특약</b>을 부가하면 감가상각을 반영하지 않는 재조달가액 기준으로 보상받을 수 있다. 자동차보험의 경우 차량 가액은 보험개발원이 공시하는 <b>기준가액(시가)</b>을 활용하며, 전손 처리 시 이 기준가액이 지급 보험금의 상한이 된다.</p>
+<p>재조달가액 특약의 활용은 기업성 재물보험에서 더 두드러진다. 공장·창고·설비처럼 감가상각이 큰 자산을 보유한 기업은 시가 기준으로 보상받을 경우 전손 이후 동일 기능의 새 설비를 마련하기 어렵다. 이에 따라 <b>재물종합보험(Property All Risks, PAR)</b>에서는 재조달가액을 보험가입금액으로 설정하는 것이 일반적이다. 다만 보험가입금액이 실제 재조달가액보다 낮으면 <b>일부보험(underinsurance)</b>에 해당하여 비례보상이 적용되므로, 매년 자산 재평가를 통해 보험가입금액을 갱신하는 것이 실무 관행이다.</p>
+<p>본문이 언급한 도덕적 위험 억제 장치 — 자동차는 출고 1년 내, 건물은 양호한 상태 — 는 한국에서도 약관상 유사하게 구현된다. 특히 중고차의 경우 신가 특약이 적용되지 않으며, 10년 이상 경과한 건물에 신가 특약을 부가할 때는 현장 실사를 통한 감가상각 조사를 병행하는 언더라이팅 관행이 있다.</p>
+<div class="note"><div class="head"><span class="tag">실무</span> IFRS17과 재조달가액 보험의 부채 측정</div><p style="margin-bottom:0">IFRS17 도입 이후 재조달가액 특약이 포함된 재물보험 부채 측정에서, 미래 보험금 지급액을 추정할 때 <b>물가 상승에 따른 재조달가액 증가</b>를 최선추정 현금흐름에 반영해야 한다. 건설비지수·기계류물가지수 등 관련 인플레이션 가정을 명시적으로 설정하는 것이 IFRS17 원칙이다. 실무상 보험개발원이 제공하는 지수나 자체 경험 통계를 활용하며, 재조달가액의 추세 추정에 계리사의 판단이 개입된다.</p></div>
+<div class="src">[한국보험시장 현황]은 한국 보험시장 실무 관점(2026.6 기준)에서 추가 작성한 것임. · 원문: Encyclopedia of Actuarial Science (Wiley, 2004), "Replacement Value", Robert Buchanan. · 본 해설서의 [해설]·[예제]·[부록]은 학부 입문 학습용으로 추가·구성한 것임.</div></div></body></html>

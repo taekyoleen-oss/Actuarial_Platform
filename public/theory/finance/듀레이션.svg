@@ -1,0 +1,35 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 듀레이션: 현금흐름 현재가치의 무게중심 시점을 저울로 표현 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 저울대 축 (수평) Sky -->
+  <line x1="108" y1="170" x2="372" y2="170" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- 저울 받침대 -->
+  <line x1="240" y1="170" x2="240" y2="220" stroke="#171A20" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="200,220 280,220 265,240 215,240" fill="#171A20" fill-opacity=".18"/>
+  <!-- 왼쪽 현금흐름 막대 (작음, 가까운 시점) -->
+  <rect x="128" y="130" width="22" height="40" rx="3" fill="#EAF2F9" stroke="#4A90C2" stroke-width="2"/>
+  <rect x="168" y="115" width="22" height="55" rx="3" fill="#EAF2F9" stroke="#4A90C2" stroke-width="2"/>
+  <!-- 오른쪽 현금흐름 막대 (큼, 먼 시점) -->
+  <rect x="270" y="100" width="22" height="70" rx="3" fill="#4A90C2" fill-opacity=".3" stroke="#4A90C2" stroke-width="2"/>
+  <rect x="322" y="85" width="22" height="85" rx="3" fill="#4A90C2" fill-opacity=".5" stroke="#4A90C2" stroke-width="2"/>
+  <!-- 무게중심 표시 -->
+  <circle cx="240" cy="170" r="7" fill="#4A90C2"/>
+  <circle cx="240" cy="170" r="4" fill="#FFFFFF"/>
+  <!-- 캐릭터: 저울 위 균형 -->
+  <g transform="translate(240 115)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- 라벨 -->
+  <text x="228" y="255" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#4A90C2">D</text>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

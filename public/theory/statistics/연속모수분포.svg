@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 연속모수분포: 모수α 변화에 따른 밀도곡선 패밀리 -->
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <line x1="60" y1="240" x2="420" y2="240" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="40" x2="60" y2="240" stroke="#171A20" stroke-width="3" stroke-linecap="round"/>
+  <text x="426" y="244" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">x</text>
+  <text x="38" y="38" font-family="ui-monospace,Consolas,monospace" font-size="12" fill="#171A20" fill-opacity=".55">f(x)</text>
+  <!-- 곡선1 좁고 높음 (Ink 점선) -->
+  <path d="M 90 238 C 130 238 155 60 180 238" fill="#EAF2F9" fill-opacity=".5" stroke="#171A20" stroke-width="2" stroke-dasharray="6 4" opacity=".5"/>
+  <!-- 곡선2 중간 (Ink) -->
+  <path d="M 130 238 C 180 238 220 100 260 238" fill="#EAF2F9" fill-opacity=".6" stroke="#171A20" stroke-width="2.5" opacity=".7"/>
+  <!-- 곡선3 넓고 낮음 (Sky) -->
+  <path d="M 180 238 C 240 238 300 130 380 238" fill="#EAF2F9" stroke="#4A90C2" stroke-width="5" stroke-linecap="round"/>
+  <!-- 라벨 -->
+  <text x="148" y="80" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">&#x3b1;=1</text>
+  <text x="214" y="108" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">&#x3b1;=2</text>
+  <text x="298" y="138" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#171A20" fill-opacity=".55">&#x3b1;=4</text>
+  <!-- 캐릭터 -->
+  <g transform="translate(390 130)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

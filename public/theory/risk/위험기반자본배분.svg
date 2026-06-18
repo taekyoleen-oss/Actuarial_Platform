@@ -1,0 +1,37 @@
+<!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 위험기반자본배분: RAC(위험기반자본)을 사업단위별로 화살표로 배분하는 RORAC 구조 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 중앙 RAC 박스 (Sky) -->
+  <rect x="175" y="90" width="130" height="60" rx="6" fill="#EAF2F9" stroke="#4A90C2" stroke-width="5"/>
+  <text x="196" y="125" font-family="ui-monospace,Consolas,monospace" font-size="13" fill="#171A20" opacity=".65">RAC</text>
+  <!-- 배분 화살표 → 3개 사업단위 -->
+  <!-- 왼쪽 -->
+  <line x1="175" y1="130" x2="115" y2="185" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="115,185 108,172 122,175" fill="#171A20"/>
+  <rect x="80" y="188" width="70" height="40" rx="4" fill="#FAFAF7" stroke="#171A20" stroke-width="2.5"/>
+  <text x="91" y="213" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".65">BU₁</text>
+  <!-- 중앙 -->
+  <line x1="240" y1="150" x2="240" y2="186" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="240,188 234,175 246,175" fill="#171A20"/>
+  <rect x="205" y="190" width="70" height="40" rx="4" fill="#FAFAF7" stroke="#171A20" stroke-width="2.5"/>
+  <text x="216" y="215" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".65">BU₂</text>
+  <!-- 오른쪽 -->
+  <line x1="305" y1="130" x2="365" y2="185" stroke="#171A20" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="365,185 358,172 372,175" fill="#171A20"/>
+  <rect x="330" y="188" width="70" height="40" rx="4" fill="#FAFAF7" stroke="#171A20" stroke-width="2.5"/>
+  <text x="341" y="213" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#171A20" opacity=".65">BU₃</text>
+  <!-- 캐릭터: RAC 위 -->
+  <g transform="translate(240 70)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/><circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen 픽셀 시그니처 -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

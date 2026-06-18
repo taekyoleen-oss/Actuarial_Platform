@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — TITLE: 비모수통계 MOTIF: ECDF계단+KDE곡선 -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- Axes -->
+  <line x1="70" y1="240" x2="440" y2="240" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <line x1="70" y1="240" x2="70" y2="50" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sky Pastel fill under KDE curve -->
+  <path d="M 80,238 C 120,235 150,220 180,195 C 210,170 240,140 270,115 C 300,90 330,75 360,68 C 390,62 410,60 430,58 L 430,240 Z" fill="#EAF2F9"/>
+  <!-- KDE smooth curve in Sky stroke-width 5 -->
+  <path d="M 80,238 C 120,235 150,220 180,195 C 210,170 240,140 270,115 C 300,90 330,75 360,68 C 390,62 410,60 430,58" fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- ECDF step function in Ink stroke-width 2.5 -->
+  <polyline points="80,220 110,220 110,200 150,200 150,178 190,178 190,155 230,155 230,128 270,128 270,108 310,108 310,88 350,88 350,72 390,72 390,62 425,62" fill="none" stroke="#171A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- F̂(x) label monospace -->
+  <text x="78" y="48" font-family="monospace" font-size="17" fill="#171A20" font-weight="bold">F&#x0302;(x)</text>
+  <!-- Character at ~(300, 100) -->
+  <g transform="translate(300 95)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen sky pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>

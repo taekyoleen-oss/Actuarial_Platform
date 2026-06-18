@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300">
+  <!-- tkLeen 이론 사전 커버 · 플랫 카툰 v1 — 계수과정: 계단식 누적계수 N(t) -->
+  <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="1.3" fill="#171A20" fill-opacity=".05"/></pattern></defs>
+  <rect width="480" height="300" fill="#FAFAF7"/>
+  <rect width="480" height="300" fill="url(#dots)"/>
+  <!-- 좌표축 -->
+  <line x1="70" y1="40" x2="70" y2="240" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <line x1="70" y1="240" x2="420" y2="240" stroke="#171A20" stroke-width="2" stroke-linecap="round"/>
+  <!-- 계단 함수 N(t) — 4 단계 점프 -->
+  <polyline points="70,220 140,220 140,180 210,180 210,145 290,145 290,110 370,110 370,80"
+            fill="none" stroke="#4A90C2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 점프 포인트 점 -->
+  <circle cx="140" cy="180" r="6" fill="#4A90C2"/>
+  <circle cx="210" cy="145" r="6" fill="#4A90C2"/>
+  <circle cx="290" cy="110" r="6" fill="#4A90C2"/>
+  <circle cx="370" cy="80" r="6" fill="#4A90C2"/>
+  <!-- N(t) 라벨 -->
+  <text x="78" y="58" font-family="monospace" font-size="18" fill="#171A20" font-weight="bold">N(t)</text>
+  <!-- 캐릭터: 마지막 단 위 (x=370, y=80 → 캐릭터 y=55) -->
+  <g transform="translate(370 55)">
+    <circle r="13" fill="#FFFFFF" stroke="#171A20" stroke-width="3"/>
+    <circle cx="-4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <circle cx="4.5" cy="-2" r="1.8" fill="#171A20"/>
+    <path d="M -5 4 Q 0 8.5 5 4" fill="none" stroke="#171A20" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- tkLeen sky pixel signature -->
+  <g fill="#4A90C2"><rect x="446" y="272" width="8" height="8"/><rect x="454" y="264" width="8" height="8"/><rect x="462" y="256" width="8" height="8"/></g>
+</svg>
