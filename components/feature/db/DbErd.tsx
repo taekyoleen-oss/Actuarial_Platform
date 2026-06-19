@@ -58,6 +58,11 @@ export function DbErdView({
   const handleDrag = useCallback((name: string, x: number, y: number) => {
     setOffsets((prev) => ({ ...prev, [name]: { x, y } }));
   }, []);
+  // 테이블 선택 — 확대된 다른 테이블이 있으면 원래 크기로 되돌린다.
+  const handleSelect = useCallback((name: string) => {
+    setSelected(name);
+    setExpanded((prev) => (prev && prev !== name ? null : prev));
+  }, []);
   const toggleExpand = useCallback((name: string) => {
     setExpanded((prev) => (prev === name ? null : name));
     setSelected(name);
@@ -249,6 +254,12 @@ export function DbErdView({
       {/* ERD 캔버스 — 가로 스크롤(데스크톱 다컬럼), SVG 연결선은 박스 뒤(z-0) */}
       <div
         ref={canvasRef}
+        onPointerDown={(e) => {
+          // 박스 바깥(캔버스 여백)을 누르면 확대된 박스를 원래대로 되돌린다.
+          if (!(e.target as HTMLElement).closest("[data-erd-box]")) {
+            setExpanded(null);
+          }
+        }}
         className="relative overflow-x-auto rounded-cover border border-border bg-surface/40 p-5"
       >
         <svg
@@ -312,7 +323,7 @@ export function DbErdView({
                     key={t.name}
                     table={t}
                     selected={t.name === selected}
-                    onSelect={() => setSelected(t.name)}
+                    onSelect={() => handleSelect(t.name)}
                     refCb={(el) => (boxRefs.current[t.name] = el)}
                     riskOn={active}
                     isRiskTable={riskTables.has(t.name)}
@@ -446,6 +457,8 @@ function ErdBox({
 
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
+    // 누르는 즉시 선택(드래그로 이어져도 해당 DB가 선택되어 연결이 보이도록).
+    onSelect();
     drag.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -480,15 +493,6 @@ function ErdBox({
       drag.current = null;
     }
   };
-  const handleClick = () => {
-    if (drag.current?.moved) {
-      drag.current = null; // 드래그였으면 선택하지 않음
-      return;
-    }
-    drag.current = null;
-    onSelect();
-  };
-
   // 한글 병기(ko)가 있는 DB(JMDC 등)는 평소에도 모든 필드를 표시.
   const bilingual = table.columns.some((c) => c.ko);
   // 확대(더블클릭) 또는 한글병기 DB → 모든 필드를 세로 목록으로.
@@ -497,7 +501,7 @@ function ErdBox({
   return (
     <button
       ref={refCb}
-      onClick={handleClick}
+      data-erd-box=""
       onDoubleClick={onToggleExpand}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
