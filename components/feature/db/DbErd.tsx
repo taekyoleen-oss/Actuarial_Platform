@@ -75,6 +75,16 @@ export function DbErdView({
 
   const selectedTable = erd.tables.find((t) => t.name === selected) ?? null;
 
+  // 선택한 테이블과 직접 연결된 테이블 집합 — 박스 부각용.
+  const neighbors = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of erd.relations) {
+      if (r.from === selected) s.add(r.to);
+      if (r.to === selected) s.add(r.from);
+    }
+    return s;
+  }, [erd.relations, selected]);
+
   // 위험률 개발 필드 집합 — "table.col" 키. riskSpec 없으면 빈 집합.
   const riskCols = useMemo(() => {
     const s = new Set<string>();
@@ -292,21 +302,20 @@ export function DbErdView({
               <path d="M0,0 L7.5,3.4 L0,6.8 Z" fill="var(--brand-sky)" />
             </marker>
           </defs>
-          {conns.map((c) => (
-            <path
-              key={c.key}
-              d={c.d}
-              fill="none"
-              stroke={c.active ? "var(--brand-sky)" : "var(--text-tertiary)"}
-              strokeOpacity={c.dim ? 0.06 : c.active ? 0.95 : 0.3}
-              strokeWidth={c.active ? 2.6 : 1.3}
-              markerEnd={
-                c.dim
-                  ? undefined
-                  : `url(#${c.active ? "erd-arrow-on" : "erd-arrow"})`
-              }
-            />
-          ))}
+          {conns.map((c) =>
+            // 선택된 테이블의 강조 연결선은 박스 위(앞) 오버레이에서 그린다.
+            c.active && !c.dim ? null : (
+              <path
+                key={c.key}
+                d={c.d}
+                fill="none"
+                stroke="var(--text-tertiary)"
+                strokeOpacity={c.dim ? 0.06 : 0.3}
+                strokeWidth={1.3}
+                markerEnd={c.dim ? undefined : "url(#erd-arrow)"}
+              />
+            )
+          )}
         </svg>
 
         <div className="relative z-[1] flex items-start gap-7 md:gap-10">
@@ -323,6 +332,7 @@ export function DbErdView({
                     key={t.name}
                     table={t}
                     selected={t.name === selected}
+                    isNeighbor={neighbors.has(t.name)}
                     onSelect={() => handleSelect(t.name)}
                     refCb={(el) => (boxRefs.current[t.name] = el)}
                     riskOn={active}
@@ -339,9 +349,31 @@ export function DbErdView({
           })}
         </div>
 
-        {/* 조인키 라벨 — 각 연결선(화살표) 중앙에 연결 키값 pill (박스 위 z-[2]) */}
+        {/* 강조 연결선 오버레이 — 선택 테이블의 연결선을 박스 위(z-[2])에 다시 그려 다른 DB에 가려지지 않게. */}
+        <svg
+          className="pointer-events-none absolute left-0 top-0 z-[2] block"
+          width={svgSize.w || "100%"}
+          height={svgSize.h || "100%"}
+          aria-hidden
+        >
+          {conns.map((c) =>
+            !c.active || c.dim ? null : (
+              <path
+                key={`on-${c.key}`}
+                d={c.d}
+                fill="none"
+                stroke="var(--brand-sky)"
+                strokeOpacity={0.95}
+                strokeWidth={2.6}
+                markerEnd="url(#erd-arrow-on)"
+              />
+            )
+          )}
+        </svg>
+
+        {/* 조인키 라벨 — 각 연결선(화살표) 중앙에 연결 키값 pill (강조선 위 z-[3]) */}
         <div
-          className="pointer-events-none absolute left-0 top-0 z-[2]"
+          className="pointer-events-none absolute left-0 top-0 z-[3]"
           style={{ width: svgSize.w || "100%", height: svgSize.h || "100%" }}
           aria-hidden
         >
@@ -421,6 +453,7 @@ export function DbErdView({
 function ErdBox({
   table,
   selected,
+  isNeighbor,
   onSelect,
   refCb,
   riskOn,
@@ -433,6 +466,7 @@ function ErdBox({
 }: {
   table: DbTable;
   selected: boolean;
+  isNeighbor: boolean;
   onSelect: () => void;
   refCb: (el: HTMLButtonElement | null) => void;
   riskOn: boolean;
@@ -486,12 +520,9 @@ function ErdBox({
         /* noop */
       }
     }
-    // moved 플래그는 onClick 가드를 위해 약간 뒤에 해제
-    if (drag.current?.moved) {
-      window.setTimeout(() => setDragging(false), 0);
-    } else {
-      drag.current = null;
-    }
+    // 버튼을 놓으면 즉시 드래그 종료 — 이동이 따라오지 않게 상태를 모두 초기화.
+    drag.current = null;
+    setDragging(false);
   };
   // 한글 병기(ko)가 있는 DB(JMDC 등)는 평소에도 모든 필드를 표시.
   const bilingual = table.columns.some((c) => c.ko);
@@ -522,7 +553,9 @@ function ErdBox({
           ? "border-brand-sky shadow-card-hover ring-2 ring-brand-sky/50"
           : selected
             ? "border-brand-sky shadow-card-hover ring-1 ring-brand-sky/40"
-            : "border-border hover:border-foreground"
+            : isNeighbor
+              ? "border-brand-sky/60 shadow-card-hover ring-1 ring-brand-sky/25"
+              : "border-border hover:border-foreground"
       } ${tableDimmed ? "opacity-40" : ""} ${
         riskOn && isRiskTable && !expanded ? "ring-1 ring-brand-sky/30" : ""
       }`}
