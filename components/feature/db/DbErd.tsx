@@ -4,7 +4,7 @@
 // 원천: SQL_Builder 'DB 구조(ERD)' 뷰를 보드 디자인(v2)으로 재구성. 데이터는 lib/publicDb.
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { KeyRound, Filter } from "lucide-react";
+import { KeyRound, Filter, RotateCcw } from "lucide-react";
 import type { DbErd, DbTable, RiskFieldSpec } from "@/lib/publicDb";
 
 interface Conn {
@@ -50,6 +50,23 @@ export function DbErdView({
   const boxRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [conns, setConns] = useState<Conn[]>([]);
   const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
+  // 드래그 이동량(테이블별 transform 오프셋) — 박스를 자유롭게 옮길 수 있게.
+  const [offsets, setOffsets] = useState<Record<string, { x: number; y: number }>>({});
+  // 더블클릭으로 확대(모든 필드 표시)된 테이블 이름
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const handleDrag = useCallback((name: string, x: number, y: number) => {
+    setOffsets((prev) => ({ ...prev, [name]: { x, y } }));
+  }, []);
+  const toggleExpand = useCallback((name: string) => {
+    setExpanded((prev) => (prev === name ? null : name));
+    setSelected(name);
+  }, []);
+  const resetLayout = useCallback(() => {
+    setOffsets({});
+    setExpanded(null);
+  }, []);
+  const hasMoved = Object.keys(offsets).length > 0 || expanded !== null;
 
   const selectedTable = erd.tables.find((t) => t.name === selected) ?? null;
 
@@ -153,7 +170,7 @@ export function DbErdView({
 
   useLayoutEffect(() => {
     compute();
-  }, [compute]);
+  }, [compute, offsets, expanded]);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -191,6 +208,18 @@ export function DbErdView({
             {col}
           </span>
         ))}
+        <span className="hidden text-[12px] text-placeholder sm:inline">
+          · 박스를 끌어 옮기고, 더블클릭하면 모든 필드가 펼쳐집니다
+        </span>
+        {hasMoved && (
+          <button
+            type="button"
+            onClick={resetLayout}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-2.5 py-1 text-[12px] font-medium text-tertiary transition-colors hover:border-brand-sky hover:text-brand-sky"
+          >
+            <RotateCcw size={12} /> 위치 초기화
+          </button>
+        )}
         {riskSpec && (
           <button
             type="button"
@@ -288,6 +317,10 @@ export function DbErdView({
                     riskOn={active}
                     isRiskTable={riskTables.has(t.name)}
                     riskCols={riskCols}
+                    offset={offsets[t.name] ?? { x: 0, y: 0 }}
+                    onDrag={(x, y) => handleDrag(t.name, x, y)}
+                    expanded={expanded === t.name}
+                    onToggleExpand={() => toggleExpand(t.name)}
                   />
                 ))}
               </div>
@@ -382,6 +415,10 @@ function ErdBox({
   riskOn,
   isRiskTable,
   riskCols,
+  offset,
+  onDrag,
+  expanded,
+  onToggleExpand,
 }: {
   table: DbTable;
   selected: boolean;
@@ -390,20 +427,100 @@ function ErdBox({
   riskOn: boolean;
   isRiskTable: boolean;
   riskCols: Set<string>;
+  offset: { x: number; y: number };
+  onDrag: (x: number, y: number) => void;
+  expanded: boolean;
+  onToggleExpand: () => void;
 }) {
   // 위험률 강조 모드인데 위험률 테이블이 아니면 박스 전체를 흐리게.
   const tableDimmed = riskOn && !isRiskTable;
+  // 드래그 상태 — pointer 기준. 임계값 이상 움직이면 클릭(선택) 대신 이동으로 처리.
+  const drag = useRef<{
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+    moved: boolean;
+  } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    drag.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+      moved: false,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.moved && Math.hypot(dx, dy) < 4) return; // 임계값 미만은 무시(클릭 보호)
+    d.moved = true;
+    setDragging(true);
+    onDrag(d.baseX + dx, d.baseY + dy);
+  };
+  const endDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (drag.current) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        /* noop */
+      }
+    }
+    // moved 플래그는 onClick 가드를 위해 약간 뒤에 해제
+    if (drag.current?.moved) {
+      window.setTimeout(() => setDragging(false), 0);
+    } else {
+      drag.current = null;
+    }
+  };
+  const handleClick = () => {
+    if (drag.current?.moved) {
+      drag.current = null; // 드래그였으면 선택하지 않음
+      return;
+    }
+    drag.current = null;
+    onSelect();
+  };
+
+  // 한글 병기(ko)가 있는 DB(JMDC 등)는 평소에도 모든 필드를 표시.
+  const bilingual = table.columns.some((c) => c.ko);
+  // 확대(더블클릭) 또는 한글병기 DB → 모든 필드를 세로 목록으로.
+  const showAllFields = expanded || bilingual;
+
   return (
     <button
       ref={refCb}
-      onClick={onSelect}
+      onClick={handleClick}
+      onDoubleClick={onToggleExpand}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
       aria-pressed={selected}
-      className={`w-full rounded-cover border bg-white p-3 text-left shadow-card transition-[border-color,box-shadow,opacity] ${
-        selected
-          ? "border-brand-sky shadow-card-hover ring-1 ring-brand-sky/40"
-          : "border-border hover:border-foreground"
+      title={expanded ? "더블클릭: 원래 크기로" : "끌어서 이동 · 더블클릭: 모든 필드 펼치기"}
+      style={{
+        transform: `translate(${offset.x}px, ${offset.y}px) scale(${expanded ? 1.12 : 1})`,
+        transformOrigin: "top left",
+        zIndex: expanded ? 30 : dragging ? 20 : undefined,
+        position: "relative",
+        cursor: dragging ? "grabbing" : "grab",
+        touchAction: "none",
+      }}
+      className={`w-full select-none rounded-cover border bg-white p-3 text-left shadow-card transition-[border-color,box-shadow,opacity] ${
+        expanded
+          ? "border-brand-sky shadow-card-hover ring-2 ring-brand-sky/50"
+          : selected
+            ? "border-brand-sky shadow-card-hover ring-1 ring-brand-sky/40"
+            : "border-border hover:border-foreground"
       } ${tableDimmed ? "opacity-40" : ""} ${
-        riskOn && isRiskTable ? "ring-1 ring-brand-sky/30" : ""
+        riskOn && isRiskTable && !expanded ? "ring-1 ring-brand-sky/30" : ""
       }`}
     >
       <div className="flex items-baseline justify-between gap-2">
@@ -418,70 +535,73 @@ function ErdBox({
       </div>
       <p className="mt-0.5 font-mono text-[11px] text-placeholder">
         {table.name} · {table.unit}
+        {expanded && (
+          <span className="text-brand-sky"> · 전체 {table.columns.length}필드</span>
+        )}
       </p>
-      {(() => {
-        // 한글 병기(ko)가 있는 DB(JMDC 등) → 모든 필드를 작은 글씨로 한글과 함께 표시.
-        const bilingual = table.columns.some((c) => c.ko);
-        if (bilingual) {
-          return (
-            <ul className="mt-1.5 space-y-px">
-              {table.columns.map((c) => {
-                const isRisk = riskCols.has(`${table.name}.${c.name}`);
-                const dim = riskOn && !isRisk;
-                return (
-                  <li
-                    key={c.name}
-                    className={`leading-snug ${dim ? "opacity-30" : ""}`}
-                  >
-                    <span
-                      className={`font-mono text-[9.5px] ${
-                        riskOn && isRisk
-                          ? "font-semibold text-brand-sky"
-                          : c.key
-                            ? "font-semibold text-chip-blue-fg"
-                            : "text-foreground"
-                      }`}
-                    >
-                      {c.key ? "● " : ""}
-                      {c.name}
-                    </span>
-                    {c.ko && (
-                      <span className="ml-1 text-[8.5px] text-tertiary">
-                        {c.ko}
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          );
-        }
-        // 그 외 DB는 컴팩트하게 — 평소엔 키 컬럼, 위험률 모드엔 위험률 필드만.
-        const shown = riskOn
-          ? table.columns.filter((c) => riskCols.has(`${table.name}.${c.name}`))
-          : table.columns.filter((c) => c.key);
-        const hidden = table.columns.length - shown.length;
-        const chipCls = riskOn
-          ? "bg-brand-sky font-semibold text-white"
-          : "bg-chip-blue-bg font-semibold text-chip-blue-fg";
-        return (
-          <ul className="mt-2 flex flex-wrap items-center gap-1">
-            {shown.map((c) => (
+      {showAllFields ? (
+        // 모든 필드를 세로 목록으로(한글병기 DB 상시 / 그 외는 확대 시).
+        <ul className="mt-1.5 space-y-px">
+          {table.columns.map((c) => {
+            const isRisk = riskCols.has(`${table.name}.${c.name}`);
+            const dim = riskOn && !isRisk;
+            return (
               <li
                 key={c.name}
-                className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${chipCls}`}
+                className={`leading-snug ${dim ? "opacity-30" : ""}`}
               >
-                {c.name}
+                <span
+                  className={`font-mono ${expanded ? "text-[10.5px]" : "text-[9.5px]"} ${
+                    riskOn && isRisk
+                      ? "font-semibold text-brand-sky"
+                      : c.key
+                        ? "font-semibold text-chip-blue-fg"
+                        : "text-foreground"
+                  }`}
+                >
+                  {c.key ? "● " : ""}
+                  {c.name}
+                </span>
+                {c.ko && (
+                  <span
+                    className={`ml-1 text-tertiary ${expanded ? "text-[9.5px]" : "text-[8.5px]"}`}
+                  >
+                    {c.ko}
+                  </span>
+                )}
               </li>
-            ))}
-            {hidden > 0 && (
-              <li className="rounded px-1.5 py-0.5 font-mono text-[11px] text-placeholder">
-                +{hidden}
-              </li>
-            )}
-          </ul>
-        );
-      })()}
+            );
+          })}
+        </ul>
+      ) : (
+        // 평소엔 컴팩트하게 — 키 컬럼(위험률 모드엔 위험률 필드)만 칩으로.
+        (() => {
+          const shown = riskOn
+            ? table.columns.filter((c) => riskCols.has(`${table.name}.${c.name}`))
+            : table.columns.filter((c) => c.key);
+          const hidden = table.columns.length - shown.length;
+          const chipCls = riskOn
+            ? "bg-brand-sky font-semibold text-white"
+            : "bg-chip-blue-bg font-semibold text-chip-blue-fg";
+          return (
+            <ul className="mt-2 flex flex-wrap items-center gap-1">
+              {shown.map((c) => (
+                <li
+                  key={c.name}
+                  className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${chipCls}`}
+                >
+                  {c.name}
+                </li>
+              ))}
+              {hidden > 0 && (
+                <li className="rounded px-1.5 py-0.5 font-mono text-[11px] text-placeholder">
+                  +{hidden}
+                </li>
+              )}
+            </ul>
+          );
+        })()
+      )}
     </button>
   );
 }
