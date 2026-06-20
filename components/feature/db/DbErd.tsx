@@ -226,15 +226,15 @@ export function DbErdView({
         <span className="hidden text-[12px] text-placeholder sm:inline">
           · 박스를 끌어 옮기고, 더블클릭하면 모든 필드가 펼쳐집니다
         </span>
-        {hasMoved && (
-          <button
-            type="button"
-            onClick={resetLayout}
-            className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-2.5 py-1 text-[12px] font-medium text-tertiary transition-colors hover:border-brand-sky hover:text-brand-sky"
-          >
-            <RotateCcw size={12} /> 위치 초기화
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={resetLayout}
+          disabled={!hasMoved}
+          title="이동·확대한 DB 박스를 원래 위치·크기로 정렬"
+          className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-2.5 py-1 text-[12px] font-medium text-tertiary transition-colors enabled:hover:border-brand-sky enabled:hover:text-brand-sky disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <RotateCcw size={12} /> 정렬
+        </button>
         {riskSpec && (
           <button
             type="button"
@@ -265,8 +265,9 @@ export function DbErdView({
       <div
         ref={canvasRef}
         onPointerDown={(e) => {
-          // 박스 바깥(캔버스 여백)을 누르면 확대된 박스를 원래대로 되돌린다.
+          // 박스 바깥(캔버스 여백)을 누르면 선택을 해제하고 확대도 원래대로.
           if (!(e.target as HTMLElement).closest("[data-erd-box]")) {
+            setSelected("");
             setExpanded(null);
           }
         }}
@@ -393,7 +394,8 @@ export function DbErdView({
       </div>
 
       {/* 선택한 테이블의 연결 목록 — 클릭한 DB(테이블)에 대해서만 표시 */}
-      {(() => {
+      {selected &&
+        (() => {
         const rels = erd.relations.filter(
           (r) => r.from === selected || r.to === selected
         );
