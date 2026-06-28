@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Database, ArrowRight } from "lucide-react";
+import { Collapsible } from "@/components/feature/Collapsible";
+import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
+import { ViewSwitch } from "@/components/feature/ViewSwitch";
 import { listDbs } from "@/lib/publicDb";
 import { bluePastelFor } from "@/lib/utils";
 
@@ -198,7 +201,130 @@ function PipelineIdentCell({
   );
 }
 
+// 공공DB 카드 1장.
+function DbCard({ db }: { db: ReturnType<typeof listDbs>[number] }) {
+  const c = bluePastelFor(db.id);
+  return (
+    <Link
+      href={`/apps/db/${db.id}`}
+      style={{ backgroundColor: c.bg, borderColor: c.border }}
+      className="flex flex-col rounded-cover border p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+    >
+      <Database size={20} className="text-brand-sky" />
+      <h3 className="mt-3 text-[18px] font-semibold text-brand-sky">
+        {db.shortName}
+      </h3>
+      <p className="mt-0.5 text-[13px] text-placeholder">{db.fullName}</p>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-body">
+        {db.tagline}
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <span className="w-fit rounded bg-[var(--chip-blue-bg)] px-2 py-0.5 text-[12px] font-medium text-[var(--chip-blue-fg)]">
+          {db.structure}
+        </span>
+        {db.estimated && (
+          <span className="w-fit rounded bg-[var(--chip-amber-bg)] px-2 py-0.5 text-[12px] font-semibold text-[var(--chip-amber-fg)]">
+            추정 ERD
+          </span>
+        )}
+      </div>
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+        DB 구조 보기 <ArrowRight size={15} />
+      </span>
+    </Link>
+  );
+}
+
 export default function AppsPage() {
+  const dbs = listDbs();
+
+  // 게시판(목록) 보기용 항목 — 앱은 외부 링크(새 탭), 공공DB는 내부 링크.
+  const modelBoard: BoardItem[] = MODEL_APPS.map((a) => ({
+    key: a.title,
+    href: a.link,
+    title: a.title,
+    description: a.description,
+    external: true,
+  }));
+  const workBoard: BoardItem[] = WORK_APPS.map((a) => ({
+    key: a.title,
+    href: a.link,
+    title: a.title,
+    description: a.description,
+    external: true,
+  }));
+  const dbBoard: BoardItem[] = dbs.map((db) => ({
+    key: db.id,
+    href: `/apps/db/${db.id}`,
+    title: db.shortName,
+    description: db.tagline,
+    meta: db.fullName,
+  }));
+
+  // 카드 보기 — 기존 레이아웃(지그재그 아이덴트·그리드) 유지.
+  const cardView = (
+    <>
+      <Collapsible title="모델분석" count={MODEL_APPS.length} storageKey="apps:model">
+        {/* 지그재그 배치(md+): 보험료 카드 ↔ 파이프라인 / 파이프라인 ↔ ML 카드 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch">
+          <AppCard app={MODEL_APPS[0]} featured />
+          <PipelineIdentCell
+            src="/idents/tkleen-lifematrix-pipeline-theme.html"
+            title="보험료 자동산출 파이프라인 아이덴트"
+            caption="보험료 자동산출 파이프라인 — 계약정보·위험률·생존/사망·계산기수·순/영업보험료·준비금까지 13개 모듈이 순차 점등되며 월납 보험료가 산출됩니다."
+          />
+          <PipelineIdentCell
+            src="/idents/tkleen-ml-training-pipeline.html"
+            title="머신러닝 학습 파이프라인 아이덴트"
+            caption="머신러닝 학습 파이프라인 — 데이터 적재·전처리·학습·평가까지 보험 예측 모델의 학습 과정이 자동으로 흐릅니다."
+            heightClass="h-[300px] md:h-[340px]"
+          />
+          <AppCard app={MODEL_APPS[1]} featured />
+        </div>
+      </Collapsible>
+
+      <div className="mt-16">
+        <Collapsible title="업무지원" count={WORK_APPS.length} storageKey="apps:work">
+          <AppGrid apps={WORK_APPS} />
+        </Collapsible>
+      </div>
+
+      {/* 주요 공공DB — 위험률·모형 산출에 쓰는 공공 의료데이터의 특성 + DB 구조(ERD) */}
+      <div className="mt-16 pb-8">
+        <Collapsible title="주요 공공DB" count={dbs.length} storageKey="apps:db">
+          <p className="mb-6 max-w-2xl text-sm leading-relaxed text-tertiary">
+            보험 위험률·예측모형 산출에 활용하는 공공 의료데이터입니다. 카드를
+            누르면 DB 특성과 테이블 구조(ERD)를 볼 수 있습니다.
+          </p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {dbs.map((db) => (
+              <DbCard key={db.id} db={db} />
+            ))}
+          </div>
+        </Collapsible>
+      </div>
+    </>
+  );
+
+  // 게시판 보기 — 위→아래 목록(타임라인). 아이덴트는 카드 보기 전용.
+  const boardView = (
+    <>
+      <Collapsible title="모델분석" count={MODEL_APPS.length} storageKey="apps:model">
+        <PostBoard items={modelBoard} />
+      </Collapsible>
+      <div className="mt-16">
+        <Collapsible title="업무지원" count={WORK_APPS.length} storageKey="apps:work">
+          <PostBoard items={workBoard} />
+        </Collapsible>
+      </div>
+      <div className="mt-16 pb-8">
+        <Collapsible title="주요 공공DB" count={dbs.length} storageKey="apps:db">
+          <PostBoard items={dbBoard} />
+        </Collapsible>
+      </div>
+    </>
+  );
+
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       <h1 className="text-2xl font-medium text-foreground">
@@ -220,85 +346,9 @@ export default function AppsPage() {
         />
       </div>
 
-      <section className="mt-10">
-        <h2 className="mb-6 flex items-center gap-2.5 text-xl font-medium text-foreground">
-          <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
-          모델분석
-        </h2>
-        {/* 지그재그 배치(md+): 보험료 카드 ↔ 파이프라인 / 파이프라인 ↔ ML 카드 */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch">
-          <AppCard app={MODEL_APPS[0]} featured />
-          <PipelineIdentCell
-            src="/idents/tkleen-lifematrix-pipeline-theme.html"
-            title="보험료 자동산출 파이프라인 아이덴트"
-            caption="보험료 자동산출 파이프라인 — 계약정보·위험률·생존/사망·계산기수·순/영업보험료·준비금까지 13개 모듈이 순차 점등되며 월납 보험료가 산출됩니다."
-          />
-          <PipelineIdentCell
-            src="/idents/tkleen-ml-training-pipeline.html"
-            title="머신러닝 학습 파이프라인 아이덴트"
-            caption="머신러닝 학습 파이프라인 — 데이터 적재·전처리·학습·평가까지 보험 예측 모델의 학습 과정이 자동으로 흐릅니다."
-            heightClass="h-[300px] md:h-[340px]"
-          />
-          <AppCard app={MODEL_APPS[1]} featured />
-        </div>
-      </section>
-
-      <section className="mt-16">
-        <h2 className="mb-6 flex items-center gap-2.5 text-xl font-medium text-foreground">
-          <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
-          업무지원
-        </h2>
-        <AppGrid apps={WORK_APPS} />
-      </section>
-
-      {/* 주요 공공DB — 위험률·모형 산출에 쓰는 공공 의료데이터의 특성 + DB 구조(ERD) */}
-      <section className="mt-16 pb-8">
-        <h2 className="mb-1.5 flex items-center gap-2.5 text-xl font-medium text-foreground">
-          <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
-          주요 공공DB
-        </h2>
-        <p className="mb-6 max-w-2xl text-sm leading-relaxed text-tertiary">
-          보험 위험률·예측모형 산출에 활용하는 공공 의료데이터입니다. 카드를 누르면
-          DB 특성과 테이블 구조(ERD)를 볼 수 있습니다.
-        </p>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {listDbs().map((db) => {
-            const c = bluePastelFor(db.id);
-            return (
-            <Link
-              key={db.id}
-              href={`/apps/db/${db.id}`}
-              style={{ backgroundColor: c.bg, borderColor: c.border }}
-              className="flex flex-col rounded-cover border p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
-            >
-              <Database size={20} className="text-brand-sky" />
-              <h3 className="mt-3 text-[18px] font-semibold text-brand-sky">
-                {db.shortName}
-              </h3>
-              <p className="mt-0.5 text-[13px] text-placeholder">
-                {db.fullName}
-              </p>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-body">
-                {db.tagline}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="w-fit rounded bg-[var(--chip-blue-bg)] px-2 py-0.5 text-[12px] font-medium text-[var(--chip-blue-fg)]">
-                  {db.structure}
-                </span>
-                {db.estimated && (
-                  <span className="w-fit rounded bg-[var(--chip-amber-bg)] px-2 py-0.5 text-[12px] font-semibold text-[var(--chip-amber-fg)]">
-                    추정 ERD
-                  </span>
-                )}
-              </div>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                DB 구조 보기 <ArrowRight size={15} />
-              </span>
-            </Link>
-            );
-          })}
-        </div>
-      </section>
+      <div className="mt-6">
+        <ViewSwitch card={cardView} board={boardView} />
+      </div>
     </div>
   );
 }

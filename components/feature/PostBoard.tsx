@@ -1,13 +1,16 @@
 import Link from "next/link";
 
-/** 게시판(타임라인) 한 줄에 들어가는 항목 — 게시물/정적자료를 공통 형태로 표현. */
+/** 게시판(타임라인) 한 줄에 들어가는 항목 — 게시물/자료/앱을 공통 형태로 표현. */
 export interface BoardItem {
   key: string;
   href: string;
   title: string;
-  description: string;
+  /** 본문 발췌·설명(없으면 제목만 표시) */
+  description?: string;
   /** 날짜·조회수 또는 부제 등 보조 메타 한 줄 */
   meta?: string;
+  /** 외부 링크면 새 탭으로 연다(앱 모음 등) */
+  external?: boolean;
 }
 
 // 카드 격자 대신 "위에서 아래로" 나열하는 게시판형 뷰(2026-06-28 사용자 요청).
@@ -17,6 +20,23 @@ export function PostBoard({ items }: { items: BoardItem[] }) {
     <ol className="relative">
       {items.map((item, i) => {
         const last = i === items.length - 1;
+        const inner = (
+          <>
+            <h3 className="text-xl font-semibold leading-snug text-brand-sky group-hover:text-primary">
+              {item.title}
+            </h3>
+            {item.description ? (
+              <p className="mt-2.5 text-[15px] leading-relaxed text-body">
+                {item.description}
+              </p>
+            ) : null}
+            {item.meta ? (
+              <div className="mt-3 text-[13px] text-tertiary">{item.meta}</div>
+            ) : null}
+          </>
+        );
+        const cls =
+          "group block rounded-cover px-4 py-3 transition-[background-color] duration-tesla ease-tesla hover:bg-surface";
         return (
           <li key={item.key} className="relative pb-9 pl-16 last:pb-0">
             {/* 노드 사이 세로 연결선 */}
@@ -33,20 +53,20 @@ export function PostBoard({ items }: { items: BoardItem[] }) {
             >
               {i + 1}
             </span>
-            <Link
-              href={item.href}
-              className="group block rounded-cover px-4 py-3 transition-[background-color] duration-tesla ease-tesla hover:bg-surface"
-            >
-              <h3 className="text-xl font-semibold leading-snug text-brand-sky group-hover:text-primary">
-                {item.title}
-              </h3>
-              <p className="mt-2.5 text-[15px] leading-relaxed text-body">
-                {item.description}
-              </p>
-              {item.meta ? (
-                <div className="mt-3 text-[13px] text-tertiary">{item.meta}</div>
-              ) : null}
-            </Link>
+            {item.external ? (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cls}
+              >
+                {inner}
+              </a>
+            ) : (
+              <Link href={item.href} className={cls}>
+                {inner}
+              </Link>
+            )}
           </li>
         );
       })}

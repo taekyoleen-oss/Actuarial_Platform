@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Collapsible } from "@/components/feature/Collapsible";
 import { PoolIdent } from "@/components/feature/PoolIdent";
+import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
+import { ViewSwitch } from "@/components/feature/ViewSwitch";
 import { bluePastelFor, cn } from "@/lib/utils";
 import {
   THEORY_TOPICS,
@@ -34,6 +37,53 @@ export default async function TheoryTopicPage({
   const t = getTheoryTopic(topic);
   if (!t) notFound();
   const items = listTheoryItems(t.slug);
+
+  // 게시판 보기용 항목(제목·열람 링크).
+  const boardItems: BoardItem[] = items.map((item) => ({
+    key: item.base,
+    href: `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`,
+    title: item.title,
+  }));
+
+  // 카드 격자 — 제목(상단) → 커버(하단). 제목·그림 클릭 = 본문 열람.
+  const cardGrid = (
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {items.map((item) => {
+        const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
+        const c = bluePastelFor(item.base);
+        return (
+          <article
+            key={item.base}
+            style={{ backgroundColor: c.bg, borderColor: c.border }}
+            className="flex flex-col overflow-hidden rounded-cover border shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+          >
+            <div className="p-5">
+              <h2 className="text-lg font-semibold leading-snug text-brand-sky">
+                <Link href={viewerHref} className="hover:text-primary">
+                  {item.title}
+                </Link>
+              </h2>
+            </div>
+            {item.coverPath && (
+              <Link
+                href={viewerHref}
+                tabIndex={-1}
+                aria-hidden="true"
+                style={{ borderColor: c.border }}
+                className="mt-auto block border-t"
+              >
+                <img
+                  src={item.coverPath}
+                  alt=""
+                  className="aspect-[16/10] w-full object-cover"
+                />
+              </Link>
+            )}
+          </article>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-container px-6 py-12">
@@ -74,45 +124,28 @@ export default async function TheoryTopicPage({
           아직 등록된 자료가 없습니다.
         </p>
       ) : (
-        <div
-          key={t.slug}
-          className="tab-fade-in mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {items.map((item) => {
-            const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
-            const c = bluePastelFor(item.base);
-            return (
-              <article
-                key={item.base}
-                style={{ backgroundColor: c.bg, borderColor: c.border }}
-                className="flex flex-col overflow-hidden rounded-cover border shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+        <div key={t.slug} className="tab-fade-in mt-8">
+          {/* 카드 ↔ 게시판 전환 + 현재 주제 접기/펴기 */}
+          <ViewSwitch
+            card={
+              <Collapsible
+                title={t.name}
+                count={items.length}
+                storageKey={`theory:${t.slug}`}
               >
-                {/* 제목(상단) → 커버(하단). 제목·그림 클릭 = 본문 열람. 보조 링크 없음 */}
-                <div className="p-5">
-                  <h2 className="text-lg font-semibold leading-snug text-brand-sky">
-                    <Link href={viewerHref} className="hover:text-primary">
-                      {item.title}
-                    </Link>
-                  </h2>
-                </div>
-                {item.coverPath && (
-                  <Link
-                    href={viewerHref}
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    style={{ borderColor: c.border }}
-                    className="mt-auto block border-t"
-                  >
-                    <img
-                      src={item.coverPath}
-                      alt=""
-                      className="aspect-[16/10] w-full object-cover"
-                    />
-                  </Link>
-                )}
-              </article>
-            );
-          })}
+                {cardGrid}
+              </Collapsible>
+            }
+            board={
+              <Collapsible
+                title={t.name}
+                count={items.length}
+                storageKey={`theory:${t.slug}`}
+              >
+                <PostBoard items={boardItems} />
+              </Collapsible>
+            }
+          />
         </div>
       )}
     </div>

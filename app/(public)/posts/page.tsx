@@ -1,3 +1,4 @@
+import { Collapsible } from "@/components/feature/Collapsible";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostFilters } from "@/components/feature/PostFilters";
@@ -11,22 +12,6 @@ import { excerpt, formatDate } from "@/lib/utils";
 import type { SortOrder } from "@/types";
 
 export const revalidate = 30;
-
-function SectionHeading({
-  title,
-  count,
-}: {
-  title: string;
-  count: number;
-}) {
-  return (
-    <h2 className="mb-5 flex items-center gap-2.5 text-[19px] font-semibold text-foreground">
-      <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
-      {title}
-      <span className="text-sm font-normal text-tertiary">{count}</span>
-    </h2>
-  );
-}
 
 export default async function PostsPage({
   searchParams,
@@ -145,11 +130,12 @@ export default async function PostsPage({
                   })),
                 ];
                 return (
-                  <section key={section.title}>
-                    <SectionHeading
-                      title={section.title}
-                      count={section.posts.length + extras.length}
-                    />
+                  <Collapsible
+                    key={section.title}
+                    title={section.title}
+                    count={section.posts.length + extras.length}
+                    storageKey={`posts:${sp.category}:${section.title}`}
+                  >
                     {view === "board" ? (
                       <PostBoard items={boardItems} />
                     ) : (
@@ -169,7 +155,7 @@ export default async function PostsPage({
                         ))}
                       </div>
                     )}
-                  </section>
+                  </Collapsible>
                 );
               })}
             </div>
