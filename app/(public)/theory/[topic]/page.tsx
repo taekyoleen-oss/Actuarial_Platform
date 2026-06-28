@@ -9,7 +9,9 @@ import {
   THEORY_TOPICS,
   getTheoryTopic,
   listTheoryItems,
+  type TheoryItem,
 } from "@/lib/theory";
+import { groupTheoryItems } from "@/lib/theorySections";
 
 // 폴더 기반 정적 섹션 — 빌드 시 public/theory/* 를 읽는다. 자료 추가는 재배포 시 반영.
 export const dynamicParams = false;
@@ -37,18 +39,13 @@ export default async function TheoryTopicPage({
   const t = getTheoryTopic(topic);
   if (!t) notFound();
   const items = listTheoryItems(t.slug);
-
-  // 게시판 보기용 항목(제목·열람 링크).
-  const boardItems: BoardItem[] = items.map((item) => ({
-    key: item.base,
-    href: `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`,
-    title: item.title,
-  }));
+  // 주제(대 카테고리) 안의 서브카테고리로 분류 — 각 서브카테고리는 접기/펴기(2026-06-28).
+  const sections = groupTheoryItems(t.slug, items);
 
   // 카드 격자 — 제목(상단) → 커버(하단). 제목·그림 클릭 = 본문 열람.
-  const cardGrid = (
+  const renderCards = (its: TheoryItem[]) => (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => {
+      {its.map((item) => {
         const viewerHref = `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`;
         const c = bluePastelFor(item.base);
         return (
@@ -82,6 +79,33 @@ export default async function TheoryTopicPage({
           </article>
         );
       })}
+    </div>
+  );
+
+  const toBoard = (its: TheoryItem[]): BoardItem[] =>
+    its.map((item) => ({
+      key: item.base,
+      href: `/theory/${t.slug}/v/${encodeURIComponent(item.base)}`,
+      title: item.title,
+    }));
+
+  // 서브카테고리별 접기/펴기 패널(카드/게시판 공통). storageKey로 두 분기가 동기화된다.
+  const renderSections = (mode: "card" | "board") => (
+    <div className="space-y-8">
+      {sections.map((sec) => (
+        <Collapsible
+          key={sec.title}
+          title={sec.title}
+          count={sec.items.length}
+          storageKey={`theory:${t.slug}:${sec.title}`}
+        >
+          {mode === "card" ? (
+            renderCards(sec.items)
+          ) : (
+            <PostBoard items={toBoard(sec.items)} />
+          )}
+        </Collapsible>
+      ))}
     </div>
   );
 
@@ -125,26 +149,10 @@ export default async function TheoryTopicPage({
         </p>
       ) : (
         <div key={t.slug} className="tab-fade-in mt-8">
-          {/* 카드 ↔ 게시판 전환 + 현재 주제 접기/펴기 */}
+          {/* 카드 ↔ 게시판 전환 + 서브카테고리별 접기/펴기 (대 카테고리=주제는 항상 표시) */}
           <ViewSwitch
-            card={
-              <Collapsible
-                title={t.name}
-                count={items.length}
-                storageKey={`theory:${t.slug}`}
-              >
-                {cardGrid}
-              </Collapsible>
-            }
-            board={
-              <Collapsible
-                title={t.name}
-                count={items.length}
-                storageKey={`theory:${t.slug}`}
-              >
-                <PostBoard items={boardItems} />
-              </Collapsible>
-            }
+            card={renderSections("card")}
+            board={renderSections("board")}
           />
         </div>
       )}
