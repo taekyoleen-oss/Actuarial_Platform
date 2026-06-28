@@ -1,10 +1,13 @@
+import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostFilters } from "@/components/feature/PostFilters";
 import { PostGrid } from "@/components/feature/PostGrid";
 import { ResourceCard } from "@/components/feature/ResourceCard";
 import { listDomesticProducts } from "@/lib/domesticProducts";
+import { nativePathFromContent } from "@/lib/global";
 import { groupPosts } from "@/lib/postSections";
 import { listCategories, listPosts } from "@/lib/queries";
+import { excerpt, formatDate } from "@/lib/utils";
 import type { SortOrder } from "@/types";
 
 export const revalidate = 30;
@@ -33,10 +36,12 @@ export default async function PostsPage({
     q?: string;
     sort?: string;
     sub?: string;
+    view?: string;
   }>;
 }) {
   const sp = await searchParams;
   const sort: SortOrder = sp.sort === "popular" ? "popular" : "latest";
+  const view: "card" | "board" = sp.view === "board" ? "board" : "card";
 
   const [categories, posts] = await Promise.all([
     listCategories(),
@@ -103,6 +108,8 @@ export default async function PostsPage({
         sort={sort}
         subsections={subsections}
         currentSub={sp.sub}
+        showViewToggle={Boolean(grouped)}
+        view={view}
       />
 
       <div className="mt-10">
@@ -120,27 +127,48 @@ export default async function PostsPage({
                     : [];
                 if (section.posts.length === 0 && extras.length === 0)
                   return null;
+                // 게시판 보기: 게시물·정적자료를 공통 BoardItem으로 펼쳐 위→아래 나열.
+                const boardItems: BoardItem[] = [
+                  ...section.posts.map((p) => ({
+                    key: p.id,
+                    href: nativePathFromContent(p.content) ?? `/posts/${p.id}`,
+                    title: p.title,
+                    description: excerpt(p.content, 200),
+                    meta: `${formatDate(p.created_at)} · 조회 ${p.view_count}`,
+                  })),
+                  ...extras.map((p) => ({
+                    key: p.base,
+                    href: `/domestic/products/${p.base}`,
+                    title: p.title,
+                    description: p.description,
+                    meta: p.subtitle,
+                  })),
+                ];
                 return (
                   <section key={section.title}>
                     <SectionHeading
                       title={section.title}
                       count={section.posts.length + extras.length}
                     />
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                      {section.posts.map((p) => (
-                        <PostCard key={p.id} post={p} />
-                      ))}
-                      {extras.map((p) => (
-                        <ResourceCard
-                          key={p.base}
-                          href={`/domestic/products/${p.base}`}
-                          title={p.title}
-                          subtitle={p.subtitle}
-                          description={p.description}
-                          badge={activeCategory?.name}
-                        />
-                      ))}
-                    </div>
+                    {view === "board" ? (
+                      <PostBoard items={boardItems} />
+                    ) : (
+                      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                        {section.posts.map((p) => (
+                          <PostCard key={p.id} post={p} />
+                        ))}
+                        {extras.map((p) => (
+                          <ResourceCard
+                            key={p.base}
+                            href={`/domestic/products/${p.base}`}
+                            title={p.title}
+                            subtitle={p.subtitle}
+                            description={p.description}
+                            badge={activeCategory?.name}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </section>
                 );
               })}

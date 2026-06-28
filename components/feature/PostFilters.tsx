@@ -16,6 +16,8 @@ export function PostFilters({
   sort,
   subsections,
   currentSub,
+  showViewToggle,
+  view,
 }: {
   categories: Category[];
   current?: string;
@@ -25,6 +27,10 @@ export function PostFilters({
   subsections?: string[];
   /** 현재 선택된 항목 */
   currentSub?: string;
+  /** 카드/게시판 보기 전환 토글 노출 여부(그룹 카테고리에서만) */
+  showViewToggle?: boolean;
+  /** 현재 보기 모드 */
+  view?: "card" | "board";
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -104,16 +110,40 @@ export function PostFilters({
           />
         </form>
 
-        {/* SortSelect */}
-        <Select
-          defaultValue={sort}
-          onChange={(e) => setParam("sort", e.target.value)}
-          className="w-36"
-          aria-label="정렬"
-        >
-          <option value="latest">최신순</option>
-          <option value="popular">인기순</option>
-        </Select>
+        <div className="flex items-center gap-3">
+          {/* 카드 / 게시판 보기 전환 (그룹 카테고리 전용) */}
+          {showViewToggle ? (
+            <div
+              role="group"
+              aria-label="보기 방식"
+              className="inline-flex rounded bg-surface p-0.5"
+            >
+              <ViewTab
+                active={view !== "board"}
+                onClick={() => setParam("view", null)}
+              >
+                카드
+              </ViewTab>
+              <ViewTab
+                active={view === "board"}
+                onClick={() => setParam("view", "board")}
+              >
+                게시판
+              </ViewTab>
+            </div>
+          ) : null}
+
+          {/* SortSelect */}
+          <Select
+            defaultValue={sort}
+            onChange={(e) => setParam("sort", e.target.value)}
+            className="w-36"
+            aria-label="정렬"
+          >
+            <option value="latest">최신순</option>
+            <option value="popular">인기순</option>
+          </Select>
+        </div>
       </div>
     </div>
   );
@@ -136,6 +166,31 @@ function Tab({
         active
           ? "bg-foreground text-white"
           : "bg-surface text-tertiary hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ViewTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-[3px] px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-white text-foreground shadow-card"
+          : "text-tertiary hover:text-foreground"
       )}
     >
       {children}
