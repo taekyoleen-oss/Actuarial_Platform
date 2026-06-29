@@ -399,3 +399,86 @@ mark.key-phrase {
     stroke-dashoffset: 0 !important;
   }
 }
+
+/* =========================================================
+   tkLeen 브랜드 배경 워터마크 (components/feature/BrandBackdrop.tsx)
+   홈 전용 — 대형 마크가 화면 뒤에서 흩어졌다 결집하며 느리게 드리프트.
+   콘텐츠 뒤(-z-10), 클릭 통과, 저불투명도 워터마크. 브랜드 모션이므로
+   색상 트랜지션 규칙의 예외(셀 transition:none).
+   ========================================================= */
+:root {
+  --brand-backdrop-opacity: 0.2; /* 워터마크 강도 */
+  /* 홈 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드 */
+  --card-glass-bg: rgba(255, 255, 255, 0.34);
+  --card-glass-border: rgba(23, 26, 32, 0.08);
+}
+
+.brand-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start; /* 상단 기준 정렬 — 마크를 위쪽으로 */
+  justify-content: center;
+  padding-top: 133px; /* 크기 축소 시 중심(≈388px) 유지하도록 보정 */
+}
+.brand-backdrop-drift {
+  width: min(510px, 49vw);
+  aspect-ratio: 1 / 1;
+  animation: brand-drift 38s ease-in-out infinite;
+  will-change: transform;
+}
+.brand-backdrop-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: var(--brand-backdrop-opacity);
+}
+.brand-backdrop-cell {
+  transition: none; /* 전역 * 트랜지션 제외 — 인라인 스타일이 타이밍 전담 */
+  will-change: transform, opacity;
+}
+@keyframes brand-drift {
+  0% {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, 2.5%, 0) scale(1.07);
+  }
+  100% {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+}
+
+/* 홈 전용 반투명 카드 — 배경 마크가 카드 뒤로 비쳐 보이도록.
+   다른 페이지의 카드는 영향받지 않음(.home-glass 스코프 한정). */
+.home-glass article,
+.home-glass .glass-card {
+  background-color: var(--card-glass-bg) !important;
+  border-color: var(--card-glass-border) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(1.05);
+  backdrop-filter: blur(7px) saturate(1.05);
+}
+
+/* 홈 전용 스탯 스트립(상단 건수) — 셀·구분선까지 반투명 처리해 배경 마크가 비침.
+   StatStrip은 <dl> + 셀(div/a) 구조(components/feature/StatStrip.tsx). */
+.home-glass dl {
+  background-color: var(--card-glass-border) !important; /* 얇은 구분선도 반투명 */
+  -webkit-backdrop-filter: blur(7px) saturate(1.05);
+  backdrop-filter: blur(7px) saturate(1.05);
+}
+.home-glass dl > a,
+.home-glass dl > div {
+  background-color: var(--card-glass-bg) !important;
+}
+.home-glass dl > a:hover {
+  background-color: rgba(255, 255, 255, 0.52) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-backdrop-drift {
+    animation: none !important;
+  }
+}

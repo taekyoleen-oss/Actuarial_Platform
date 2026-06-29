@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Globe2, LayoutGrid, Scale } from "lucide-react";
+import { BrandBackdrop } from "@/components/feature/BrandBackdrop";
 import { HeroSection } from "@/components/feature/HeroSection";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostGrid } from "@/components/feature/PostGrid";
@@ -120,8 +121,9 @@ export default async function HomePage() {
     }
   }
 
+  // 홈 전용: 반투명 프로스티드(배경 마크가 카드 뒤로 비침). 다른 페이지 카드는 불투명 유지.
   const tileBase =
-    "group relative flex h-full flex-col rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
+    "group relative flex h-full flex-col rounded-cover border border-[color:var(--card-glass-border)] bg-white/[0.22] backdrop-blur-md p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
   const tileEyebrow =
     "flex items-center gap-2.5 text-[11.5px] font-bold tracking-[0.14em] text-brand-sky";
   const tileIcon =
@@ -131,8 +133,10 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* 배경: 대형 tkLeen 마크가 화면 뒤에서 흩어졌다 결집하며 드리프트(홈 전용) */}
+      <BrandBackdrop />
       <HeroSection />
-      <section className="mx-auto max-w-container px-6 pb-24 pt-10">
+      <section className="home-glass mx-auto max-w-container px-6 pb-24 pt-10">
         {/* 스탯 스트립 — 카운트업 */}
         <Reveal>
           <StatStrip
@@ -413,7 +417,7 @@ export default async function HomePage() {
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-cover border border-border bg-white p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
+                className="rounded-cover border border-[color:var(--card-glass-border)] bg-white/35 backdrop-blur-md p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
               >
                 <h3 className="text-[18px] font-semibold text-brand-sky">
                   {l.title}
