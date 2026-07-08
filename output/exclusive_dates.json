@@ -1,12 +1,13 @@
 {
   "_note": "배타적사용권 부여(심의)일/기간/종료일 캐시. 부여일=협회 심의일 또는 보고서 명시일. 종료일=부여일+기간. 보고서 본문에 명시된 값을 우선 적용, 없으면 협회 공시(KLIA/KNIA), 둘 다 없으면 미상. 출처: KLIA(생보) https://www.klia.or.kr/member/exclUse/exclResult/list.do , KNIA(손보) https://www.knia.or.kr/report/new-review/new-review02",
-  "_updated": "2026-06-28",
+  "_updated": "2026-07-08",
   "life": {
     "삼성생명_암치료플러스종신": { "duration_months": 6, "granted_on": null, "expires_on": null, "source": "보고서 '배타적사용권 6개월 부여(생명보험협회 신상품심의위)'. 부여일 미명시 — 일자·종료 미상" },
     "삼성생명_가족계약납입면제할인제도": { "duration_months": 6, "granted_on": "2026-06", "expires_on": "2026-12", "source": "보고서 '2026년 6월 생명보험협회 신상품심의위 6개월 부여'" },
     "삼성생명_응급실내원재이송특약": { "duration_months": 6, "granted_on": "2026-06", "expires_on": "2026-12", "source": "보고서 '2026년 6월 생명보험협회 신상품심의위 6개월 부여'" },
     "삼성생명_퇴직연금ETF오토마타주식형펀드": { "duration_months": null, "granted_on": null, "expires_on": null, "status": "심의 단계·부여 미정", "source": "배타권 신청 분석. 보고서 '3개월 부여 또는 인정 불가 가능성' — 부여 미확정" },
-    "한화생명_선별급여암주요치료보장S특약": { "duration_months": null, "granted_on": null, "expires_on": null, "status": "신고수리 완료·배타권 부여 미상", "source": "개발과정 요약서 2026.06.02, 금감원 신규 위험담보 신고수리 완료. 배타권 부여 기간 미명시" },
+    "한화생명_선별급여암주요치료보장S특약": { "duration_months": 9, "granted_on": "2026-06-30", "expires_on": "2027-03-30", "source": "KLIA #220 심의 2026-06-30 + 9개월 배타권(보도 2026.7.3, DB생명 AI라이프케어암 보고서 교차확인). 만료=부여+9개월" },
+    "DB생명_AI라이프케어암보험": { "duration_months": 3, "granted_on": "2026-06-30", "expires_on": "2026-09-30", "source": "KLIA #221 심의 2026-06-30 + 보고서 '3개월 부여(대상: AI 건강코칭 서비스)'. 만료=부여+3개월" },
     "ABL생명_우리WON건강환급보험": { "duration_months": 9, "granted_on": null, "expires_on": null, "source": "보고서 9개월 획득. KLIA 목록 1p 밖 — 부여일 미상" },
     "교보생명_심폐소생술급여보장특약외1종": { "duration_months": null, "granted_on": "2026-02-27", "expires_on": null, "source": "KLIA #214 심의 2026-02-27. 보고서 부여기간 미명시 — 기간/종료 미상" },
     "교보생명_특정자궁질환보장특약": { "duration_months": 6, "granted_on": "2026-02-03", "expires_on": "2026-08-03", "source": "KLIA #212 심의 2026-02-03 + 보고서 6개월" },
