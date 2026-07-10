@@ -418,15 +418,17 @@ mark.key-phrase {
 /* 지구본 워터마크(components/feature/GlobeBackdrop.tsx) — 스크롤과 무관하게
    화면 정중앙 고정. 불투명도는 CSS가 아닌 캔버스 레이어별 알파로 분리
    (배경 요소는 연하게, 국가명·노드·중앙 문구는 진하게 — GlobeBackdrop의
-   BG_ALPHA/FG_ALPHA 상수). 크기 72→86vmin(2026-07-10 사용자 요청). */
+   BG_ALPHA/FG_ALPHA 상수). 크기 72→86→100vmin(2026-07-10 사용자 요청 2회). */
 .globe-backdrop {
   position: fixed;
   inset: 0;
   margin: auto;
-  width: 86vmin;
-  height: 86vmin;
+  width: 100vmin;
+  height: 100vmin;
   z-index: -10;
   pointer-events: none;
+  /* 화면 정중앙에서 살짝 아래로(2026-07-10 사용자 요청) */
+  transform: translateY(5vh);
 }
 
 .brand-backdrop {

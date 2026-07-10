@@ -41,7 +41,8 @@ const MAX = 3650;
 const RAD = Math.PI / 180;
 
 const SPEED = 8; // 자동 회전 속도 °/s
-const TILT = 20; // 지축 기울기 °
+// 시점 기울기 — 북반구 위주(Top10 국가가 모두 북반구, 2026-07-10 사용자 요청 35°)
+const TILT = 35;
 const CENTER_TEXT = "보험료 규모(2024)";
 
 // 레이어별 워터마크 강도 — CSS opacity 대신 캔버스 globalAlpha로 분리 적용.
@@ -281,12 +282,34 @@ export function GlobeBackdrop() {
         }
       });
 
-      // 국가 노드 + 순위 숫자 + 국가명·보험료(달러) 라벨 — 전경 알파로 또렷하게
+      // 국가 노드 + 순위 숫자 + 국가명·보험료(달러) 라벨 — 전경 알파로 또렷하게.
+      // 라벨은 순위 순서로 배치하며 이미 놓인 노드·라벨과 겹치면 상하/반대편
+      // 후보 자리로 옮겨 서로 겹치지 않게 한다(2026-07-10 사용자 요청).
       ctx.globalAlpha = FG_ALPHA;
-      DATA.forEach((c, ci) => {
-        const p = proj(vec(c.lat, c.lon));
-        if (p.z <= 0.02) return;
-        const rad = 5 + Math.sqrt(c.size / MAX) * 16;
+      interface Rect {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }
+      const placed: Rect[] = [];
+      const overlaps = (r: Rect) =>
+        placed.some(
+          (q) =>
+            r.x < q.x + q.w &&
+            q.x < r.x + r.w &&
+            r.y < q.y + q.h &&
+            q.y < r.y + r.h
+        );
+      const visible = DATA.map((c, ci) => ({
+        c,
+        ci,
+        p: proj(vec(c.lat, c.lon)),
+        rad: 5 + Math.sqrt(c.size / MAX) * 16,
+      })).filter((v) => v.p.z > 0.02);
+
+      // ① 노드·순위 숫자 먼저 — 노드 영역도 라벨 회피 대상에 포함.
+      for (const { ci, p, rad } of visible) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
         ctx.fillStyle = `rgb(${PRIMARY})`;
@@ -294,7 +317,6 @@ export function GlobeBackdrop() {
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.stroke();
-        // 순위 숫자 — 크게(2026-07-10 사용자 요청)
         ctx.font = `700 ${Math.max(
           11,
           Math.min(18, Math.round(rad * 1.15))
@@ -303,13 +325,15 @@ export function GlobeBackdrop() {
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(String(ci + 1), p.x, p.y + 0.5);
+        placed.push({ x: p.x - rad, y: p.y - rad, w: rad * 2, h: rad * 2 });
+      }
 
-        // 라벨: "국가명 $금액" — 노드 옆(구체 좌/우측에 따라 안쪽으로), 흰 halo로 가독성.
-        // 국가명은 크게, 달러 금액은 기존 크기 유지(2026-07-10 사용자 요청).
-        const namePx = Math.max(14, Math.round(R * 0.048));
-        const amtPx = Math.max(11, Math.round(R * 0.036));
-        const nameFont = `700 ${namePx}px Pretendard, Inter, sans-serif`;
-        const amtFont = `700 ${amtPx}px Pretendard, Inter, sans-serif`;
+      // ② 라벨 — 국가명 크게·금액은 기존 크기, 흰 halo. 순위가 높을수록 좋은 자리.
+      const namePx = Math.max(14, Math.round(R * 0.048));
+      const amtPx = Math.max(11, Math.round(R * 0.036));
+      const nameFont = `700 ${namePx}px Pretendard, Inter, sans-serif`;
+      const amtFont = `700 ${amtPx}px Pretendard, Inter, sans-serif`;
+      for (const { c, p, rad } of visible) {
         const nameText = c.name;
         const amtText = fmtUsd(c.size);
         const gap = amtPx * 0.4;
@@ -318,21 +342,54 @@ export function GlobeBackdrop() {
         ctx.font = amtFont;
         const amtW = ctx.measureText(amtText).width;
         const totalW = nameW + gap + amtW;
-        const startX =
-          p.x <= cx ? p.x + rad + 6 : p.x - rad - 6 - totalW;
+        const h = namePx * 1.2;
+
+        // 후보 자리: 안쪽(구체 중심 방향) 옆 → 위/아래로 밀기 → 노드 위/아래
+        // → 반대편 옆(같은 순서). 겹치지 않는 첫 자리를 쓴다.
+        const rightX = p.x + rad + 6;
+        const leftX = p.x - rad - 6 - totalW;
+        const nearX = p.x <= cx ? rightX : leftX;
+        const farX = p.x <= cx ? leftX : rightX;
+        const candidates: Array<[number, number]> = [
+          [nearX, p.y],
+          [nearX, p.y - h],
+          [nearX, p.y + h],
+          [p.x - totalW / 2, p.y - rad - h * 0.7],
+          [p.x - totalW / 2, p.y + rad + h * 0.7],
+          [farX, p.y],
+          [farX, p.y - h],
+          [farX, p.y + h],
+        ];
+        let pos = candidates[0];
+        for (const cand of candidates) {
+          const rect: Rect = {
+            x: cand[0],
+            y: cand[1] - h / 2,
+            w: totalW,
+            h,
+          };
+          if (!overlaps(rect)) {
+            pos = cand;
+            break;
+          }
+        }
+        placed.push({ x: pos[0], y: pos[1] - h / 2, w: totalW, h });
+
+        const [lx, ly] = pos;
         ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
         ctx.lineJoin = "round";
         ctx.lineWidth = 4;
         ctx.strokeStyle = HALO;
         ctx.font = nameFont;
-        ctx.strokeText(nameText, startX, p.y);
+        ctx.strokeText(nameText, lx, ly);
         ctx.fillStyle = INK;
-        ctx.fillText(nameText, startX, p.y);
+        ctx.fillText(nameText, lx, ly);
         ctx.font = amtFont;
-        ctx.strokeText(amtText, startX + nameW + gap, p.y);
+        ctx.strokeText(amtText, lx + nameW + gap, ly);
         ctx.fillStyle = AMBER;
-        ctx.fillText(amtText, startX + nameW + gap, p.y);
-      });
+        ctx.fillText(amtText, lx + nameW + gap, ly);
+      }
       ctx.globalAlpha = 1;
     }
 
