@@ -318,8 +318,8 @@ export function GlobeBackdrop() {
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.font = `700 ${Math.max(
-          11,
-          Math.min(18, Math.round(rad * 1.15))
+          12,
+          Math.min(21, Math.round(rad * 1.3))
         )}px Pretendard, Inter, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -328,9 +328,10 @@ export function GlobeBackdrop() {
         placed.push({ x: p.x - rad, y: p.y - rad, w: rad * 2, h: rad * 2 });
       }
 
-      // ② 라벨 — 국가명 크게·금액은 기존 크기, 흰 halo. 순위가 높을수록 좋은 자리.
-      const namePx = Math.max(14, Math.round(R * 0.048));
-      const amtPx = Math.max(11, Math.round(R * 0.036));
+      // ② 라벨 — 국가명·금액 확대(2026-07-10 사용자 요청 2회), 흰 halo.
+      // 순위가 높을수록 좋은 자리.
+      const namePx = Math.max(16, Math.round(R * 0.056));
+      const amtPx = Math.max(13, Math.round(R * 0.044));
       const nameFont = `700 ${namePx}px Pretendard, Inter, sans-serif`;
       const amtFont = `700 ${amtPx}px Pretendard, Inter, sans-serif`;
       for (const { c, p, rad } of visible) {

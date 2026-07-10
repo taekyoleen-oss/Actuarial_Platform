@@ -427,8 +427,8 @@ mark.key-phrase {
   height: 100vmin;
   z-index: -10;
   pointer-events: none;
-  /* 화면 정중앙에서 살짝 아래로(2026-07-10 사용자 요청) */
-  transform: translateY(5vh);
+  /* 화면 정중앙에서 아래로(2026-07-10 사용자 요청 2회: 5vh→10vh) */
+  transform: translateY(10vh);
 }
 
 .brand-backdrop {
