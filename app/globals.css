@@ -409,9 +409,10 @@ mark.key-phrase {
    ========================================================= */
 :root {
   --brand-backdrop-opacity: 0.2; /* tkLeen 마크 워터마크 강도 */
-  --globe-backdrop-opacity: 0.15; /* 지구본 워터마크 강도(데모 기본값 유지) */
-  /* 워터마크 페이지 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드 */
-  --card-glass-bg: rgba(255, 255, 255, 0.34);
+  --globe-backdrop-opacity: 0.28; /* 지구본 워터마크 강도(0.15→0.28, 2026-07-10 사용자 요청) */
+  /* 워터마크 페이지 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드
+     (0.34→0.2, 2026-07-10 사용자 요청: 워터마크가 더 비치게) */
+  --card-glass-bg: rgba(255, 255, 255, 0.2);
   --card-glass-border: rgba(23, 26, 32, 0.08);
 }
 
@@ -474,23 +475,23 @@ mark.key-phrase {
 .home-glass .glass-card {
   background-color: var(--card-glass-bg) !important;
   border-color: var(--card-glass-border) !important;
-  -webkit-backdrop-filter: blur(7px) saturate(1.05);
-  backdrop-filter: blur(7px) saturate(1.05);
+  -webkit-backdrop-filter: blur(4px) saturate(1.05);
+  backdrop-filter: blur(4px) saturate(1.05);
 }
 
 /* 홈 전용 스탯 스트립(상단 건수) — 셀·구분선까지 반투명 처리해 배경 마크가 비침.
    StatStrip은 <dl> + 셀(div/a) 구조(components/feature/StatStrip.tsx). */
 .home-glass dl {
   background-color: var(--card-glass-border) !important; /* 얇은 구분선도 반투명 */
-  -webkit-backdrop-filter: blur(7px) saturate(1.05);
-  backdrop-filter: blur(7px) saturate(1.05);
+  -webkit-backdrop-filter: blur(4px) saturate(1.05);
+  backdrop-filter: blur(4px) saturate(1.05);
 }
 .home-glass dl > a,
 .home-glass dl > div {
   background-color: var(--card-glass-bg) !important;
 }
 .home-glass dl > a:hover {
-  background-color: rgba(255, 255, 255, 0.52) !important;
+  background-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

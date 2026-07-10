@@ -123,7 +123,7 @@ export default async function HomePage() {
 
   // 홈 전용: 반투명 프로스티드(배경 마크가 카드 뒤로 비침). 다른 페이지 카드는 불투명 유지.
   const tileBase =
-    "group relative flex h-full flex-col rounded-cover border border-[color:var(--card-glass-border)] bg-white/[0.22] backdrop-blur-md p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
+    "group relative flex h-full flex-col rounded-cover border border-[color:var(--card-glass-border)] bg-white/[0.12] backdrop-blur-sm p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
   const tileEyebrow =
     "flex items-center gap-2.5 text-[11.5px] font-bold tracking-[0.14em] text-brand-sky";
   const tileIcon =
@@ -417,7 +417,7 @@ export default async function HomePage() {
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-cover border border-[color:var(--card-glass-border)] bg-white/35 backdrop-blur-md p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
+                className="rounded-cover border border-[color:var(--card-glass-border)] bg-white/20 backdrop-blur-sm p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
               >
                 <h3 className="text-[18px] font-semibold text-brand-sky">
                   {l.title}
