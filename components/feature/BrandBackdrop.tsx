@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 import { buildTkleenCells, TKLEEN_CELL } from "@/lib/tkleenMark";
 
-// 홈 배경 워터마크 — tkLeen 마크를 크게 키워 화면 뒤에서 끊임없이
+// 배경 워터마크 — tkLeen 마크를 크게 키워 화면 뒤에서 끊임없이
 // 흩어졌다(리스크) 결집(보장)하는 풀링 모션을 무한 반복한다.
 // 헤더 아이덴트(HeroIdent)와 같은 형상이지만, 1) 대형 2) 저불투명도
 // 3) 무한 루프 4) 느린 드리프트라는 점이 다르다.
-// 메인 페이지에서만 사용(fixed, 콘텐츠 뒤 -z-10, pointer-events:none).
+// 배타적 사용권 목록(/posts?category=exclusive-rights)에서 사용
+// (홈에서 이전, 2026-07-10 — 홈은 GlobeBackdrop).
+// fixed, 콘텐츠 뒤 -z-10, pointer-events:none.
 
 const CELLS = buildTkleenCells();
 

@@ -401,16 +401,31 @@ mark.key-phrase {
 }
 
 /* =========================================================
-   tkLeen 브랜드 배경 워터마크 (components/feature/BrandBackdrop.tsx)
-   홈 전용 — 대형 마크가 화면 뒤에서 흩어졌다 결집하며 느리게 드리프트.
-   콘텐츠 뒤(-z-10), 클릭 통과, 저불투명도 워터마크. 브랜드 모션이므로
-   색상 트랜지션 규칙의 예외(셀 transition:none).
+   배경 워터마크 2종 — 콘텐츠 뒤(-z-10), 클릭 통과, 저불투명도.
+   ① 지구본(GlobeBackdrop) — 홈(/) 전용. 회전 지구본이 뷰포트 중앙 고정.
+   ② tkLeen 마크(BrandBackdrop) — 배타적 사용권 섹션(/posts?category=
+      exclusive-rights) 전용. 흩어짐↔결집 + 드리프트(홈에서 이전, 2026-07-10).
+   브랜드 모션이므로 색상 트랜지션 규칙의 예외(셀 transition:none).
    ========================================================= */
 :root {
-  --brand-backdrop-opacity: 0.2; /* 워터마크 강도 */
-  /* 홈 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드 */
+  --brand-backdrop-opacity: 0.2; /* tkLeen 마크 워터마크 강도 */
+  --globe-backdrop-opacity: 0.15; /* 지구본 워터마크 강도(데모 기본값 유지) */
+  /* 워터마크 페이지 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드 */
   --card-glass-bg: rgba(255, 255, 255, 0.34);
   --card-glass-border: rgba(23, 26, 32, 0.08);
+}
+
+/* 지구본 워터마크(components/feature/GlobeBackdrop.tsx) — 스크롤과 무관하게
+   화면 정중앙 고정(데모와 동일: 72vmin), 캔버스 전체를 저불투명 처리 */
+.globe-backdrop {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: 72vmin;
+  height: 72vmin;
+  z-index: -10;
+  pointer-events: none;
+  opacity: var(--globe-backdrop-opacity);
 }
 
 .brand-backdrop {
@@ -452,8 +467,9 @@ mark.key-phrase {
   }
 }
 
-/* 홈 전용 반투명 카드 — 배경 마크가 카드 뒤로 비쳐 보이도록.
-   다른 페이지의 카드는 영향받지 않음(.home-glass 스코프 한정). */
+/* 워터마크 페이지 반투명 카드 — 배경 마크가 카드 뒤로 비쳐 보이도록.
+   홈(지구본)과 배타적 사용권 목록(tkLeen 마크)에서 사용하며, 그 외
+   페이지의 카드는 영향받지 않음(.home-glass 스코프 한정). */
 .home-glass article,
 .home-glass .glass-card {
   background-color: var(--card-glass-bg) !important;

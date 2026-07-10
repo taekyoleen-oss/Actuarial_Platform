@@ -1,3 +1,4 @@
+import { BrandBackdrop } from "@/components/feature/BrandBackdrop";
 import { Collapsible } from "@/components/feature/Collapsible";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { PostCard } from "@/components/feature/PostCard";
@@ -73,8 +74,17 @@ export default async function PostsPage({
       )
     : posts.length;
 
+  // 배타적 사용권 목록 전용: tkLeen 마크 워터마크(홈에서 이전) + 글래스 카드.
+  // 크기·드리프트는 .brand-backdrop, 카드 투명도는 .home-glass 기존 컨벤션 그대로.
+  const isExclusive = sp.category === "exclusive-rights";
+
   return (
-    <div className="mx-auto max-w-container px-6 py-12">
+    <div
+      className={`mx-auto max-w-container px-6 py-12${
+        isExclusive ? " home-glass" : ""
+      }`}
+    >
+      {isExclusive ? <BrandBackdrop /> : null}
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-foreground sm:text-[28px]">
           {heading}

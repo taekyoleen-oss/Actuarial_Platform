@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Globe2, LayoutGrid, Scale } from "lucide-react";
-import { BrandBackdrop } from "@/components/feature/BrandBackdrop";
+import { GlobeBackdrop } from "@/components/feature/GlobeBackdrop";
 import { HeroSection } from "@/components/feature/HeroSection";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostGrid } from "@/components/feature/PostGrid";
@@ -133,8 +133,8 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 배경: 대형 tkLeen 마크가 화면 뒤에서 흩어졌다 결집하며 드리프트(홈 전용) */}
-      <BrandBackdrop />
+      {/* 배경: 회전 지구본 워터마크 — 보험료 규모 Top10 + 흐름 아크(홈 전용) */}
+      <GlobeBackdrop />
       <HeroSection />
       <section className="home-glass mx-auto max-w-container px-6 pb-24 pt-10">
         {/* 스탯 스트립 — 카운트업 */}
