@@ -294,22 +294,28 @@ export function GlobeBackdrop() {
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.stroke();
+        // 순위 숫자 — 크게(2026-07-10 사용자 요청)
         ctx.font = `700 ${Math.max(
-          9,
-          Math.min(14, Math.round(rad * 0.95))
+          11,
+          Math.min(18, Math.round(rad * 1.15))
         )}px Pretendard, Inter, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(String(ci + 1), p.x, p.y + 0.5);
 
-        // 라벨: "국가명 $금액" — 노드 옆(구체 좌/우측에 따라 안쪽으로), 흰 halo로 가독성
-        const labelPx = Math.max(11, Math.round(R * 0.036));
-        ctx.font = `700 ${labelPx}px Pretendard, Inter, sans-serif`;
+        // 라벨: "국가명 $금액" — 노드 옆(구체 좌/우측에 따라 안쪽으로), 흰 halo로 가독성.
+        // 국가명은 크게, 달러 금액은 기존 크기 유지(2026-07-10 사용자 요청).
+        const namePx = Math.max(14, Math.round(R * 0.048));
+        const amtPx = Math.max(11, Math.round(R * 0.036));
+        const nameFont = `700 ${namePx}px Pretendard, Inter, sans-serif`;
+        const amtFont = `700 ${amtPx}px Pretendard, Inter, sans-serif`;
         const nameText = c.name;
         const amtText = fmtUsd(c.size);
-        const gap = labelPx * 0.35;
+        const gap = amtPx * 0.4;
+        ctx.font = nameFont;
         const nameW = ctx.measureText(nameText).width;
+        ctx.font = amtFont;
         const amtW = ctx.measureText(amtText).width;
         const totalW = nameW + gap + amtW;
         const startX =
@@ -318,9 +324,11 @@ export function GlobeBackdrop() {
         ctx.lineJoin = "round";
         ctx.lineWidth = 4;
         ctx.strokeStyle = HALO;
+        ctx.font = nameFont;
         ctx.strokeText(nameText, startX, p.y);
         ctx.fillStyle = INK;
         ctx.fillText(nameText, startX, p.y);
+        ctx.font = amtFont;
         ctx.strokeText(amtText, startX + nameW + gap, p.y);
         ctx.fillStyle = AMBER;
         ctx.fillText(amtText, startX + nameW + gap, p.y);
