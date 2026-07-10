@@ -9,34 +9,48 @@ import { useEffect, useRef } from "react";
 //  3) 구체의 방사 그라데이션은 디자인 비협상(그라데이션 금지)에 따라 플랫 화이트로 대체
 //  4) 폰트 무게는 데모 800 → 디자인 규칙(헤딩 600/700)의 700으로 조정
 // 홈(/)에서만 사용 — fixed 뷰포트 중앙, 콘텐츠 뒤(-z-10), 클릭 통과.
-// 크기·불투명도는 globals.css(.globe-backdrop, --globe-backdrop-opacity)가 전담.
+// 크기는 globals.css(.globe-backdrop)가, 불투명도는 레이어별 알파(아래 상수)가 전담:
+// 구체·경위선·대륙·아크는 연하게(워터마크), 국가명·노드·중앙 문구는 진하게
+// (2026-07-10 사용자 요청: 국가명·보험료 달러 금액이 또렷하게 읽히도록).
 
-// 세계 보험료 규모 Top10 (데모 원본 데이터 유지 — 단위: USD bn)
+// 세계 보험료 규모 Top10 (데모 원본 데이터 유지 — 단위: USD bn, 2024)
 const DATA = [
-  { size: 3650, lat: 39, lon: -98 }, // 미국
-  { size: 810, lat: 35, lon: 104 }, // 중국
-  { size: 400, lat: 54, lon: -2 }, // 영국
-  { size: 340, lat: 36, lon: 138 }, // 일본
-  { size: 290, lat: 46, lon: 2 }, // 프랑스
-  { size: 255, lat: 51, lon: 10 }, // 독일
-  { size: 195, lat: 36.5, lon: 127.8 }, // 대한민국
-  { size: 180, lat: 56, lon: -106 }, // 캐나다
-  { size: 170, lat: 42.5, lon: 12.5 }, // 이탈리아
-  { size: 145, lat: 21, lon: 78 }, // 인도
+  { name: "미국", size: 3650, lat: 39, lon: -98 },
+  { name: "중국", size: 810, lat: 35, lon: 104 },
+  { name: "영국", size: 400, lat: 54, lon: -2 },
+  { name: "일본", size: 340, lat: 36, lon: 138 },
+  { name: "프랑스", size: 290, lat: 46, lon: 2 },
+  { name: "독일", size: 255, lat: 51, lon: 10 },
+  { name: "대한민국", size: 195, lat: 36.5, lon: 127.8 },
+  { name: "캐나다", size: 180, lat: 56, lon: -106 },
+  { name: "이탈리아", size: 170, lat: 42.5, lon: 12.5 },
+  { name: "인도", size: 145, lat: 21, lon: 78 },
 ];
 const MAX = 3650;
 const RAD = Math.PI / 180;
 
 const SPEED = 8; // 자동 회전 속도 °/s
 const TILT = 20; // 지축 기울기 °
-const CENTER_TEXT = "보험료 규모";
+const CENTER_TEXT = "보험료 규모(2024)";
+
+// 레이어별 워터마크 강도 — CSS opacity 대신 캔버스 globalAlpha로 분리 적용.
+const BG_ALPHA = 0.4; // 구체·경위선·대륙 점묘·아크(은은한 배경)
+const FG_ALPHA = 0.85; // 국가 노드·국가명·달러 금액·중앙 문구(읽히는 전경)
 
 // 앱 디자인 토큰 매핑(캔버스는 CSS 변수를 못 읽으므로 hex 상수로 고정)
 const PRIMARY = "62,106,225"; // --primary #3e6ae1
 const SKY = "74,144,194"; // --brand-sky #4a90c2
-const AMBER = "#7d5a14"; // --chip-amber-fg — 흐름 펄스·화살촉(칩 팔레트 강조 스코프)
+const AMBER = "#7d5a14"; // --chip-amber-fg — 흐름 펄스·화살촉·달러 금액(칩 팔레트 강조 스코프)
+const INK = "#171a20"; // --foreground — 국가명
 // 중앙 문구 — 블루 계열과 구분되는 앰버 강조(2026-07-10 사용자 요청: 다른 색·더 또렷하게)
-const TEXT_COLOR = "rgba(125, 90, 20, 0.85)"; // --chip-amber-fg 기반
+const TEXT_COLOR = "#7d5a14"; // --chip-amber-fg (알파는 FG_ALPHA가 전담)
+const HALO = "rgba(255,255,255,0.92)"; // 라벨 가독성용 흰 외곽선
+
+// 보험료 규모 달러 표기 — $3.65T / $810B 컴팩트 포맷(입력 단위: USD bn)
+const fmtUsd = (bn: number) =>
+  bn >= 1000
+    ? `$${(bn / 1000).toFixed(2).replace(/\.?0+$/, "")}T`
+    : `$${bn}B`;
 
 type Vec3 = [number, number, number];
 interface LandRing {
@@ -231,9 +245,13 @@ export function GlobeBackdrop() {
       ctx.clearRect(0, 0, w, h);
       cx = w / 2;
       cy = h / 2;
-      R = Math.min(w, h) / 2 - 4;
+      // 구체는 캔버스의 86% — 가장자리 국가명 라벨이 잘리지 않을 여백 확보.
+      R = (Math.min(w, h) / 2) * 0.86;
       cosL = Math.cos(lam * RAD);
       sinL = Math.sin(lam * RAD);
+
+      // 배경 레이어(구체·경위선·대륙·아크)는 은은하게.
+      ctx.globalAlpha = BG_ALPHA;
 
       // 구체 — 플랫 화이트(그라데이션 금지) + 옅은 프라이머리 림
       ctx.fillStyle = "#ffffff";
@@ -272,12 +290,18 @@ export function GlobeBackdrop() {
         }
       }
 
-      // 가운데 문구 — 앰버(블루 지구본과 대비되어 또렷하게)
-      ctx.font = `700 ${Math.round(R * 0.13)}px Pretendard, Inter, sans-serif`;
+      // 가운데 문구 — 앰버(블루 지구본과 대비), 전경 알파로 또렷하게
+      ctx.globalAlpha = FG_ALPHA;
+      ctx.font = `700 ${Math.round(R * 0.115)}px Pretendard, Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = HALO;
+      ctx.strokeText(CENTER_TEXT, cx, cy);
       ctx.fillStyle = TEXT_COLOR;
       ctx.fillText(CENTER_TEXT, cx, cy);
+      ctx.globalAlpha = BG_ALPHA;
 
       // 흐름 아크 + 이동 펄스 + 화살촉
       pairs.forEach((pr, pi) => {
@@ -328,7 +352,8 @@ export function GlobeBackdrop() {
         }
       });
 
-      // 국가 노드 + 순위 숫자
+      // 국가 노드 + 순위 숫자 + 국가명·보험료(달러) 라벨 — 전경 알파로 또렷하게
+      ctx.globalAlpha = FG_ALPHA;
       DATA.forEach((c, ci) => {
         const p = proj(vec(c.lat, c.lon));
         if (p.z <= 0.02) return;
@@ -348,7 +373,30 @@ export function GlobeBackdrop() {
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(String(ci + 1), p.x, p.y + 0.5);
+
+        // 라벨: "국가명 $금액" — 노드 옆(구체 좌/우측에 따라 안쪽으로), 흰 halo로 가독성
+        const labelPx = Math.max(11, Math.round(R * 0.036));
+        ctx.font = `700 ${labelPx}px Pretendard, Inter, sans-serif`;
+        const nameText = c.name;
+        const amtText = fmtUsd(c.size);
+        const gap = labelPx * 0.35;
+        const nameW = ctx.measureText(nameText).width;
+        const amtW = ctx.measureText(amtText).width;
+        const totalW = nameW + gap + amtW;
+        const startX =
+          p.x <= cx ? p.x + rad + 6 : p.x - rad - 6 - totalW;
+        ctx.textAlign = "left";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = HALO;
+        ctx.strokeText(nameText, startX, p.y);
+        ctx.fillStyle = INK;
+        ctx.fillText(nameText, startX, p.y);
+        ctx.strokeText(amtText, startX + nameW + gap, p.y);
+        ctx.fillStyle = AMBER;
+        ctx.fillText(amtText, startX + nameW + gap, p.y);
       });
+      ctx.globalAlpha = 1;
     }
 
     // 대륙 데이터 로드(로컬 번들) — 실패해도 지구본 골격은 그려짐

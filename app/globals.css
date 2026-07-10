@@ -409,7 +409,6 @@ mark.key-phrase {
    ========================================================= */
 :root {
   --brand-backdrop-opacity: 0.2; /* tkLeen 마크 워터마크 강도 */
-  --globe-backdrop-opacity: 0.42; /* 지구본 워터마크 강도(0.15→0.28→0.42, 2026-07-10 사용자 요청 2회) */
   /* 워터마크 페이지 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드
      (0.34→0.2→0.1, 2026-07-10 사용자 요청: 워터마크가 더 비치게) */
   --card-glass-bg: rgba(255, 255, 255, 0.1);
@@ -417,16 +416,17 @@ mark.key-phrase {
 }
 
 /* 지구본 워터마크(components/feature/GlobeBackdrop.tsx) — 스크롤과 무관하게
-   화면 정중앙 고정(데모와 동일: 72vmin), 캔버스 전체를 저불투명 처리 */
+   화면 정중앙 고정. 불투명도는 CSS가 아닌 캔버스 레이어별 알파로 분리
+   (배경 요소는 연하게, 국가명·노드·중앙 문구는 진하게 — GlobeBackdrop의
+   BG_ALPHA/FG_ALPHA 상수). 크기 72→86vmin(2026-07-10 사용자 요청). */
 .globe-backdrop {
   position: fixed;
   inset: 0;
   margin: auto;
-  width: 72vmin;
-  height: 72vmin;
+  width: 86vmin;
+  height: 86vmin;
   z-index: -10;
   pointer-events: none;
-  opacity: var(--globe-backdrop-opacity);
 }
 
 .brand-backdrop {
