@@ -35,6 +35,8 @@ const CENTER_TEXT = "보험료 규모";
 const PRIMARY = "62,106,225"; // --primary #3e6ae1
 const SKY = "74,144,194"; // --brand-sky #4a90c2
 const AMBER = "#7d5a14"; // --chip-amber-fg — 흐름 펄스·화살촉(칩 팔레트 강조 스코프)
+// 중앙 문구 — 블루 계열과 구분되는 앰버 강조(2026-07-10 사용자 요청: 다른 색·더 또렷하게)
+const TEXT_COLOR = "rgba(125, 90, 20, 0.85)"; // --chip-amber-fg 기반
 
 type Vec3 = [number, number, number];
 interface LandRing {
@@ -270,11 +272,11 @@ export function GlobeBackdrop() {
         }
       }
 
-      // 가운데 문구
+      // 가운데 문구 — 앰버(블루 지구본과 대비되어 또렷하게)
       ctx.font = `700 ${Math.round(R * 0.13)}px Pretendard, Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = `rgba(${PRIMARY},0.3)`;
+      ctx.fillStyle = TEXT_COLOR;
       ctx.fillText(CENTER_TEXT, cx, cy);
 
       // 흐름 아크 + 이동 펄스 + 화살촉
