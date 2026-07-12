@@ -59,8 +59,8 @@ export function SiteNav() {
           </span>
         </Link>
 
-        {/* 데스크톱 — 메뉴 8개라 xl(1280px)부터 풀 메뉴, 그 아래는 햄버거 */}
-        <div className="hidden items-center gap-4 text-sm font-medium xl:flex">
+        {/* 데스크톱 — lg(1024px)부터 풀 메뉴(메뉴 8개라 lg~xl 구간은 글자·간격 압축), 그 아래는 햄버거 */}
+        <div className="hidden items-center gap-2.5 text-[13px] font-medium lg:flex xl:gap-4 xl:text-sm">
           {CATEGORIES.map((c) => (
             <Link key={c.slug} href={c.href} className={desktopLink}>
               {c.name}
@@ -73,21 +73,21 @@ export function SiteNav() {
           ))}
         </div>
 
-        {/* 햄버거 (xl 미만) */}
+        {/* 햄버거 (lg 미만) */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label="메뉴 열기/닫기"
           aria-expanded={open}
-          className="text-foreground xl:hidden"
+          className="text-foreground lg:hidden"
         >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
 
-      {/* 드롭다운 패널 (xl 미만) */}
+      {/* 드롭다운 패널 (lg 미만) */}
       {open && (
-        <div className="border-t border-border bg-white xl:hidden">
+        <div className="border-t border-border bg-white lg:hidden">
           <div className="mx-auto max-w-container px-6 py-2">
             {CATEGORIES.map((c) => (
               <Link
