@@ -474,8 +474,9 @@ mark.key-phrase {
 
 /* 초상 모자이크 워터마크(components/feature/PortraitBackdrop.tsx) — 만든이
    (/about) 전용. 스크롤과 무관하게 화면 정중앙 고정. 데모 원본
-   min(70vmin,520px)·opacity 0.16에서 크기만 축소(2026-07-12 사용자 요청:
-   너무 크지 않게). 원본 이미지 비율 460/565 유지. */
+   min(70vmin,520px)·opacity 0.16에서 크기 축소(2026-07-12 사용자 요청:
+   너무 크지 않게) + 불투명도 0.16→0.12(같은 날 사용자 요청: 조금 더
+   흐리게). 원본 이미지 비율 460/565 유지. */
 .portrait-backdrop {
   --portrait-backdrop-size: min(50vmin, 380px);
   position: fixed;
@@ -485,7 +486,7 @@ mark.key-phrase {
   height: calc(var(--portrait-backdrop-size) * 565 / 460);
   z-index: -10;
   pointer-events: none;
-  opacity: 0.16;
+  opacity: 0.12;
   filter: saturate(0.9);
 }
 
