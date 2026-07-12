@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Award, FileText, Quote } from "lucide-react";
+import { PortraitBackdrop } from "@/components/feature/PortraitBackdrop";
 import { Reveal } from "@/components/feature/Reveal";
 
 // "만든이" — AI4Insurance 프로젝트의 소개(about) 콘텐츠만 이식해 보드 테마로 재구성.
@@ -175,6 +176,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-container px-6 py-12">
+      {/* 배경 워터마크 — 초상 캐리커처 모자이크 순환(fixed, 콘텐츠 뒤) */}
+      <PortraitBackdrop />
+
       {/* 헤더 */}
       <p className="text-[13px] font-bold tracking-[0.14em] text-brand-sky">
         ABOUT · 만든이

@@ -401,10 +401,12 @@ mark.key-phrase {
 }
 
 /* =========================================================
-   배경 워터마크 2종 — 콘텐츠 뒤(-z-10), 클릭 통과, 저불투명도.
+   배경 워터마크 3종 — 콘텐츠 뒤(-z-10), 클릭 통과, 저불투명도.
    ① 지구본(GlobeBackdrop) — 홈(/) 전용. 회전 지구본이 뷰포트 중앙 고정.
    ② tkLeen 마크(BrandBackdrop) — 배타적 사용권 섹션(/posts?category=
       exclusive-rights) 전용. 흩어짐↔결집 + 드리프트(홈에서 이전, 2026-07-10).
+   ③ 초상 모자이크(PortraitBackdrop) — 만든이(/about) 전용. 캐리커처 6장
+      모자이크 타일 전환 순환(2026-07-12).
    브랜드 모션이므로 색상 트랜지션 규칙의 예외(셀 transition:none).
    ========================================================= */
 :root {
@@ -468,6 +470,23 @@ mark.key-phrase {
   100% {
     transform: translate3d(-1.5%, -1%, 0) scale(1);
   }
+}
+
+/* 초상 모자이크 워터마크(components/feature/PortraitBackdrop.tsx) — 만든이
+   (/about) 전용. 스크롤과 무관하게 화면 정중앙 고정. 데모 원본
+   min(70vmin,520px)·opacity 0.16에서 크기만 축소(2026-07-12 사용자 요청:
+   너무 크지 않게). 원본 이미지 비율 460/565 유지. */
+.portrait-backdrop {
+  --portrait-backdrop-size: min(50vmin, 380px);
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: var(--portrait-backdrop-size);
+  height: calc(var(--portrait-backdrop-size) * 565 / 460);
+  z-index: -10;
+  pointer-events: none;
+  opacity: 0.16;
+  filter: saturate(0.9);
 }
 
 /* 워터마크 페이지 반투명 카드 — 배경 마크가 카드 뒤로 비쳐 보이도록.
