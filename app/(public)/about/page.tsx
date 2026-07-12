@@ -175,7 +175,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-container px-6 py-12">
+    <div className="about-glass mx-auto max-w-container px-6 py-12">
       {/* 배경 워터마크 — 초상 캐리커처 모자이크 순환(fixed, 콘텐츠 뒤) */}
       <PortraitBackdrop />
 
@@ -193,7 +193,7 @@ export default function AboutPage() {
         {STATS.map((s) => (
           <div
             key={s.label}
-            className="rounded-cover border border-border bg-white p-4 shadow-card"
+            className="glass-card rounded-cover border border-border bg-white p-4 shadow-card"
           >
             <div className="text-lg font-semibold text-brand-sky">{s.value}</div>
             <div className="mt-1 text-xs leading-snug text-tertiary">
@@ -245,7 +245,7 @@ export default function AboutPage() {
           {ACHIEVEMENTS.map((a) => (
             <div
               key={a}
-              className="flex items-start gap-3 rounded-cover border border-border bg-white p-5 shadow-card"
+              className="glass-card flex items-start gap-3 rounded-cover border border-border bg-white p-5 shadow-card"
             >
               <Award size={18} className="mt-0.5 shrink-0 text-brand-sky" />
               <p className="text-sm leading-relaxed text-body">{a}</p>
@@ -261,7 +261,7 @@ export default function AboutPage() {
           국민건강보험·신용정보 등 공공·금융 데이터를 활용한 보험 위험률 및
           예측모형 연구. 제목을 누르면 원문(PDF)을 볼 수 있습니다.
         </p>
-        <ol className="mt-6 overflow-hidden rounded-cover border border-border bg-white shadow-card">
+        <ol className="glass-card mt-6 overflow-hidden rounded-cover border border-border bg-white shadow-card">
           {RESEARCH.map((p, i) => (
             <li
               key={p.title}
@@ -316,7 +316,7 @@ export default function AboutPage() {
           {EXPERTISE.map((tag) => (
             <span
               key={tag}
-              className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-body"
+              className="glass-card rounded border border-border bg-white px-4 py-2 text-sm font-medium text-body"
             >
               {tag}
             </span>
@@ -326,7 +326,7 @@ export default function AboutPage() {
 
       {/* 교육 철학 */}
       <section className="mb-4 mt-16">
-        <div className="mx-auto max-w-3xl rounded-cover border border-border bg-white p-8 shadow-card sm:p-10">
+        <div className="glass-card mx-auto max-w-3xl rounded-cover border border-border bg-white p-8 shadow-card sm:p-10">
           <Quote size={28} className="text-brand-sky opacity-50" />
           <p className="mt-4 text-lg font-medium leading-relaxed text-foreground sm:text-xl">
             {PROFILE.philosophy}

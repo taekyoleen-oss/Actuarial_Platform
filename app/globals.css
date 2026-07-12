@@ -489,6 +489,16 @@ mark.key-phrase {
   filter: saturate(0.9);
 }
 
+/* 만든이(/about) 반투명 카드 — 초상 모자이크 워터마크가 카드 뒤로 비치도록
+   (2026-07-12 사용자 요청). 홈 글래스(0.1)보다 온건한 40% 백색 + 블러.
+   .about-glass 스코프 한정 — 다른 페이지 카드는 영향 없음. */
+.about-glass .glass-card {
+  background-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--card-glass-border);
+  -webkit-backdrop-filter: blur(2px) saturate(1.05);
+  backdrop-filter: blur(2px) saturate(1.05);
+}
+
 /* 워터마크 페이지 반투명 카드 — 배경 마크가 카드 뒤로 비쳐 보이도록.
    홈(지구본)과 배타적 사용권 목록(tkLeen 마크)에서 사용하며, 그 외
    페이지의 카드는 영향받지 않음(.home-glass 스코프 한정). */

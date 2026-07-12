@@ -11,17 +11,28 @@ import { useEffect, useRef } from "react";
 //     (2026-07-12 사용자 요청: 웹페이지에 맞게, 너무 크지 않게)
 //  4) reduced-motion은 프로젝트 컨벤션(GlobeBackdrop과 동일)대로
 //     정적 1프레임(원본)만 표시 — 데모의 크로스페이드 폴백 대신
+//  5) 프레임별 얼굴 정렬(2026-07-12 사용자 요청: 머리 끝 위치 통일) —
+//     원본들의 프레이밍이 제각각(머리 끝 y 1.5%~17.6%)이라 단순 cover로는
+//     전환 시 얼굴이 튐. 프레임별 앵커(top: 머리 끝, chin: 턱, cx: 얼굴
+//     중심)를 측정해 모든 프레임에서 머리 끝→TOP_T, 턱→CHIN_T에 오도록
+//     소스 사각형을 계산(위치+스케일 동시 정규화).
 // 만든이(/about)에서만 사용 — fixed 뷰포트 중앙, 콘텐츠 뒤(-z-10), 클릭 통과.
 // 크기·불투명도(0.16)는 globals.css(.portrait-backdrop)가 전담.
 
+// top/chin은 이미지 높이 비율, cx는 너비 비율 — 픽셀 스캔(머리카락 명도)
+// + 시각 검증으로 측정한 값. 이미지를 교체하면 재측정 필요.
 const FRAMES = [
-  "/about/portrait/01-original.jpg",
-  "/about/portrait/02-pencil.jpg",
-  "/about/portrait/03-watercolor.jpg",
-  "/about/portrait/04-sunset.jpg",
-  "/about/portrait/05-cel.jpg",
-  "/about/portrait/06-popart.jpg",
+  { src: "/about/portrait/01-original.jpg", top: 0.1756, chin: 0.8, cx: 0.52 },
+  { src: "/about/portrait/02-pencil.jpg", top: 0.0659, chin: 0.677, cx: 0.505 },
+  { src: "/about/portrait/03-watercolor.jpg", top: 0.1293, chin: 0.732, cx: 0.51 },
+  { src: "/about/portrait/04-sunset.jpg", top: 0.0537, chin: 0.745, cx: 0.5 },
+  { src: "/about/portrait/05-cel.jpg", top: 0.0244, chin: 0.72, cx: 0.51 },
+  { src: "/about/portrait/06-popart.jpg", top: 0.0146, chin: 0.685, cx: 0.5 },
 ];
+
+// 정렬 목표 — 캔버스 높이 기준 머리 끝/턱 위치(전 프레임 공통)
+const TOP_T = 0.02;
+const CHIN_T = 0.77;
 
 // 애니메이션 조정 상수 (데모 원본 값 유지)
 const CONFIG = {
@@ -70,18 +81,21 @@ export function PortraitBackdrop() {
       tileH = H / CONFIG.rows;
     }
 
-    // canvas를 cover 방식으로 채우는 소스 사각형
-    function coverRect(im: HTMLImageElement): [number, number, number, number] {
-      const cr = W / H;
-      const ir = im.width / im.height;
-      if (ir > cr) {
-        const sh = im.height;
-        const sw = sh * cr;
-        return [(im.width - sw) / 2, 0, sw, sh];
-      }
-      const sw = im.width;
-      const sh = sw / cr;
-      return [0, (im.height - sh) / 2, sw, sh];
+    // 프레임 i의 얼굴 정렬 소스 사각형 — 머리 끝이 캔버스 TOP_T, 턱이
+    // CHIN_T에 오도록 오프셋+스케일을 정규화(cover 대체). 이미지 경계는
+    // 클램프(측정 오차 ≤1%p 허용).
+    function alignRect(i: number): [number, number, number, number] {
+      const f = FRAMES[i];
+      const im = imgs[i];
+      const iw = im.width;
+      const ih = im.height;
+      const sh = ((f.chin - f.top) / (CHIN_T - TOP_T)) * ih;
+      const sw = sh * (W / H);
+      let sy = f.top * ih - TOP_T * sh;
+      let sx = f.cx * iw - sw / 2;
+      sy = Math.max(0, Math.min(ih - sh, sy));
+      sx = Math.max(0, Math.min(iw - sw, sx));
+      return [sx, sy, sw, sh];
     }
 
     // 타일 평균색 사전 계산 — 전환 중 블록 플래시 색상
@@ -92,27 +106,27 @@ export function PortraitBackdrop() {
       const octx = oc.getContext("2d", { willReadFrequently: true });
       if (!octx) return;
       avgs.length = 0;
-      for (const im of imgs) {
-        const [sx, sy, sw, sh] = coverRect(im);
-        octx.drawImage(im, sx, sy, sw, sh, 0, 0, CONFIG.cols, CONFIG.rows);
+      for (let i = 0; i < imgs.length; i++) {
+        const [sx, sy, sw, sh] = alignRect(i);
+        octx.drawImage(imgs[i], sx, sy, sw, sh, 0, 0, CONFIG.cols, CONFIG.rows);
         avgs.push(
           octx.getImageData(0, 0, CONFIG.cols, CONFIG.rows).data
         );
       }
     }
 
-    function drawImageCover(im: HTMLImageElement, alpha = 1) {
+    function drawImageAligned(i: number, alpha = 1) {
       if (!ctx) return;
-      const [sx, sy, sw, sh] = coverRect(im);
+      const [sx, sy, sw, sh] = alignRect(i);
       ctx.globalAlpha = alpha;
-      ctx.drawImage(im, sx, sy, sw, sh, 0, 0, W, H);
+      ctx.drawImage(imgs[i], sx, sy, sw, sh, 0, 0, W, H);
       ctx.globalAlpha = 1;
     }
 
     function drawStatic(i: number) {
       if (!ctx) return;
       ctx.clearRect(0, 0, W, H);
-      drawImageCover(imgs[i]);
+      drawImageAligned(i);
     }
 
     // 타일별 랜덤 시차 (전환마다 재생성)
@@ -132,12 +146,12 @@ export function PortraitBackdrop() {
     function renderTransition(t: number) {
       if (!ctx) return;
       ctx.clearRect(0, 0, W, H);
-      drawImageCover(imgs[idx]); // 바닥: 현재 이미지
+      drawImageAligned(idx); // 바닥: 현재 이미지
 
       const a = avgs[idx];
       const b = avgs[next];
       const span = 1 - CONFIG.stagger;
-      const [sx, sy, sw, sh] = coverRect(imgs[next]);
+      const [sx, sy, sw, sh] = alignRect(next);
       const su = sw / W; // 캔버스→소스 스케일
       const sv = sh / H;
 
@@ -209,7 +223,7 @@ export function PortraitBackdrop() {
 
     // 이미지 6장 로드 완료 후 시작 — 실패(부분 로드) 시 그리지 않음
     let loadedCount = 0;
-    for (const src of FRAMES) {
+    for (const f of FRAMES) {
       const im = new Image();
       im.onload = () => {
         loadedCount += 1;
@@ -224,7 +238,7 @@ export function PortraitBackdrop() {
           raf = window.requestAnimationFrame(frame);
         }
       };
-      im.src = src;
+      im.src = f.src;
       imgs.push(im);
     }
 
