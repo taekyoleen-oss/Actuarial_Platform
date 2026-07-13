@@ -60,6 +60,8 @@ export default function ExcelLaunchPanel({
       // 팝업 차단 시에도 아래 "지금 열기" 링크로 진입 가능
       window.open(item.webUrl, "_blank", "noopener");
     } catch (e) {
+      // 진단용 원본 오류 — 사용자 문구는 요약이므로 콘솔에 전체를 남긴다
+      console.error("[datalab] Web-Excel 열기 실패:", e);
       setPhase("error");
       setErrMsg(graphErrorMessage(e));
     }

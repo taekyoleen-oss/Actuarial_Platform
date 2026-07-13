@@ -178,7 +178,7 @@ export async function uploadToOneDrive(
   return { webUrl: item.webUrl, name: item.name ?? name };
 }
 
-/** MSAL/업로드 오류 → 사용자 문구. */
+/** MSAL/업로드 오류 → 사용자 문구(미분류 오류는 원인 코드를 함께 표기). */
 export function graphErrorMessage(e: unknown): string {
   const code =
     (e as { errorCode?: string })?.errorCode ??
@@ -188,8 +188,13 @@ export function graphErrorMessage(e: unknown): string {
     return "팝업이 차단되었습니다. 브라우저에서 팝업을 허용한 뒤 다시 시도해 주세요.";
   if (code.includes("interaction_in_progress"))
     return "이미 로그인 창이 열려 있습니다. 열린 창을 완료하거나 닫아 주세요.";
+  if (code.includes("monitor_window_timeout"))
+    return "로그인 창 응답 대기가 시간 초과되었습니다. 팝업 안에 오류 문구가 표시되지 않았는지 확인하고 다시 시도해 주세요.";
   if (code.includes("_507")) return "OneDrive 저장 공간이 부족합니다.";
+  if (code.includes("upload_failed_403") || code.includes("upload_failed_401"))
+    return "OneDrive 접근 권한이 거부되었습니다. 로그인 시 권한 동의(Files.ReadWrite)를 수락했는지 확인해 주세요.";
   if (code.includes("fetch_failed"))
     return "게시 파일을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
-  return "처리에 실패했습니다 — 잠시 후 다시 시도해 주세요.";
+  const detail = code ? ` (원인: ${code.slice(0, 90)})` : "";
+  return `처리에 실패했습니다 — 잠시 후 다시 시도해 주세요.${detail}`;
 }
