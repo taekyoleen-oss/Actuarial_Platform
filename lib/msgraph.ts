@@ -24,11 +24,14 @@ async function getPca(clientId: string): Promise<PublicClientApplication> {
         auth: {
           clientId,
           authority: AUTHORITY,
-          // 전용 경량 페이지 — 팝업이 앱 셸(홈) 전체를 로드하지 않고 즉시 닫히게 함.
+          // 전용 리디렉션 페이지(app/msal-redirect — rewrite로 .html 주소 유지).
+          // msal v5 redirect-bridge를 실행해 응답을 본창에 송신하는 페이지여야 하며,
           // Entra 앱 등록의 SPA 리디렉션 URI에 {origin}/msal-redirect.html 등록 필요.
           redirectUri: `${window.location.origin}/msal-redirect.html`,
         },
         cache: { cacheLocation: "sessionStorage" },
+        // 첫 로그인(비밀번호+2단계 인증+권한 동의)은 기본 60초를 넘기기 쉬움 → 5분
+        system: { popupBridgeTimeout: 300000 },
       });
       await pca.initialize();
       return pca;
