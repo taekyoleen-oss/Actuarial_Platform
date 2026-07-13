@@ -372,7 +372,40 @@ export default async function DataPostDetailPage({
         </Section>
       ) : null}
 
-      {/* 워크북 패널 — 최신 대표 엑셀이 있을 때만 */}
+      {/* 첨부 자료 */}
+      {attachments.length > 0 ? (
+        <Section title="첨부 자료">
+          <ul className="divide-y divide-border rounded-cover border border-border">
+            {attachments.map((a) => (
+              <li
+                key={a.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {a.fileName}
+                  </p>
+                  {a.note ? (
+                    <p className="mt-0.5 text-xs text-tertiary">{a.note}</p>
+                  ) : null}
+                </div>
+                <div className="flex shrink-0 items-center gap-3 text-xs text-tertiary">
+                  <span>{a.size}</span>
+                  <a
+                    href={a.url}
+                    download={a.fileName}
+                    className="font-medium text-primary"
+                  >
+                    다운로드
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* 워크북 패널 — 최신 대표 엑셀이 있을 때만 (본문 마지막 섹션) */}
       {current && currentUrl ? (
         <Section title="워크북">
           <WorkbookViewer fileUrl={currentUrl} fileName={current.file_name} />
@@ -414,39 +447,6 @@ export default async function DataPostDetailPage({
             version={current.version}
             hasOriginal={Boolean(showOriginal)}
           />
-        </Section>
-      ) : null}
-
-      {/* 첨부 자료 */}
-      {attachments.length > 0 ? (
-        <Section title="첨부 자료">
-          <ul className="divide-y divide-border rounded-cover border border-border">
-            {attachments.map((a) => (
-              <li
-                key={a.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">
-                    {a.fileName}
-                  </p>
-                  {a.note ? (
-                    <p className="mt-0.5 text-xs text-tertiary">{a.note}</p>
-                  ) : null}
-                </div>
-                <div className="flex shrink-0 items-center gap-3 text-xs text-tertiary">
-                  <span>{a.size}</span>
-                  <a
-                    href={a.url}
-                    download={a.fileName}
-                    className="font-medium text-primary"
-                  >
-                    다운로드
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
         </Section>
       ) : null}
 
