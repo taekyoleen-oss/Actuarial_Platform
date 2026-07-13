@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/ui/markdown";
 import { DataChip } from "@/components/feature/datalab/DataChip";
 import { DataViewCounter } from "@/components/feature/datalab/DataViewCounter";
+import ExcelLaunchPanel from "@/components/feature/datalab/ExcelLaunchPanel";
 import { WorkbookViewer } from "@/components/feature/datalab/WorkbookLoaders";
 import { formatBytes } from "@/components/feature/datalab/util";
 import {
@@ -98,7 +99,10 @@ export default async function DataPostDetailPage({
   const tags = [...(post.models ?? []), ...(post.tools ?? [])];
   const traits = content.dataTraits ?? [];
   const layout = content.layout ?? [];
+  const keyFunctions = content.keyFunctions ?? [];
+  const pythonAnalysis = content.pythonAnalysis ?? [];
   const methods = content.methods ?? [];
+  const results = content.results ?? [];
   const links = content.links ?? [];
 
   return (
@@ -210,9 +214,74 @@ export default async function DataPostDetailPage({
         </Section>
       ) : null}
 
-      {/* ③ 분석 방법 */}
+      {/* ③ 주요 엑셀 함수 — 워크북에서 사용된 중요 함수 해설 */}
+      {keyFunctions.length > 0 ? (
+        <Section title="주요 엑셀 함수">
+          <div className="space-y-4">
+            {keyFunctions.map((fn, i) => (
+              <div
+                key={i}
+                className="rounded-cover border border-border bg-white p-5 shadow-card"
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="font-mono text-base font-semibold text-foreground">
+                    {fn.name}
+                  </h3>
+                  {fn.badge ? <DataChip label={fn.badge} /> : null}
+                </div>
+                {fn.syntax ? (
+                  <p className="mt-2 font-mono text-[13px] text-tertiary">
+                    {fn.syntax}
+                  </p>
+                ) : null}
+                <div className="mt-3 text-[15px] leading-relaxed text-body">
+                  <Markdown text={fn.desc} />
+                </div>
+                {fn.usage ? (
+                  <div className="mt-3 rounded-cover border border-border bg-surface/50 p-3 text-sm leading-relaxed text-body">
+                    <p className="mb-1 text-xs font-medium text-tertiary">
+                      이 워크북에서의 사용
+                    </p>
+                    <Markdown text={fn.usage} />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ④ 파이썬 코드 분석 — Python in Excel 수식/첨부 스크립트 해설 */}
+      {pythonAnalysis.length > 0 ? (
+        <Section title="파이썬 코드 분석">
+          <div className="space-y-4">
+            {pythonAnalysis.map((py, i) => (
+              <div
+                key={i}
+                className="rounded-cover border border-border bg-white p-5 shadow-card"
+              >
+                <h3 className="text-base font-semibold text-foreground">
+                  {py.title}
+                </h3>
+                {py.code ? (
+                  <pre className="mt-3 overflow-x-auto rounded-cover border border-border bg-surface/60 p-4 text-[13px] leading-relaxed text-foreground">
+                    <code>{py.code}</code>
+                  </pre>
+                ) : null}
+                {py.body ? (
+                  <div className="mt-3 text-[15px] leading-relaxed text-body">
+                    <Markdown text={py.body} />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ⑤ 분석 과정 */}
       {methods.length > 0 ? (
-        <Section title="분석 방법">
+        <Section title="분석 과정">
           <div className="space-y-4">
             {methods.map((m, i) => (
               <div
@@ -239,7 +308,27 @@ export default async function DataPostDetailPage({
         </Section>
       ) : null}
 
-      {/* ④ 이미지 */}
+      {/* ⑥ 산출 결과 — 분석이 만들어낸 결과물 해설 */}
+      {results.length > 0 ? (
+        <Section title="산출 결과">
+          <div className="space-y-5">
+            {results.map((r, i) => (
+              <div key={i}>
+                {r.title ? (
+                  <p className="mb-2 text-sm font-medium text-foreground">
+                    {r.title}
+                  </p>
+                ) : null}
+                <div className="text-[15px] leading-relaxed text-body">
+                  <Markdown text={r.body} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ⑦ 이미지 */}
       {images.length > 0 ? (
         <Section title="이미지">
           <div className="space-y-6">
@@ -263,7 +352,7 @@ export default async function DataPostDetailPage({
         </Section>
       ) : null}
 
-      {/* ⑤ 관련 링크 */}
+      {/* ⑧ 관련 링크 */}
       {links.length > 0 ? (
         <Section title="관련 링크">
           <ul className="space-y-2">
@@ -319,10 +408,12 @@ export default async function DataPostDetailPage({
             <span>수정 {formatDate(current.created_at)}</span>
           </div>
 
-          <p className="mt-3 text-xs leading-relaxed text-tertiary">
-            웹 편집 저장본은 셀 값·수식 수준만 보존됩니다. VBA·차트가 포함된
-            원본은 원본 다운로드로 받으세요.
-          </p>
+          <ExcelLaunchPanel
+            fileUrl={currentUrl}
+            fileName={current.file_name}
+            version={current.version}
+            hasOriginal={Boolean(showOriginal)}
+          />
         </Section>
       ) : null}
 

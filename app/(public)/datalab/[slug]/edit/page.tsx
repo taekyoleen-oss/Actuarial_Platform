@@ -42,6 +42,8 @@ export default async function DataLabEditPage({
       <p className="mb-4 text-xs leading-relaxed text-tertiary">
         웹 편집 저장본은 셀 값·수식 수준만 보존됩니다(새 버전으로 저장). VBA·차트·피벗이
         포함된 원본(v1)은 절대 덮어쓰지 않으며 상세 페이지에서 별도로 받을 수 있습니다.
+        VBA·차트 등 고급 작업이 필요하면 상세 페이지의 “Excel로 직접 작업하기”(내
+        OneDrive Web-Excel 열기 / MS Excel 다운로드)를 이용하세요.
       </p>
 
       <WorkbookEditorClient

@@ -105,7 +105,23 @@ export interface DataPostContent {
     sheet?: string; // 시트명 (단일 시트면 생략 가능)
     columns: { name: string; type: string; desc: string }[];
   }[];
-  methods?: { title: string; body: string; tool?: string }[]; // 분석 방법 단계(마크다운 body)
+  /** 주요 엑셀 함수 — 워크북에서 실제 사용된 함수 중 중요 함수 해설(365 신규·통계 필수) */
+  keyFunctions?: {
+    name: string; // 함수명 (예: XLOOKUP)
+    badge?: string; // 분류 칩 (예: "Excel 365 신규", "통계", "동적 배열")
+    syntax?: string; // 구문 (예: XLOOKUP(찾을값, 찾을범위, 반환범위))
+    usage?: string; // 이 워크북에서의 사용 수식/위치 (마크다운)
+    desc: string; // 설명 (마크다운)
+  }[];
+  /** 파이썬 코드 분석 — Python in Excel 수식 또는 첨부 스크립트 해설 */
+  pythonAnalysis?: {
+    title: string;
+    code?: string; // 코드 스니펫 (plain text)
+    body?: string; // 해설 (마크다운)
+  }[];
+  methods?: { title: string; body: string; tool?: string }[]; // 분석 과정 단계(마크다운 body)
+  /** 산출 결과 해설 — 분석이 만들어낸 결과물 설명(마지막 본문 섹션) */
+  results?: { title?: string; body: string }[];
   images?: { storage_path?: string; url?: string; caption?: string }[];
   links?: { label: string; url: string }[];
   notes?: string;
