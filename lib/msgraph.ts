@@ -24,7 +24,9 @@ async function getPca(clientId: string): Promise<PublicClientApplication> {
         auth: {
           clientId,
           authority: AUTHORITY,
-          redirectUri: window.location.origin,
+          // 전용 경량 페이지 — 팝업이 앱 셸(홈) 전체를 로드하지 않고 즉시 닫히게 함.
+          // Entra 앱 등록의 SPA 리디렉션 URI에 {origin}/msal-redirect.html 등록 필요.
+          redirectUri: `${window.location.origin}/msal-redirect.html`,
         },
         cache: { cacheLocation: "sessionStorage" },
       });
@@ -33,6 +35,26 @@ async function getPca(clientId: string): Promise<PublicClientApplication> {
     })();
   }
   return pcaPromise;
+}
+
+/**
+ * 이전 팝업이 비정상 종료(에러 페이지에서 강제 닫힘 등)되면 MSAL이 남긴
+ * "진행 중" 플래그(interaction.status) 때문에 이후 시도가 전부
+ * interaction_in_progress로 실패한다. 공식 초기화 API가 없어 키를 직접 제거한다.
+ */
+function clearStaleInteraction(): void {
+  try {
+    for (const storage of [window.sessionStorage, window.localStorage]) {
+      const stale: string[] = [];
+      for (let i = 0; i < storage.length; i++) {
+        const k = storage.key(i);
+        if (k && k.includes("interaction.status")) stale.push(k);
+      }
+      stale.forEach((k) => storage.removeItem(k));
+    }
+  } catch {
+    // storage 접근 불가 환경은 무시(재시도 시 사용자 안내로 폴백)
+  }
 }
 
 /** Files.ReadWrite 토큰 — 기존 계정은 silent, 아니면 로그인 팝업. */
@@ -50,8 +72,18 @@ export async function acquireGraphToken(clientId: string): Promise<string> {
       // 갱신 실패 → 팝업으로 폴백
     }
   }
-  const r = await pca.loginPopup({ scopes: SCOPES });
-  return r.accessToken;
+  try {
+    const r = await pca.loginPopup({ scopes: SCOPES });
+    return r.accessToken;
+  } catch (e) {
+    // 잔류 플래그로 인한 실패는 플래그 제거 후 1회 자동 재시도
+    if ((e as { errorCode?: string })?.errorCode === "interaction_in_progress") {
+      clearStaleInteraction();
+      const r = await pca.loginPopup({ scopes: SCOPES });
+      return r.accessToken;
+    }
+    throw e;
+  }
 }
 
 /** OneDrive 파일명 금지 문자 치환. */

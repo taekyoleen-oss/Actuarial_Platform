@@ -1,0 +1,13 @@
+<!doctype html>
+<!-- MSAL 팝업/사일런트 전용 리디렉션 페이지 — 본창이 이 팝업의 URL에서 인증 코드를
+     회수해 즉시 닫으므로 내용은 표시되지 않는 것이 정상. 무거운 앱 셸(홈페이지) 로딩을
+     피하기 위한 MSAL 권장 blank page 패턴. lib/msgraph.ts의 redirectUri와 쌍. -->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>로그인 처리 중…</title>
+  </head>
+  <body style="font-family: sans-serif; color: #666; padding: 24px">
+    로그인 처리 중입니다… 이 창은 자동으로 닫힙니다.
+  </body>
+</html>

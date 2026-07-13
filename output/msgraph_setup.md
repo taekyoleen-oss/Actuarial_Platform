@@ -16,10 +16,11 @@
 2. **App registrations → New registration**
    - Name: `AI4Insurance DataLab Excel`
    - Supported account types: **"Accounts in any organizational directory and personal Microsoft accounts"** (개인+조직 모두 — 필수)
-   - Redirect URI: 플랫폼 **SPA(Single-page application)** 선택 후 `https://www.ai4insurance.com` 입력
+   - Redirect URI: 플랫폼 **SPA(Single-page application)** 선택 후 `https://www.ai4insurance.com/msal-redirect.html` 입력
 3. 등록 후 **Authentication → Single-page application**에 리디렉션 URI 추가:
-   - `http://localhost:3000` (로컬 개발용)
-   - (프리뷰 도메인에서도 쓰려면 해당 Vercel 도메인 추가)
+   - `http://localhost:3000/msal-redirect.html` (로컬 개발용)
+   - (프리뷰 도메인에서도 쓰려면 해당 Vercel 도메인 + `/msal-redirect.html` 추가)
+   - `/msal-redirect.html`은 팝업 전용 경량 리디렉션 페이지(public/msal-redirect.html) — 팝업이 홈페이지 전체를 로드하지 않고 즉시 닫히게 한다. **경로까지 정확히 일치**해야 하며, 도메인 루트만 등록하면 AADSTS50011(redirect mismatch)이 발생한다.
 4. **API permissions** 확인: `Microsoft Graph → Delegated → Files.ReadWrite`가 없으면 추가 (User.Read는 기본 포함). **Admin consent 불필요** — 사용자 본인 동의 흐름.
 5. **Overview → Application (client) ID** 복사
 6. 환경변수 등록:
