@@ -77,3 +77,61 @@ export const NEWS_CATEGORIES = [
   "상품",
   "기타",
 ] as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 데이터 예제/분석 (DataLab) — 신규 섹션 (additive). _workspace/datalab_design_spec.md §2 그대로.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DataPost {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  models: string[];
+  tools: string[];
+  content: DataPostContent;
+  view_count: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DataPostContent {
+  overview?: string; // 마크다운 — 데이터 소개/특성 서술
+  dataTraits?: string[]; // 데이터 특성 bullet
+  layout?: {
+    sheet?: string; // 시트명 (단일 시트면 생략 가능)
+    columns: { name: string; type: string; desc: string }[];
+  }[];
+  methods?: { title: string; body: string; tool?: string }[]; // 분석 방법 단계(마크다운 body)
+  images?: { storage_path?: string; url?: string; caption?: string }[];
+  links?: { label: string; url: string }[];
+  notes?: string;
+}
+
+export interface DataFile {
+  id: string;
+  post_id: string;
+  kind: "excel" | "pdf" | "image" | "text" | "code" | "other";
+  file_name: string;
+  storage_path: string;
+  mime_type: string | null;
+  file_size: number | null;
+  is_primary: boolean;
+  version: number;
+  is_current: boolean;
+  note: string | null;
+  created_at: string;
+}
+
+/** 목록 카드용 조인 결과 (files 포함) */
+export interface DataPostListItem extends DataPost {
+  files: DataFile[];
+}
+
+/** 상세용 조인 결과 (files 포함) */
+export interface DataPostDetail extends DataPost {
+  files: DataFile[];
+}

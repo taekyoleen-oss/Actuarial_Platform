@@ -1,0 +1,107 @@
+{
+  "$comment": "데이터 예제/분석(DataLab) API 계약 (api-designer). 단일 계약: _workspace/datalab_design_spec.md §2·§3. UI/QA가 이 응답 shape를 정확히 따른다. 기존 output/api_contract.json은 별개(수정 안 함).",
+  "version": "1.0",
+  "storage": {
+    "bucket": "ib-attachments",
+    "path_convention": {
+      "primary_excel_version": "datalab/{post_id}/v{n}_{safeBase}.xlsx",
+      "attachment": "datalab/{post_id}/att_{Date.now()}_{safeName}"
+    },
+    "note": "safeName = name.replace(/[^\\w.\\-가-힣]/g,'_'). v1(원본)은 절대 덮어쓰지 않음. 웹 저장마다 v(n+1) 새 파일 + is_current 이동."
+  },
+  "types": {
+    "DataPost": "types/index.ts (spec §2)",
+    "DataPostContent": "{ overview?, dataTraits?[], layout?[{sheet?, columns[{name,type,desc}]}], methods?[{title,body,tool?}], images?[{storage_path?,url?,caption?}], links?[{label,url}], notes? }",
+    "DataFile": "{ id, post_id, kind:'excel'|'pdf'|'image'|'text'|'code'|'other', file_name, storage_path, mime_type|null, file_size|null, is_primary, version, is_current, note|null, created_at }",
+    "DataPostListItem": "DataPost & { files: DataFile[] }",
+    "DataPostDetail": "DataPost & { files: DataFile[] }"
+  },
+  "endpoints": {
+    "POST /api/datalab/{id}/workbook": {
+      "auth": "admin (requireAdmin + service_role)",
+      "description": "웹 편집 저장(자동저장). fortune-sheet getAllSheets() JSON → exceljs xlsx 새 버전(v{n}) 저장. 이전 is_current 대표엑셀은 is_current=false로 이동. 원본(v1) 무손실 보존.",
+      "request": {
+        "params": { "id": "uuid (post_id)" },
+        "content_type": "application/json",
+        "body": {
+          "sheets": "FortuneSheetJson[]  (필수, 최소 1개)",
+          "baseName": "string?  (저장 파일 base. 생략 시 기존 파일명 유래 또는 'workbook')"
+        },
+        "limit": "JSON 원문 15MB 초과 시 400 payload_too_large"
+      },
+      "FortuneSheetJson": {
+        "$note": "fortune-sheet getAllSheets() 결과 원소. 서버가 실제로 읽는 필드만 표기. QA 실측(2026-07-13): getAllSheets()는 실제로 data 매트릭스를 반환하며 celldata는 없다(폴백 케이스). 파서는 data를 실제 주 경로로 처리한다.",
+        "name": "string?  (시트명, 생략 시 Sheet{n})",
+        "data": "(cell|null)[][]  (실물 주 경로 — getAllSheets()가 반환. cell = { v?, m?, f?, ct?{t}, qp? })",
+        "celldata": "{ r:number, c:number, v: { v?, m?, f?, ct?, qp? } | primitive }[]  (있으면 우선 사용하나 실측상 대개 부재 → 폴백)",
+        "config": {
+          "merge": "{ [key]: { r, c, rs, cs } }  (rs/cs = 스팬 개수)",
+          "columnlen": "{ [colIndex]: px }  (열너비, px/7.5 char로 환산)",
+          "rowlen": "{ [rowIndex]: px }  (행높이, px*0.75 pt로 환산)"
+        },
+        "$mapping": "값 v.v(정규 숫자 문자열은 Number로 보존 — 앞자리0/지수/공백/강제텍스트 qp·ct.t='s'는 텍스트 유지) · 수식 v.f→{formula(=제거), result:v.v} · 병합 mergeCells · 실패 셀은 skip+카운트."
+      },
+      "response": {
+        "201": { "file": "DataFile (kind=excel, is_primary=true, version=n, is_current=true)", "savedAt": "string(ISO)" },
+        "400": { "error": "invalid_body|invalid_json|invalid_sheets|payload_too_large" },
+        "401": { "error": "unauthorized" },
+        "500": { "error": "convert_failed|upload_failed|server_error" }
+      }
+    },
+    "POST /api/datalab/{id}/attachments": {
+      "auth": "admin (requireAdmin + service_role)",
+      "description": "첨부/대표 워크북 업로드. is_primary && kind=excel이면 새 버전(v{n}) 대표엑셀로 추가(교체 아님)·is_current 이동, 그 외는 kind 자동추론 첨부.",
+      "request": {
+        "params": { "id": "uuid (post_id)" },
+        "content_type": "multipart/form-data",
+        "form": {
+          "file": "binary (필수)",
+          "kind": "string?  (강제 kind; 생략 시 확장자/MIME 추론)",
+          "is_primary": "'true'|'false'  (기본 false)"
+        },
+        "limit": "20MB 초과 시 400 payload_too_large"
+      },
+      "response": {
+        "201": { "file": "DataFile" },
+        "400": { "error": "invalid_file|payload_too_large" },
+        "401": { "error": "unauthorized" },
+        "500": { "error": "upload_failed|server_error" }
+      }
+    },
+    "DELETE /api/datalab/{id}/attachments?fileId={fileId}": {
+      "auth": "admin (requireAdmin + service_role)",
+      "description": "파일 삭제 — Storage 객체 제거 + ib_data_files row 삭제. (스킬/운영 편의)",
+      "request": { "params": { "id": "uuid (post_id)" }, "query": { "fileId": "uuid" } },
+      "response": {
+        "200": { "ok": true },
+        "400": { "error": "missing_file_id" },
+        "401": { "error": "unauthorized" },
+        "404": { "error": "file_not_found" },
+        "500": { "error": "server_error" }
+      }
+    },
+    "POST /api/datalab/{id}/view": {
+      "auth": "public (anon 클라이언트, RPC 우회)",
+      "description": "조회수 +1 (RPC ib_increment_data_view). 게시글만 증가. posts view 라우트와 동일 방식.",
+      "request": { "params": { "id": "uuid (post_id)" }, "body": null },
+      "response": {
+        "200": { "ok": true },
+        "404": { "error": "data_post_not_found" }
+      }
+    }
+  },
+  "data_reads": {
+    "listDataPosts": "{ q?, sort:'latest'|'popular' } -> DataPostListItem[] (is_published=true, title/summary/source_name ilike). 테이블 미적용/에러 시 [] 폴백.",
+    "getDataPost": "{ slug } -> DataPostDetail | null (files 조인; 미존재/에러 시 null)",
+    "dataFileUrl": "{ storagePath } -> string (ib-attachments public URL)",
+    "currentWorkbook": "(files: DataFile[]) -> DataFile|null  (is_primary&&is_current 우선, 없으면 kind==='excel' 첫 항목)",
+    "originalWorkbook": "(files: DataFile[]) -> DataFile|null  (is_primary && version===1)"
+  },
+  "scripts": {
+    "scripts/datalab-inspect.mjs <xlsx>": "exceljs 파싱 → stdout JSON: { file, ext, hasVBA, sheetCount, sheets:[{name,rowCount,colCount,headers[],formulaCount,mergeCount}] }. 에러 시 exit 1 + stderr.",
+    "scripts/datalab-publish.mjs <manifest.json>": "service_role 게시. manifest: { slug,title,summary,source_name,source_url,models[],tools[],content{},is_published,files:[{path,kind?,is_primary?,note?}] }. slug upsert(있으면 update+파일 추가), Storage 업로드, ib_data_files insert(+is_current 이동). 성공 시 게시 URL 출력."
+  },
+  "rpc_dependency": {
+    "ib_increment_data_view(p_post_id uuid)": "db-architect 담당 (output/datalab_schema.sql). 미적용 시 view 라우트 404 반환하나 페이지는 정상."
+  }
+}

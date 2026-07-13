@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Globe2, LayoutGrid, Scale } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Database,
+  Globe2,
+  LayoutGrid,
+  Scale,
+} from "lucide-react";
 import { GlobeBackdrop } from "@/components/feature/GlobeBackdrop";
 import { HeroSection } from "@/components/feature/HeroSection";
 import { PostCard } from "@/components/feature/PostCard";
@@ -355,6 +362,38 @@ export default async function HomePage() {
                 </p>
                 <span className={tileCta}>
                   앱 모음 보기{" "}
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
+                  />
+                </span>
+              </Link>
+            </Reveal>
+
+            {/* 데이터 예제/분석 */}
+            <Reveal className="md:col-span-2 lg:col-span-3" delay={200}>
+              <Link href="/datalab" className={tileBase}>
+                <div className={tileEyebrow}>
+                  <span
+                    className={tileIcon}
+                    style={{
+                      background: "var(--chip-slate-bg)",
+                      color: "var(--chip-slate-fg)",
+                    }}
+                  >
+                    <Database size={18} />
+                  </span>
+                  DATALAB · 데이터 예제/분석
+                </div>
+                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
+                  엑셀 함수·VBA·Python으로 정리·분석한 데이터 예제
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
+                  산재된 데이터를 정리·분석해 보관하고, 워크북을 웹에서 바로
+                  열람하거나 다운로드할 수 있는 공간입니다.
+                </p>
+                <span className={tileCta}>
+                  데이터 살펴보기{" "}
                   <ArrowRight
                     size={15}
                     className="transition-transform duration-tesla group-hover:translate-x-0.5"

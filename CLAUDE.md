@@ -6,7 +6,7 @@
 
 **목표:** 설계서 v1.1 기반으로 게시판(DB/API/UI/요약)을 에이전트 팀으로 빌드.
 
-**트리거:** 게시판 빌드/DB·RLS/API/UI·페이지/요약 구현, 또는 결과 수정·부분 재실행·업데이트 요청 시 `insurance-board-builder` 스킬을 사용하라. 보험이론 사전(/theory) 자료 게시·커버 생성·재생성은 `theory-publisher` 스킬을 사용하라. 단순 질문은 직접 응답 가능.
+**트리거:** 게시판 빌드/DB·RLS/API/UI·페이지/요약 구현, 또는 결과 수정·부분 재실행·업데이트 요청 시 `insurance-board-builder` 스킬을 사용하라. 보험이론 사전(/theory) 자료 게시·커버 생성·재생성은 `theory-publisher` 스킬을 사용하라. 데이터 예제/분석(/datalab) 자료 게시·수정·워크북 버전 추가는 `datalab-publisher` 스킬을 사용하라. 단순 질문은 직접 응답 가능.
 
 **변경 이력:**
 | 날짜 | 변경 내용 | 대상 | 사유 |
@@ -46,6 +46,7 @@
 | 2026-07-12 | 만든이(/about) 초상 캐리커처 모자이크 워터마크(PortraitBackdrop) | components/feature/PortraitBackdrop.tsx, app/(public)/about, app/globals.css, public/about/portrait/*.jpg(6장) | 사용자 요청: '초상_워터마크_모자이크.html' 이식 — 캐리커처 6장(원본→연필→수채화→선셋→셀→팝아트)을 hold 2.6s→모자이크 타일 시차 전환 2s로 순환. 내장 base64 이미지는 public/about/portrait/로 추출(~610KB). 크기는 데모 min(70vmin,520px)→min(50vmin,380px) 축소(너무 크지 않게), opacity 0.16, fixed 뷰포트 중앙·-z-10·클릭 통과(워터마크 3종 컨벤션). reduced-motion은 정적 1프레임(원본), 카드 글래스화는 미적용(불투명 유지) |
 | 2026-07-12 | 초상 워터마크 프레임 얼굴 정렬(머리 끝 통일) + 만든이 카드 반투명화 + 워터마크 불투명도 0.16→0.12 | PortraitBackdrop(FRAMES 앵커·alignRect·TOP_T/CHIN_T), app/(public)/about, globals.css(.about-glass, .portrait-backdrop opacity) | 사용자 요청 2건: ① 프레임별 프레이밍 상이(머리 끝 y 1.5%~17.6%)로 전환 시 얼굴이 튐 — 프레임별 앵커(top 머리끝/chin 턱/cx 얼굴중심, 픽셀 명도 스캔+시각 검증으로 측정)를 상수로 두고 모든 프레임에서 머리 끝→캔버스 2%·턱→77%에 오도록 소스 사각형 정규화(cover 폐기, 위치+스케일 동시). 이미지 교체 시 앵커 재측정 필요. ② 만든이 카드 불투명 → .about-glass .glass-card(백색 40%+blur 2px, 홈 글래스 0.1보다 온건) — 스탯 4·성과·연구 목록·전문분야 칩·철학 카드 적용 |
 | 2026-07-12 | 상단 메뉴 풀 노출 브레이크포인트 xl→lg | components/feature/SiteNav.tsx | 사용자 보고: PC에서도 햄버거만 노출(뷰포트 1280px 미만 — Windows 배율·창 크기). lg(1024px)부터 풀 메뉴 — lg~xl 구간은 압축(text 13px·gap-2.5), xl부터 기존(15px·gap-4). 햄버거·드롭다운은 lg 미만. 1024px 한 줄 수용·1019px 햄버거 전환 Playwright 실측 검증 |
+| 2026-07-13 | "데이터 예제/분석"(/datalab) 섹션 신설 — 엑셀 데이터 분석 게시판 + 웹 엑셀 열람/편집·자동저장 + datalab-publisher 스킬 | app/(public)/datalab/**, components/feature/datalab/**, lib/datalab{,-xlsx,-files}.ts, app/api/datalab/**, types, SiteNav, 홈 벤토, output/datalab_{schema,rls_tests,seed}.sql·datalab_api_contract.json, scripts/datalab-{inspect,publish}.mjs, .claude/skills/datalab-publisher | 사용자 요청: 만든이 왼쪽 새 카테고리. DB는 ib_data_posts/ib_data_files 신규(additive)+기존 ib-attachments 버킷 재사용(datalab/{post_id}/ 경로), 게시=DB+Storage라 재배포 불필요. 카드에 출처·모델·도구 즉시 노출, 상세는 content jsonb 구조화(개요/특성/레이아웃/분석방법/이미지/링크). 웹 엑셀 = fortune-sheet+luckyexcel(클라)+exceljs(서버 변환) — 열람 공개(allowEdit false)·편집/자동저장(4s 디바운스)은 관리자 전용, 저장마다 v(n+1) 새 버전(원본 v1 영구 보존 — VBA·차트·Python in Excel은 웹 저장본에서 소실되므로 원본만 유지). 내비 9개: lg 12px·gap-2→xl 13px→2xl 15px 압축(1024px 한 줄 Playwright 실측). DB는 2026-07-13 Management API로 라이브 적용 완료(schema+seed, 계정 taekyoleen@gmail.com/프로젝트명 insurance-article) + 데모 게시물 2건(seed 1·워크북 데모 1) |
 
 ## 프로젝트 필수사항 (모든 에이전트 공통)
 
