@@ -16,6 +16,7 @@ interface PyodideAPI {
   runPythonAsync(code: string): Promise<unknown>;
   loadPackagesFromImports(code: string): Promise<unknown>;
   loadPackage(pkg: string | string[]): Promise<unknown>;
+  pyimport(name: string): { install(pkg: string): Promise<void> };
   setStdout(opts: { batched: (s: string) => void }): void;
   setStderr(opts: { batched: (s: string) => void }): void;
   FS: {
@@ -85,6 +86,36 @@ export function isPyodideRequested(): boolean {
   return pyodidePromise !== null;
 }
 
+/**
+ * Excel 입출력 지원(openpyxl) 보장 — 한 번만 설치.
+ * 이 Pyodide 배포는 openpyxl을 loadPackage 번들로 제공하지 않을 수 있어(빌드마다
+ * 다름) micropip로 PyPI에서 설치하는 경로를 폴백으로 둔다. 실패는 호출부로 던져
+ * 사용자에게 명확한 오류를 보여 준다(조용한 실패 금지 — 파일이 안 만들어지는 원인).
+ */
+let excelReady: Promise<void> | null = null;
+export async function ensureExcelSupport(py: PyodideAPI): Promise<void> {
+  if (!excelReady) {
+    excelReady = (async () => {
+      try {
+        await py.loadPackage("openpyxl");
+        // 번들에 있더라도 import 가능해야 성공으로 간주
+        await py.runPythonAsync("import openpyxl");
+        return;
+      } catch {
+        // 번들 로더 실패 → micropip 폴백
+      }
+      await py.loadPackage("micropip");
+      const micropip = py.pyimport("micropip");
+      await micropip.install("openpyxl");
+      await py.runPythonAsync("import openpyxl");
+    })().catch((e) => {
+      excelReady = null; // 실패 시 다음 실행에서 재시도
+      throw e;
+    });
+  }
+  return excelReady;
+}
+
 /** 데이터 파일을 Pyodide 가상 파일시스템(작업 디렉터리)에 기록 */
 export function writeDataFile(py: PyodideAPI, name: string, bytes: Uint8Array): void {
   py.FS.writeFile(name, bytes);
@@ -131,13 +162,10 @@ export async function runPythonCode(
   } catch {
     // 미지원 패키지는 실행 시 ImportError로 표면화 — 여기서는 무시
   }
-  // pandas의 엑셀 입출력은 openpyxl을 지연 import — 코드가 엑셀을 다루면 선로딩
-  if (/read_excel|to_excel|ExcelWriter|\.xlsx/.test(code)) {
-    try {
-      await py.loadPackage("openpyxl");
-    } catch {
-      // 실패 시 실행 단계 오류로 표면화
-    }
+  // pandas의 엑셀 입출력은 openpyxl을 지연 import — 코드가 엑셀을 다루면 선로딩.
+  // 실패는 던져서 사용자에게 노출(조용히 넘기면 파일이 안 만들어져 원인 파악 불가).
+  if (/read_excel|to_excel|ExcelWriter|\.xlsx|\.xls\b/.test(code)) {
+    await ensureExcelSupport(py);
   }
 
   py.setStdout({ batched: (s) => onOutput(`${s}\n`) });
