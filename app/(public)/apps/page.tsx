@@ -4,6 +4,7 @@ import { Database, ArrowRight } from "lucide-react";
 import { Collapsible } from "@/components/feature/Collapsible";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { ViewSwitch } from "@/components/feature/ViewSwitch";
+import { BrochureButton } from "@/components/feature/BrochureButton";
 import { listDbs } from "@/lib/publicDb";
 import { bluePastelFor } from "@/lib/utils";
 
@@ -280,6 +281,16 @@ export default function AppsPage() {
             heightClass="h-[300px] md:h-[340px]"
           />
           <AppCard app={MODEL_APPS[1]} featured />
+        </div>
+
+        {/* 머신러닝 자동분석 브로셔 — 버튼 클릭 시 팝업으로 웹에서 바로 열람 */}
+        <div className="mt-6">
+          <BrochureButton
+            belongsTo="머신러닝 자동분석"
+            title="ML Auto Flow 브로셔"
+            url="/apps/ml-auto-flow-brochure.pdf"
+            fileName="ML_Auto_Flow_브로셔.pdf"
+          />
         </div>
       </Collapsible>
 

@@ -468,6 +468,98 @@ print(df.groupby("product")["claim_amt"].median())`,
       },
     ],
   },
+  {
+    id: "distributions",
+    name: "분포 적합·난수 생성",
+    en: "Distributions · Fitting · Simulation",
+    category: "basic",
+    weight: 3,
+    difficulty: 3,
+    params: [
+      { name: "stats.<dist>.fit(data, floc=0)", desc: "MLE로 분포 모수 추정 — 반환은 (shape…, loc, scale). floc=0으로 위치를 0에 고정하면 손해액 같은 양의 분포가 안정적으로 적합됩니다." },
+      { name: "pdf·cdf·ppf·rvs", desc: "확률밀도·누적확률·분위수(역함수)·난수 생성. ppf(0.995)는 99.5% 분위(꼬리 위험), rvs(size=, random_state=)는 재현 가능한 표본." },
+      { name: "stats.kstest(x, '<dist>', args=params)", desc: "적합 분포와의 Kolmogorov–Smirnov 적합도 검정 — p가 크면 그 분포로 볼 만합니다(대표본에서는 사소한 차이도 기각)." },
+      { name: "np.random.default_rng(seed)", desc: "권장 난수 생성기(Generator) — normal·lognormal·gamma·poisson·negative_binomial 등 메서드. seed로 재현성 확보." },
+      { name: "rng.choice(a, size, replace=)", desc: "범주 추출·부트스트랩 — replace=True로 복원추출(부트스트랩), p=로 확률 지정." },
+    ],
+    summary: "주요 분포의 모양·적합(MLE)·적합도와 재현 가능한 난수 생성 — 손해액·건수 모형화의 기초",
+    intro:
+      "확률분포는 손해액·사고건수 같은 보험 데이터를 요약하고 시뮬레이션하는 언어입니다. 데이터가 어떤 이론 분포에 가까운지 눈과 검정으로 확인하고(적합), 그 분포에서 난수를 생성해 미래 시나리오·꼬리 위험을 실험합니다(시뮬레이션).\n\n손해심도는 오른쪽 꼬리가 길어 로그정규·감마·와이블이, 사고 건수는 포아송·음이항이 자주 쓰입니다. 적합한 분포는 요율 산출·준비금·재보험 설계의 출발점이 됩니다.",
+    tips: "양의 분포(로그정규·감마)는 floc=0으로 위치를 고정해야 안정적으로 적합됩니다. 대표본에서는 KS 검정이 사소한 차이도 기각하니 AIC 비교·Q-Q 플롯을 함께 보고 고르세요. 난수는 default_rng(seed)로 재현성을 확보합니다.",
+    sections: [
+      {
+        title: "주요 분포의 모양 — pdf·pmf 그리기",
+        desc: "연속(심도 후보)·이산(건수 후보) 분포의 형태를 눈으로 익힙니다.",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+fig, ax = plt.subplots(1, 2, figsize=(11, 4))
+
+# 연속 분포 — 손해심도 후보(오른쪽 꼬리). matplotlib 한글 폰트가 없어 라벨은 영문.
+x = np.linspace(0.01, 20, 400)
+ax[0].plot(x, stats.norm(8, 2).pdf(x), label="normal(8,2)")
+ax[0].plot(x, stats.lognorm(s=0.6, scale=np.exp(2)).pdf(x), label="lognormal")
+ax[0].plot(x, stats.gamma(a=2, scale=2).pdf(x), label="gamma(2,2)")
+ax[0].plot(x, stats.expon(scale=4).pdf(x), label="expon(scale=4)")
+ax[0].set_title("continuous pdf (severity)"); ax[0].legend()
+
+# 이산 분포 — 사고건수 후보
+k = np.arange(0, 12)
+ax[1].vlines(k, 0, stats.poisson(2).pmf(k), color="C0", label="poisson(2)")
+ax[1].vlines(k + 0.25, 0, stats.nbinom(n=3, p=0.5).pmf(k), color="C1", label="nbinom(3,0.5)")
+ax[1].set_title("discrete pmf (counts)"); ax[1].legend()
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        title: "데이터에 분포 적합(MLE) + 적합도 비교",
+        desc: "여러 후보를 MLE로 적합하고 AIC·KS로 최적 분포를 고릅니다.",
+        code: `import numpy as np
+import pandas as pd
+from scipy import stats
+
+df = pd.read_excel("claims.xlsx")
+x = df["claim_amt"].dropna()
+x = x[x > 0]                        # 양수만(로그정규·감마 전제)
+
+candidates = ["lognorm", "gamma", "expon", "weibull_min"]
+rows = []
+for name in candidates:
+    dist = getattr(stats, name)
+    params = dist.fit(x, floc=0)             # 위치 0 고정
+    ll = np.sum(dist.logpdf(x, *params))     # 로그우도
+    aic = 2 * len(params) - 2 * ll
+    ks_p = stats.kstest(x, name, args=params).pvalue
+    rows.append({"분포": name, "AIC": aic, "KS_p": ks_p})
+
+result = pd.DataFrame(rows).sort_values("AIC")   # AIC 작을수록 우수
+print(result.to_string(index=False))
+print("최적 분포(AIC 최소):", result.iloc[0]["분포"])`,
+      },
+      {
+        title: "난수 생성·시뮬레이션 — 집합손해·부트스트랩",
+        desc: "적합 모수로 미래를 시뮬레이션하고, 부트스트랩으로 평균의 불확실성을 잽니다.",
+        code: `import numpy as np
+import pandas as pd
+
+rng = np.random.default_rng(42)     # 재현 가능한 생성기
+
+# 심도(로그정규)·건수(포아송) → 집합손해 몬테카를로
+n_claims = rng.poisson(0.8, size=10_000)
+total = np.array([rng.lognormal(13.2, 0.9, k).sum() if k else 0.0
+                  for k in n_claims])
+print(f"총손해 평균 {total.mean():,.0f} · 99.5%(VaR) {np.quantile(total, 0.995):,.0f}")
+
+# 부트스트랩 — 평균 손해액의 95% 신뢰구간(분포 가정 없이)
+df = pd.read_excel("claims.xlsx")
+x = df["claim_amt"].dropna().to_numpy()
+boot = np.array([rng.choice(x, size=len(x), replace=True).mean()
+                 for _ in range(2000)])
+lo, hi = np.quantile(boot, [0.025, 0.975])
+print(f"평균 95% 부트스트랩 CI = [{lo:,.0f}, {hi:,.0f}]")`,
+      },
+    ],
+  },
   /* ─────────────────────── 회귀·통계모형 (model) ─────────────────────── */
   {
     id: "linear-regression",
@@ -567,6 +659,59 @@ r = model.resid
 sh_p = stats.shapiro(r.sample(min(len(r), 5000), random_state=0))[1]
 print(f"잔차 Shapiro p = {sh_p:.4f}  ({'정규 아님' if sh_p < 0.05 else '정규 양호'})")`,
       },
+      {
+        title: "규제·제약 옵션 — Ridge/Lasso(특정 alpha)·비음수·절편",
+        desc: "선형회귀에 조건(제약)을 걸어 산출합니다. 규제는 특정 alpha를 직접 지정할 수 있습니다.",
+        code: `from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+X = df[["age", "bmi", "dependents"]]
+y = df["premium"]
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# ① 규제(penalty) — 계수 크기에 벌점. alpha↑ 이면 계수를 더 강하게 수축(과적합·공선성 완화)
+ridge = Ridge(alpha=5.0).fit(X_tr, y_tr)     # L2: 고르게 축소
+lasso = Lasso(alpha=0.1).fit(X_tr, y_tr)     # L1: 일부 계수 0(변수 선택)
+
+# ② 비음수 제약 — 계수 ≥ 0 (요율 인자처럼 음수가 비논리적일 때)
+nonneg = LinearRegression(positive=True).fit(X_tr, y_tr)
+
+# ③ 절편 제거 — 원점 통과가 이론적으로 맞을 때만
+no_int = LinearRegression(fit_intercept=False).fit(X_tr, y_tr)
+
+for name, m in [("Ridge(5)", ridge), ("Lasso(0.1)", lasso), ("비음수", nonneg)]:
+    print(name, dict(zip(X.columns, m.coef_.round(2))))
+# 규제 강도(alpha)는 값에 민감하니 척도가 다르면 StandardScaler로 표준화 후 비교하세요.`,
+      },
+      {
+        title: "시뮬레이션(난수 생성) — 합성데이터·부트스트랩·몬테카를로",
+        desc: "알려진 계수로 데이터를 만들어 추정 절차를 검증하고, 재표집으로 불확실성을 잽니다. (샘플 없이 바로 실행)",
+        code: `import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+
+rng = np.random.default_rng(0)
+n = 500
+
+# ① 참 계수(β=100, 2, -5)로 합성 데이터 생성 → 추정이 계수를 복원하는지 검증
+sim = pd.DataFrame({"x1": rng.normal(50, 10, n), "x2": rng.normal(0, 1, n)})
+sim["y"] = 100 + 2.0 * sim["x1"] - 5.0 * sim["x2"] + rng.normal(0, 8, n)
+fit = smf.ols("y ~ x1 + x2", data=sim).fit()
+print("추정 계수:", fit.params.round(2).to_dict())   # 100·2·-5 근처면 절차가 건전
+
+# ② 부트스트랩 — 계수의 95% 신뢰구간(분포 가정 없이 재표집)
+coefs = np.array([
+    smf.ols("y ~ x1 + x2", data=sim.sample(n, replace=True)).fit().params.values
+    for _ in range(500)
+])
+print("x1 계수 95% CI =", np.round(np.quantile(coefs[:, 1], [0.025, 0.975]), 3))
+
+# ③ 몬테카를로 예측구간 — 잔차를 재표집해 예측 불확실성 반영
+mu = fit.predict(pd.DataFrame({"x1": [55], "x2": [0.5]})).iloc[0]
+draws = mu + rng.choice(fit.resid.to_numpy(), 10_000, replace=True)
+print(f"예측 {mu:,.1f} · 90% 구간 [{np.quantile(draws, 0.05):,.1f}, {np.quantile(draws, 0.95):,.1f}]")`,
+      },
     ],
   },
   {
@@ -652,6 +797,63 @@ print(f"ROC-AUC   = {roc_auc_score(y_te, proba):.3f}")
 print(f"PR-AUC    = {average_precision_score(y_te, proba):.3f}  (불균형에 민감)")
 print("혼동행렬\\n", confusion_matrix(y_te, pred05))`,
       },
+      {
+        title: "규제 조건 — penalty(l1/l2/elasticnet)·C로 강도 지정",
+        desc: "로지스틱은 기본이 L2 규제. 조건(penalty·C)을 바꿔 각각 산출합니다. C는 규제 강도의 역수(작을수록 강함).",
+        code: `from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+X = df[["age", "premium_ratio", "tenure_months"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2,
+                                          stratify=y, random_state=42)
+
+variants = {
+    "L2, C=1":     LogisticRegression(penalty="l2", C=1.0, max_iter=1000),
+    "L2, C=0.05":  LogisticRegression(penalty="l2", C=0.05, max_iter=1000),      # 강한 규제
+    "L1, C=0.5":   LogisticRegression(penalty="l1", C=0.5, solver="liblinear"),   # 변수 선택
+    "ElasticNet":  LogisticRegression(penalty="elasticnet", C=0.5, l1_ratio=0.5,
+                                      solver="saga", max_iter=5000),
+}
+for name, clf in variants.items():
+    clf.fit(X_tr, y_tr)
+    nz = int((clf.coef_[0] != 0).sum())
+    print(f"{name}: 0아닌 계수 {nz}개, test 정확도 {clf.score(X_te, y_te):.3f}")
+
+# statsmodels로 L1 규제 적합 — 변수 선택 + 오즈비 해석
+import statsmodels.formula.api as smf
+import numpy as np
+d = df.assign(lapsed=df["lapsed"].astype(int))
+reg = smf.logit("lapsed ~ age + premium_ratio + tenure_months",
+                data=d).fit_regularized(alpha=0.1, disp=0)   # alpha=벌점 강도
+print("규제 오즈비:", np.exp(reg.params).round(3).to_dict())`,
+      },
+      {
+        title: "시뮬레이션(난수 생성) — 로짓으로 이진결과 생성·오즈비 복원",
+        desc: "참 계수로 0/1 결과를 시뮬레이션해 로지스틱이 오즈비를 복원하는지 검증합니다. (샘플 없이 바로 실행)",
+        code: `import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+
+rng = np.random.default_rng(1)
+n = 2000
+
+# 참 계수로 로짓 → 확률 → 베르누이(0/1) 생성
+d = pd.DataFrame({"age": rng.normal(45, 12, n), "ratio": rng.normal(0.3, 0.1, n)})
+lin = -3 + 0.04 * d["age"] + 2.0 * d["ratio"]
+prob = 1 / (1 + np.exp(-lin))
+d["lapsed"] = (rng.random(n) < prob).astype(int)
+
+m = smf.logit("lapsed ~ age + ratio", data=d).fit(disp=0)
+print("추정 계수:", m.params.round(3).to_dict())      # -3·0.04·2.0 근처
+print("오즈비:", np.exp(m.params).round(3).to_dict())
+
+# 부트스트랩으로 오즈비 신뢰구간
+ors = [np.exp(smf.logit("lapsed ~ age + ratio",
+        data=d.sample(n, replace=True)).fit(disp=0).params["age"])
+       for _ in range(300)]
+print("age 오즈비 95% CI =", np.round(np.quantile(ors, [0.025, 0.975]), 3))`,
+      },
     ],
   },
   {
@@ -727,6 +929,24 @@ freq_qp = freq.model.fit(scale="X2")
 print("\\n[quasi-Poisson 보정 후 p-value 일부]")
 print(freq_qp.pvalues.round(4).head())`,
       },
+      {
+        title: "규제 GLM — fit_regularized(alpha·L1_wt)",
+        desc: "변수가 많은 GLM에 규제를 걸어 과적합·불안정 계수를 억제합니다. alpha=벌점 강도, L1_wt=L1 비중(1=Lasso식).",
+        code: `import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# 포아송 빈도 GLM을 규제 적합 — 상관 높은 요인이 많을 때 상대도 안정화
+freq_reg = smf.glm(
+    "n_claims ~ C(age_band) + C(region) + C(car_type)",
+    data=df,
+    family=sm.families.Poisson(),
+    offset=np.log(df["exposure"]),
+).fit_regularized(alpha=0.05, L1_wt=1.0)   # L1_wt=1 → Lasso식 변수선택
+print(np.exp(freq_reg.params).round(3))    # 상대도(규제로 1=중립 쪽으로 수축)
+
+# alpha를 키우면 계수가 더 강하게 0/1(중립)로 수축 → 편향↑·분산↓`,
+      },
     ],
   },
   {
@@ -770,6 +990,29 @@ print("lasso alpha =", lasso[-1].alpha_)
 coef = pd.Series(lasso[-1].coef_, index=X_tr.columns)
 print(coef[coef != 0].sort_values(key=abs, ascending=False).round(3))
 print(f"제외된 변수 수: {(coef == 0).sum()}")`,
+      },
+      {
+        title: "특정 alpha로 각각 산출 — Ridge·Lasso·ElasticNet",
+        desc: "교차검증으로 고르는 대신 규제 강도(alpha)를 직접 지정해 각 모델을 산출합니다. 값을 바꿔 편향·분산 절충을 비교하세요.",
+        code: `from sklearn.linear_model import Ridge, Lasso, ElasticNet
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+
+# alpha를 조건으로 고정한 여러 모델(표준화는 규제의 전제)
+models = {
+    "Ridge(α=1)":   make_pipeline(StandardScaler(), Ridge(alpha=1.0)),
+    "Ridge(α=10)":  make_pipeline(StandardScaler(), Ridge(alpha=10.0)),
+    "Lasso(α=0.1)": make_pipeline(StandardScaler(), Lasso(alpha=0.1, max_iter=10000)),
+    "Lasso(α=1)":   make_pipeline(StandardScaler(), Lasso(alpha=1.0, max_iter=10000)),
+    "ElasticNet(α=0.1,l1=0.5)":
+        make_pipeline(StandardScaler(), ElasticNet(alpha=0.1, l1_ratio=0.5, max_iter=10000)),
+}
+for name, m in models.items():
+    m.fit(X_tr, y_tr)
+    coef = pd.Series(m[-1].coef_, index=X_tr.columns)
+    print(f"{name:26s} R²(test)={m.score(X_te, y_te):.3f}  0계수={int((coef == 0).sum())}개")
+# alpha↑ → 계수 수축 강화(Lasso는 0 증가). 각 모델의 계수는 m[-1].coef_ 로 확인.`,
       },
     ],
   },
@@ -1437,6 +1680,12 @@ print(loadings.round(3))`,
       {
         title: "분할·교차검증 기본기",
         code: `from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+from sklearn.linear_model import LogisticRegression
+
+# 샘플로 바로 실행 — 실제 데이터면 열 이름만 교체
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+model = LogisticRegression(max_iter=1000, class_weight="balanced")
 
 # 최종 평가용 test는 처음에 떼어놓고 끝까지 봉인
 X_tr, X_te, y_tr, y_te = train_test_split(
@@ -1469,6 +1718,60 @@ grid = GridSearchCV(
 
 print(grid.best_params_, f"CV AUC={grid.best_score_:.3f}")
 print(f"봉인해둔 test AUC = {grid.score(X_te, y_te):.3f}")`,
+      },
+      {
+        title: "여러 분할 전략 — KFold·Stratified·Repeated·TimeSeries·Group",
+        desc: "문제 성격에 맞는 분할기를 골라 같은 모델을 검증합니다. (위 셀의 X·y·model 사용)",
+        code: `from sklearn.model_selection import (KFold, StratifiedKFold, RepeatedKFold,
+    TimeSeriesSplit, GroupKFold, cross_val_score)
+
+splitters = {
+    "KFold(5,shuffle)":  KFold(n_splits=5, shuffle=True, random_state=0),
+    "StratifiedKFold(5)": StratifiedKFold(n_splits=5, shuffle=True, random_state=0),  # 분류 기본(클래스 비율 유지)
+    "RepeatedKFold(5x3)": RepeatedKFold(n_splits=5, n_repeats=3, random_state=0),      # 반복으로 더 안정
+}
+for name, cv in splitters.items():
+    s = cross_val_score(model, X, y, cv=cv, scoring="roc_auc")
+    print(f"{name:20s} AUC {s.mean():.3f} ± {s.std():.3f}")
+
+# 시계열: 과거로 학습·미래로 검증(순서 유지 — 절대 shuffle 금지)
+print("TimeSeriesSplit 폴드 수:", TimeSeriesSplit(n_splits=5).get_n_splits())
+
+# 그룹 누수 방지: 같은 고객이 학습·검증에 동시에 들어가지 않게
+gs = cross_val_score(model, X, y, cv=GroupKFold(n_splits=5),
+                     groups=df["customer_id"], scoring="roc_auc")
+print(f"GroupKFold(고객 기준) AUC {gs.mean():.3f} ± {gs.std():.3f}")`,
+      },
+      {
+        title: "다중 지표·예측 수집 — cross_validate·cross_val_predict",
+        desc: "여러 지표를 한 번에 평가하고, out-of-fold 예측으로 과적합 없는 혼동행렬을 만듭니다.",
+        code: `from sklearn.model_selection import cross_validate, cross_val_predict
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+
+# 한 번에 여러 지표(+학습/검증 시간)
+cvres = cross_validate(model, X, y, cv=5,
+    scoring=["roc_auc", "average_precision", "f1"], return_train_score=True)
+print(pd.DataFrame(cvres).filter(like="test_").mean().round(3))
+
+# 각 표본이 '검증 폴드에 있을 때'의 예측 → 혼동행렬(누수 없는 진단)
+oof = cross_val_predict(model, X, y, cv=5)
+print("out-of-fold 혼동행렬\\n", confusion_matrix(y, oof))`,
+      },
+      {
+        title: "중첩 교차검증 — 튜닝과 평가 분리(편향 없는 성능)",
+        desc: "안쪽 루프에서 튜닝, 바깥 루프에서 '튜닝을 포함한 절차 전체'의 일반화 성능을 추정합니다.",
+        code: `from sklearn.model_selection import GridSearchCV, cross_val_score, StratifiedKFold
+from sklearn.linear_model import LogisticRegression
+
+inner = StratifiedKFold(5, shuffle=True, random_state=1)
+outer = StratifiedKFold(5, shuffle=True, random_state=2)
+
+grid = GridSearchCV(LogisticRegression(max_iter=1000),
+                    {"C": [0.1, 1, 10]}, cv=inner, scoring="roc_auc")
+# 바깥 루프가 안쪽 튜닝을 감싸므로 test 누수 없이 절차 전체를 평가
+nested = cross_val_score(grid, X, y, cv=outer, scoring="roc_auc")
+print(f"nested CV AUC = {nested.mean():.3f} ± {nested.std():.3f}")`,
       },
     ],
   },

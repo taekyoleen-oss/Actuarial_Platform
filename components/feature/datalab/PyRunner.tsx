@@ -30,6 +30,8 @@ import {
   writeDataFile,
   type RunPhase,
 } from "@/lib/pyRunner";
+import { WRANGLE_SNIPPET_GROUPS } from "@/lib/wrangleSnippets";
+import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
 async function callAssist(body: {
@@ -139,6 +141,12 @@ df = policy   # 예제들이 쓰는 기본 이름
 
 print(f"생성 완료: claims.xlsx / policy.xlsx (각 {n}행) — 변수 df·claims·policy 준비")
 print(policy.head())`;
+
+/** 사이트에 호스팅된 샘플 데이터셋(public/datalab/samples/) — 코드에서 파일명 그대로 읽음 */
+const SAMPLE_DATASETS: { file: string; label: string }[] = [
+  { file: "policy.xlsx", label: "policy.xlsx — 계약·고객 (600행)" },
+  { file: "claims.xlsx", label: "claims.xlsx — 청구·손해액 (600행)" },
+];
 
 /* ───────────────────────────── 셀 분할·직렬화 ───────────────────────────── */
 
@@ -342,6 +350,8 @@ interface Cell {
   varOptions?: string[];
   /** 실행 결과 접힘 여부 */
   outputCollapsed?: boolean;
+  /** 마지막 실행 순서(In [n]) — 실행할 때마다 증가(주피터 실행 카운터) */
+  execOrder?: number;
 }
 
 interface ErrModalState {
@@ -375,6 +385,14 @@ const PHASE_LABEL: Record<RunPhase, string> = {
 const CELL_BTN =
   "inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-0.5 text-[11.5px] font-medium text-tertiary hover:text-foreground disabled:opacity-40";
 
+/** 셀 순서 배지 색 — 실행 상태를 색으로 구분(대기·실행·완료·오류) */
+const CELL_STATUS_STYLE: Record<CellStatus, { background: string; color: string }> = {
+  idle: { background: "var(--surface-alt)", color: "var(--text-tertiary)" },
+  running: { background: "var(--chip-blue-bg)", color: "var(--chip-blue-fg)" },
+  done: { background: "var(--chip-green-bg)", color: "var(--chip-green-fg)" },
+  error: { background: "var(--chip-rose-bg)", color: "var(--chip-rose-fg)" },
+};
+
 function autoSize(el: HTMLTextAreaElement): void {
   el.style.height = "auto";
   el.style.height = `${Math.min(el.scrollHeight + 2, 460)}px`;
@@ -390,6 +408,7 @@ export default function PyRunner({
   const rootRef = useRef<HTMLDivElement>(null);
   const dataBytes = useRef<Map<string, Uint8Array>>(new Map());
   const nextId = useRef(1);
+  const execCounter = useRef(0);
   const busyRef = useRef(false);
 
   const newCell = useCallback(
@@ -424,6 +443,8 @@ export default function PyRunner({
   const [dataFiles, setDataFiles] = useState<{ name: string; size: number }[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [fsSupported, setFsSupported] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [dataBusy, setDataBusy] = useState(false);
 
   useEffect(() => {
     setFsSupported(dirPicker() !== null);
@@ -542,6 +563,45 @@ export default function PyRunner({
     [newCell]
   );
 
+  /** URL·샘플 파일을 브라우저에서 가져와 가상 FS에 넣고 로드 셀을 만든다(fetch) */
+  const fetchDataInto = useCallback(
+    async (url: string, name: string) => {
+      setDataBusy(true);
+      setNotice(null);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        await addDataFiles([{ name, bytes }], { generateLoadCell: true });
+      } catch (e) {
+        setNotice(
+          `데이터를 불러오지 못했습니다(${
+            e instanceof Error ? e.message : String(e)
+          }). 외부 URL은 서버가 CORS를 허용해야 합니다.`
+        );
+      } finally {
+        setDataBusy(false);
+      }
+    },
+    [addDataFiles]
+  );
+
+  const loadSampleDataset = useCallback(
+    (file: string) => {
+      if (file) void fetchDataInto(`/datalab/samples/${file}`, file);
+    },
+    [fetchDataInto]
+  );
+
+  const loadFromUrl = useCallback(() => {
+    const url = urlInput.trim();
+    if (!url) return;
+    const clean = url.split("#")[0].split("?")[0];
+    let name = clean.substring(clean.lastIndexOf("/") + 1) || "data.csv";
+    if (!isDataFileName(name)) name += ".csv";
+    void fetchDataInto(url, name);
+  }, [urlInput, fetchDataInto]);
+
   const patchCell = useCallback((id: number, patch: Partial<Cell>) => {
     setCells((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   }, []);
@@ -554,7 +614,13 @@ export default function PyRunner({
       if (!cell || !cell.code.trim()) return true;
       busyRef.current = true;
       setBusy(true);
-      patchCell(id, { output: "", images: [], status: "running", phase: "boot" });
+      patchCell(id, {
+        output: "",
+        images: [],
+        status: "running",
+        phase: "boot",
+        execOrder: ++execCounter.current,
+      });
       try {
         const py = await getPyodide();
         // 업로드·복원 데이터를 실행 직전에 가상 FS에 반영(멱등)
@@ -647,6 +713,30 @@ export default function PyRunner({
     },
     [newCell]
   );
+
+  /** 셀 위/아래 이동(순서 바꾸기) */
+  const moveCell = useCallback((id: number, dir: -1 | 1) => {
+    setCells((prev) => {
+      const i = prev.findIndex((c) => c.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }, []);
+
+  /** 데이터 핸들링 스니펫을 이 셀에 삽입(빈 셀=대입, 내용 있으면 아래에 이어붙임) */
+  const insertSnippet = useCallback((id: number, code: string) => {
+    if (!code) return;
+    setCells((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const base = c.code.replace(/\s+$/, "");
+        return { ...c, code: base ? `${base}\n\n${code}` : code };
+      })
+    );
+  }, []);
 
   const priorCodeOf = useCallback((id: number): string => {
     const idx = cellsRef.current.findIndex((c) => c.id === id);
@@ -753,6 +843,8 @@ export default function PyRunner({
 
   /** 에러분석 — 팝업으로 에러·수정안을 안내(반영 여부 확인) */
   const [errModal, setErrModal] = useState<ErrModalState | null>(null);
+  // 에러분석 팝업 열림 중 뒤로가기 → 뒤 페이지 이동 대신 팝업만 닫기
+  useHistoryDismiss(!!errModal, () => setErrModal(null));
 
   const runErrorAnalysis = useCallback(
     async (id: number) => {
@@ -1018,7 +1110,8 @@ export default function PyRunner({
             >
               <option value="">분석 코드 불러오기…</option>
               <option value={SAMPLE_ID}>{SAMPLE_LABEL}</option>
-              {STAT_CATEGORIES.map((cat) => (
+              {/* 데이터 핸들링(wrangle)은 통짜 로드에서 제외 — 각 셀 콤보박스로 삽입 */}
+              {STAT_CATEGORIES.filter((cat) => cat.id !== "wrangle").map((cat) => (
                 <optgroup key={cat.id} label={cat.label}>
                   {STAT_METHODS.filter((m) => m.category === cat.id).map((m) => (
                     <option key={m.id} value={m.id}>
@@ -1044,6 +1137,27 @@ export default function PyRunner({
               />
             </label>
 
+            {/* 샘플 데이터셋 — 사이트에 호스팅된 파일을 가져와 바로 사용 */}
+            <select
+              value=""
+              onChange={(e) => {
+                loadSampleDataset(e.target.value);
+                e.target.value = "";
+              }}
+              disabled={dataBusy}
+              aria-label="샘플 데이터셋 불러오기"
+              className="h-9 max-w-full rounded border border-border bg-white px-2 text-[13px] text-foreground disabled:opacity-50"
+            >
+              <option value="">
+                {dataBusy ? "불러오는 중…" : "샘플 데이터셋 불러오기…"}
+              </option>
+              {SAMPLE_DATASETS.map((d) => (
+                <option key={d.file} value={d.file}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+
             {fsSupported ? (
               <>
                 <button
@@ -1066,6 +1180,33 @@ export default function PyRunner({
                 폴더 저장·불러오기는 Chrome·Edge에서 지원됩니다.
               </span>
             )}
+          </div>
+
+          {/* URL로 불러오기 — 링크(CSV·XLSX)를 붙여넣어 데이터를 바로 가져온다 */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  loadFromUrl();
+                }
+              }}
+              placeholder="데이터 URL 붙여넣기 (예: https://.../data.csv)"
+              aria-label="데이터 URL"
+              className="h-9 min-w-[240px] flex-1 rounded border border-border bg-white px-3 text-[13px] text-foreground placeholder:text-placeholder focus-visible:border-foreground focus-visible:outline-none"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={loadFromUrl}
+              disabled={dataBusy || !urlInput.trim()}
+            >
+              URL로 불러오기
+            </Button>
           </div>
 
           {(dataFiles.length > 0 || notice) && (
@@ -1166,8 +1307,32 @@ export default function PyRunner({
               className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--primary)] bg-white"
             >
               <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
-                <span className="w-9 text-[11px] font-medium text-tertiary">
-                  [{i + 1}]
+                {/* 순서(위치) 번호 — 실행 상태를 색으로 구분 */}
+                <span
+                  className="inline-flex h-5 min-w-[24px] items-center justify-center rounded px-1 text-[11px] font-semibold tabular-nums"
+                  style={CELL_STATUS_STYLE[c.status]}
+                  title={
+                    c.status === "done"
+                      ? "실행 완료"
+                      : c.status === "error"
+                        ? "실행 오류"
+                        : c.status === "running"
+                          ? "실행 중"
+                          : "미실행"
+                  }
+                >
+                  {i + 1}
+                </span>
+                {/* 실행 순서(주피터 In [n]) — 실행 여부·순서를 숫자로 */}
+                <span
+                  className="w-[52px] text-[11px] tabular-nums text-tertiary"
+                  title="실행 순서(실행할 때마다 증가)"
+                >
+                  {c.status === "running"
+                    ? "In [*]"
+                    : c.execOrder
+                      ? `In [${c.execOrder}]`
+                      : "In [ ]"}
                 </span>
                 <button
                   type="button"
@@ -1177,6 +1342,54 @@ export default function PyRunner({
                 >
                   ▶ 실행
                 </button>
+                {/* 셀 위/아래 이동 */}
+                <span className="inline-flex">
+                  <button
+                    type="button"
+                    onClick={() => moveCell(c.id, -1)}
+                    disabled={i === 0}
+                    title="위로 이동"
+                    aria-label="셀 위로 이동"
+                    className={`${CELL_BTN} rounded-r-none`}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveCell(c.id, 1)}
+                    disabled={i === cells.length - 1}
+                    title="아래로 이동"
+                    aria-label="셀 아래로 이동"
+                    className={`${CELL_BTN} -ml-px rounded-l-none`}
+                  >
+                    ▼
+                  </button>
+                </span>
+                {/* 데이터 핸들링 삽입 — 세분화 스니펫을 이 셀에 넣는다 */}
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const [gid, sid] = e.target.value.split("::");
+                    const grp = WRANGLE_SNIPPET_GROUPS.find((g) => g.id === gid);
+                    const sn = grp?.snippets.find((s) => s.id === sid);
+                    if (sn) insertSnippet(c.id, sn.code);
+                    e.target.value = "";
+                  }}
+                  aria-label="데이터 핸들링 삽입"
+                  title="데이터 핸들링 코드 조각을 이 셀에 삽입합니다"
+                  className="h-6 max-w-[152px] rounded border border-border bg-white px-1 text-[11px] text-body"
+                >
+                  <option value="">데이터 핸들링 ▾</option>
+                  {WRANGLE_SNIPPET_GROUPS.map((g) => (
+                    <optgroup key={g.id} label={g.label}>
+                      {g.snippets.map((s) => (
+                        <option key={s.id} value={`${g.id}::${s.id}`}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
                 {/* 변수 반영 — 앞에서 쓴 실제 변수 목록을 열어 그중 하나로 대체 */}
                 <span className="relative inline-flex">
                   <button
@@ -1352,7 +1565,8 @@ export default function PyRunner({
                     onClick={() =>
                       patchCell(c.id, { outputCollapsed: !c.outputCollapsed })
                     }
-                    className="flex w-full items-center gap-1 bg-surface px-3 py-1 text-[11px] text-tertiary hover:text-foreground"
+                    className="flex w-full items-center gap-1 border-y border-[color:var(--chip-slate-fg)]/15 px-3 py-1 text-[11px] font-medium text-[color:var(--chip-slate-fg)] hover:opacity-80"
+                    style={{ background: "var(--chip-slate-bg)" }}
                     aria-expanded={!c.outputCollapsed}
                   >
                     {c.outputCollapsed
@@ -1478,11 +1692,20 @@ export default function PyRunner({
               실행되지 않습니다.
             </li>
             <li>
-              <strong>데이터 업로드</strong> 시 실제 파일명을 인식해 로드·속성
-              확인 셀(read_csv/read_excel + shape·columns·dtypes·head)을 자동으로
-              만들어 줍니다 — 먼저 실행해 열 이름을 확인하세요. 업로드·샘플
-              데이터 모두 코드에서 파일명 그대로 읽습니다. 사전 예제를 그대로
-              돌려보려면 <strong>샘플 보험 데이터 생성</strong>을 한 번 실행하세요.
+              <strong>데이터 불러오기</strong>는 세 가지입니다 —{" "}
+              <strong>샘플 데이터셋</strong>(사이트에 호스팅된 policy·claims.xlsx),{" "}
+              <strong>내 파일 업로드</strong>, <strong>URL로 불러오기</strong>(CSV·XLSX
+              링크). 모두 로드·속성 확인 셀(shape·columns·dtypes·head)이 자동으로
+              만들어지니 먼저 실행해 열 이름을 확인하세요. 코드에서는 파일명을
+              그대로 읽습니다. 사전 예제를 코드로 재현하려면{" "}
+              <strong>분석 코드 불러오기 → 샘플 보험 데이터 생성</strong>도 있습니다.
+            </li>
+            <li>
+              각 셀의 <strong>데이터 핸들링 ▾</strong> 콤보박스에서 Join(left/right
+              등)·합치기·Split·Groupby·필터 같은 pandas 조각을 골라 그 셀에 바로
+              삽입할 수 있습니다(작업 중 필요할 때 사용). 셀은{" "}
+              <strong>▲/▼</strong>로 순서를 바꿀 수 있고, 왼쪽 번호는 위치,{" "}
+              <strong>In [n]</strong>은 실행 순서(색으로 실행 상태)입니다.
             </li>
             <li>
               <strong>폴더에 저장</strong>은 analysis.py(셀을 # %% 구분자로 이은

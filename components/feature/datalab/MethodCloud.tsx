@@ -28,6 +28,7 @@ import {
 import PyRunner, {
   type RunnerLoadRequest,
 } from "@/components/feature/datalab/PyRunner";
+import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 방법 */
 const SIZE: Record<number, { fs: number; fw: number }> = {
@@ -243,14 +244,17 @@ function MethodDialog({
                 </button>
               </div>
               <CopyButton text={allCode} label="전체 코드 복사" />
-              <button
-                type="button"
-                onClick={() => onSendToRunner(method)}
-                className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
-                title="아래 파이썬 실행기에 이 코드를 담고 이동합니다"
-              >
-                ▶ 실행기로 보내기
-              </button>
+              {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
+              {method.category !== "wrangle" ? (
+                <button
+                  type="button"
+                  onClick={() => onSendToRunner(method)}
+                  className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+                  title="아래 파이썬 실행기에 이 코드를 담고 이동합니다"
+                >
+                  ▶ 실행기로 보내기
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={onClose}
@@ -273,6 +277,20 @@ function MethodDialog({
               {p}
             </p>
           ))}
+
+          {method.category === "wrangle" ? (
+            <div
+              className="mt-4 rounded px-4 py-2.5 text-[12.5px] leading-relaxed text-body"
+              style={{
+                background: "color-mix(in srgb, var(--chip-amber-bg) 55%, white)",
+              }}
+            >
+              이 데이터 핸들링 코드는 아래 <strong>파이썬 실행기</strong> 각 셀의{" "}
+              <strong>데이터 핸들링 ▾</strong> 콤보박스에서 세부 항목(Join-left,
+              Merge-행/열, Groupby-agg, Split 등)으로 골라 셀에 바로 삽입할 수
+              있습니다.
+            </div>
+          ) : null}
 
           {method.sections.map((s, i) => (
             <div key={s.title} className="mt-6">
@@ -710,6 +728,9 @@ export function MethodCloud() {
   const openCat = open
     ? STAT_CATEGORIES.find((c) => c.id === open.category)
     : undefined;
+
+  // 팝업(사전) 열림 중 브라우저 뒤로가기 → 뒤 페이지 이동 대신 팝업만 닫기
+  useHistoryDismiss(!!(open && openCat), () => setOpenId(null));
 
   return (
     <section

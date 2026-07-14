@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /**
  * PDF 인라인 뷰어 + 전체보기(전체화면 모달) + 다운로드.
@@ -11,6 +12,9 @@ import { Button } from "@/components/ui/button";
 export function PdfViewer({ url, fileName }: { url: string; fileName: string }) {
   const [failed, setFailed] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+
+  // 전체보기 팝업 열림 중 뒤로가기 → 뒤 페이지 이동 대신 팝업만 닫기
+  useHistoryDismiss(fullscreen, () => setFullscreen(false));
 
   // 전체보기 동안 배경 스크롤 잠금 + Esc로 닫기
   useEffect(() => {
