@@ -124,9 +124,96 @@ function isCommentOnly(chunk: string): boolean {
     .every((ln) => ln.trim() === "" || ln.trim().startsWith("#"));
 }
 
+/** 특정 열·필드 이름을 코드에 쓰는(=사용자 판단 필요한) 줄인지 판정하는 패턴 */
+const SPECIFIC_COL =
+  /\[\s*["'][^"']*["']|\[\s*\[|\.(groupby|pivot_table|pivot|sort_values|merge|join|agg|drop|rename|query|melt|set_index|crosstab|nlargest|nsmallest|value_counts|map|apply|isin|between|str)\s*[(.]/;
+/** 데이터 전체 수준의 일반 확인(특정 열 미지정) — 로드·확인 단계에 남겨도 되는 줄 */
+const GENERIC_INSPECT =
+  /\b[\w.]+\.(describe|head|tail|info|dtypes|shape|columns|sample|nunique|memory_usage)\b/;
+
+type LineKind = "neutral" | "setup" | "load" | "inspect" | "analysis";
+
+function classifyLine(line: string): LineKind {
+  const t = line.trim();
+  if (t === "" || t.startsWith("#")) return "neutral";
+  if (/^(import |from )\S/.test(t)) return "setup";
+  if (/=\s*(?:pd\.)?read_(excel|csv|table|json|parquet|fwf)\s*\(/.test(t))
+    return "load";
+  if (SPECIFIC_COL.test(t)) return "analysis";
+  if (GENERIC_INSPECT.test(t)) return "inspect";
+  return "analysis"; // 그 밖의 대입·연산은 판단이 필요한 분석으로 간주
+}
+
+/** 로드 줄들에서 데이터프레임 변수명(들)을 추출 — 열 목록 자동 출력에 사용 */
+function detectDfVars(lines: string[]): string[] {
+  const vars: string[] = [];
+  for (const l of lines) {
+    const m = l.match(/^\s*(\w+)\s*=\s*(?:pd\.)?read_/);
+    if (m && !vars.includes(m[1])) vars.push(m[1]);
+  }
+  return vars;
+}
+
+/** 파일 확장자 → pandas 로드 호출 문자열 */
+function loadCallFor(name: string): string {
+  const l = name.toLowerCase();
+  if (l.endsWith(".xlsx") || l.endsWith(".xls")) return `pd.read_excel("${name}")`;
+  if (l.endsWith(".json")) return `pd.read_json("${name}")`;
+  if (l.endsWith(".txt")) return `pd.read_csv("${name}", sep=None, engine="python")`;
+  return `pd.read_csv("${name}")`;
+}
+
+/** 업로드/신규 데이터용 '로드 · 속성 확인' 셀 자동 생성(실제 파일명 인식) */
+function buildLoadCell(name: string): string {
+  return [
+    "# ── 데이터 로드 · 속성 확인 ──",
+    "import pandas as pd",
+    `df = ${loadCallFor(name)}`,
+    "",
+    "# 다음 단계로 가기 전에 아래 결과로 열 이름·자료형을 확인하세요",
+    'print("행·열:", df.shape)',
+    'print("열 이름:", df.columns.tolist())',
+    "print(df.dtypes)",
+    "df.head()",
+  ].join("\n");
+}
+
+/** 블록 제목(# ── 제목 ──) 기준 분할 — 헤더 주석만 있는 첫 청크는 다음 셀에 병합 */
+function splitByBlockTitles(text: string): string[] {
+  const t = text.trim();
+  if (!t) return [];
+  const marker = /^# ── .+ ──$/;
+  if (!t.split("\n").some((ln) => marker.test(ln))) return [t];
+  const cells: string[] = [];
+  let cur: string[] = [];
+  for (const ln of t.split("\n")) {
+    if (marker.test(ln) && cur.length > 0) {
+      cells.push(cur.join("\n").trim());
+      cur = [ln];
+    } else {
+      cur.push(ln);
+    }
+  }
+  if (cur.length > 0) cells.push(cur.join("\n").trim());
+  const nonEmpty = cells.filter(Boolean);
+  // 첫 청크가 헤더 주석뿐이면(# ═══ 제목 ═══) 다음 셀 앞에 붙인다
+  if (nonEmpty.length > 1 && isCommentOnly(nonEmpty[0])) {
+    nonEmpty[1] = `${nonEmpty[0]}\n${nonEmpty[1]}`;
+    nonEmpty.shift();
+  }
+  return nonEmpty.length > 0 ? nonEmpty : [t];
+}
+
+const ANALYSIS_BANNER =
+  "# ▸ 분석 단계 — 위에서 확인한 실제 열 이름에 맞게 수정한 뒤 실행하세요";
+
 /**
- * 코드 → 셀 목록. 우선순위: ① "# %%" 명시 구분자(주피터·VSCode 관례)
- * ② 사전 코드의 블록 제목(# ── 제목 ──) ③ 통짜 한 셀.
+ * 코드 → 셀 목록. 우선순위:
+ * ① "# %%" 명시 구분자(주피터·VSCode 관례) — 사용자 의도 최우선.
+ * ② 데이터 로드가 있으면 단계 분리: [로드·속성 확인] → [분석(특정 열 이름 사용)].
+ *    경계는 '특정 열 이름을 코드에 처음 쓰는 줄'(describe·columns 등 일반 확인 다음).
+ *    로드 셀이 열 목록을 안 찍으면 자동으로 열 이름 출력을 덧붙인다.
+ * ③ 그 외에는 블록 제목(# ── ──) 기준, 없으면 통짜 한 셀.
  */
 function splitIntoCells(code: string): string[] {
   const text = code.replace(/\r\n/g, "\n").trim();
@@ -140,29 +227,46 @@ function splitIntoCells(code: string): string[] {
     return parts.length > 0 ? parts : [text];
   }
 
-  const marker = /^# ── .+ ──$/;
-  if (text.split("\n").some((ln) => marker.test(ln))) {
-    const cells: string[] = [];
-    let cur: string[] = [];
-    for (const ln of text.split("\n")) {
-      if (marker.test(ln) && cur.length > 0) {
-        cells.push(cur.join("\n").trim());
-        cur = [ln];
-      } else {
-        cur.push(ln);
+  const lines = text.split("\n");
+  const hasLoad = lines.some((l) => classifyLine(l) === "load");
+
+  if (hasLoad) {
+    let boundary = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (classifyLine(lines[i]) === "analysis") {
+        boundary = i;
+        break;
       }
     }
-    if (cur.length > 0) cells.push(cur.join("\n").trim());
-    const nonEmpty = cells.filter(Boolean);
-    // 첫 청크가 헤더 주석뿐이면(# ═══ 제목 ═══) 다음 셀 앞에 붙인다
-    if (nonEmpty.length > 1 && isCommentOnly(nonEmpty[0])) {
-      nonEmpty[1] = `${nonEmpty[0]}\n${nonEmpty[1]}`;
-      nonEmpty.shift();
+    if (boundary > 0) {
+      // 경계 직전의 주석·빈 줄(분석을 설명하는 헤더)은 분석 셀로 넘긴다
+      let sep = boundary;
+      while (sep > 0) {
+        const prev = lines[sep - 1].trim();
+        if (prev === "" || prev.startsWith("#")) sep--;
+        else break;
+      }
+      if (sep === 0) sep = boundary; // 안전장치(로드가 head에 남도록)
+
+      let loadCell = lines.slice(0, sep).join("\n").trim();
+      const vars = detectDfVars(lines.slice(0, sep));
+      if (vars.length > 0 && !/\.columns\b/.test(loadCell)) {
+        const prints = vars
+          .map((v) => `print("${v} 열:", ${v}.columns.tolist())`)
+          .join("\n");
+        loadCell += `\n\n# 다음 단계 전에 실제 열 이름을 확인하세요\n${prints}`;
+      }
+
+      const analysisCells = splitByBlockTitles(lines.slice(sep).join("\n"));
+      if (analysisCells.length > 0) {
+        analysisCells[0] = `${ANALYSIS_BANNER}\n${analysisCells[0]}`;
+      }
+      return [loadCell, ...analysisCells];
     }
-    return nonEmpty.length > 0 ? nonEmpty : [text];
   }
 
-  return [text];
+  const byTitle = splitByBlockTitles(text);
+  return byTitle.length > 0 ? byTitle : [text];
 }
 
 /** 셀 → analysis.py 직렬화 — "# %%" 구분자라 그대로도 실행 가능한 스크립트 */
@@ -292,7 +396,10 @@ export default function PyRunner({
   );
 
   const addDataFiles = useCallback(
-    async (files: FileList | { name: string; bytes: Uint8Array }[]) => {
+    async (
+      files: FileList | { name: string; bytes: Uint8Array }[],
+      opts: { generateLoadCell?: boolean } = {}
+    ) => {
       const items: { name: string; bytes: Uint8Array }[] = [];
       if (files instanceof FileList) {
         for (const f of Array.from(files)) {
@@ -312,8 +419,28 @@ export default function PyRunner({
         const py = await getPyodide();
         for (const [name, bytes] of dataBytes.current) writeDataFile(py, name, bytes);
       }
+
+      // 업로드 시 실제 파일명을 인식해 '로드·속성 확인' 셀을 자동 생성한다.
+      if (opts.generateLoadCell) {
+        const primary = items.find((it) =>
+          /\.(csv|xlsx|xls|json|txt)$/i.test(it.name)
+        );
+        if (primary) {
+          const loadCell = newCell(buildLoadCell(primary.name));
+          setCells((prev) => {
+            const onlyEmpty =
+              prev.length === 1 && !prev[0].code.trim();
+            return onlyEmpty ? [loadCell] : [loadCell, ...prev];
+          });
+          setSelectedId("");
+          setLoadedLabel(`업로드 데이터: ${primary.name}`);
+          setNotice(
+            `「${primary.name}」 로드·속성 확인 셀을 추가했습니다 — 먼저 실행해 열 이름을 확인한 뒤 다음 단계로 진행하세요.`
+          );
+        }
+      }
     },
-    []
+    [newCell]
   );
 
   const patchCell = useCallback((id: number, patch: Partial<Cell>) => {
@@ -515,11 +642,17 @@ export default function PyRunner({
   };
 
   return (
-    <div ref={rootRef} className="mt-8 border-t border-border pt-6">
+    <div
+      ref={rootRef}
+      className="mt-8 rounded-cover border border-[color:var(--chip-blue-fg)]/15 p-5 sm:p-6"
+      style={{
+        background: "color-mix(in srgb, var(--chip-blue-bg) 45%, white)",
+      }}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-[16px] font-semibold text-foreground">
-            파이썬 실행기
+            🐍 파이썬 실행기
           </h3>
           <p className="mt-0.5 text-[12.5px] text-tertiary">
             사전의 코드를 브라우저 안에서 셀(단락) 단위로 실행합니다 —
@@ -567,7 +700,8 @@ export default function PyRunner({
                 accept={DATA_ACCEPT}
                 className="hidden"
                 onChange={(e) => {
-                  if (e.target.files?.length) void addDataFiles(e.target.files);
+                  if (e.target.files?.length)
+                    void addDataFiles(e.target.files, { generateLoadCell: true });
                   e.target.value = "";
                 }}
               />
@@ -644,7 +778,9 @@ export default function PyRunner({
           </div>
           <p className="mt-1.5 text-[12px] text-tertiary">
             셀마다 <strong>▶ 실행</strong>(또는 셀 안에서 Shift+Enter) — 앞 셀에서
-            만든 변수·데이터프레임을 다음 셀에서 그대로 쓸 수 있습니다.
+            만든 변수·데이터프레임을 다음 셀에서 그대로 쓸 수 있습니다.{" "}
+            <strong>1단계(데이터 로드·열 이름 확인)</strong>를 먼저 실행해 실제
+            열 이름을 본 뒤, 다음 분석 셀의 열 이름을 맞춰 실행하세요.
           </p>
 
           {/* 셀 목록 */}
@@ -763,9 +899,14 @@ export default function PyRunner({
             </li>
             <li>
               변수는 셀 사이에 유지됩니다(주피터와 동일). 처음부터 다시 하려면{" "}
-              <strong>변수 초기화</strong>를 누르세요. 붙여넣은 코드는{" "}
-              <strong># %%</strong> 줄 또는 사전 코드의 블록 제목 기준으로 셀이
-              나뉩니다.
+              <strong>변수 초기화</strong>를 누르세요.
+            </li>
+            <li>
+              코드를 불러오면 <strong>1단계(데이터 로드·describe 등 속성 확인)</strong>가
+              먼저 한 셀로 분리되고, 특정 열 이름을 쓰는 <strong>분석 코드는 다음
+              셀</strong>로 나뉩니다. 로드 셀에는 실제 열 이름이 자동으로 출력되니,
+              그 결과를 보고 이후 셀의 열 이름·조건을 맞춘 뒤 실행하세요. 직접
+              붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를 지정할 수 있습니다.
             </li>
             <li>
               numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib
@@ -773,10 +914,11 @@ export default function PyRunner({
               실행되지 않습니다.
             </li>
             <li>
-              업로드하거나 샘플로 생성한 데이터는 코드에서 파일명 그대로
-              읽습니다 — 예: pd.read_excel(&quot;claims.xlsx&quot;). 먼저{" "}
-              <strong>샘플 보험 데이터 생성</strong>을 한 번 실행하면 사전의
-              예제 대부분을 그대로 돌려볼 수 있습니다.
+              <strong>데이터 업로드</strong> 시 실제 파일명을 인식해 로드·속성
+              확인 셀(read_csv/read_excel + shape·columns·dtypes·head)을 자동으로
+              만들어 줍니다 — 먼저 실행해 열 이름을 확인하세요. 업로드·샘플
+              데이터 모두 코드에서 파일명 그대로 읽습니다. 사전 예제를 그대로
+              돌려보려면 <strong>샘플 보험 데이터 생성</strong>을 한 번 실행하세요.
             </li>
             <li>
               <strong>폴더에 저장</strong>은 analysis.py(셀을 # %% 구분자로 이은

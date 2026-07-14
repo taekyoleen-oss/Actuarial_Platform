@@ -70,6 +70,8 @@ export async function getPyodide(): Promise<PyodideAPI> {
           'warnings.filterwarnings("ignore", message=".*non-interactive.*")',
           'warnings.filterwarnings("ignore", message=".*non-GUI backend.*")',
           'warnings.filterwarnings("ignore", message=".*cannot show the figure.*")',
+          'warnings.filterwarnings("ignore", message=".*Pyarrow.*")',
+          'warnings.filterwarnings("ignore", category=DeprecationWarning, module="pandas")',
         ].join("\n")
       );
       return py;
