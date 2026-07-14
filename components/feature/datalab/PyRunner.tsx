@@ -30,7 +30,7 @@ import {
   writeDataFile,
   type RunPhase,
 } from "@/lib/pyRunner";
-import { WRANGLE_SNIPPET_GROUPS } from "@/lib/wrangleSnippets";
+import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
@@ -352,6 +352,8 @@ interface Cell {
   outputCollapsed?: boolean;
   /** 마지막 실행 순서(In [n]) — 실행할 때마다 증가(주피터 실행 카운터) */
   execOrder?: number;
+  /** 코드 되돌리기(취소·Ctrl+Z) 스냅샷 스택 — 삽입·타이핑 버스트 직전 코드 */
+  undo?: string[];
 }
 
 interface ErrModalState {
@@ -409,6 +411,8 @@ export default function PyRunner({
   const dataBytes = useRef<Map<string, Uint8Array>>(new Map());
   const nextId = useRef(1);
   const execCounter = useRef(0);
+  // 셀별 마지막 타이핑 시각 — Ctrl+Z 되돌리기 단위(버스트) 판정용
+  const typingRef = useRef<Map<number, number>>(new Map());
   const busyRef = useRef(false);
 
   const newCell = useCallback(
@@ -726,14 +730,29 @@ export default function PyRunner({
     });
   }, []);
 
-  /** 데이터 핸들링 스니펫을 이 셀에 삽입(빈 셀=대입, 내용 있으면 아래에 이어붙임) */
+  /** 데이터 핸들링 스니펫을 이 셀에 삽입(빈 셀=대입, 내용 있으면 아래에 이어붙임).
+   *  삽입 직전 코드를 undo 스택에 넣어 '취소'·Ctrl+Z로 되돌릴 수 있게 한다. */
   const insertSnippet = useCallback((id: number, code: string) => {
     if (!code) return;
     setCells((prev) =>
       prev.map((c) => {
         if (c.id !== id) return c;
         const base = c.code.replace(/\s+$/, "");
-        return { ...c, code: base ? `${base}\n\n${code}` : code };
+        const next = base ? `${base}\n\n${code}` : code;
+        return { ...c, code: next, undo: [...(c.undo ?? []), c.code].slice(-100) };
+      })
+    );
+  }, []);
+
+  /** 코드 되돌리기 — undo 스택에서 직전 스냅샷 복원('취소' 버튼·Ctrl+Z 공용) */
+  const undoCell = useCallback((id: number) => {
+    typingRef.current.delete(id);
+    setCells((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const st = c.undo ?? [];
+        if (st.length === 0) return c;
+        return { ...c, code: st[st.length - 1], undo: st.slice(0, -1) };
       })
     );
   }, []);
@@ -1372,7 +1391,7 @@ export default function PyRunner({
                     const [gid, sid] = e.target.value.split("::");
                     const grp = WRANGLE_SNIPPET_GROUPS.find((g) => g.id === gid);
                     const sn = grp?.snippets.find((s) => s.id === sid);
-                    if (sn) insertSnippet(c.id, sn.code);
+                    if (sn) insertSnippet(c.id, snippetInsertCode(sn));
                     e.target.value = "";
                   }}
                   aria-label="데이터 핸들링 삽입"
@@ -1390,6 +1409,17 @@ export default function PyRunner({
                     </optgroup>
                   ))}
                 </select>
+                {/* 취소 — 방금 삽입/입력을 되돌림(Ctrl+Z와 동일 undo 스택) */}
+                <button
+                  type="button"
+                  onClick={() => undoCell(c.id)}
+                  disabled={!c.undo || c.undo.length === 0}
+                  title="방금 삽입·입력을 되돌립니다 (Ctrl+Z)"
+                  aria-label="코드 되돌리기"
+                  className={`${CELL_BTN} px-1.5`}
+                >
+                  ↶ 취소
+                </button>
                 {/* 변수 반영 — 앞에서 쓴 실제 변수 목록을 열어 그중 하나로 대체 */}
                 <span className="relative inline-flex">
                   <button
@@ -1525,10 +1555,31 @@ export default function PyRunner({
               <textarea
                 value={c.code}
                 onChange={(e) => {
-                  patchCell(c.id, { code: e.target.value });
+                  const nextVal = e.target.value;
+                  const now = Date.now();
+                  const last = typingRef.current.get(c.id) ?? 0;
+                  typingRef.current.set(c.id, now);
+                  // 유휴 700ms 후 첫 입력에서만 스냅샷 → Ctrl+Z 되돌리기 단위(버스트)
+                  const boundary = now - last > 700;
+                  patchCell(
+                    c.id,
+                    boundary
+                      ? { code: nextVal, undo: [...(c.undo ?? []), c.code].slice(-100) }
+                      : { code: nextVal }
+                  );
                   autoSize(e.currentTarget);
                 }}
                 onKeyDown={(e) => {
+                  // 되돌리기(Ctrl+Z / Cmd+Z) — 컨트롤드 textarea라 커스텀 undo 스택 사용
+                  if (
+                    (e.ctrlKey || e.metaKey) &&
+                    !e.shiftKey &&
+                    (e.key === "z" || e.key === "Z")
+                  ) {
+                    e.preventDefault();
+                    undoCell(c.id);
+                    return;
+                  }
                   if (e.key === "Enter" && e.shiftKey) {
                     e.preventDefault();
                     void runCell(c.id);
@@ -1703,9 +1754,12 @@ export default function PyRunner({
             <li>
               각 셀의 <strong>데이터 핸들링 ▾</strong> 콤보박스에서 Join(left/right
               등)·합치기·Split·Groupby·필터 같은 pandas 조각을 골라 그 셀에 바로
-              삽입할 수 있습니다(작업 중 필요할 때 사용). 셀은{" "}
-              <strong>▲/▼</strong>로 순서를 바꿀 수 있고, 왼쪽 번호는 위치,{" "}
-              <strong>In [n]</strong>은 실행 순서(색으로 실행 상태)입니다.
+              삽입할 수 있습니다 — 삽입 코드 <strong>상단에 무슨 코드인지 설명
+              주석(#)</strong>이 붙고, 중간에도 단계별 설명이 들어갑니다. 옆의{" "}
+              <strong>↶ 취소</strong> 버튼이나 <strong>Ctrl+Z</strong>로 방금
+              삽입·입력을 되돌릴 수 있습니다. 셀은 <strong>▲/▼</strong>로 순서를
+              바꿀 수 있고, 왼쪽 번호는 위치, <strong>In [n]</strong>은 실행
+              순서(색으로 실행 상태)입니다.
             </li>
             <li>
               <strong>폴더에 저장</strong>은 analysis.py(셀을 # %% 구분자로 이은
