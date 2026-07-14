@@ -13,6 +13,7 @@
  *   파일을 PC의 지정 폴더에 저장하고, 로드 시 코드와 데이터를 함께 복원한다.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   STAT_CATEGORIES,
@@ -335,15 +336,47 @@ interface Cell {
   /** 셀별 'AI 제안' 요청 입력 영역 활성화 여부 */
   aiInputOpen?: boolean;
   aiRequest?: string;
+  /** '변수 반영' 변수 선택 드롭다운 */
+  varPickerOpen?: boolean;
+  varOptions?: string[];
 }
 
-/** 오류 셀 수정 적용용 코드 — 원본을 '# 에러 수정'으로 주석 처리하고 수정본을 아래에 둠 */
-function buildErrorFixCode(original: string, fixed: string): string {
+interface ErrModalState {
+  cellId: number;
+  errorSummary: string;
+  errorFull: string;
+  explanation: string;
+  originalCode: string;
+  fixedCode: string;
+}
+
+/** 트레이스백에서 한 줄 에러 요약 추출(마지막 'XxxError: …' 우선) */
+function errorSummaryOf(output: string): string {
+  const lines = output
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (/^[A-Za-z_][\w.]*(Error|Exception|Warning):/.test(lines[i])) return lines[i];
+  }
+  return lines[lines.length - 1] ?? "오류";
+}
+
+/**
+ * 오류 셀 수정 적용용 코드 — 기존 에러 코드를 '# 에러내용'으로 주석 처리해
+ * 실행되지 않게 하고, 그 아래에 수정된 코드를 추가한다.
+ */
+function buildErrorFixCode(
+  original: string,
+  fixed: string,
+  errorSummary?: string
+): string {
   const commented = original
     .split("\n")
     .map((l) => (l.trim() === "" ? "#" : `# ${l}`))
     .join("\n");
-  return `# 에러 수정 — 아래 원본은 오류가 나 주석 처리했습니다(실행되지 않음)\n${commented}\n\n# ↓ 수정된 코드\n${fixed.trim()}`;
+  const head = errorSummary ? `# 에러내용 — ${errorSummary}` : "# 에러내용";
+  return `${head}\n# (아래 원본은 오류가 나 주석 처리했습니다 — 실행되지 않음)\n${commented}\n\n# ↓ 수정된 코드\n${fixed.trim()}`;
 }
 
 const PHASE_LABEL: Record<RunPhase, string> = {
@@ -619,32 +652,41 @@ export default function PyRunner({
     [newCell]
   );
 
+  const priorCodeOf = useCallback((id: number): string => {
+    const idx = cellsRef.current.findIndex((c) => c.id === id);
+    return cellsRef.current
+      .slice(0, Math.max(0, idx))
+      .map((c) => c.code.trim())
+      .filter(Boolean)
+      .join("\n\n# ---\n");
+  }, []);
+
   /**
-   * 셀 AI 어시스턴트 — 모드별로 스키마·앞 셀 코드를 모아 제안을 만든다.
-   * fix: 오류 진단 → '원본 주석 + 수정본' 형태로 제안 / vars: 변수명만 실제 세션
-   * 변수에 맞게 / edit: 셀별 요청대로 수정·보완.
+   * 셀 AI 제안(edit)·변수 반영(vars) — 제안 패널로 검토 후 적용.
+   * vars에 targetVar를 주면 그 변수로 대체(변수 선택 드롭다운에서 고른 값).
    */
   const runCellAssist = useCallback(
-    async (id: number, mode: "fix" | "vars" | "edit") => {
+    async (id: number, mode: "vars" | "edit", targetVar?: string) => {
       const cell = cellsRef.current.find((c) => c.id === id);
       if (!cell || cell.aiBusy) return;
       if (mode === "edit" && !(cell.aiRequest ?? "").trim()) return;
-      patchCell(id, { aiBusy: true, aiError: null, proposal: null });
+      patchCell(id, {
+        aiBusy: true,
+        aiError: null,
+        proposal: null,
+        varPickerOpen: false,
+      });
       try {
         const schema = await collectDataSchema();
-        const idx = cellsRef.current.findIndex((c) => c.id === id);
-        const priorCode = cellsRef.current
-          .slice(0, Math.max(0, idx))
-          .map((c) => c.code.trim())
-          .filter(Boolean)
-          .join("\n\n# ---\n");
         const result = await callAssist({
           mode,
           code: cell.code,
-          error: mode === "fix" && cell.status === "error" ? cell.output : "",
-          request: mode === "edit" ? (cell.aiRequest ?? "").trim() : undefined,
+          request:
+            mode === "edit"
+              ? (cell.aiRequest ?? "").trim()
+              : targetVar || undefined,
           schema,
-          priorCode,
+          priorCode: priorCodeOf(id),
         });
         if (!result.code) {
           patchCell(id, {
@@ -655,11 +697,9 @@ export default function PyRunner({
           });
           return;
         }
-        const proposalCode =
-          mode === "fix" ? buildErrorFixCode(cell.code, result.code) : result.code;
         patchCell(id, {
           aiBusy: false,
-          proposal: { code: proposalCode, explanation: result.explanation },
+          proposal: { code: result.code, explanation: result.explanation },
           aiInputOpen: mode === "edit" ? false : cell.aiInputOpen,
           aiRequest: mode === "edit" ? "" : cell.aiRequest,
         });
@@ -670,8 +710,121 @@ export default function PyRunner({
         });
       }
     },
+    [patchCell, priorCodeOf]
+  );
+
+  /** 변수 반영 — 세션의 실제 DataFrame 변수 목록을 열어 그중 하나를 고르게 한다 */
+  const openVarPicker = useCallback(
+    async (id: number) => {
+      const cell = cellsRef.current.find((c) => c.id === id);
+      if (!cell || cell.aiBusy) return;
+      if (cell.varPickerOpen) {
+        patchCell(id, { varPickerOpen: false });
+        return;
+      }
+      patchCell(id, { aiBusy: true, aiError: null });
+      try {
+        const schema = await collectDataSchema();
+        let vars: string[] = [];
+        try {
+          const parsed = JSON.parse(schema) as {
+            vars?: Record<string, { columns?: unknown }>;
+          };
+          vars = Object.entries(parsed.vars ?? {})
+            .filter(([, v]) => v && Array.isArray(v.columns))
+            .map(([k]) => k);
+        } catch {
+          vars = [];
+        }
+        if (vars.length === 0) {
+          patchCell(id, {
+            aiBusy: false,
+            aiError:
+              "앞에서 만든 변수가 없습니다. 먼저 데이터 로드 셀을 실행해 변수(예: df)를 만든 뒤 사용하세요.",
+          });
+          return;
+        }
+        patchCell(id, { aiBusy: false, varOptions: vars, varPickerOpen: true });
+      } catch (e) {
+        patchCell(id, {
+          aiBusy: false,
+          aiError: e instanceof Error ? e.message : "변수 목록을 불러오지 못했습니다.",
+        });
+      }
+    },
     [patchCell]
   );
+
+  /** 에러분석 — 팝업으로 에러·수정안을 안내(반영 여부 확인) */
+  const [errModal, setErrModal] = useState<ErrModalState | null>(null);
+
+  const runErrorAnalysis = useCallback(
+    async (id: number) => {
+      const cell = cellsRef.current.find((c) => c.id === id);
+      if (!cell || cell.aiBusy || cell.status !== "error") return;
+      patchCell(id, { aiBusy: true, aiError: null });
+      try {
+        const schema = await collectDataSchema();
+        const result = await callAssist({
+          mode: "fix",
+          code: cell.code,
+          error: cell.output,
+          schema,
+          priorCode: priorCodeOf(id),
+        });
+        patchCell(id, { aiBusy: false });
+        if (!result.code) {
+          patchCell(id, {
+            aiError:
+              result.explanation ||
+              "수정안을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.",
+          });
+          return;
+        }
+        setErrModal({
+          cellId: id,
+          errorSummary: errorSummaryOf(cell.output),
+          errorFull: cell.output,
+          explanation: result.explanation,
+          originalCode: cell.code,
+          fixedCode: result.code,
+        });
+      } catch (e) {
+        patchCell(id, {
+          aiBusy: false,
+          aiError: e instanceof Error ? e.message : "AI 요청에 실패했습니다.",
+        });
+      }
+    },
+    [patchCell, priorCodeOf]
+  );
+
+  /** 에러 팝업 '반영' — 원본을 '# 에러내용'으로 주석 처리 + 수정본 추가 */
+  const applyErrModal = useCallback(() => {
+    setErrModal((m) => {
+      if (!m) return null;
+      const wrapped = buildErrorFixCode(
+        m.originalCode,
+        m.fixedCode,
+        m.errorSummary
+      );
+      setCells((prev) =>
+        prev.map((c) =>
+          c.id === m.cellId
+            ? {
+                ...c,
+                code: wrapped,
+                output: "",
+                images: [],
+                status: "idle",
+                ms: undefined,
+              }
+            : c
+        )
+      );
+      return null;
+    });
+  }, []);
 
   const applyProposal = useCallback(
     (id: number, target: "replace" | "new") => {
@@ -1041,24 +1194,50 @@ export default function PyRunner({
                 >
                   ▶ 실행
                 </button>
-                {/* 변수 반영 — 앞에서 쓴 실제 변수에 맞게 변수명만 조정 */}
+                {/* 변수 반영 — 앞에서 쓴 실제 변수 목록을 열어 그중 하나로 대체 */}
+                <span className="relative inline-flex">
+                  <button
+                    type="button"
+                    onClick={() => void openVarPicker(c.id)}
+                    disabled={!!c.aiBusy}
+                    title="앞 셀에서 만든 실제 변수 중 하나를 골라 이 셀의 변수를 대체합니다"
+                    className={`${CELL_BTN} ${c.varPickerOpen ? "border-primary" : ""}`}
+                  >
+                    변수 반영 ▾
+                  </button>
+                  {c.varPickerOpen && c.varOptions && c.varOptions.length > 0 ? (
+                    <span className="absolute left-0 top-full z-30 mt-1 flex min-w-[160px] flex-col rounded border border-border bg-white py-1 shadow-card-hover">
+                      <span className="px-2.5 py-1 text-[10.5px] text-tertiary">
+                        대체할 변수 선택
+                      </span>
+                      {c.varOptions.map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => void runCellAssist(c.id, "vars", v)}
+                          className="px-2.5 py-1 text-left font-mono text-[12px] text-foreground hover:bg-surface"
+                        >
+                          {v}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => void runCellAssist(c.id, "vars")}
+                        className="mt-0.5 border-t border-border px-2.5 py-1 text-left text-[11.5px] text-primary hover:bg-surface"
+                      >
+                        AI 자동 선택
+                      </button>
+                    </span>
+                  ) : null}
+                </span>
+                {/* 에러분석 — 팝업으로 안내, '반영' 시 원본을 '# 에러내용'으로 주석 + 수정본 */}
                 <button
                   type="button"
-                  onClick={() => void runCellAssist(c.id, "vars")}
-                  disabled={!!c.aiBusy}
-                  title="앞 셀에서 사용한 실제 변수 이름에 맞게 이 셀의 변수명만 조정합니다"
-                  className={CELL_BTN}
-                >
-                  변수 반영
-                </button>
-                {/* 에러분석 — 오류 진단 후 원본은 '# 에러 수정'으로 주석, 수정본 추가 */}
-                <button
-                  type="button"
-                  onClick={() => void runCellAssist(c.id, "fix")}
+                  onClick={() => void runErrorAnalysis(c.id)}
                   disabled={!!c.aiBusy || c.status !== "error"}
                   title={
                     c.status === "error"
-                      ? "오류 원인을 진단하고, 원본은 주석 처리 후 수정본을 제안합니다"
+                      ? "오류 내용과 수정안을 팝업으로 안내합니다(반영 여부 확인)"
                       : "오류가 있는 셀에서 사용할 수 있습니다"
                   }
                   className={`${CELL_BTN} ${
@@ -1278,16 +1457,17 @@ export default function PyRunner({
               붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를 지정할 수 있습니다.
             </li>
             <li>
-              <strong>✦ AI 도움(셀별)</strong> — <strong>변수 반영</strong>은 앞
-              셀에서 쓴 실제 변수 이름에 맞게 이 셀의 변수명만 바꿔 주고,{" "}
-              <strong>에러분석</strong>(오류 셀에서 활성화)은 원인을 진단해
-              원본을 <code>{"# 에러 수정"}</code>으로 주석 처리하고 수정본을 아래에
-              붙입니다. <strong>✦ AI 제안</strong>을 누르면 오른쪽에 입력창이
-              열려, 이 셀에 대한 수정·추가 요청을 적으면 코드를 생성합니다. 모두
-              제안을 검토한 뒤 <strong>적용</strong>합니다. 위의{" "}
-              <strong>AI에게 코드 요청</strong>은 새 셀로 코드를 만들어 줍니다.
-              AI에는 코드와 데이터의 열 이름·자료형 요약만 전달되며 실제 데이터
-              값은 전송되지 않습니다.
+              <strong>✦ AI 도움(셀별)</strong> — <strong>변수 반영 ▾</strong>은 앞
+              셀에서 만든 실제 변수 목록을 열어, 고른 변수로 이 셀의 변수를
+              대체합니다(로직·열 이름은 유지). <strong>에러분석</strong>(오류
+              셀에서 활성화)은 에러 내용과 수정안을 <strong>팝업</strong>으로
+              안내하고, <strong>반영</strong>을 누르면 기존 코드를{" "}
+              <code>{"# 에러내용"}</code>으로 주석 처리해 실행되지 않게 하고
+              수정본을 아래에 추가합니다. <strong>✦ AI 제안</strong>을 누르면
+              오른쪽에 입력창이 열려, 이 셀에 대한 수정·추가 요청을 적으면 코드를
+              생성합니다(검토 후 적용). 위의 <strong>AI에게 코드 요청</strong>은
+              새 셀로 코드를 만들어 줍니다. AI에는 코드와 데이터의 열
+              이름·자료형 요약만 전달되며 실제 데이터 값은 전송되지 않습니다.
             </li>
             <li>
               numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib
@@ -1310,6 +1490,109 @@ export default function PyRunner({
           </ul>
         </div>
       ) : null}
+
+      {errModal ? (
+        <ErrorFixModal
+          state={errModal}
+          onApply={applyErrModal}
+          onClose={() => setErrModal(null)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/* ─────────────── 에러분석 팝업 — 에러 안내 + 반영 확인 ─────────────── */
+
+function ErrorFixModal({
+  state,
+  onApply,
+  onClose,
+}: {
+  state: ErrModalState;
+  onApply: () => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const preview = buildErrorFixCode(
+    state.originalCode,
+    state.fixedCode,
+    state.errorSummary
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="에러 분석"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-[16px] font-semibold text-foreground">
+              에러 분석
+            </h2>
+            <p className="mt-0.5 font-mono text-[12.5px] text-[#c4302b]">
+              {state.errorSummary}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="text-tertiary hover:text-foreground"
+          >
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <h3 className="text-[13px] font-semibold text-foreground">진단·수정 방향</h3>
+          <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-body">
+            {state.explanation || "수정안을 준비했습니다. 아래 미리보기를 확인하세요."}
+          </p>
+
+          <h3 className="mt-4 text-[13px] font-semibold text-foreground">
+            반영하면 이렇게 바뀝니다
+          </h3>
+          <p className="mt-0.5 text-[12px] text-tertiary">
+            기존 코드는 <code>{"# 에러내용"}</code>으로 주석 처리되어 실행되지
+            않고, 그 아래에 수정된 코드가 추가됩니다.
+          </p>
+          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[12px] leading-[1.65] text-[#e9ecf1]">
+            {preview}
+          </pre>
+        </div>
+
+        <footer className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+          <button type="button" onClick={onClose} className={CELL_BTN}>
+            닫기
+          </button>
+          <button
+            type="button"
+            onClick={onApply}
+            className="rounded bg-primary px-3 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90"
+          >
+            반영
+          </button>
+        </footer>
+      </div>
     </div>
   );
 }
