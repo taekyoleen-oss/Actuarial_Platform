@@ -20,6 +20,7 @@ import {
   methodFullCode,
 } from "@/lib/statMethods";
 import {
+  collectDataSchema,
   getPyodide,
   isDataFileName,
   isPyodideRequested,
@@ -28,6 +29,29 @@ import {
   writeDataFile,
   type RunPhase,
 } from "@/lib/pyRunner";
+
+/** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
+async function callAssist(body: {
+  mode: "fix" | "generate";
+  code?: string;
+  error?: string;
+  request?: string;
+  schema?: string;
+  priorCode?: string;
+}): Promise<{ code: string; explanation: string }> {
+  const res = await fetch("/api/datalab/py-assist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    if (err.error === "ai_not_configured")
+      throw new Error("AI 기능이 아직 설정되지 않았습니다(관리자에게 문의).");
+    throw new Error("AI 응답을 받지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+  return (await res.json()) as { code: string; explanation: string };
+}
 
 const DATA_ACCEPT = ".csv,.xlsx,.xls,.txt,.json";
 
@@ -292,6 +316,11 @@ export interface RunnerLoadRequest {
 
 type CellStatus = "idle" | "running" | "done" | "error";
 
+interface AiProposal {
+  code: string;
+  explanation: string;
+}
+
 interface Cell {
   id: number;
   code: string;
@@ -300,6 +329,9 @@ interface Cell {
   status: CellStatus;
   ms?: number;
   phase?: RunPhase;
+  aiBusy?: boolean;
+  aiError?: string | null;
+  proposal?: AiProposal | null;
 }
 
 const PHASE_LABEL: Record<RunPhase, string> = {
@@ -575,6 +607,118 @@ export default function PyRunner({
     [newCell]
   );
 
+  /** 셀 AI 수정/제안 — 현재 데이터 스키마 + 셀 코드(+오류)를 보내 고친 코드를 제안 */
+  const aiFixCell = useCallback(
+    async (id: number) => {
+      const cell = cellsRef.current.find((c) => c.id === id);
+      if (!cell || cell.aiBusy) return;
+      patchCell(id, { aiBusy: true, aiError: null, proposal: null });
+      try {
+        const schema = await collectDataSchema();
+        const error = cell.status === "error" ? cell.output : "";
+        const result = await callAssist({
+          mode: "fix",
+          code: cell.code,
+          error,
+          schema,
+        });
+        if (!result.code) {
+          patchCell(id, {
+            aiBusy: false,
+            aiError:
+              result.explanation ||
+              "제안할 코드를 만들지 못했습니다. 요청을 더 구체적으로 적어 보세요.",
+          });
+          return;
+        }
+        patchCell(id, { aiBusy: false, proposal: result });
+      } catch (e) {
+        patchCell(id, {
+          aiBusy: false,
+          aiError: e instanceof Error ? e.message : "AI 요청에 실패했습니다.",
+        });
+      }
+    },
+    [patchCell]
+  );
+
+  const applyProposal = useCallback(
+    (id: number, target: "replace" | "new") => {
+      const cell = cellsRef.current.find((c) => c.id === id);
+      if (!cell?.proposal) return;
+      const code = cell.proposal.code;
+      if (target === "replace") {
+        patchCell(id, {
+          code,
+          proposal: null,
+          output: "",
+          images: [],
+          status: "idle",
+          ms: undefined,
+        });
+      } else {
+        setCells((prev) => {
+          const i = prev.findIndex((c) => c.id === id);
+          const next = prev.map((c) =>
+            c.id === id ? { ...c, proposal: null } : c
+          );
+          next.splice(i + 1, 0, newCell(code));
+          return next;
+        });
+      }
+    },
+    [newCell, patchCell]
+  );
+
+  // 요청 기반 코드 생성(러너 레벨)
+  const [genRequest, setGenRequest] = useState("");
+  const [genBusy, setGenBusy] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+
+  const aiGenerate = useCallback(async () => {
+    const request = genRequest.trim();
+    if (!request || genBusy) return;
+    setGenBusy(true);
+    setGenError(null);
+    try {
+      const schema = await collectDataSchema();
+      const priorCode = cellsRef.current
+        .map((c) => c.code.trim())
+        .filter(Boolean)
+        .join("\n\n# ---\n");
+      const result = await callAssist({
+        mode: "generate",
+        request,
+        schema,
+        priorCode,
+      });
+      if (!result.code) {
+        setGenError(
+          result.explanation || "코드를 생성하지 못했습니다. 요청을 바꿔 보세요."
+        );
+        setGenBusy(false);
+        return;
+      }
+      // 설명을 주석으로 얹어 새 셀로 추가
+      const header = result.explanation
+        ? `# ▸ AI 생성: ${result.explanation.replace(/\s+/g, " ").slice(0, 120)}`
+        : "# ▸ AI 생성";
+      const newC = newCell(`${header}\n${result.code}`);
+      setCells((prev) => [...prev, newC]);
+      setGenRequest("");
+      setGenBusy(false);
+      setNotice("AI가 새 셀에 코드를 생성했습니다 — 확인 후 실행하세요.");
+      requestAnimationFrame(() =>
+        rootRef.current
+          ?.querySelector(`[data-cell-id="${newC.id}"]`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" })
+      );
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "AI 요청에 실패했습니다.");
+      setGenBusy(false);
+    }
+  }, [genRequest, genBusy, newCell]);
+
   /** 폴더에 저장 — analysis.py(# %% 셀 구분) + workspace.json + 데이터 파일 일체 */
   const saveToFolder = useCallback(async () => {
     const picker = dirPicker();
@@ -809,10 +953,49 @@ export default function PyRunner({
             열 이름을 본 뒤, 다음 분석 셀의 열 이름을 맞춰 실행하세요.
           </p>
 
+          {/* AI 코드 생성 — 요청을 입력하면 앞서 실행한 데이터를 읽어 코드를 작성 */}
+          <div className="mt-3 rounded border border-[color:var(--primary)]/25 bg-white p-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[12.5px] font-medium text-foreground">
+                ✦ AI에게 코드 요청
+              </span>
+              <input
+                type="text"
+                value={genRequest}
+                onChange={(e) => setGenRequest(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void aiGenerate();
+                  }
+                }}
+                placeholder="예: 지역별 평균 보험료를 막대그래프로 그려줘"
+                aria-label="AI 코드 생성 요청"
+                className="h-9 min-w-[220px] flex-1 rounded border border-border bg-white px-3 text-[13px] text-foreground placeholder:text-placeholder focus-visible:border-foreground focus-visible:outline-none"
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void aiGenerate()}
+                disabled={genBusy || !genRequest.trim()}
+              >
+                {genBusy ? "생성 중…" : "코드 생성"}
+              </Button>
+            </div>
+            <p className="mt-1 text-[11.5px] text-tertiary">
+              먼저 데이터 로드 셀을 실행해 두면, AI가 그 데이터의 실제 열 이름을
+              읽어 코드를 만들어 새 셀로 추가합니다.
+            </p>
+            {genError ? (
+              <p className="mt-1 text-[12px] text-[#c4302b]">{genError}</p>
+            ) : null}
+          </div>
+
           {/* 셀 목록 — 코드 입력부는 다크 에디터로 뚜렷이 구분 */}
           {cells.map((c, i) => (
             <div
               key={c.id}
+              data-cell-id={c.id}
               className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--primary)] bg-white"
             >
               <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
@@ -826,6 +1009,27 @@ export default function PyRunner({
                   className={`${CELL_BTN} text-primary`}
                 >
                   ▶ 실행
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void aiFixCell(c.id)}
+                  disabled={!!c.aiBusy}
+                  title={
+                    c.status === "error"
+                      ? "오류 원인을 AI가 진단하고 고친 코드를 제안합니다"
+                      : "이 셀을 AI가 검토하고 개선안을 제안합니다"
+                  }
+                  className={`${CELL_BTN} ${
+                    c.status === "error"
+                      ? "border-[#c4302b]/40 text-[#c4302b]"
+                      : "text-primary"
+                  }`}
+                >
+                  {c.aiBusy
+                    ? "AI 분석 중…"
+                    : c.status === "error"
+                      ? "✦ AI 오류 수정"
+                      : "✦ AI 제안"}
                 </button>
                 <span
                   className={`text-[11.5px] ${
@@ -889,7 +1093,7 @@ export default function PyRunner({
                     : undefined
                 }
                 aria-label={`파이썬 코드 셀 ${i + 1}`}
-                className="block min-h-[76px] w-full resize-none border-0 bg-[#171a20] p-3 font-mono text-[12.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
+                className="block min-h-[76px] w-full resize-none border-0 bg-[#2f3540] p-3 font-mono text-[12.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
               />
               {c.output ? (
                 <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap border-t border-border bg-surface p-3 font-mono text-[12px] leading-[1.65] text-foreground">
@@ -906,6 +1110,54 @@ export default function PyRunner({
                   className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
                 />
               ))}
+
+              {c.aiError ? (
+                <p className="border-t border-border px-3 py-2 text-[12px] text-[#c4302b]">
+                  {c.aiError}
+                </p>
+              ) : null}
+
+              {/* AI 제안 — 검토 후 적용/새 셀/닫기 */}
+              {c.proposal ? (
+                <div className="border-t-2 border-[color:var(--primary)]/30 bg-[color:var(--primary)]/5 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[12px] font-semibold text-primary">
+                      ✦ AI 제안
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => applyProposal(c.id, "replace")}
+                        className="rounded bg-primary px-2.5 py-1 text-[11.5px] font-medium text-white hover:opacity-90"
+                      >
+                        이 셀에 적용
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyProposal(c.id, "new")}
+                        className={CELL_BTN}
+                      >
+                        아래 새 셀로
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => patchCell(c.id, { proposal: null })}
+                        className={CELL_BTN}
+                      >
+                        닫기
+                      </button>
+                    </div>
+                  </div>
+                  {c.proposal.explanation ? (
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-body">
+                      {c.proposal.explanation}
+                    </p>
+                  ) : null}
+                  <pre className="mt-2 max-h-[300px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[12px] leading-[1.65] text-[#e9ecf1]">
+                    {c.proposal.code}
+                  </pre>
+                </div>
+              ) : null}
             </div>
           ))}
 
@@ -936,6 +1188,15 @@ export default function PyRunner({
               셀</strong>로 나뉩니다. 로드 셀에는 실제 열 이름이 자동으로 출력되니,
               그 결과를 보고 이후 셀의 열 이름·조건을 맞춘 뒤 실행하세요. 직접
               붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를 지정할 수 있습니다.
+            </li>
+            <li>
+              <strong>✦ AI 도움</strong> — 셀에서{" "}
+              <strong>AI 오류 수정/제안</strong>을 누르면 현재 데이터의 실제 열
+              이름과 셀 코드·오류를 읽어 고친 코드를 제안합니다(적용 전 검토).
+              위의 <strong>AI에게 코드 요청</strong>에 하고 싶은 분석을 문장으로
+              적으면 앞서 실행한 데이터를 바탕으로 코드를 만들어 새 셀로
+              추가합니다. AI에는 코드와 데이터의 열 이름·자료형 요약만
+              전달되며, 실제 데이터 값은 전송되지 않습니다.
             </li>
             <li>
               numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib

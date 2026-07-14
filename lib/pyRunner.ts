@@ -70,8 +70,10 @@ export async function getPyodide(): Promise<PyodideAPI> {
           'warnings.filterwarnings("ignore", message=".*non-interactive.*")',
           'warnings.filterwarnings("ignore", message=".*non-GUI backend.*")',
           'warnings.filterwarnings("ignore", message=".*cannot show the figure.*")',
-          'warnings.filterwarnings("ignore", message=".*Pyarrow.*")',
-          'warnings.filterwarnings("ignore", category=DeprecationWarning, module="pandas")',
+          // 배포 예정 경고(Pyarrow 등)·미래 변경 경고는 학습용 실행에서 노이즈 → 숨김.
+          // (Pyarrow 메시지가 개행으로 시작해 message 정규식으로는 안 잡혀 카테고리로 억제)
+          'warnings.filterwarnings("ignore", category=DeprecationWarning)',
+          'warnings.filterwarnings("ignore", category=FutureWarning)',
         ].join("\n")
       );
       return py;
@@ -121,6 +123,55 @@ export async function ensureExcelSupport(py: PyodideAPI): Promise<void> {
 /** 데이터 파일을 Pyodide 가상 파일시스템(작업 디렉터리)에 기록 */
 export function writeDataFile(py: PyodideAPI, name: string, bytes: Uint8Array): void {
   py.FS.writeFile(name, bytes);
+}
+
+/**
+ * 현재 세션의 데이터 스키마를 수집한다 — 로드된 DataFrame/Series 변수의
+ * 열 이름·자료형·크기와 작업 폴더의 데이터 파일 목록(JSON 문자열).
+ * AI 어시스턴트가 '앞의 데이터'를 읽고 실제 열 이름으로 코드를 쓰도록 하는 컨텍스트.
+ * 아직 아무것도 실행되지 않았으면 파일 목록만(또는 빈 값) 반환.
+ */
+export async function collectDataSchema(): Promise<string> {
+  if (!isPyodideRequested()) return '{"vars":{},"files":[]}';
+  const py = await getPyodide();
+  const snippet = [
+    "import json as _json",
+    "def _collect_schema():",
+    "    import os",
+    "    out = {}",
+    "    try:",
+    "        import pandas as pd",
+    "        g = globals()",
+    "        for k in list(g.keys()):",
+    "            if k.startswith('_'):",
+    "                continue",
+    "            v = g.get(k)",
+    "            try:",
+    "                if isinstance(v, pd.DataFrame):",
+    "                    out[k] = {",
+    '                        "shape": list(v.shape),',
+    '                        "columns": [str(c) for c in v.columns][:80],',
+    '                        "dtypes": {str(c): str(t) for c, t in list(v.dtypes.items())[:80]},',
+    "                    }",
+    "                elif isinstance(v, pd.Series):",
+    '                    out[k] = {"series_dtype": str(v.dtype), "len": int(v.shape[0])}',
+    "            except Exception:",
+    "                pass",
+    "    except Exception:",
+    "        pass",
+    "    try:",
+    "        files = [f for f in os.listdir('.') if not f.startswith('.')]",
+    "    except Exception:",
+    "        files = []",
+    '    return _json.dumps({"vars": out, "files": files}, ensure_ascii=False)',
+    "_collect_schema()",
+  ].join("\n");
+  try {
+    const res = await py.runPythonAsync(snippet);
+    return typeof res === "string" ? res : String(res);
+  } catch {
+    return '{"vars":{},"files":[]}';
+  }
 }
 
 /** 작업 디렉터리의 데이터 파일 목록(폴더 저장용) — 코드로 생성된 파일 포함 */
