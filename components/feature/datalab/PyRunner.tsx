@@ -144,6 +144,11 @@ function classifyLine(line: string): LineKind {
   return "analysis"; // 그 밖의 대입·연산은 판단이 필요한 분석으로 간주
 }
 
+/** 셀 코드가 데이터 로드(read_*) 줄을 포함하는지 — 업로드 시 로드 셀 교체 판정 */
+function cellHasLoad(code: string): boolean {
+  return code.split("\n").some((l) => classifyLine(l) === "load");
+}
+
 /** 로드 줄들에서 데이터프레임 변수명(들)을 추출 — 열 목록 자동 출력에 사용 */
 function detectDfVars(lines: string[]): string[] {
   const vars: string[] = [];
@@ -420,22 +425,43 @@ export default function PyRunner({
         for (const [name, bytes] of dataBytes.current) writeDataFile(py, name, bytes);
       }
 
-      // 업로드 시 실제 파일명을 인식해 '로드·속성 확인' 셀을 자동 생성한다.
+      // 업로드 시 실제 파일명을 인식해 '로드·속성 확인' 셀을 만든다.
+      // 기존 로드 셀이 있으면 그 자리를 교체해 중복을 막고(분석 셀은 유지),
+      // 없으면 맨 위에 추가한다.
       if (opts.generateLoadCell) {
         const primary = items.find((it) =>
           /\.(csv|xlsx|xls|json|txt)$/i.test(it.name)
         );
         if (primary) {
-          const loadCell = newCell(buildLoadCell(primary.name));
+          const loadCode = buildLoadCell(primary.name);
+          const replacing = cellsRef.current.some((c) => cellHasLoad(c.code));
           setCells((prev) => {
-            const onlyEmpty =
-              prev.length === 1 && !prev[0].code.trim();
+            const idx = prev.findIndex((c) => cellHasLoad(c.code));
+            if (idx >= 0) {
+              return prev.map((c, i) =>
+                i === idx
+                  ? {
+                      ...c,
+                      code: loadCode,
+                      output: "",
+                      images: [],
+                      status: "idle",
+                      ms: undefined,
+                      phase: undefined,
+                    }
+                  : c
+              );
+            }
+            const onlyEmpty = prev.length === 1 && !prev[0].code.trim();
+            const loadCell = newCell(loadCode);
             return onlyEmpty ? [loadCell] : [loadCell, ...prev];
           });
           setSelectedId("");
           setLoadedLabel(`업로드 데이터: ${primary.name}`);
           setNotice(
-            `「${primary.name}」 로드·속성 확인 셀을 추가했습니다 — 먼저 실행해 열 이름을 확인한 뒤 다음 단계로 진행하세요.`
+            replacing
+              ? `「${primary.name}」에 맞춰 로드 셀을 교체했습니다 — 실행해 열 이름을 확인한 뒤 아래 분석 셀의 열 이름을 맞추세요.`
+              : `「${primary.name}」 로드·속성 확인 셀을 추가했습니다 — 먼저 실행해 열 이름을 확인하세요.`
           );
         }
       }
@@ -644,9 +670,9 @@ export default function PyRunner({
   return (
     <div
       ref={rootRef}
-      className="mt-8 rounded-cover border border-[color:var(--chip-blue-fg)]/15 p-5 sm:p-6"
+      className="mt-8 rounded-cover border border-[color:var(--chip-blue-fg)]/20 p-5 sm:p-6"
       style={{
-        background: "color-mix(in srgb, var(--chip-blue-bg) 45%, white)",
+        background: "color-mix(in srgb, var(--chip-blue-bg) 60%, white)",
       }}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -783,10 +809,13 @@ export default function PyRunner({
             열 이름을 본 뒤, 다음 분석 셀의 열 이름을 맞춰 실행하세요.
           </p>
 
-          {/* 셀 목록 */}
+          {/* 셀 목록 — 코드 입력부는 다크 에디터로 뚜렷이 구분 */}
           {cells.map((c, i) => (
-            <div key={c.id} className="mt-3 rounded border border-border bg-white">
-              <div className="flex flex-wrap items-center gap-2 border-b border-border px-2.5 py-1.5">
+            <div
+              key={c.id}
+              className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--primary)] bg-white"
+            >
+              <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
                 <span className="w-9 text-[11px] font-medium text-tertiary">
                   [{i + 1}]
                 </span>
@@ -811,9 +840,9 @@ export default function PyRunner({
                     type="button"
                     onClick={() => addCellBelow(c.id)}
                     className={CELL_BTN}
-                    title="아래에 새 셀 추가"
+                    title="현재 셀 바로 아래에 새 셀 추가"
                   >
-                    + 셀
+                    + 셀(아래에)
                   </button>
                   <button
                     type="button"
@@ -860,7 +889,7 @@ export default function PyRunner({
                     : undefined
                 }
                 aria-label={`파이썬 코드 셀 ${i + 1}`}
-                className="block min-h-[76px] w-full resize-none rounded-b border-0 bg-transparent p-3 font-mono text-[12.5px] leading-[1.7] text-foreground focus-visible:outline-none"
+                className="block min-h-[76px] w-full resize-none border-0 bg-[#171a20] p-3 font-mono text-[12.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
               />
               {c.output ? (
                 <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap border-t border-border bg-surface p-3 font-mono text-[12px] leading-[1.65] text-foreground">
