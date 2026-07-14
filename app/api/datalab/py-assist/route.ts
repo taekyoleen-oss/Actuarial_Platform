@@ -19,13 +19,20 @@ export async function POST(req: Request) {
   }
 
   const mode = body.mode;
-  if (mode !== "fix" && mode !== "generate") {
+  const allowed = ["fix", "generate", "edit", "vars"];
+  if (!mode || !allowed.includes(mode)) {
     return NextResponse.json({ error: "invalid_mode" }, { status: 400 });
   }
   if (mode === "generate" && !(body.request ?? "").trim()) {
     return NextResponse.json({ error: "empty_request" }, { status: 400 });
   }
-  if (mode === "fix" && !(body.code ?? "").trim()) {
+  if (mode === "edit" && !(body.request ?? "").trim()) {
+    return NextResponse.json({ error: "empty_request" }, { status: 400 });
+  }
+  if (
+    (mode === "fix" || mode === "edit" || mode === "vars") &&
+    !(body.code ?? "").trim()
+  ) {
     return NextResponse.json({ error: "empty_code" }, { status: 400 });
   }
 

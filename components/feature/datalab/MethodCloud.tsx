@@ -38,6 +38,21 @@ const SIZE: Record<number, { fs: number; fw: number }> = {
   5: { fs: 25, fw: 600 },
 };
 
+/* 웹 실행기 미지원 표시 — 실행 불가(none)는 회색, 일부만(partial)은 점선 밑줄 */
+const WEB_NONE_COLOR = "#9a9ca1";
+function webTermStyle(
+  m: StatMethod,
+  catColor: MethodChipColor
+): { color: string; borderBottom?: string } {
+  const support = m.webSupport ?? "full";
+  return {
+    color: support === "none" ? WEB_NONE_COLOR : `var(--chip-${catColor}-fg)`,
+    borderBottom:
+      support === "partial" ? "1.5px dashed currentColor" : undefined,
+  };
+}
+const WEB_LIMITED = STAT_METHODS.filter((m) => (m.webSupport ?? "full") !== "full");
+
 /* SSR 안전 결정적 해시 — 모바일 클러스터에서 크기가 섞여 보이게 */
 function hashOf(s: string): number {
   let h = 0;
@@ -570,7 +585,7 @@ function QuadrantChart({ onOpen }: { onOpen: (id: string) => void }) {
               style={{
                 fontSize: p.fs,
                 fontWeight: p.fw,
-                color: `var(--chip-${p.color}-fg)`,
+                ...webTermStyle(p.m, p.color),
               }}
             >
               {p.m.name}
@@ -640,7 +655,7 @@ function ClusterCloud({ onOpen }: { onOpen: (id: string) => void }) {
                   style={{
                     fontSize: fs,
                     fontWeight: fw,
-                    color: `var(--chip-${cat.color}-fg)`,
+                    ...webTermStyle(m, cat.color),
                   }}
                 >
                   {m.name}
@@ -693,6 +708,45 @@ export function MethodCloud() {
 
       <QuadrantChart onOpen={setOpenId} />
       <ClusterCloud onOpen={setOpenId} />
+
+      {/* 웹 실행기 제한 안내 — 회색(실행 불가)·점선(일부만) 표시 설명 */}
+      {WEB_LIMITED.length > 0 ? (
+        <div className="mt-4 rounded border border-border bg-surface/60 px-4 py-3">
+          <p className="text-[12.5px] font-semibold text-foreground">
+            아래 파이썬 실행기(브라우저)에서 제한되는 방법
+          </p>
+          <ul className="mt-1.5 space-y-1 text-[12px] leading-relaxed text-tertiary">
+            {WEB_LIMITED.map((m) => (
+              <li key={m.id}>
+                <span
+                  className="font-medium text-body"
+                  style={{
+                    color:
+                      m.webSupport === "none" ? WEB_NONE_COLOR : undefined,
+                    borderBottom:
+                      m.webSupport === "partial"
+                        ? "1.5px dashed currentColor"
+                        : undefined,
+                  }}
+                >
+                  {m.name}
+                </span>
+                {" — "}
+                {m.webNote}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-[11.5px] text-tertiary">
+            <span style={{ color: WEB_NONE_COLOR }}>회색 이름</span>은 브라우저
+            실행기에서 실행할 수 없고(로컬 파이썬에서 이용),{" "}
+            <span style={{ borderBottom: "1.5px dashed currentColor" }}>
+              점선 밑줄
+            </span>
+            은 일부 블록만 실행됩니다. 그 밖의 방법은 아래 실행기에서 바로 돌려볼
+            수 있습니다.
+          </p>
+        </div>
+      ) : null}
 
       <PyRunner loadRequest={runnerLoad} />
 

@@ -40,6 +40,14 @@ export interface StatMethod {
   difficulty: 1 | 2 | 3 | 4 | 5;
   /** 주요 파라미터·옵션 해설 — 팝업 '주요 파라미터·옵션' 섹션 */
   params: MethodParam[];
+  /**
+   * 웹 실행기(Pyodide) 지원 수준 — 미지정 시 "full".
+   * "none": 필요한 패키지가 브라우저에 없어 실행 불가.
+   * "partial": 일부 블록만 실행 가능(대체 코드로 우회).
+   */
+  webSupport?: "full" | "partial" | "none";
+  /** 웹 제한 안내 문구(webSupport가 none/partial일 때) */
+  webNote?: string;
   /** 한 줄 요약 (툴팁·팝업 서브타이틀) */
   summary: string;
   /** 개념·용도 설명 — "\n\n"으로 문단 구분 */
@@ -681,6 +689,9 @@ print(out.round(1))`,
     category: "model",
     weight: 2,
     difficulty: 5,
+    webSupport: "none",
+    webNote:
+      "lifelines 패키지가 브라우저 실행기에 포함되어 있지 않아 웹에서는 실행되지 않습니다. 로컬 파이썬(pip install lifelines)에서 이용하세요.",
     params: [
       { name: "fit(durations, event_observed)", desc: "KM 공통 입력 — 관찰 기간과 사건 지표(1=사건 발생, 0=중도절단). 절단을 1로 잘못 코딩하면 결과가 완전히 왜곡됩니다." },
       { name: "CoxPHFitter(penalizer=...)", desc: "0.01~0.1의 소량 규제 — 변수가 많거나 수렴이 불안정할 때 안정화." },
@@ -827,6 +838,9 @@ print(pd.Series(pi.importances_mean, index=X_te.columns)
     category: "ml",
     weight: 4,
     difficulty: 4,
+    webSupport: "partial",
+    webNote:
+      "LightGBM·XGBoost는 브라우저 실행기에서 사용할 수 없습니다. 다만 예제의 sklearn HistGradientBoosting 블록은 그대로 실행됩니다.",
     params: [
       { name: "learning_rate", desc: "나무 하나의 기여 축소 비율 — 0.03~0.1 권장. 낮출수록 성능은 안정되지만 나무 수를 늘려야 합니다." },
       { name: "n_estimators / max_iter", desc: "최대 나무 수 — 조기 종료와 함께 크게(1000~5000) 잡고 멈춤은 검증 성능에 맡깁니다." },

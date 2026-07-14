@@ -24,7 +24,11 @@ const SYSTEM = `당신은 브라우저(Pyodide · WebAssembly Python 3.12)에서
 코드 블록은 정확히 하나만, 그 밖의 마크다운/표/여러 블록은 쓰지 마세요.`;
 
 export interface PyAssistInput {
-  mode: "fix" | "generate";
+  /**
+   * fix: 셀 오류 진단·수정 / generate: 요청→새 코드(러너 레벨) /
+   * edit: 이 셀을 요청대로 수정·보완 / vars: 실제 세션 변수에 맞게 변수명만 조정
+   */
+  mode: "fix" | "generate" | "edit" | "vars";
   code?: string;
   error?: string;
   request?: string;
@@ -42,6 +46,41 @@ const cap = (s: string | undefined, n: number): string =>
 
 function buildUserMessage(input: PyAssistInput): string {
   const schema = cap(input.schema, 6000) || "(아직 로드된 데이터가 없습니다)";
+
+  if (input.mode === "edit") {
+    return [
+      "다음 셀의 파이썬 코드를 아래 '요청'에 맞게 수정하거나 내용을 추가한 '셀 전체 코드'를 제시하세요. 데이터 스키마의 실제 열 이름·변수를 사용하고, 요청과 무관한 부분은 최대한 유지하세요.",
+      "",
+      "[데이터 스키마(JSON)]",
+      schema,
+      "",
+      "[이전 셀 코드(참고용, 이미 실행됨)]",
+      cap(input.priorCode, 6000) || "(없음)",
+      "",
+      "[현재 셀 코드]",
+      cap(input.code, 8000) || "(비어 있음)",
+      "",
+      "[요청]",
+      cap(input.request, 1500) || "(요청 없음)",
+    ].join("\n");
+  }
+
+  if (input.mode === "vars") {
+    return [
+      "다음 셀 코드에서 사용하는 '변수 이름'만 조정하세요. 아래 '데이터 스키마'의 vars 키에 있는, 현재 세션에 실제로 존재하는 변수(주로 DataFrame)에 맞게 데이터프레임 등 변수 이름을 바꿉니다.",
+      "규칙: 코드의 로직·구조·함수·열 이름·문자열은 그대로 두고, 오직 존재하지 않는 변수를 실제 존재하는 변수 이름으로만 교체합니다. 이미 올바르면 그대로 두세요. 문맥상 알맞은 변수가 없으면 바꾸지 말고 짧게 이유만 설명하세요.",
+      "",
+      "[데이터 스키마(JSON) — vars 키가 실제 존재하는 변수]",
+      schema,
+      "",
+      "[이전 셀 코드(참고용)]",
+      cap(input.priorCode, 6000) || "(없음)",
+      "",
+      "[현재 셀 코드]",
+      cap(input.code, 8000) || "(비어 있음)",
+    ].join("\n");
+  }
+
   if (input.mode === "fix") {
     const hasError = (input.error ?? "").trim().length > 0;
     return [

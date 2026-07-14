@@ -32,7 +32,7 @@ import {
 
 /** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
 async function callAssist(body: {
-  mode: "fix" | "generate";
+  mode: "fix" | "generate" | "edit" | "vars";
   code?: string;
   error?: string;
   request?: string;
@@ -332,6 +332,18 @@ interface Cell {
   aiBusy?: boolean;
   aiError?: string | null;
   proposal?: AiProposal | null;
+  /** 셀별 'AI 제안' 요청 입력 영역 활성화 여부 */
+  aiInputOpen?: boolean;
+  aiRequest?: string;
+}
+
+/** 오류 셀 수정 적용용 코드 — 원본을 '# 에러 수정'으로 주석 처리하고 수정본을 아래에 둠 */
+function buildErrorFixCode(original: string, fixed: string): string {
+  const commented = original
+    .split("\n")
+    .map((l) => (l.trim() === "" ? "#" : `# ${l}`))
+    .join("\n");
+  return `# 에러 수정 — 아래 원본은 오류가 나 주석 처리했습니다(실행되지 않음)\n${commented}\n\n# ↓ 수정된 코드\n${fixed.trim()}`;
 }
 
 const PHASE_LABEL: Record<RunPhase, string> = {
@@ -607,20 +619,32 @@ export default function PyRunner({
     [newCell]
   );
 
-  /** 셀 AI 수정/제안 — 현재 데이터 스키마 + 셀 코드(+오류)를 보내 고친 코드를 제안 */
-  const aiFixCell = useCallback(
-    async (id: number) => {
+  /**
+   * 셀 AI 어시스턴트 — 모드별로 스키마·앞 셀 코드를 모아 제안을 만든다.
+   * fix: 오류 진단 → '원본 주석 + 수정본' 형태로 제안 / vars: 변수명만 실제 세션
+   * 변수에 맞게 / edit: 셀별 요청대로 수정·보완.
+   */
+  const runCellAssist = useCallback(
+    async (id: number, mode: "fix" | "vars" | "edit") => {
       const cell = cellsRef.current.find((c) => c.id === id);
       if (!cell || cell.aiBusy) return;
+      if (mode === "edit" && !(cell.aiRequest ?? "").trim()) return;
       patchCell(id, { aiBusy: true, aiError: null, proposal: null });
       try {
         const schema = await collectDataSchema();
-        const error = cell.status === "error" ? cell.output : "";
+        const idx = cellsRef.current.findIndex((c) => c.id === id);
+        const priorCode = cellsRef.current
+          .slice(0, Math.max(0, idx))
+          .map((c) => c.code.trim())
+          .filter(Boolean)
+          .join("\n\n# ---\n");
         const result = await callAssist({
-          mode: "fix",
+          mode,
           code: cell.code,
-          error,
+          error: mode === "fix" && cell.status === "error" ? cell.output : "",
+          request: mode === "edit" ? (cell.aiRequest ?? "").trim() : undefined,
           schema,
+          priorCode,
         });
         if (!result.code) {
           patchCell(id, {
@@ -631,7 +655,14 @@ export default function PyRunner({
           });
           return;
         }
-        patchCell(id, { aiBusy: false, proposal: result });
+        const proposalCode =
+          mode === "fix" ? buildErrorFixCode(cell.code, result.code) : result.code;
+        patchCell(id, {
+          aiBusy: false,
+          proposal: { code: proposalCode, explanation: result.explanation },
+          aiInputOpen: mode === "edit" ? false : cell.aiInputOpen,
+          aiRequest: mode === "edit" ? "" : cell.aiRequest,
+        });
       } catch (e) {
         patchCell(id, {
           aiBusy: false,
@@ -1010,35 +1041,92 @@ export default function PyRunner({
                 >
                   ▶ 실행
                 </button>
+                {/* 변수 반영 — 앞에서 쓴 실제 변수에 맞게 변수명만 조정 */}
                 <button
                   type="button"
-                  onClick={() => void aiFixCell(c.id)}
+                  onClick={() => void runCellAssist(c.id, "vars")}
                   disabled={!!c.aiBusy}
+                  title="앞 셀에서 사용한 실제 변수 이름에 맞게 이 셀의 변수명만 조정합니다"
+                  className={CELL_BTN}
+                >
+                  변수 반영
+                </button>
+                {/* 에러분석 — 오류 진단 후 원본은 '# 에러 수정'으로 주석, 수정본 추가 */}
+                <button
+                  type="button"
+                  onClick={() => void runCellAssist(c.id, "fix")}
+                  disabled={!!c.aiBusy || c.status !== "error"}
                   title={
                     c.status === "error"
-                      ? "오류 원인을 AI가 진단하고 고친 코드를 제안합니다"
-                      : "이 셀을 AI가 검토하고 개선안을 제안합니다"
+                      ? "오류 원인을 진단하고, 원본은 주석 처리 후 수정본을 제안합니다"
+                      : "오류가 있는 셀에서 사용할 수 있습니다"
                   }
                   className={`${CELL_BTN} ${
-                    c.status === "error"
-                      ? "border-[#c4302b]/40 text-[#c4302b]"
-                      : "text-primary"
+                    c.status === "error" ? "border-[#c4302b]/40 text-[#c4302b]" : ""
                   }`}
                 >
-                  {c.aiBusy
-                    ? "AI 분석 중…"
-                    : c.status === "error"
-                      ? "✦ AI 오류 수정"
-                      : "✦ AI 제안"}
+                  에러분석
                 </button>
-                <span
-                  className={`text-[11.5px] ${
-                    c.status === "error" ? "text-[#c4302b]" : "text-tertiary"
+                {/* AI 제안 — 우측 입력 영역을 활성화해 이 셀에 대한 요청을 받는다 */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    patchCell(c.id, { aiInputOpen: !c.aiInputOpen, aiError: null })
+                  }
+                  disabled={!!c.aiBusy}
+                  title="이 셀에 대한 수정·추가 요청을 입력하면 코드를 생성합니다"
+                  className={`${CELL_BTN} text-primary ${
+                    c.aiInputOpen ? "border-primary" : ""
                   }`}
-                  role="status"
                 >
-                  {cellStatusText(c)}
-                </span>
+                  ✦ AI 제안
+                </button>
+
+                {c.aiInputOpen ? (
+                  <span className="flex min-w-[200px] flex-1 items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={c.aiRequest ?? ""}
+                      onChange={(e) =>
+                        patchCell(c.id, { aiRequest: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void runCellAssist(c.id, "edit");
+                        }
+                      }}
+                      autoFocus
+                      placeholder="이 셀에 대한 요청 (예: 결측치 제거하고 상위 10개만)"
+                      aria-label={`셀 ${i + 1} AI 요청`}
+                      className="h-7 min-w-0 flex-1 rounded border border-border bg-white px-2 text-[12px] text-foreground placeholder:text-placeholder focus-visible:border-primary focus-visible:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void runCellAssist(c.id, "edit")}
+                      disabled={!!c.aiBusy || !(c.aiRequest ?? "").trim()}
+                      className="rounded bg-primary px-2 py-1 text-[11.5px] font-medium text-white hover:opacity-90 disabled:opacity-40"
+                    >
+                      생성
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => patchCell(c.id, { aiInputOpen: false })}
+                      className={CELL_BTN}
+                    >
+                      취소
+                    </button>
+                  </span>
+                ) : (
+                  <span
+                    className={`text-[11.5px] ${
+                      c.status === "error" ? "text-[#c4302b]" : "text-tertiary"
+                    }`}
+                    role="status"
+                  >
+                    {c.aiBusy ? "AI 분석 중…" : cellStatusText(c)}
+                  </span>
+                )}
                 <span className="ml-auto flex items-center gap-1">
                   <button
                     type="button"
@@ -1190,13 +1278,16 @@ export default function PyRunner({
               붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를 지정할 수 있습니다.
             </li>
             <li>
-              <strong>✦ AI 도움</strong> — 셀에서{" "}
-              <strong>AI 오류 수정/제안</strong>을 누르면 현재 데이터의 실제 열
-              이름과 셀 코드·오류를 읽어 고친 코드를 제안합니다(적용 전 검토).
-              위의 <strong>AI에게 코드 요청</strong>에 하고 싶은 분석을 문장으로
-              적으면 앞서 실행한 데이터를 바탕으로 코드를 만들어 새 셀로
-              추가합니다. AI에는 코드와 데이터의 열 이름·자료형 요약만
-              전달되며, 실제 데이터 값은 전송되지 않습니다.
+              <strong>✦ AI 도움(셀별)</strong> — <strong>변수 반영</strong>은 앞
+              셀에서 쓴 실제 변수 이름에 맞게 이 셀의 변수명만 바꿔 주고,{" "}
+              <strong>에러분석</strong>(오류 셀에서 활성화)은 원인을 진단해
+              원본을 <code>{"# 에러 수정"}</code>으로 주석 처리하고 수정본을 아래에
+              붙입니다. <strong>✦ AI 제안</strong>을 누르면 오른쪽에 입력창이
+              열려, 이 셀에 대한 수정·추가 요청을 적으면 코드를 생성합니다. 모두
+              제안을 검토한 뒤 <strong>적용</strong>합니다. 위의{" "}
+              <strong>AI에게 코드 요청</strong>은 새 셀로 코드를 만들어 줍니다.
+              AI에는 코드와 데이터의 열 이름·자료형 요약만 전달되며 실제 데이터
+              값은 전송되지 않습니다.
             </li>
             <li>
               numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib
