@@ -20,10 +20,14 @@ import { Check, ClipboardCopy, X } from "lucide-react";
 import {
   STAT_CATEGORIES,
   STAT_METHODS,
+  methodFullCode,
   type MethodCategory,
   type MethodChipColor,
   type StatMethod,
 } from "@/lib/statMethods";
+import PyRunner, {
+  type RunnerLoadRequest,
+} from "@/components/feature/datalab/PyRunner";
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 방법 */
 const SIZE: Record<number, { fs: number; fw: number }> = {
@@ -124,6 +128,7 @@ function MethodDialog({
   categoryLabel,
   fontScale,
   onFontScale,
+  onSendToRunner,
   onClose,
 }: {
   method: StatMethod;
@@ -131,6 +136,7 @@ function MethodDialog({
   categoryLabel: string;
   fontScale: number;
   onFontScale: Dispatch<SetStateAction<number>>;
+  onSendToRunner: (m: StatMethod) => void;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -154,13 +160,7 @@ function MethodDialog({
     );
 
   // 전체 복사: 블록 제목을 주석으로 달아 모든 코드를 이어붙임
-  const allCode = useMemo(
-    () =>
-      method.sections
-        .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
-        .join("\n\n\n"),
-    [method]
-  );
+  const allCode = useMemo(() => methodFullCode(method), [method]);
 
   return (
     <div
@@ -228,6 +228,14 @@ function MethodDialog({
                 </button>
               </div>
               <CopyButton text={allCode} label="전체 코드 복사" />
+              <button
+                type="button"
+                onClick={() => onSendToRunner(method)}
+                className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+                title="아래 파이썬 실행기에 이 코드를 담고 이동합니다"
+              >
+                ▶ 실행기로 보내기
+              </button>
               <button
                 type="button"
                 onClick={onClose}
@@ -652,6 +660,17 @@ export function MethodCloud() {
   const [openId, setOpenId] = useState<string | null>(null);
   // 팝업 글자 배율 — 팝업을 닫았다 열어도 유지
   const [fontScale, setFontScale] = useState(1);
+  // 파이썬 실행기에 코드 주입(팝업 "실행기로 보내기") — seq 증가로 재전송 감지
+  const [runnerLoad, setRunnerLoad] = useState<RunnerLoadRequest | null>(null);
+
+  const sendToRunner = (m: StatMethod) => {
+    setRunnerLoad((prev) => ({
+      code: `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
+      label: `${m.name} (${m.en})`,
+      seq: (prev?.seq ?? 0) + 1,
+    }));
+    setOpenId(null);
+  };
 
   const open = openId ? STAT_METHODS.find((m) => m.id === openId) : undefined;
   const openCat = open
@@ -675,6 +694,8 @@ export function MethodCloud() {
       <QuadrantChart onOpen={setOpenId} />
       <ClusterCloud onOpen={setOpenId} />
 
+      <PyRunner loadRequest={runnerLoad} />
+
       {open && openCat ? (
         <MethodDialog
           method={open}
@@ -682,6 +703,7 @@ export function MethodCloud() {
           categoryLabel={openCat.label}
           fontScale={fontScale}
           onFontScale={setFontScale}
+          onSendToRunner={sendToRunner}
           onClose={() => setOpenId(null)}
         />
       ) : null}

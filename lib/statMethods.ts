@@ -49,6 +49,13 @@ export interface StatMethod {
   sections: MethodCodeSection[];
 }
 
+/** 전체 코드 결합 — 블록 제목을 주석으로 달아 이어붙임(복사·실행기 로드 공용) */
+export function methodFullCode(m: StatMethod): string {
+  return m.sections
+    .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
+    .join("\n\n\n");
+}
+
 export const STAT_CATEGORIES: MethodCategory[] = [
   {
     id: "basic",
