@@ -241,6 +241,28 @@ print(f"대응    t={t:.3f}, p={p:.4f}")
 
 # p < 0.05 → 유의수준 5%에서 '차이가 없다'는 귀무가설 기각`,
       },
+      {
+        title: "가정 점검·효과크기 — 정규성·등분산·Cohen's d",
+        desc: "t-검정 전 가정을 확인하고, p-value와 함께 효과 크기를 보고합니다.",
+        code: `from scipy import stats
+import numpy as np
+
+# ① 정규성(집단별 Shapiro) — p < 0.05 이면 정규 위배(→ Mann-Whitney 대체 고려)
+for name, g in [("남", male), ("여", female)]:
+    s = g.dropna()
+    p = stats.shapiro(s.sample(min(len(s), 5000), random_state=0))[1]
+    print(f"{name} 정규성 p = {p:.4f}")
+
+# ② 등분산성(Levene) — p < 0.05 이면 분산이 다름(Welch t가 안전)
+lev_p = stats.levene(male.dropna(), female.dropna())[1]
+print(f"Levene 등분산 p = {lev_p:.4f}  ({'분산 다름' if lev_p < 0.05 else '등분산 양호'})")
+
+# ③ 효과 크기(Cohen's d) — 0.2 작음·0.5 중간·0.8 큼 (유의성과 별개로 크기 보고)
+a, b = male.dropna(), female.dropna()
+sp = np.sqrt(((len(a)-1)*a.var(ddof=1) + (len(b)-1)*b.var(ddof=1)) / (len(a)+len(b)-2))
+d = (a.mean() - b.mean()) / sp
+print(f"Cohen's d = {d:.3f}")`,
+      },
     ],
   },
   {
@@ -281,6 +303,21 @@ print(pd.DataFrame(expected, index=table.index, columns=table.columns).round(1))
 
 # 비율로 보면 해석이 쉬움 (행 기준 %)
 print(pd.crosstab(df["age_band"], df["lapsed"], normalize="index").round(3))`,
+      },
+      {
+        title: "효과크기 — Cramér's V·표준화 잔차",
+        desc: "유의성(p)과 별개로 연관의 '세기'와 어느 칸이 기여했는지를 봅니다.",
+        code: `import numpy as np
+
+# ① Cramér's V — 0(무관)~1(완전연관). 0.1 약함·0.3 중간·0.5 강함
+n = table.values.sum()
+k = min(table.shape) - 1
+cramers_v = np.sqrt(chi2 / (n * k)) if k > 0 else np.nan
+print(f"Cramér's V = {cramers_v:.3f}")
+
+# ② 표준화 잔차 — |값| > 2 인 칸이 연관을 주도(관측이 기대보다 유의하게 큼/작음)
+std_resid = (table.values - expected) / np.sqrt(expected)
+print(pd.DataFrame(std_resid, index=table.index, columns=table.columns).round(2))`,
       },
     ],
   },
@@ -325,6 +362,27 @@ print(sm.stats.anova_lm(model, typ=2))   # 분산분석표
 
 tukey = pairwise_tukeyhsd(df["claim_amt"], df["product"], alpha=0.05)
 print(tukey.summary())   # reject=True 인 쌍이 유의하게 다른 집단`,
+      },
+      {
+        title: "가정 점검·효과크기 — 등분산(Levene)·잔차 정규성·eta²",
+        desc: "분산분석의 등분산·정규성 가정을 확인하고 효과 크기를 보고합니다.",
+        code: `from scipy import stats
+import statsmodels.api as sm
+
+# ① 등분산성(Levene) — p < 0.05 이면 분산이 달라 비모수(Kruskal) 대안 권장
+lev_p = stats.levene(*groups)[1]
+print(f"Levene 등분산 p = {lev_p:.4f}  ({'분산 다름' if lev_p < 0.05 else '등분산 양호'})")
+if lev_p < 0.05:
+    print(f"→ 등분산 위배: Kruskal-Wallis p = {stats.kruskal(*groups)[1]:.4f} (비모수 대안)")
+
+# ② 잔차 정규성(Shapiro) — model은 위 ols 적합
+r = model.resid
+print(f"잔차 Shapiro p = {stats.shapiro(r.sample(min(len(r), 5000), random_state=0))[1]:.4f}")
+
+# ③ 효과 크기(eta²) — 전체 분산 중 집단이 설명하는 비율. 0.01 작음·0.06 중간·0.14 큼
+tbl = sm.stats.anova_lm(model, typ=2)
+eta_sq = tbl["sum_sq"].iloc[0] / tbl["sum_sq"].sum()
+print(f"eta² = {eta_sq:.3f}")`,
       },
     ],
   },
@@ -478,6 +536,37 @@ plt.show()
 # 깔때기 모양(분산 증가) → 로그 변환·가중회귀 고려
 # 곡선 패턴 → 비선형 항(다항·구간화) 고려`,
       },
+      {
+        title: "회귀 가정 진단 — 다중공선성·등분산성·자기상관·정규성",
+        desc: "계수 해석 전에 반드시 점검. statsmodels model(=ols 적합)과 df가 필요합니다.",
+        code: `import numpy as np
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.stats.diagnostic import het_breuschpagan
+from statsmodels.stats.stattools import durbin_watson
+from scipy import stats
+
+# ① 다중공선성(VIF) — 보통 VIF > 10 이면 공선성 우려(계수·부호 불안정)
+num_cols = ["age", "bmi", "dependents"]
+Xc = sm.add_constant(df[num_cols].dropna())
+vif = pd.DataFrame({
+    "변수": Xc.columns,
+    "VIF": [variance_inflation_factor(Xc.values, i) for i in range(Xc.shape[1])],
+})
+print("[VIF]\\n", vif.round(2), "\\n")
+
+# ② 등분산성(Breusch-Pagan) — p < 0.05 이면 이분산(등분산 위배 → 강건 표준오차)
+bp_stat, bp_p, _, _ = het_breuschpagan(model.resid, model.model.exog)
+print(f"Breusch-Pagan p = {bp_p:.4f}  ({'이분산 의심' if bp_p < 0.05 else '등분산 양호'})")
+
+# ③ 자기상관(Durbin-Watson) — 2 근처면 무자기상관(1.5~2.5 양호)
+print(f"Durbin-Watson  = {durbin_watson(model.resid):.3f}")
+
+# ④ 잔차 정규성(Shapiro) — p < 0.05 이면 정규 위배
+r = model.resid
+sh_p = stats.shapiro(r.sample(min(len(r), 5000), random_state=0))[1]
+print(f"잔차 Shapiro p = {sh_p:.4f}  ({'정규 아님' if sh_p < 0.05 else '정규 양호'})")`,
+      },
     ],
   },
   {
@@ -504,7 +593,11 @@ plt.show()
         code: `import numpy as np
 import statsmodels.formula.api as smf
 
-model = smf.logit("lapsed ~ age + premium_ratio + C(channel)", data=df).fit()
+# 목표변수는 0/1 이어야 합니다(불리언이면 변환 — statsmodels formula 요구).
+# 원본 df는 건드리지 않고 사본에서 변환.
+d = df.assign(lapsed=df["lapsed"].astype(int))
+
+model = smf.logit("lapsed ~ age + premium_ratio + C(channel)", data=d).fit()
 print(model.summary())
 
 # 오즈비: exp(coef) — 1보다 크면 해지 위험 증가 요인
@@ -533,6 +626,31 @@ print(f"ROC-AUC = {roc_auc_score(y_te, proba):.3f}")
 # 업무 비용에 맞춰 임계값 조정 (기본 0.5 대신 0.3 등)
 pred = (proba >= 0.3).astype(int)
 print(classification_report(y_te, pred))`,
+      },
+      {
+        title: "진단·성능 — 다중공선성(VIF)·의사결정계수·분류 지표",
+        desc: "설명변수 공선성과 모형 적합도·분류 성능을 함께 점검합니다.",
+        code: `import numpy as np
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.metrics import (confusion_matrix, accuracy_score,
+                             roc_auc_score, average_precision_score)
+
+# ① 다중공선성(VIF) — 설명변수끼리 상관이 높으면 오즈비 해석 불안정
+feats = ["age", "premium_ratio", "tenure_months"]
+Xc = sm.add_constant(df[feats].dropna())
+vif = [variance_inflation_factor(Xc.values, i) for i in range(Xc.shape[1])]
+print("[VIF]", dict(zip(Xc.columns, np.round(vif, 2))))
+
+# ② McFadden 유사결정계수(pseudo R²) — 0.2~0.4면 양호(선형회귀 R²보다 낮게 나옴)
+print(f"McFadden pseudo R2 = {model.prsquared:.3f}")
+
+# ③ 분류 성능 — 정확도·ROC-AUC·PR-AUC·혼동행렬(임계값 0.5)
+pred05 = (proba >= 0.5).astype(int)
+print(f"정확도    = {accuracy_score(y_te, pred05):.3f}")
+print(f"ROC-AUC   = {roc_auc_score(y_te, proba):.3f}")
+print(f"PR-AUC    = {average_precision_score(y_te, proba):.3f}  (불균형에 민감)")
+print("혼동행렬\\n", confusion_matrix(y_te, pred05))`,
       },
     ],
   },
@@ -589,6 +707,25 @@ print(np.exp(sev.params).round(3))
 
 # 순보험료 = 빈도 예측 × 심도 예측
 df["pure_premium"] = freq.predict(df) / df["exposure"] * sev.predict(df)`,
+      },
+      {
+        title: "적합도 진단 — 과산포·이탈도",
+        desc: "포아송 모형(freq)의 과산포 여부와 적합도를 점검합니다.",
+        code: `# ① 과산포(overdispersion): Pearson chi2 / 자유도 ≈ 1이 이상.
+#    1보다 크게 벗어나면 과산포 → 음이항 또는 fit(scale='X2')로 표준오차 보정
+pearson_chi2 = freq.pearson_chi2
+dof = freq.df_resid
+print(f"Pearson chi2/df = {pearson_chi2 / dof:.3f}  (>1.2 면 과산포 의심)")
+
+# ② 이탈도 기반 적합도: Deviance/df, 유사결정계수
+print(f"Deviance/df     = {freq.deviance / dof:.3f}")
+print(f"pseudo R2(dev)  = {1 - freq.deviance / freq.null_deviance:.3f}")
+print(f"AIC = {freq.aic:.1f}   BIC = {freq.bic:.1f}")
+
+# ③ 과산포가 크면 표준오차를 보정해 재적합(quasi-Poisson)
+freq_qp = freq.model.fit(scale="X2")
+print("\\n[quasi-Poisson 보정 후 p-value 일부]")
+print(freq_qp.pvalues.round(4).head())`,
       },
     ],
   },
@@ -781,6 +918,29 @@ print(f"train 정확도 {tree.score(X_tr, y_tr):.3f}")
 print(f"test  정확도 {tree.score(X_te, y_te):.3f}")
 # 두 값의 차이가 크면 과적합 → max_depth를 줄일 것`,
       },
+      {
+        title: "성능 평가 — 정확도·ROC-AUC·리포트·혼동행렬",
+        desc: "샘플(policy)로 바로 실행되는 자체 완결형 평가. 실제 데이터면 열 이름만 맞추세요.",
+        code: `from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import (accuracy_score, roc_auc_score,
+                             confusion_matrix, classification_report)
+
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42)
+
+est = DecisionTreeClassifier(max_depth=4, min_samples_leaf=50,
+                             class_weight="balanced", random_state=42).fit(X_tr, y_tr)
+proba = est.predict_proba(X_te)[:, 1]
+pred = est.predict(X_te)
+
+print(f"정확도   = {accuracy_score(y_te, pred):.3f}")
+print(f"ROC-AUC  = {roc_auc_score(y_te, proba):.3f}")
+print("혼동행렬\\n", confusion_matrix(y_te, pred))
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))`,
+      },
     ],
   },
   {
@@ -828,6 +988,30 @@ print(imp.sort_values(ascending=False).round(3))
 pi = permutation_importance(rf, X_te, y_te, n_repeats=10, random_state=42)
 print(pd.Series(pi.importances_mean, index=X_te.columns)
       .sort_values(ascending=False).round(4))`,
+      },
+      {
+        title: "성능 평가 — 정확도·ROC-AUC·PR-AUC·리포트",
+        desc: "샘플(policy)로 바로 실행되는 자체 완결형 평가.",
+        code: `from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (accuracy_score, roc_auc_score,
+    average_precision_score, confusion_matrix, classification_report)
+
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42)
+
+est = RandomForestClassifier(n_estimators=500, min_samples_leaf=20,
+    class_weight="balanced", n_jobs=-1, random_state=42).fit(X_tr, y_tr)
+proba = est.predict_proba(X_te)[:, 1]
+pred = est.predict(X_te)
+
+print(f"정확도   = {accuracy_score(y_te, pred):.3f}")
+print(f"ROC-AUC  = {roc_auc_score(y_te, proba):.3f}")
+print(f"PR-AUC   = {average_precision_score(y_te, proba):.3f}")
+print("혼동행렬\\n", confusion_matrix(y_te, pred))
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))`,
       },
     ],
   },
@@ -889,6 +1073,30 @@ hgb = HistGradientBoostingClassifier(
 
 print(f"ROC-AUC = {roc_auc_score(y_te, hgb.predict_proba(X_te)[:, 1]):.3f}")`,
       },
+      {
+        title: "성능 평가 — 정확도·ROC-AUC·리포트 (HistGB, 브라우저 실행 가능)",
+        desc: "LightGBM은 브라우저 실행기에서 안 되므로 sklearn HistGB로 자체 완결형 평가.",
+        code: `from sklearn.model_selection import train_test_split
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import (accuracy_score, roc_auc_score,
+    average_precision_score, confusion_matrix, classification_report)
+
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42)
+
+est = HistGradientBoostingClassifier(max_iter=800, learning_rate=0.05,
+    early_stopping=True, validation_fraction=0.15, random_state=42).fit(X_tr, y_tr)
+proba = est.predict_proba(X_te)[:, 1]
+pred = est.predict(X_te)
+
+print(f"정확도   = {accuracy_score(y_te, pred):.3f}")
+print(f"ROC-AUC  = {roc_auc_score(y_te, proba):.3f}")
+print(f"PR-AUC   = {average_precision_score(y_te, proba):.3f}")
+print("혼동행렬\\n", confusion_matrix(y_te, pred))
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))`,
+      },
     ],
   },
   {
@@ -929,6 +1137,32 @@ grid = GridSearchCV(
 print(grid.best_params_)
 print(f"CV best AUC = {grid.best_score_:.3f}")
 print(f"test  score = {grid.score(X_te, y_te):.3f}")`,
+      },
+      {
+        title: "성능 평가 — 정확도·ROC-AUC·리포트 (스케일링 파이프라인)",
+        desc: "SVM은 스케일링 필수. 샘플(policy)로 바로 실행되는 자체 완결형 평가.",
+        code: `from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import (accuracy_score, roc_auc_score,
+                             confusion_matrix, classification_report)
+
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42)
+
+est = make_pipeline(StandardScaler(),
+    SVC(kernel="rbf", C=10, class_weight="balanced", probability=True,
+        random_state=42)).fit(X_tr, y_tr)
+proba = est.predict_proba(X_te)[:, 1]
+pred = est.predict(X_te)
+
+print(f"정확도   = {accuracy_score(y_te, pred):.3f}")
+print(f"ROC-AUC  = {roc_auc_score(y_te, proba):.3f}")
+print("혼동행렬\\n", confusion_matrix(y_te, pred))
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))`,
       },
     ],
   },
@@ -974,6 +1208,31 @@ plt.show()
 
 best_k = list(ks)[scores.index(max(scores))]
 print(f"best k = {best_k}")`,
+      },
+      {
+        title: "성능 평가 — 정확도·ROC-AUC·리포트 (스케일링 파이프라인)",
+        desc: "KNN도 스케일링 필수. 샘플(policy)로 바로 실행되는 자체 완결형 평가.",
+        code: `from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import (accuracy_score, roc_auc_score,
+                             confusion_matrix, classification_report)
+
+X = df[["age", "premium", "bmi", "tenure_months", "n_contracts"]]
+y = df["lapsed"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42)
+
+est = make_pipeline(StandardScaler(),
+    KNeighborsClassifier(n_neighbors=15, weights="distance")).fit(X_tr, y_tr)
+proba = est.predict_proba(X_te)[:, 1]
+pred = est.predict(X_te)
+
+print(f"정확도   = {accuracy_score(y_te, pred):.3f}")
+print(f"ROC-AUC  = {roc_auc_score(y_te, proba):.3f}")
+print("혼동행렬\\n", confusion_matrix(y_te, pred))
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))`,
       },
     ],
   },
