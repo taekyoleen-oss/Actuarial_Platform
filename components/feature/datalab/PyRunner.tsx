@@ -313,6 +313,7 @@ export interface RunnerLoadRequest {
   code: string;
   label: string;
   seq: number;
+  methodId?: string;
 }
 
 type CellStatus = "idle" | "running" | "done" | "error";
@@ -339,6 +340,8 @@ interface Cell {
   /** '변수 반영' 변수 선택 드롭다운 */
   varPickerOpen?: boolean;
   varOptions?: string[];
+  /** 실행 결과 접힘 여부 */
+  outputCollapsed?: boolean;
 }
 
 interface ErrModalState {
@@ -395,8 +398,10 @@ function autoSize(el: HTMLTextAreaElement): void {
 
 export default function PyRunner({
   loadRequest,
+  onLoadMethod,
 }: {
   loadRequest: RunnerLoadRequest | null;
+  onLoadMethod?: (methodId: string | null) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const dataBytes = useRef<Map<string, Uint8Array>>(new Map());
@@ -448,23 +453,28 @@ export default function PyRunner({
     [newCell]
   );
 
-  // 팝업 "실행기로 보내기" — 셀 분할 주입 + 패널 열고 스크롤
+  // 팝업 "실행기로 보내기" — 셀 분할 주입 + 패널 열고 스크롤 + 워드클라우드 강조
   useEffect(() => {
     if (!loadRequest) return;
     setOpen(true);
     setCellsFromCode(loadRequest.code, loadRequest.label);
-    setSelectedId("");
+    setSelectedId(loadRequest.methodId ?? "");
+    if (loadRequest.methodId) onLoadMethod?.(loadRequest.methodId);
     requestAnimationFrame(() =>
       rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
     );
-  }, [loadRequest, setCellsFromCode]);
+  }, [loadRequest, setCellsFromCode, onLoadMethod]);
 
   const loadById = useCallback(
     (id: string) => {
       setSelectedId(id);
-      if (!id) return;
+      if (!id) {
+        onLoadMethod?.(null);
+        return;
+      }
       if (id === SAMPLE_ID) {
         setCellsFromCode(SAMPLE_CODE, SAMPLE_LABEL);
+        onLoadMethod?.(null);
         return;
       }
       const m = STAT_METHODS.find((x) => x.id === id);
@@ -473,8 +483,10 @@ export default function PyRunner({
         `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
         `${m.name} (${m.en})`
       );
+      // 콤보박스에서 방법을 고르면 워드클라우드에서 해당 방법을 강조 표시
+      onLoadMethod?.(m.id);
     },
-    [setCellsFromCode]
+    [setCellsFromCode, onLoadMethod]
   );
 
   const addDataFiles = useCallback(
@@ -799,32 +811,29 @@ export default function PyRunner({
     [patchCell, priorCodeOf]
   );
 
-  /** 에러 팝업 '반영' — 원본을 '# 에러내용'으로 주석 처리 + 수정본 추가 */
+  /** 에러 팝업 '반영' — 원본을 '# 에러내용'으로 주석 처리 + 수정본 추가.
+   *  오류 상태·출력을 초기화해 셀 상단의 '오류' 표시가 남지 않게 한다. */
   const applyErrModal = useCallback(() => {
-    setErrModal((m) => {
-      if (!m) return null;
-      const wrapped = buildErrorFixCode(
-        m.originalCode,
-        m.fixedCode,
-        m.errorSummary
-      );
-      setCells((prev) =>
-        prev.map((c) =>
-          c.id === m.cellId
-            ? {
-                ...c,
-                code: wrapped,
-                output: "",
-                images: [],
-                status: "idle",
-                ms: undefined,
-              }
-            : c
-        )
-      );
-      return null;
-    });
-  }, []);
+    if (!errModal) return;
+    const m = errModal;
+    const wrapped = buildErrorFixCode(m.originalCode, m.fixedCode, m.errorSummary);
+    setCells((prev) =>
+      prev.map((c) =>
+        c.id === m.cellId
+          ? {
+              ...c,
+              code: wrapped,
+              output: "",
+              images: [],
+              status: "idle",
+              ms: undefined,
+              aiError: null,
+            }
+          : c
+      )
+    );
+    setErrModal(null);
+  }, [errModal]);
 
   const applyProposal = useCallback(
     (id: number, target: "replace" | "new") => {
@@ -1362,21 +1371,41 @@ export default function PyRunner({
                 aria-label={`파이썬 코드 셀 ${i + 1}`}
                 className="block min-h-[76px] w-full resize-none border-0 bg-[#2f3540] p-3 font-mono text-[12.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
               />
-              {c.output ? (
-                <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap border-t border-border bg-surface p-3 font-mono text-[12px] leading-[1.65] text-foreground">
-                  {c.output}
-                </pre>
+              {c.output || c.images.length > 0 ? (
+                <div className="border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      patchCell(c.id, { outputCollapsed: !c.outputCollapsed })
+                    }
+                    className="flex w-full items-center gap-1 bg-surface px-3 py-1 text-[11px] text-tertiary hover:text-foreground"
+                    aria-expanded={!c.outputCollapsed}
+                  >
+                    {c.outputCollapsed
+                      ? `▸ 실행 결과 펼치기${c.images.length ? ` (그래프 ${c.images.length})` : ""}`
+                      : "▾ 실행 결과 접기"}
+                  </button>
+                  {!c.outputCollapsed ? (
+                    <>
+                      {c.output ? (
+                        <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap bg-surface px-3 pb-3 font-mono text-[12px] leading-[1.65] text-foreground">
+                          {c.output}
+                        </pre>
+                      ) : null}
+                      {c.images.map((b64, j) => (
+                        // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={j}
+                          src={`data:image/png;base64,${b64}`}
+                          alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
+                          className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
+                        />
+                      ))}
+                    </>
+                  ) : null}
+                </div>
               ) : null}
-              {c.images.map((b64, j) => (
-                // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={j}
-                  src={`data:image/png;base64,${b64}`}
-                  alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
-                  className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
-                />
-              ))}
 
               {c.aiError ? (
                 <p className="border-t border-border px-3 py-2 text-[12px] text-[#c4302b]">

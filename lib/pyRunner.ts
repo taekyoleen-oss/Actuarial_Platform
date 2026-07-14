@@ -220,6 +220,15 @@ export async function runPythonCode(
   if (/read_excel|to_excel|ExcelWriter|\.xlsx|\.xls\b/.test(code)) {
     await ensureExcelSupport(py);
   }
+  // pandas의 스피어만·켄달 상관은 내부적으로 scipy를 지연 import한다.
+  // 코드에 scipy import가 없어도(=.corr(method="spearman") 등) 미리 로드해 둔다.
+  if (/method\s*=\s*["'](spearman|kendall)["']/.test(code)) {
+    try {
+      await py.loadPackage("scipy");
+    } catch {
+      // 로드 실패 시 실행 단계에서 ImportError로 표면화
+    }
+  }
 
   py.setStdout({ batched: (s) => onOutput(`${s}\n`) });
   py.setStderr({ batched: (s) => onOutput(`${s}\n`) });

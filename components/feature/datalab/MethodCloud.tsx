@@ -493,7 +493,13 @@ function CategoryTag({ cat, align }: { cat: MethodCategory; align: "l" | "r" }) 
   );
 }
 
-function QuadrantChart({ onOpen }: { onOpen: (id: string) => void }) {
+function QuadrantChart({
+  onOpen,
+  highlightId,
+}: {
+  onOpen: (id: string) => void;
+  highlightId: string | null;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -581,7 +587,9 @@ function QuadrantChart({ onOpen }: { onOpen: (id: string) => void }) {
               type="button"
               onClick={() => onOpen(p.m.id)}
               title={p.m.summary}
-              className="method-term whitespace-nowrap rounded px-1 leading-none"
+              className={`method-term whitespace-nowrap rounded px-1 leading-none ${
+                highlightId === p.m.id ? "method-term-active" : ""
+              }`}
               style={{
                 fontSize: p.fs,
                 fontWeight: p.fw,
@@ -610,7 +618,13 @@ function QuadrantChart({ onOpen }: { onOpen: (id: string) => void }) {
 
 /* ─────────────────── 모바일 폴백 — 카테고리 클러스터 클라우드 ─────────────────── */
 
-function ClusterCloud({ onOpen }: { onOpen: (id: string) => void }) {
+function ClusterCloud({
+  onOpen,
+  highlightId,
+}: {
+  onOpen: (id: string) => void;
+  highlightId: string | null;
+}) {
   const clusters = useMemo(
     () =>
       STAT_CATEGORIES.map((cat) => ({
@@ -651,7 +665,9 @@ function ClusterCloud({ onOpen }: { onOpen: (id: string) => void }) {
                   type="button"
                   onClick={() => onOpen(m.id)}
                   title={m.summary}
-                  className="method-term rounded px-1 leading-snug"
+                  className={`method-term rounded px-1 leading-snug ${
+                    highlightId === m.id ? "method-term-active" : ""
+                  }`}
                   style={{
                     fontSize: fs,
                     fontWeight: fw,
@@ -677,12 +693,15 @@ export function MethodCloud() {
   const [fontScale, setFontScale] = useState(1);
   // 파이썬 실행기에 코드 주입(팝업 "실행기로 보내기") — seq 증가로 재전송 감지
   const [runnerLoad, setRunnerLoad] = useState<RunnerLoadRequest | null>(null);
+  // 실행기 콤보박스/실행기로 보내기로 불러온 방법 — 워드클라우드에서 강조
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const sendToRunner = (m: StatMethod) => {
     setRunnerLoad((prev) => ({
       code: `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
       label: `${m.name} (${m.en})`,
       seq: (prev?.seq ?? 0) + 1,
+      methodId: m.id,
     }));
     setOpenId(null);
   };
@@ -706,8 +725,8 @@ export function MethodCloud() {
         </p>
       </div>
 
-      <QuadrantChart onOpen={setOpenId} />
-      <ClusterCloud onOpen={setOpenId} />
+      <QuadrantChart onOpen={setOpenId} highlightId={highlightId} />
+      <ClusterCloud onOpen={setOpenId} highlightId={highlightId} />
 
       {/* 웹 실행기 제한 안내 — 회색(실행 불가)·점선(일부만) 표시 설명 */}
       {WEB_LIMITED.length > 0 ? (
@@ -748,7 +767,7 @@ export function MethodCloud() {
         </div>
       ) : null}
 
-      <PyRunner loadRequest={runnerLoad} />
+      <PyRunner loadRequest={runnerLoad} onLoadMethod={setHighlightId} />
 
       {open && openCat ? (
         <MethodDialog

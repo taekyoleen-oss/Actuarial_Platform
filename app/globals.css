@@ -206,6 +206,23 @@ mark.key-phrase {
   transform: scale(1.12);
   background: rgba(255, 255, 255, 0.85);
 }
+/* 실행기에서 불러온 방법 강조 — 링 + 배경 + 은은한 펄스 */
+.method-term-active {
+  background: rgba(255, 255, 255, 0.92);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+  animation: method-term-pulse 1.6s ease-in-out 2;
+}
+@keyframes method-term-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(62, 106, 225, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(62, 106, 225, 0.18);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-fade {
@@ -221,6 +238,9 @@ mark.key-phrase {
   .method-term:focus-visible {
     transition: none;
     transform: none;
+  }
+  .method-term-active {
+    animation: none !important;
   }
 }
 
