@@ -365,22 +365,6 @@ function errorSummaryOf(output: string): string {
   return lines[lines.length - 1] ?? "오류";
 }
 
-/**
- * 오류 셀 수정 적용용 코드 — 기존 에러 코드를 '# 에러내용'으로 주석 처리해
- * 실행되지 않게 하고, 그 아래에 수정된 코드를 추가한다.
- */
-function buildErrorFixCode(
-  original: string,
-  fixed: string,
-  errorSummary?: string
-): string {
-  const commented = original
-    .split("\n")
-    .map((l) => (l.trim() === "" ? "#" : `# ${l}`))
-    .join("\n");
-  const head = errorSummary ? `# 에러내용 — ${errorSummary}` : "# 에러내용";
-  return `${head}\n# (아래 원본은 오류가 나 주석 처리했습니다 — 실행되지 않음)\n${commented}\n\n# ↓ 수정된 코드\n${fixed.trim()}`;
-}
 
 const PHASE_LABEL: Record<RunPhase, string> = {
   boot: "파이썬 런타임 내려받는 중… (최초 1회, 수십 MB)",
@@ -811,29 +795,19 @@ export default function PyRunner({
     [patchCell, priorCodeOf]
   );
 
-  /** 에러 팝업 '반영' — 원본을 '# 에러내용'으로 주석 처리 + 수정본 추가.
-   *  오류 상태·출력을 초기화해 셀 상단의 '오류' 표시가 남지 않게 한다. */
+  /** 에러 팝업 '반영' — 기존(오류) 셀은 위에 그대로 두고, 수정된 코드만 담은
+   *  새 셀을 바로 아래에 추가한다(원본을 다시 주석으로 넣지 않음). */
   const applyErrModal = useCallback(() => {
     if (!errModal) return;
     const m = errModal;
-    const wrapped = buildErrorFixCode(m.originalCode, m.fixedCode, m.errorSummary);
-    setCells((prev) =>
-      prev.map((c) =>
-        c.id === m.cellId
-          ? {
-              ...c,
-              code: wrapped,
-              output: "",
-              images: [],
-              status: "idle",
-              ms: undefined,
-              aiError: null,
-            }
-          : c
-      )
-    );
+    setCells((prev) => {
+      const i = prev.findIndex((c) => c.id === m.cellId);
+      const next = [...prev];
+      next.splice(i + 1, 0, newCell(m.fixedCode.trim()));
+      return next;
+    });
     setErrModal(null);
-  }, [errModal]);
+  }, [errModal, newCell]);
 
   const applyProposal = useCallback(
     (id: number, target: "replace" | "new") => {
@@ -1490,9 +1464,9 @@ export default function PyRunner({
               셀에서 만든 실제 변수 목록을 열어, 고른 변수로 이 셀의 변수를
               대체합니다(로직·열 이름은 유지). <strong>에러분석</strong>(오류
               셀에서 활성화)은 에러 내용과 수정안을 <strong>팝업</strong>으로
-              안내하고, <strong>반영</strong>을 누르면 기존 코드를{" "}
-              <code>{"# 에러내용"}</code>으로 주석 처리해 실행되지 않게 하고
-              수정본을 아래에 추가합니다. <strong>✦ AI 제안</strong>을 누르면
+              안내하고, <strong>반영</strong>을 누르면 기존 셀은 위에 그대로 두고
+              수정된 코드를 바로 아래 새 셀로 추가합니다.{" "}
+              <strong>✦ AI 제안</strong>을 누르면
               오른쪽에 입력창이 열려, 이 셀에 대한 수정·추가 요청을 적으면 코드를
               생성합니다(검토 후 적용). 위의 <strong>AI에게 코드 요청</strong>은
               새 셀로 코드를 만들어 줍니다. AI에는 코드와 데이터의 열
@@ -1554,12 +1528,6 @@ function ErrorFixModal({
     };
   }, [onClose]);
 
-  const preview = buildErrorFixCode(
-    state.originalCode,
-    state.fixedCode,
-    state.errorSummary
-  );
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
@@ -1598,14 +1566,14 @@ function ErrorFixModal({
           </p>
 
           <h3 className="mt-4 text-[13px] font-semibold text-foreground">
-            반영하면 이렇게 바뀝니다
+            수정된 코드
           </h3>
           <p className="mt-0.5 text-[12px] text-tertiary">
-            기존 코드는 <code>{"# 에러내용"}</code>으로 주석 처리되어 실행되지
-            않고, 그 아래에 수정된 코드가 추가됩니다.
+            기존 셀은 위에 그대로 두고, 아래 수정된 코드를 바로 다음 새 셀로
+            추가합니다.
           </p>
           <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[12px] leading-[1.65] text-[#e9ecf1]">
-            {preview}
+            {state.fixedCode.trim()}
           </pre>
         </div>
 
