@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
+import { DataLabTabs } from "@/components/feature/datalab/DataLabTabs";
 import { MethodCloud } from "@/components/feature/datalab/MethodCloud";
 import { listDataPosts } from "@/lib/datalab";
 import type { SortOrder } from "@/types";
@@ -52,53 +53,60 @@ export default async function DataLabPage({
         </p>
       </header>
 
-      <MethodCloud />
+      <DataLabTabs
+        analysis={<MethodCloud />}
+        examples={
+          <>
+            <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+              <form method="get" className="flex items-center gap-2">
+                {sort !== "latest" ? (
+                  <input type="hidden" name="sort" value={sort} />
+                ) : null}
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={q ?? ""}
+                  placeholder="데이터·출처 검색"
+                  aria-label="데이터 검색"
+                  className="h-10 w-full min-w-[220px] max-w-sm rounded border border-border bg-transparent px-3 text-sm text-foreground placeholder:text-placeholder focus-visible:border-foreground focus-visible:outline-none"
+                />
+                <Button type="submit" size="sm">
+                  검색
+                </Button>
+                {q ? (
+                  <Link
+                    href={
+                      sort !== "latest" ? `/datalab?sort=${sort}` : "/datalab"
+                    }
+                    className="text-sm text-tertiary hover:text-foreground"
+                  >
+                    초기화
+                  </Link>
+                ) : null}
+              </form>
 
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-        <form method="get" className="flex items-center gap-2">
-          {sort !== "latest" ? (
-            <input type="hidden" name="sort" value={sort} />
-          ) : null}
-          <input
-            type="search"
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="데이터·출처 검색"
-            aria-label="데이터 검색"
-            className="h-10 w-full min-w-[220px] max-w-sm rounded border border-border bg-transparent px-3 text-sm text-foreground placeholder:text-placeholder focus-visible:border-foreground focus-visible:outline-none"
-          />
-          <Button type="submit" size="sm">
-            검색
-          </Button>
-          {q ? (
-            <Link
-              href={sort !== "latest" ? `/datalab?sort=${sort}` : "/datalab"}
-              className="text-sm text-tertiary hover:text-foreground"
-            >
-              초기화
-            </Link>
-          ) : null}
-        </form>
+              <div className="flex items-center gap-1 rounded-full border border-border p-0.5">
+                {sortTab("최신순", sort === "latest", sortHref("latest"))}
+                {sortTab("인기순", sort === "popular", sortHref("popular"))}
+              </div>
+            </div>
 
-        <div className="flex items-center gap-1 rounded-full border border-border p-0.5">
-          {sortTab("최신순", sort === "latest", sortHref("latest"))}
-          {sortTab("인기순", sort === "popular", sortHref("popular"))}
-        </div>
-      </div>
-
-      {posts.length === 0 ? (
-        <p className="py-24 text-center text-sm text-tertiary">
-          {q
-            ? "검색 결과가 없습니다."
-            : "아직 게시된 데이터가 없습니다. 첫 데이터를 준비 중입니다."}
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <DataPostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+            {posts.length === 0 ? (
+              <p className="py-24 text-center text-sm text-tertiary">
+                {q
+                  ? "검색 결과가 없습니다."
+                  : "아직 게시된 데이터가 없습니다. 첫 데이터를 준비 중입니다."}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {posts.map((post) => (
+                  <DataPostCard key={post.id} post={post} />
+                ))}
+              </div>
+            )}
+          </>
+        }
+      />
     </div>
   );
 }
