@@ -456,14 +456,14 @@ function CategoryTag({ cat, align }: { cat: MethodCategory; align: "l" | "r" }) 
       className={`flex items-baseline gap-2 ${align === "r" ? "flex-row-reverse text-right" : ""}`}
     >
       <span
-        className="h-2 w-2 shrink-0 self-center rounded-full"
+        className="h-2.5 w-2.5 shrink-0 self-center rounded-full"
         style={{ background: `var(--chip-${cat.color}-fg)` }}
         aria-hidden
       />
-      <span className="text-[13px] font-semibold text-foreground">
+      <span className="text-[16px] font-semibold text-foreground">
         {cat.label}
       </span>
-      <span className="hidden text-[11.5px] text-tertiary lg:inline">
+      <span className="hidden text-[13.5px] text-tertiary lg:inline">
         {cat.hint}
       </span>
     </div>
@@ -615,7 +615,7 @@ function ClusterCloud({ onOpen }: { onOpen: (id: string) => void }) {
               style={{ background: `var(--chip-${cat.color}-fg)` }}
               aria-hidden
             />
-            <span className="text-[12.5px] font-semibold tracking-wide text-foreground">
+            <span className="text-[14.5px] font-semibold tracking-wide text-foreground">
               {cat.label}
             </span>
           </div>
