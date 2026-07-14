@@ -1,7 +1,9 @@
 // 클라이언트 전용: Microsoft Graph 연동(내 OneDrive로 사본 업로드 → Excel 웹 열기).
 // msal-browser는 window 의존이므로 함수 내부에서 동적 import한다(SSR 안전).
 // 시크릿 없음 — SPA PKCE 흐름이라 클라이언트 ID(NEXT_PUBLIC_MS_GRAPH_CLIENT_ID)만 사용.
-import type { PublicClientApplication } from "@azure/msal-browser";
+// 로그인 흐름 2종: PC=팝업(loginPopup), 모바일=전체 리디렉션(loginRedirect) —
+// 모바일 브라우저는 팝업을 차단하거나 새 탭으로 분리해 popup 흐름이 구조적으로 실패한다.
+import type { Configuration, PublicClientApplication } from "@azure/msal-browser";
 
 const GRAPH = "https://graph.microsoft.com/v1.0";
 const SCOPES = ["Files.ReadWrite"];
@@ -14,25 +16,43 @@ export function msGraphClientId(): string | null {
   return process.env.NEXT_PUBLIC_MS_GRAPH_CLIENT_ID || null;
 }
 
+/** 모바일 브라우저 판별 — 팝업이 차단·분리되는 환경은 리디렉션 로그인 사용. */
+export function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/Android|iPhone|iPad|iPod|Windows Phone|webOS|Mobile/i.test(ua)) return true;
+  // iPadOS 13+ Safari는 Macintosh UA로 보고 — 멀티터치 지원으로 구별
+  return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
+}
+
+/**
+ * PCA 설정 단일 출처 — 본창과 리디렉션 페이지(app/msal-redirect)가 동일 설정을
+ * 공유해야 sessionStorage 캐시(리디렉션 응답 임시 캐시 포함)가 호환된다.
+ * redirectUri: 전용 리디렉션 페이지(rewrite로 .html 주소 유지). 팝업에서는
+ * msal v5 redirect-bridge를 실행해 응답을 본창에 송신하고, 모바일 전체
+ * 리디렉션에서는 handleRedirectPromise가 원래 페이지로 복귀시킨다.
+ * Entra 앱 등록의 SPA 리디렉션 URI에 {origin}/msal-redirect.html 등록 필요.
+ */
+export function buildMsalConfig(clientId: string): Configuration {
+  return {
+    auth: {
+      clientId,
+      authority: AUTHORITY,
+      redirectUri: `${window.location.origin}/msal-redirect.html`,
+    },
+    cache: { cacheLocation: "sessionStorage" },
+    // 첫 로그인(비밀번호+2단계 인증+권한 동의)은 기본 60초를 넘기기 쉬움 → 5분
+    system: { popupBridgeTimeout: 300000 },
+  };
+}
+
 let pcaPromise: Promise<PublicClientApplication> | null = null;
 
 async function getPca(clientId: string): Promise<PublicClientApplication> {
   if (!pcaPromise) {
     pcaPromise = (async () => {
       const { PublicClientApplication } = await import("@azure/msal-browser");
-      const pca = new PublicClientApplication({
-        auth: {
-          clientId,
-          authority: AUTHORITY,
-          // 전용 리디렉션 페이지(app/msal-redirect — rewrite로 .html 주소 유지).
-          // msal v5 redirect-bridge를 실행해 응답을 본창에 송신하는 페이지여야 하며,
-          // Entra 앱 등록의 SPA 리디렉션 URI에 {origin}/msal-redirect.html 등록 필요.
-          redirectUri: `${window.location.origin}/msal-redirect.html`,
-        },
-        cache: { cacheLocation: "sessionStorage" },
-        // 첫 로그인(비밀번호+2단계 인증+권한 동의)은 기본 60초를 넘기기 쉬움 → 5분
-        system: { popupBridgeTimeout: 300000 },
-      });
+      const pca = new PublicClientApplication(buildMsalConfig(clientId));
       await pca.initialize();
       return pca;
     })();
@@ -60,7 +80,61 @@ function clearStaleInteraction(): void {
   }
 }
 
-/** Files.ReadWrite 토큰 — 기존 계정은 silent, 아니면 로그인 팝업. */
+/** 기존 계정의 조용한 토큰 갱신만 시도 — 실패하면 null(사용자 상호작용 없음). */
+export async function acquireTokenSilentOnly(
+  clientId: string
+): Promise<string | null> {
+  const pca = await getPca(clientId);
+  const accounts = pca.getAllAccounts();
+  if (accounts.length === 0) return null;
+  try {
+    const r = await pca.acquireTokenSilent({
+      scopes: SCOPES,
+      account: accounts[0],
+    });
+    return r.accessToken;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 모바일: 전체 페이지 리디렉션 로그인 시작 — 호출하면 페이지가 Microsoft
+ * 로그인으로 이동한다(돌아오지 않음). 복귀 지점은 redirectStartPage(현재 URL) —
+ * msal이 리디렉션 페이지 경유 후 이 주소로 자동 복귀시키고, 원래 페이지의
+ * completeRedirectLogin()이 토큰을 회수한다.
+ */
+export async function beginRedirectLogin(clientId: string): Promise<void> {
+  const pca = await getPca(clientId);
+  const request = { scopes: SCOPES, redirectStartPage: window.location.href };
+  try {
+    await pca.loginRedirect(request);
+  } catch (e) {
+    // 잔류 플래그로 인한 실패는 플래그 제거 후 1회 자동 재시도 (팝업 흐름과 동일)
+    if ((e as { errorCode?: string })?.errorCode === "interaction_in_progress") {
+      clearStaleInteraction();
+      await pca.loginRedirect(request);
+      return;
+    }
+    throw e;
+  }
+}
+
+/**
+ * 리디렉션 복귀 처리 — 대기 중인 인증 응답이 있으면 토큰을 반환한다.
+ * 응답이 없으면(직접 방문·취소 후 재방문) 기존 계정 silent 갱신을 시도하고,
+ * 그것도 없으면 null. 사용자 취소 등 오류 응답은 그대로 throw된다.
+ */
+export async function completeRedirectLogin(
+  clientId: string
+): Promise<string | null> {
+  const pca = await getPca(clientId);
+  const result = await pca.handleRedirectPromise();
+  if (result?.accessToken) return result.accessToken;
+  return acquireTokenSilentOnly(clientId);
+}
+
+/** Files.ReadWrite 토큰 — 기존 계정은 silent, 아니면 로그인 팝업(PC 전용). */
 export async function acquireGraphToken(clientId: string): Promise<string> {
   const pca = await getPca(clientId);
   const accounts = pca.getAllAccounts();
@@ -193,6 +267,8 @@ export function graphErrorMessage(e: unknown): string {
     return "이미 로그인 창이 열려 있습니다. 열린 창을 완료하거나 닫아 주세요.";
   if (code.includes("monitor_window_timeout"))
     return "로그인 창 응답 대기가 시간 초과되었습니다. 팝업 안에 오류 문구가 표시되지 않았는지 확인하고 다시 시도해 주세요.";
+  if (code.includes("state_not_found") || code.includes("no_cached_authority_error"))
+    return "로그인 복귀 정보가 유실되었습니다. 다시 시도해 주세요.";
   if (code.includes("_507")) return "OneDrive 저장 공간이 부족합니다.";
   if (code.includes("upload_failed_403") || code.includes("upload_failed_401"))
     return "OneDrive 접근 권한이 거부되었습니다. 로그인 시 권한 동의(Files.ReadWrite)를 수락했는지 확인해 주세요.";

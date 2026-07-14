@@ -4,10 +4,20 @@
 
 ## 아키텍처 요약
 
-- 브라우저(SPA)에서 MSAL PKCE 팝업 로그인 → `Files.ReadWrite` 위임 권한 토큰 획득
+- 브라우저(SPA)에서 MSAL PKCE 로그인 → `Files.ReadWrite` 위임 권한 토큰 획득
+  - **PC: 팝업**(loginPopup + redirect-bridge)
+  - **모바일: 전체 페이지 리디렉션**(loginRedirect) — 모바일 브라우저는 팝업을 차단하거나 새 탭으로 분리해 팝업 흐름이 구조적으로 실패하므로(2026-07-14 수정), UA 기반 `isMobileBrowser()`로 분기
 - 게시 파일(Supabase Storage 공개 URL)을 브라우저가 fetch → Graph API로 **방문자 본인 OneDrive**의 `DataLab/` 폴더에 업로드(동일 이름은 자동 개명, 4MB 초과는 업로드 세션 청크)
-- 반환된 `webUrl`을 새 탭으로 열면 Excel 웹에서 편집 시작
+- 반환된 `webUrl`을 새 탭으로 열면 Excel 웹에서 편집 시작(모바일·리디렉션 복귀 직후는 사용자 제스처가 없어 자동 새 창이 차단되므로 "지금 열기" 링크로 안내)
 - **서버·시크릿 없음**: 클라이언트 ID는 공개값(SPA PKCE), 게시본은 절대 변경되지 않음
+
+### 모바일 리디렉션 흐름 (2026-07-14)
+
+1. 버튼 탭 → 기존 세션 silent 갱신 시도, 실패 시 `sessionStorage`에 보류 컨텍스트(`datalab:webexcel:pending` = 게시물 fileUrl, TTL 10분) 저장 후 `loginRedirect` — 페이지 전체가 Microsoft 로그인으로 이동
+2. 로그인 완료 → Entra가 `{origin}/msal-redirect.html`(기존 등록 URI 그대로 — **추가 Entra 등록 불필요**)로 복귀
+3. 리디렉션 페이지가 톱레벨 방문임을 감지(`window.opener`/`parent` 부재) → 본창과 동일 설정(`buildMsalConfig`)의 PCA로 `handleRedirectPromise()` 실행 → msal이 응답 해시를 임시 캐시에 저장하고 로그인을 시작한 게시물 페이지로 자동 복귀(navigateToLoginRequestUrl 기본값)
+4. 게시물 페이지의 ExcelLaunchPanel이 보류 컨텍스트를 발견 → `completeRedirectLogin()`으로 토큰 회수 → 업로드 자동 재개 → 완료 후 "Excel 웹에서 지금 열기" 링크 표시
+- 같은 리디렉션 페이지가 팝업(PC)일 때는 기존처럼 redirect-bridge(`broadcastResponseToMainFrame`)를 실행 — 두 흐름 공존
 
 ## 설정 절차 (약 5분, 무료)
 
