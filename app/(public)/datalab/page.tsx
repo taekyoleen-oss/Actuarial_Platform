@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
+import { MethodCloud } from "@/components/feature/datalab/MethodCloud";
 import { listDataPosts } from "@/lib/datalab";
 import type { SortOrder } from "@/types";
 
@@ -50,6 +51,8 @@ export default async function DataLabPage({
           업데이트하는 공간입니다.
         </p>
       </header>
+
+      <MethodCloud />
 
       <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
         <form method="get" className="flex items-center gap-2">

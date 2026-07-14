@@ -192,6 +192,21 @@ mark.key-phrase {
   }
 }
 
+/* 분석 방법 워드클라우드 (datalab MethodCloud) — 호버 시 글자 확대는
+   사용자 요청 마이크로모션(2026-07-14). 색상 트랜지션은 전역 규칙 유지. */
+.method-term {
+  transition: transform 0.18s var(--ease), color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+  transform-origin: center;
+  will-change: transform;
+  cursor: pointer;
+}
+.method-term:hover,
+.method-term:focus-visible {
+  transform: scale(1.12);
+  background: rgba(255, 255, 255, 0.85);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-fade {
     opacity: 1 !important;
@@ -200,6 +215,12 @@ mark.key-phrase {
   }
   .tab-fade-in {
     animation: none !important;
+  }
+  .method-term,
+  .method-term:hover,
+  .method-term:focus-visible {
+    transition: none;
+    transform: none;
   }
 }
 

@@ -1,0 +1,1468 @@
+// 통계·머신러닝 파이썬 사전 — /datalab 상단 워드클라우드(MethodCloud) 데이터.
+// weight(1~5)는 실무 사용 빈도 → 클라우드 글자 크기. 같은 카테고리는 같은 클러스터에 모인다.
+// 코드는 pandas·numpy·scipy·statsmodels·scikit-learn 기준, 예제는 보험 실무 데이터 흐름.
+
+export type MethodCategoryId = "basic" | "model" | "ml" | "wrangle";
+
+/** 칩 뮤트 팔레트(--chip-*) 한정 스코프 — 카테고리 고정색 */
+export type MethodChipColor = "blue" | "violet" | "teal" | "amber";
+
+export interface MethodCategory {
+  id: MethodCategoryId;
+  label: string;
+  color: MethodChipColor;
+  hint: string;
+}
+
+export interface MethodCodeSection {
+  /** 코드 블록 제목 — 블록 단위 부분 복사의 기준 */
+  title: string;
+  /** 블록 앞 설명(선택) */
+  desc?: string;
+  code: string;
+}
+
+export interface StatMethod {
+  id: string;
+  /** 클라우드에 표시되는 한글 이름 */
+  name: string;
+  en: string;
+  category: MethodCategoryId;
+  /** 실무 사용 빈도 1~5 — 클수록 글자가 크다 */
+  weight: 1 | 2 | 3 | 4 | 5;
+  /** 한 줄 요약 (툴팁·팝업 서브타이틀) */
+  summary: string;
+  /** 개념·용도 설명 — "\n\n"으로 문단 구분 */
+  intro: string;
+  /** 해석·주의 포인트(선택) */
+  tips?: string;
+  sections: MethodCodeSection[];
+}
+
+export const STAT_CATEGORIES: MethodCategory[] = [
+  {
+    id: "basic",
+    label: "기초 통계",
+    color: "blue",
+    hint: "분포 요약과 가설검정 — 분석의 출발점",
+  },
+  {
+    id: "model",
+    label: "회귀·통계모형",
+    color: "violet",
+    hint: "관계를 수식으로 — 설명과 예측",
+  },
+  {
+    id: "ml",
+    label: "머신러닝",
+    color: "teal",
+    hint: "전통 ML — 지도·비지도 학습과 검증",
+  },
+  {
+    id: "wrangle",
+    label: "데이터 핸들링",
+    color: "amber",
+    hint: "pandas 기본기 — 선택·결합·집계·변형",
+  },
+];
+
+export const STAT_METHODS: StatMethod[] = [
+  /* ───────────────────────── 기초 통계 (basic) ───────────────────────── */
+  {
+    id: "desc-stats",
+    name: "기술통계량",
+    en: "Descriptive Statistics",
+    category: "basic",
+    weight: 5,
+    summary: "평균·중앙값·표준편차·분위수로 데이터 분포를 한눈에 요약",
+    intro:
+      "데이터를 받으면 가장 먼저 수행하는 작업입니다. 평균·중앙값 같은 중심 경향, 표준편차·분위수 같은 산포, 왜도·첨도 같은 분포 모양을 숫자로 요약해 데이터의 전체 그림과 이상치 존재 여부를 파악합니다.\n\n보험 손해액처럼 오른쪽 꼬리가 긴 분포에서는 평균이 소수의 대형 사고에 끌려 올라가므로, 반드시 중앙값·분위수와 함께 봐야 왜곡 없이 해석할 수 있습니다.",
+    tips: "평균과 중앙값의 차이가 크면 분포가 비대칭(왜도)이라는 신호입니다. describe()의 count가 열마다 다르면 결측치가 있다는 뜻이므로 결측치 처리로 이어가세요.",
+    sections: [
+      {
+        title: "기본 요약 — describe()와 개별 통계량",
+        desc: "describe() 한 줄로 수치형 열 전체를 요약하고, 필요한 통계량은 개별 메서드로 뽑습니다.",
+        code: `import pandas as pd
+
+df = pd.read_excel("claims.xlsx")   # 보험금 청구 데이터 예시
+
+# 수치형 전체 요약: 개수·평균·표준편차·최소·사분위수·최대
+print(df.describe())
+# 범주형(문자) 열 요약: 고유값 수·최빈값
+print(df.describe(include="object"))
+
+# 개별 통계량
+print(df["claim_amt"].mean())      # 평균
+print(df["claim_amt"].median())    # 중앙값 — 꼬리가 긴 분포에서 더 대표적
+print(df["claim_amt"].std())       # 표준편차
+print(df["claim_amt"].quantile([0.25, 0.5, 0.75, 0.99]))  # 분위수(99% 등 임의 지정)
+print(df["claim_amt"].skew())      # 왜도 > 0 이면 오른쪽 꼬리
+print(df["claim_amt"].kurt())      # 첨도 — 꼬리의 두꺼움
+print(df["product"].value_counts())  # 범주별 빈도`,
+      },
+      {
+        title: "그룹별 요약 — 한 번에 여러 통계량",
+        desc: "groupby와 agg를 결합하면 상품군·성별 등 그룹 단위 요약표가 바로 나옵니다.",
+        code: `# 상품군별 손해액 요약표
+summary = df.groupby("product")["claim_amt"].agg(
+    건수="count",
+    평균="mean",
+    중앙값="median",
+    표준편차="std",
+    최대="max",
+)
+print(summary.round(1))`,
+      },
+    ],
+  },
+  {
+    id: "correlation",
+    name: "상관분석",
+    en: "Correlation",
+    category: "basic",
+    weight: 4,
+    summary: "두 연속형 변수의 선형(피어슨)·순위(스피어만) 관계 강도를 -1~+1로 측정",
+    intro:
+      "두 변수가 함께 움직이는 정도를 -1(완전 음의 관계)부터 +1(완전 양의 관계) 사이 계수로 요약합니다. 피어슨 상관은 선형 관계를 재고, 스피어만 상관은 순위 기반이라 비선형 단조 관계와 이상치에 강건합니다.\n\n모델링 전 변수 간 관계를 훑어보거나, 설명변수끼리 지나치게 상관이 높은지(다중공선성) 점검할 때 기본 도구가 됩니다.",
+    tips: "상관은 인과가 아닙니다. 또 피어슨 상관은 이상치 몇 개에 크게 흔들리므로 산점도를 함께 확인하고, 의심되면 스피어만으로 교차 검증하세요.",
+    sections: [
+      {
+        title: "상관계수와 상관행렬",
+        code: `import pandas as pd
+
+df = pd.read_excel("policy.xlsx")
+
+# 두 변수의 상관계수
+print(df["age"].corr(df["premium"]))                 # 피어슨(기본)
+print(df["age"].corr(df["premium"], method="spearman"))  # 스피어만(순위)
+
+# 수치형 전체 상관행렬
+corr = df.select_dtypes("number").corr()
+print(corr.round(2))`,
+      },
+      {
+        title: "유의성 검정과 히트맵",
+        desc: "scipy로 p-value까지 확인하고, 행렬은 히트맵으로 보면 빠르게 읽힙니다.",
+        code: `from scipy import stats
+import matplotlib.pyplot as plt
+
+r, p = stats.pearsonr(df["age"], df["premium"])
+print(f"r={r:.3f}, p-value={p:.4f}")   # p < 0.05 이면 상관이 0이라는 가설 기각
+
+plt.figure(figsize=(7, 6))
+plt.imshow(corr, cmap="Blues", vmin=-1, vmax=1)
+plt.xticks(range(len(corr)), corr.columns, rotation=45)
+plt.yticks(range(len(corr)), corr.columns)
+plt.colorbar(label="correlation")
+plt.tight_layout()
+plt.show()`,
+      },
+    ],
+  },
+  {
+    id: "t-test",
+    name: "t-검정",
+    en: "t-test",
+    category: "basic",
+    weight: 4,
+    summary: "두 집단(또는 한 집단과 기준값)의 평균 차이가 우연인지 검정",
+    intro:
+      "평균 차이가 표본의 우연한 흔들림인지, 실제 차이인지 판단하는 가장 기본적인 가설검정입니다. 한 집단의 평균을 기준값과 비교하는 일표본, 서로 다른 두 집단을 비교하는 독립표본, 같은 대상의 전후를 비교하는 대응표본 세 가지가 있습니다.\n\n예컨대 남녀 가입자의 평균 청구액 차이, 제도 개정 전후의 평균 손해율 변화 같은 질문에 바로 적용됩니다.",
+    tips: "독립 이표본에서는 equal_var=False(Welch 검정)를 기본으로 쓰는 것이 안전합니다 — 두 집단의 분산이 같다는 가정을 요구하지 않습니다. p-value와 함께 평균 차이의 크기(효과 크기)도 반드시 같이 보고하세요.",
+    sections: [
+      {
+        title: "일표본·독립 이표본·대응표본",
+        code: `from scipy import stats
+import pandas as pd
+
+df = pd.read_excel("claims.xlsx")
+
+# ① 일표본: 평균 청구액이 100만 원과 다른가?
+t, p = stats.ttest_1samp(df["claim_amt"], popmean=1_000_000)
+print(f"일표본  t={t:.3f}, p={p:.4f}")
+
+# ② 독립 이표본: 남녀의 평균 청구액이 다른가? (Welch — 등분산 가정 불필요)
+male = df.loc[df["sex"] == "M", "claim_amt"]
+female = df.loc[df["sex"] == "F", "claim_amt"]
+t, p = stats.ttest_ind(male, female, equal_var=False)
+print(f"이표본  t={t:.3f}, p={p:.4f}")
+
+# ③ 대응표본: 같은 계약의 개정 전/후 보험료 비교
+t, p = stats.ttest_rel(df["prem_before"], df["prem_after"])
+print(f"대응    t={t:.3f}, p={p:.4f}")
+
+# p < 0.05 → 유의수준 5%에서 '차이가 없다'는 귀무가설 기각`,
+      },
+    ],
+  },
+  {
+    id: "chi-square",
+    name: "카이제곱 검정",
+    en: "Chi-square Test",
+    category: "basic",
+    weight: 3,
+    summary: "두 범주형 변수의 독립성(연관성) 여부를 교차표로 검정",
+    intro:
+      "성별과 상품 선택, 연령대와 해지 여부처럼 범주형 변수 두 개가 서로 관련이 있는지 검정합니다. 교차표(crosstab)를 만들고, '두 변수가 독립'이라는 가정 하의 기대빈도와 실제 관측빈도의 차이를 카이제곱 통계량으로 잽니다.\n\n관측빈도가 기대빈도에서 멀수록 통계량이 커지고 p-value가 작아져, 두 변수가 독립이 아니라고(연관이 있다고) 결론 내립니다.",
+    tips: "기대빈도가 5 미만인 칸이 많으면(전체의 20% 이상) 검정이 부정확해집니다 — 범주를 합치거나 fisher_exact(2×2)를 쓰세요. 유의하더라도 '어떤 칸이' 기여했는지는 기대빈도와의 잔차를 봐야 압니다.",
+    sections: [
+      {
+        title: "교차표 + 독립성 검정",
+        code: `import pandas as pd
+from scipy import stats
+
+df = pd.read_excel("policy.xlsx")
+
+# 연령대 × 해지여부 교차표
+table = pd.crosstab(df["age_band"], df["lapsed"])
+print(table)
+
+chi2, p, dof, expected = stats.chi2_contingency(table)
+print(f"chi2={chi2:.2f}, p={p:.4f}, 자유도={dof}")
+
+# 기대빈도 확인 — 5 미만 칸이 많으면 검정 신뢰도 저하
+print(pd.DataFrame(expected, index=table.index, columns=table.columns).round(1))
+
+# 비율로 보면 해석이 쉬움 (행 기준 %)
+print(pd.crosstab(df["age_band"], df["lapsed"], normalize="index").round(3))`,
+      },
+    ],
+  },
+  {
+    id: "anova",
+    name: "분산분석(ANOVA)",
+    en: "ANOVA",
+    category: "basic",
+    weight: 3,
+    summary: "세 개 이상 집단의 평균이 모두 같은지 한 번에 검정",
+    intro:
+      "집단이 3개 이상일 때 t-검정을 반복하면 1종 오류(우연한 유의)가 누적됩니다. 분산분석은 '모든 집단의 평균이 같다'는 가설을 한 번에 검정해 이 문제를 피합니다. 집단 간 분산과 집단 내 분산의 비(F 통계량)가 클수록 평균 차이가 실재한다고 봅니다.\n\n예컨대 상품군 A·B·C·D의 평균 손해액이 같은지, 판매 채널별 평균 계약 유지 기간이 같은지 검정할 때 사용합니다.",
+    tips: "ANOVA가 유의해도 '어느 집단끼리' 다른지는 알 수 없습니다 — 사후검정(Tukey HSD)으로 쌍별 비교를 이어가세요. 집단별 분산이 크게 다르면 Welch ANOVA나 비모수(Kruskal-Wallis)를 고려합니다.",
+    sections: [
+      {
+        title: "일원 분산분석 — scipy",
+        code: `from scipy import stats
+import pandas as pd
+
+df = pd.read_excel("claims.xlsx")
+
+groups = [g["claim_amt"].values for _, g in df.groupby("product")]
+f, p = stats.f_oneway(*groups)
+print(f"F={f:.2f}, p={p:.4f}")   # p < 0.05 → 적어도 한 집단의 평균이 다름`,
+      },
+      {
+        title: "분산분석표 + 사후검정(Tukey HSD)",
+        desc: "statsmodels로 분산분석표를 만들고, 유의하면 어느 쌍이 다른지 Tukey로 확인합니다.",
+        code: `import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+
+model = smf.ols("claim_amt ~ C(product)", data=df).fit()
+print(sm.stats.anova_lm(model, typ=2))   # 분산분석표
+
+tukey = pairwise_tukeyhsd(df["claim_amt"], df["product"], alpha=0.05)
+print(tukey.summary())   # reject=True 인 쌍이 유의하게 다른 집단`,
+      },
+    ],
+  },
+  {
+    id: "normality",
+    name: "정규성 검정",
+    en: "Normality Test",
+    category: "basic",
+    weight: 2,
+    summary: "데이터가 정규분포를 따르는지 검정·시각 확인 — 모수 검정의 전제 점검",
+    intro:
+      "t-검정·ANOVA·선형회귀의 잔차 등 많은 전통 기법이 정규분포를 가정합니다. Shapiro-Wilk 검정(소표본에 적합)과 Q-Q 플롯(시각 확인)으로 이 가정을 점검합니다.\n\n정규성이 크게 깨져 있으면 로그 변환을 하거나 비모수 검정으로 우회합니다. 보험 손해액은 대개 정규가 아니므로 로그 변환 후 분석하는 경우가 많습니다.",
+    tips: "표본이 수천 건 이상이면 사소한 편차에도 p-value가 유의하게 나옵니다 — 대표본에서는 검정보다 Q-Q 플롯·히스토그램 같은 시각 판단이 더 실용적입니다.",
+    sections: [
+      {
+        title: "Shapiro-Wilk + Q-Q 플롯",
+        code: `from scipy import stats
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = df["claim_amt"].dropna()
+
+stat, p = stats.shapiro(x.sample(min(len(x), 5000), random_state=0))
+print(f"Shapiro-Wilk p={p:.4f}")   # p < 0.05 → 정규 아님
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+axes[0].hist(x, bins=50)
+axes[0].set_title("histogram")
+stats.probplot(x, dist="norm", plot=axes[1])   # 점들이 직선 위면 정규에 가까움
+plt.tight_layout()
+plt.show()
+
+# 오른쪽 꼬리가 길면 로그 변환 후 재확인
+stat, p = stats.shapiro(np.log1p(x).sample(min(len(x), 5000), random_state=0))
+print(f"log 변환 후 p={p:.4f}")`,
+      },
+    ],
+  },
+  {
+    id: "nonparametric",
+    name: "비모수 검정",
+    en: "Mann-Whitney · Wilcoxon · Kruskal",
+    category: "basic",
+    weight: 2,
+    summary: "정규성 가정 없이 순위로 집단 차이를 검정 — t-검정·ANOVA의 대체재",
+    intro:
+      "데이터가 정규분포에서 크게 벗어나거나 표본이 작을 때, 원자료 대신 순위(rank)를 사용해 집단 차이를 검정합니다. 독립 두 집단은 Mann-Whitney U(t-검정 대체), 대응 표본은 Wilcoxon 부호순위(대응 t-검정 대체), 세 집단 이상은 Kruskal-Wallis(ANOVA 대체)를 씁니다.\n\n이상치와 꼬리가 긴 분포에 강건해, 손해액처럼 치우친 데이터의 집단 비교에 실무적으로 유용합니다.",
+    tips: "비모수 검정은 '평균'이 아니라 '분포(중앙값) 위치'의 차이를 검정합니다. 결과 보고 시 평균 대신 집단별 중앙값을 함께 제시하는 것이 일관됩니다.",
+    sections: [
+      {
+        title: "Mann-Whitney · Wilcoxon · Kruskal-Wallis",
+        code: `from scipy import stats
+
+# ① 독립 두 집단 (t-검정의 비모수 대체)
+u, p = stats.mannwhitneyu(male_amt, female_amt, alternative="two-sided")
+print(f"Mann-Whitney p={p:.4f}")
+
+# ② 대응 표본 (대응 t-검정의 비모수 대체)
+w, p = stats.wilcoxon(df["prem_before"], df["prem_after"])
+print(f"Wilcoxon p={p:.4f}")
+
+# ③ 세 집단 이상 (ANOVA의 비모수 대체)
+groups = [g["claim_amt"].values for _, g in df.groupby("product")]
+h, p = stats.kruskal(*groups)
+print(f"Kruskal-Wallis p={p:.4f}")
+
+# 보고용: 집단별 중앙값
+print(df.groupby("product")["claim_amt"].median())`,
+      },
+    ],
+  },
+  /* ─────────────────────── 회귀·통계모형 (model) ─────────────────────── */
+  {
+    id: "linear-regression",
+    name: "선형회귀",
+    en: "Linear Regression",
+    category: "model",
+    weight: 5,
+    summary: "연속형 목표변수를 설명변수의 선형 결합으로 설명·예측하는 기본 모형",
+    intro:
+      "y = b0 + b1·x1 + b2·x2 + … 형태로, 설명변수가 한 단위 변할 때 목표변수가 얼마나 변하는지(계수)를 추정합니다. 예측뿐 아니라 '무엇이 얼마나 영향을 주는가'를 계수·p-value·신뢰구간으로 설명할 수 있어 통계 모델링의 출발점입니다.\n\n설명이 목적이면 statsmodels(요약표가 풍부), 예측 파이프라인이 목적이면 scikit-learn을 쓰는 것이 관례입니다.",
+    tips: "R²는 설명력이지 인과가 아닙니다. 계수 해석 전에 잔차 플롯(등분산·선형성)과 다중공선성(VIF > 10 주의)을 점검하세요. 변수 척도가 다르면 표준화해야 계수 크기를 서로 비교할 수 있습니다.",
+    sections: [
+      {
+        title: "statsmodels — 회귀 요약표 (설명 중심)",
+        code: `import pandas as pd
+import statsmodels.formula.api as smf
+
+df = pd.read_excel("policy.xlsx")
+
+# 보험료 ~ 나이 + 성별(범주) + BMI
+model = smf.ols("premium ~ age + C(sex) + bmi", data=df).fit()
+print(model.summary())
+# 읽는 법:
+#  coef      — 다른 변수가 고정일 때 해당 변수 1단위 증가의 효과
+#  P>|t|     — 0.05 미만이면 유의
+#  [0.025, 0.975] — 계수의 95% 신뢰구간
+#  R-squared — 모형이 설명하는 분산 비율`,
+      },
+      {
+        title: "scikit-learn — 학습·예측 (예측 중심)",
+        code: `from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
+X = df[["age", "bmi", "dependents"]]
+y = df["premium"]
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+reg = LinearRegression().fit(X_tr, y_tr)
+pred = reg.predict(X_te)
+
+print(dict(zip(X.columns, reg.coef_.round(2))))       # 계수
+print(f"RMSE = {np.sqrt(mean_squared_error(y_te, pred)):,.0f}")
+print(f"R2   = {r2_score(y_te, pred):.3f}")`,
+      },
+      {
+        title: "잔차 진단",
+        desc: "잔차가 0 주위에 무작위로 흩어져 있어야 선형·등분산 가정이 성립합니다.",
+        code: `import matplotlib.pyplot as plt
+
+resid = y_te - pred
+plt.scatter(pred, resid, s=8, alpha=0.5)
+plt.axhline(0, color="gray", lw=1)
+plt.xlabel("predicted")
+plt.ylabel("residual")
+plt.show()
+# 깔때기 모양(분산 증가) → 로그 변환·가중회귀 고려
+# 곡선 패턴 → 비선형 항(다항·구간화) 고려`,
+      },
+    ],
+  },
+  {
+    id: "logistic-regression",
+    name: "로지스틱 회귀",
+    en: "Logistic Regression",
+    category: "model",
+    weight: 5,
+    summary: "이진 결과(해지/유지, 사고/무사고)의 확률을 모형화 — 오즈비로 해석",
+    intro:
+      "목표가 0/1일 때 사건이 일어날 확률을 모형화합니다. 계수를 지수변환한 오즈비(odds ratio)가 '이 변수가 1단위 커지면 사건의 오즈가 몇 배가 되는가'를 말해 주어, 해지 예측·사고 발생·언더라이팅 승인 같은 분류 문제에서 설명력과 예측력을 동시에 제공합니다.\n\n출력이 확률이므로 임계값(기본 0.5)을 업무 비용에 맞게 조정할 수 있다는 점도 실무에서 중요한 장점입니다.",
+    tips: "클래스가 불균형하면(해지 5% 등) accuracy는 무의미합니다 — ROC-AUC·재현율로 평가하고 class_weight='balanced'를 고려하세요. 오즈비 해석은 '확률이 몇 배'가 아니라 '오즈가 몇 배'임에 주의합니다.",
+    sections: [
+      {
+        title: "statsmodels — 오즈비 해석",
+        code: `import numpy as np
+import statsmodels.formula.api as smf
+
+model = smf.logit("lapsed ~ age + premium_ratio + C(channel)", data=df).fit()
+print(model.summary())
+
+# 오즈비: exp(coef) — 1보다 크면 해지 위험 증가 요인
+odds = np.exp(model.params)
+conf = np.exp(model.conf_int())
+print(pd.concat([odds.rename("OR"), conf], axis=1).round(3))`,
+      },
+      {
+        title: "scikit-learn — 학습·확률 예측·평가",
+        code: `from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score, classification_report
+
+X = df[["age", "premium_ratio", "tenure_months"]]
+y = df["lapsed"]
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+clf = LogisticRegression(max_iter=1000, class_weight="balanced")
+clf.fit(X_tr, y_tr)
+
+proba = clf.predict_proba(X_te)[:, 1]        # 해지 확률
+print(f"ROC-AUC = {roc_auc_score(y_te, proba):.3f}")
+
+# 업무 비용에 맞춰 임계값 조정 (기본 0.5 대신 0.3 등)
+pred = (proba >= 0.3).astype(int)
+print(classification_report(y_te, pred))`,
+      },
+    ],
+  },
+  {
+    id: "glm",
+    name: "일반화선형모형(GLM)",
+    en: "GLM — Poisson · Gamma",
+    category: "model",
+    weight: 3,
+    summary: "빈도(포아송)·심도(감마) 등 정규 아닌 분포를 링크함수로 모형화 — 보험료 산출의 표준",
+    intro:
+      "선형회귀를 확장해 목표변수의 분포(포아송·감마·이항 등)와 링크함수를 명시적으로 지정합니다. 사고 건수는 포아송(로그 링크), 사고 금액은 감마(로그 링크)로 모형화하는 것이 보험요율 산출(빈도×심도)의 국제 표준 접근입니다.\n\n로그 링크에서는 exp(계수)가 승수(relativity)로 해석됩니다 — 요율 상대도를 바로 얻을 수 있어 계리 실무와 궁합이 좋습니다.",
+    tips: "노출(경과 계약년수)이 다른 데이터는 반드시 offset=log(exposure)로 반영해야 합니다. 포아송에서 분산이 평균보다 크면(과산포) 음이항 모형이나 quasi-Poisson을 고려하세요.",
+    sections: [
+      {
+        title: "사고빈도 — 포아송 GLM (노출 offset)",
+        code: `import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# n_claims: 사고 건수, exposure: 경과 계약년수
+freq = smf.glm(
+    "n_claims ~ C(age_band) + C(region) + C(car_type)",
+    data=df,
+    family=sm.families.Poisson(),
+    offset=np.log(df["exposure"]),
+).fit()
+print(freq.summary())
+
+# 요율 상대도(relativity): exp(coef)
+print(np.exp(freq.params).round(3))
+# 예: age_band[20대] = 1.42 → 기준 연령대 대비 빈도 1.42배`,
+      },
+      {
+        title: "사고심도 — 감마 GLM",
+        code: `# 사고가 난 건만 대상으로 평균 사고금액 모형화
+sev_df = df[df["n_claims"] > 0].copy()
+sev_df["avg_claim"] = sev_df["claim_amt"] / sev_df["n_claims"]
+
+sev = smf.glm(
+    "avg_claim ~ C(age_band) + C(car_type)",
+    data=sev_df,
+    family=sm.families.Gamma(link=sm.families.links.Log()),
+).fit()
+print(np.exp(sev.params).round(3))
+
+# 순보험료 = 빈도 예측 × 심도 예측
+df["pure_premium"] = freq.predict(df) / df["exposure"] * sev.predict(df)`,
+      },
+    ],
+  },
+  {
+    id: "regularized",
+    name: "Ridge·Lasso",
+    en: "Regularized Regression",
+    category: "model",
+    weight: 3,
+    summary: "계수에 벌점을 줘 과적합을 억제 — Lasso는 변수 선택까지 수행",
+    intro:
+      "설명변수가 많거나 서로 상관이 높을 때, 계수 크기에 벌점(penalty)을 부과해 과적합을 억제합니다. Ridge(L2)는 계수를 고르게 줄이고, Lasso(L1)는 일부 계수를 정확히 0으로 만들어 변수 선택 효과가 있습니다.\n\n벌점 강도 alpha는 교차검증으로 고르며, 벌점이 계수 크기에 작동하므로 학습 전 표준화(StandardScaler)가 사실상 필수입니다.",
+    tips: "Lasso가 0으로 만든 변수는 '중요하지 않다'기보다 '상관 높은 변수 중 하나만 남겼다'일 수 있습니다. 상관 그룹 전체를 유지하고 싶으면 ElasticNet(L1+L2 혼합)을 쓰세요.",
+    sections: [
+      {
+        title: "표준화 파이프라인 + 교차검증으로 alpha 선택",
+        code: `from sklearn.linear_model import RidgeCV, LassoCV
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+import pandas as pd
+
+alphas = np.logspace(-3, 3, 50)
+
+ridge = make_pipeline(StandardScaler(), RidgeCV(alphas=alphas, cv=5))
+lasso = make_pipeline(StandardScaler(), LassoCV(alphas=alphas, cv=5, max_iter=10000))
+ridge.fit(X_tr, y_tr)
+lasso.fit(X_tr, y_tr)
+
+print("ridge alpha =", ridge[-1].alpha_)
+print("lasso alpha =", lasso[-1].alpha_)
+
+# Lasso 변수 선택 결과 — 계수 0이 아닌 변수만
+coef = pd.Series(lasso[-1].coef_, index=X_tr.columns)
+print(coef[coef != 0].sort_values(key=abs, ascending=False).round(3))
+print(f"제외된 변수 수: {(coef == 0).sum()}")`,
+      },
+    ],
+  },
+  {
+    id: "time-series",
+    name: "시계열 분석",
+    en: "Time Series — ARIMA",
+    category: "model",
+    weight: 2,
+    summary: "추세·계절성을 분해하고 ARIMA로 미래 값을 예측",
+    intro:
+      "월별 보험료 수입·청구 건수처럼 시간 순서가 있는 데이터를 다룹니다. 먼저 분해(decompose)로 추세·계절성·잔차를 눈으로 확인하고, ARIMA(자기회귀+차분+이동평균)로 예측 모형을 세웁니다.\n\nARIMA(p, d, q)의 차수는 ACF/PACF를 보고 정하거나, pmdarima의 auto_arima로 자동 탐색할 수 있습니다.",
+    tips: "시계열은 무작위 분할하면 안 됩니다 — 학습은 과거, 검증은 미래로 시간 순서를 지켜 나누세요. 예측 구간(신뢰구간)이 기간이 멀수록 급격히 넓어지는 것은 정상이며, 그만큼 장기 예측은 불확실하다는 뜻입니다.",
+    sections: [
+      {
+        title: "분해 + ARIMA 적합·예측",
+        code: `import pandas as pd
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.arima.model import ARIMA
+
+ts = (
+    pd.read_excel("monthly_claims.xlsx", parse_dates=["month"])
+    .set_index("month")["n_claims"]
+    .asfreq("MS")
+)
+
+# ① 추세·계절성 분해
+seasonal_decompose(ts, model="additive").plot()
+
+# ② ARIMA 적합 — (p, d, q) = (자기회귀, 차분, 이동평균) 차수
+model = ARIMA(ts, order=(1, 1, 1),
+              seasonal_order=(1, 1, 1, 12)).fit()   # 월별 계절성 12
+print(model.summary())
+
+# ③ 12개월 예측 + 95% 예측구간
+fc = model.get_forecast(steps=12)
+out = fc.summary_frame()          # mean, mean_ci_lower, mean_ci_upper
+print(out.round(1))`,
+      },
+    ],
+  },
+  {
+    id: "survival",
+    name: "생존분석",
+    en: "Survival — Kaplan-Meier · Cox",
+    category: "model",
+    weight: 2,
+    summary: "'언제 사건이 일어나는가'를 분석 — 해지·사망·부도까지의 시간, 중도절단 처리",
+    intro:
+      "관찰이 끝날 때까지 사건(해지·사망)이 일어나지 않은 계약(중도절단, censoring)을 버리지 않고 활용하는 것이 핵심입니다. Kaplan-Meier 곡선은 시점별 생존(유지)율을 그려 주고, Cox 비례위험 모형은 어떤 요인이 위험을 몇 배 높이는지(위험비)를 추정합니다.\n\n보험에서는 계약 해지율 분석, 사망률 연구, 재가입 행동 분석에 직접 대응되는 기법입니다.",
+    tips: "Cox 모형의 exp(coef)는 위험비(hazard ratio)입니다 — 1.3이면 해당 요인이 해지 위험을 30% 높인다는 뜻. 비례위험 가정(위험비가 시간에 따라 일정)은 check_assumptions로 점검하세요. 설치: pip install lifelines",
+    sections: [
+      {
+        title: "Kaplan-Meier 유지율 곡선",
+        code: `from lifelines import KaplanMeierFitter
+import matplotlib.pyplot as plt
+
+# duration: 관찰 기간(월), event: 1=해지 발생, 0=관찰 종료(중도절단)
+kmf = KaplanMeierFitter()
+
+ax = plt.subplot()
+for channel, g in df.groupby("channel"):
+    kmf.fit(g["duration"], g["event"], label=channel)
+    kmf.plot_survival_function(ax=ax)
+plt.xlabel("경과월")
+plt.ylabel("유지율")
+plt.show()
+
+print(kmf.median_survival_time_)   # 유지율이 50%가 되는 시점`,
+      },
+      {
+        title: "Cox 비례위험 모형 — 해지 요인 분석",
+        code: `from lifelines import CoxPHFitter
+
+cox = CoxPHFitter()
+cox.fit(
+    df[["duration", "event", "age", "premium_ratio", "has_rider"]],
+    duration_col="duration",
+    event_col="event",
+)
+cox.print_summary()   # exp(coef) = 위험비(HR)
+
+# 비례위험 가정 점검
+cox.check_assumptions(df[["duration", "event", "age",
+                          "premium_ratio", "has_rider"]])`,
+      },
+    ],
+  },
+  /* ───────────────────────── 머신러닝 (ml) ───────────────────────── */
+  {
+    id: "decision-tree",
+    name: "의사결정나무",
+    en: "Decision Tree",
+    category: "ml",
+    weight: 3,
+    summary: "if-then 규칙의 나무 구조로 분류·회귀 — 눈으로 읽히는 모델",
+    intro:
+      "데이터를 '나이 ≥ 45인가?' 같은 질문으로 반복 분할해 나무 구조를 만듭니다. 결과를 그림으로 그려 규칙을 그대로 읽을 수 있어 설명 가능성이 가장 높은 모델 중 하나이며, 스케일링·더미변수 없이도 작동합니다.\n\n단독으로는 과적합되기 쉬워 실무 예측력은 랜덤포레스트·부스팅(나무의 앙상블)에 밀리지만, 규칙 발견·세그먼트 정의 용도로 여전히 유용합니다.",
+    tips: "max_depth·min_samples_leaf를 제한하지 않으면 학습 데이터를 통째로 암기합니다. 깊이 3~5의 얕은 나무로 시작해 규칙을 읽고, 예측력이 필요하면 앙상블로 넘어가세요.",
+    sections: [
+      {
+        title: "학습 + 나무 시각화",
+        code: `from sklearn.tree import DecisionTreeClassifier, plot_tree
+import matplotlib.pyplot as plt
+
+tree = DecisionTreeClassifier(
+    max_depth=4,              # 과적합 제어의 핵심
+    min_samples_leaf=50,      # 잎 노드 최소 표본
+    class_weight="balanced",
+    random_state=42,
+).fit(X_tr, y_tr)
+
+plt.figure(figsize=(16, 8))
+plot_tree(tree, feature_names=X_tr.columns,
+          class_names=["유지", "해지"], filled=True, fontsize=9)
+plt.show()
+
+print(f"train 정확도 {tree.score(X_tr, y_tr):.3f}")
+print(f"test  정확도 {tree.score(X_te, y_te):.3f}")
+# 두 값의 차이가 크면 과적합 → max_depth를 줄일 것`,
+      },
+    ],
+  },
+  {
+    id: "random-forest",
+    name: "랜덤포레스트",
+    en: "Random Forest",
+    category: "ml",
+    weight: 4,
+    summary: "수백 그루의 나무를 배깅으로 평균 — 튜닝 없이도 강한 범용 베이스라인",
+    intro:
+      "부트스트랩 표본과 무작위 변수 선택으로 서로 다른 나무 수백 그루를 만들고 예측을 평균(투표)합니다. 개별 나무의 과적합이 상쇄되어, 하이퍼파라미터를 거의 만지지 않아도 안정적인 성능이 나오는 대표적 범용 모델입니다.\n\n변수 중요도를 부산물로 제공해 '어떤 변수가 예측에 기여하는가'를 빠르게 훑는 탐색 도구로도 널리 쓰입니다.",
+    tips: "불순도 기반 feature_importances_는 범주 수가 많은 변수에 과대평가 경향이 있습니다 — 중요한 의사결정에는 permutation_importance로 교차 확인하세요.",
+    sections: [
+      {
+        title: "학습·평가·변수 중요도",
+        code: `from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+import pandas as pd
+
+rf = RandomForestClassifier(
+    n_estimators=500,
+    min_samples_leaf=20,
+    class_weight="balanced",
+    n_jobs=-1,
+    random_state=42,
+).fit(X_tr, y_tr)
+
+proba = rf.predict_proba(X_te)[:, 1]
+print(f"ROC-AUC = {roc_auc_score(y_te, proba):.3f}")
+
+# 불순도 기반 중요도 (빠른 훑기)
+imp = pd.Series(rf.feature_importances_, index=X_tr.columns)
+print(imp.sort_values(ascending=False).round(3))
+
+# 순열 중요도 (더 신뢰할 만한 확인)
+pi = permutation_importance(rf, X_te, y_te, n_repeats=10, random_state=42)
+print(pd.Series(pi.importances_mean, index=X_te.columns)
+      .sort_values(ascending=False).round(4))`,
+      },
+    ],
+  },
+  {
+    id: "gradient-boosting",
+    name: "그래디언트 부스팅",
+    en: "Gradient Boosting — XGBoost · LightGBM",
+    category: "ml",
+    weight: 4,
+    summary: "이전 나무의 오차를 다음 나무가 보정 — 정형 데이터 예측력의 사실상 표준",
+    intro:
+      "나무를 순차적으로 추가하며 직전까지의 예측 오차를 다음 나무가 학습하게 하는 방식입니다. 정형(표 형태) 데이터에서는 딥러닝보다 강한 경우가 많아 캐글·실무 모두에서 예측력의 사실상 표준으로 자리 잡았습니다. XGBoost·LightGBM이 대표 구현체입니다.\n\n순차 학습이라 과적합 위험이 있으므로, 검증 데이터 성능이 더 나아지지 않으면 멈추는 조기 종료(early stopping)와 함께 쓰는 것이 정석입니다.",
+    tips: "learning_rate를 낮추고(0.03~0.1) n_estimators를 크게 잡은 뒤 조기 종료에 맡기는 조합이 안전합니다. 외부 라이브러리를 못 쓰는 환경이면 sklearn의 HistGradientBoosting이 좋은 대체재입니다.",
+    sections: [
+      {
+        title: "LightGBM — 조기 종료 학습",
+        code: `import lightgbm as lgb
+
+model = lgb.LGBMClassifier(
+    n_estimators=2000,
+    learning_rate=0.05,
+    num_leaves=31,
+    class_weight="balanced",
+    random_state=42,
+)
+model.fit(
+    X_tr, y_tr,
+    eval_set=[(X_te, y_te)],
+    eval_metric="auc",
+    callbacks=[lgb.early_stopping(100)],   # 100회 개선 없으면 중단
+)
+print(f"best iteration = {model.best_iteration_}")
+print(f"ROC-AUC = {roc_auc_score(y_te, model.predict_proba(X_te)[:, 1]):.3f}")`,
+      },
+      {
+        title: "sklearn 내장 대체재 — HistGradientBoosting",
+        desc: "추가 설치 없이 쓸 수 있고 결측치를 그대로 받아들입니다.",
+        code: `from sklearn.ensemble import HistGradientBoostingClassifier
+
+hgb = HistGradientBoostingClassifier(
+    max_iter=1000,
+    learning_rate=0.05,
+    early_stopping=True,
+    validation_fraction=0.15,
+    random_state=42,
+).fit(X_tr, y_tr)
+
+print(f"ROC-AUC = {roc_auc_score(y_te, hgb.predict_proba(X_te)[:, 1]):.3f}")`,
+      },
+    ],
+  },
+  {
+    id: "svm",
+    name: "SVM",
+    en: "Support Vector Machine",
+    category: "ml",
+    weight: 2,
+    summary: "마진을 최대로 하는 경계면으로 분류 — 커널로 비선형 경계까지",
+    intro:
+      "두 클래스를 가르는 경계면 중 양쪽 여유(마진)가 가장 큰 것을 찾습니다. 커널 트릭으로 데이터를 고차원에 매핑해 비선형 경계도 학습할 수 있으며, 표본이 적고 차원이 높은 문제에서 여전히 경쟁력이 있습니다.\n\n거리 기반이므로 스케일링이 필수이고, 표본이 수만 건을 넘으면 학습이 급격히 느려져 대용량에는 트리 계열이 더 실용적입니다.",
+    tips: "C(오분류 허용)와 gamma(경계 유연성)가 성능을 좌우합니다 — 로그 스케일 그리드로 함께 탐색하세요. 확률이 필요하면 probability=True(느려짐) 대신 decision_function 값을 쓰는 것도 방법입니다.",
+    sections: [
+      {
+        title: "스케일링 파이프라인 + 그리드 탐색",
+        code: `from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+
+pipe = make_pipeline(StandardScaler(), SVC(kernel="rbf"))
+
+grid = GridSearchCV(
+    pipe,
+    {"svc__C": [0.1, 1, 10, 100],
+     "svc__gamma": ["scale", 0.01, 0.1, 1]},
+    cv=5, scoring="roc_auc", n_jobs=-1,
+).fit(X_tr, y_tr)
+
+print(grid.best_params_)
+print(f"CV best AUC = {grid.best_score_:.3f}")
+print(f"test  score = {grid.score(X_te, y_te):.3f}")`,
+      },
+    ],
+  },
+  {
+    id: "knn",
+    name: "KNN",
+    en: "k-Nearest Neighbors",
+    category: "ml",
+    weight: 2,
+    summary: "가장 가까운 k개 이웃의 다수결·평균으로 예측 — 학습이 없는 게으른 모델",
+    intro:
+      "새 데이터가 들어오면 학습 데이터에서 가장 가까운 k개를 찾아 다수결(분류)이나 평균(회귀)으로 답합니다. 별도의 학습 과정이 없고 개념이 직관적이라 베이스라인이나 유사 계약 찾기 같은 용도에 적합합니다.\n\n거리 계산이 전부이므로 변수 스케일링이 결과를 좌우하며, 차원이 많아지면 '가깝다'는 개념 자체가 무의미해지는 차원의 저주에 취약합니다.",
+    tips: "k가 작으면 노이즈에 민감(과적합), 크면 경계가 뭉개집니다(과소적합). 홀수 k로 동점을 피하고, 교차검증으로 k를 고르세요.",
+    sections: [
+      {
+        title: "k 선택 — 교차검증 곡선",
+        code: `from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+
+ks = range(1, 40, 2)
+scores = [
+    cross_val_score(
+        make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=k)),
+        X_tr, y_tr, cv=5, scoring="roc_auc",
+    ).mean()
+    for k in ks
+]
+
+plt.plot(list(ks), scores, marker="o")
+plt.xlabel("k")
+plt.ylabel("CV ROC-AUC")
+plt.show()
+
+best_k = list(ks)[scores.index(max(scores))]
+print(f"best k = {best_k}")`,
+      },
+    ],
+  },
+  {
+    id: "naive-bayes",
+    name: "나이브 베이즈",
+    en: "Naive Bayes",
+    category: "ml",
+    weight: 1,
+    summary: "변수 독립을 가정한 베이즈 정리 기반 분류 — 텍스트 분류의 고전",
+    intro:
+      "베이즈 정리에 '변수들이 서로 독립'이라는 과감한 가정을 더해 클래스 확률을 계산합니다. 가정이 비현실적인데도 실전에서 의외로 잘 작동하고, 학습·예측이 매우 빨라 스팸 필터·민원 분류 같은 텍스트 문제의 고전적 베이스라인입니다.\n\n연속형 변수에는 GaussianNB, 단어 빈도에는 MultinomialNB를 씁니다.",
+    tips: "출력 확률은 순위는 맞지만 값 자체는 극단(0 또는 1 근처)으로 치우치는 경향이 있습니다 — 확률 값을 그대로 업무 판단에 쓰려면 보정(calibration)이 필요합니다.",
+    sections: [
+      {
+        title: "텍스트 분류 — 민원 유형 자동 분류",
+        code: `from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+X_tr, X_te, y_tr, y_te = train_test_split(
+    df["complaint_text"], df["category"],
+    test_size=0.2, stratify=df["category"], random_state=42,
+)
+
+nb = make_pipeline(TfidfVectorizer(min_df=3), MultinomialNB())
+nb.fit(X_tr, y_tr)
+print(classification_report(y_te, nb.predict(X_te)))
+
+# 새 민원 분류
+print(nb.predict(["보험금 지급이 한 달째 지연되고 있습니다"]))`,
+      },
+    ],
+  },
+  {
+    id: "kmeans",
+    name: "K-평균 군집",
+    en: "K-means Clustering",
+    category: "ml",
+    weight: 3,
+    summary: "라벨 없는 데이터를 k개 그룹으로 — 고객 세분화의 기본 도구",
+    intro:
+      "정답 라벨 없이, 서로 가까운 점끼리 k개의 군집으로 묶습니다. 각 군집의 중심을 반복적으로 갱신하는 단순한 알고리즘이지만 고객 세분화·계약 포트폴리오 분류에 여전히 가장 널리 쓰입니다.\n\nk는 분석자가 정해야 하므로, 엘보(관성 감소 추세)와 실루엣 점수(군집 응집도)를 함께 보고 선택합니다.",
+    tips: "거리 기반이므로 스케일링이 필수입니다. 군집 결과는 '발견'이 아니라 '요약'입니다 — 군집별 평균 프로파일을 만들어 업무 언어로 이름 붙일 수 있어야 실무에서 의미가 있습니다.",
+    sections: [
+      {
+        title: "k 선택 — 엘보 + 실루엣",
+        code: `from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
+
+X_scaled = StandardScaler().fit_transform(
+    df[["age", "premium", "n_contracts", "tenure_months"]]
+)
+
+inertias, silhouettes = [], []
+for k in range(2, 11):
+    km = KMeans(n_clusters=k, n_init=10, random_state=42).fit(X_scaled)
+    inertias.append(km.inertia_)
+    silhouettes.append(silhouette_score(X_scaled, km.labels_))
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+axes[0].plot(range(2, 11), inertias, marker="o"); axes[0].set_title("elbow")
+axes[1].plot(range(2, 11), silhouettes, marker="o"); axes[1].set_title("silhouette")
+plt.show()`,
+      },
+      {
+        title: "군집 적용 + 프로파일링",
+        code: `km = KMeans(n_clusters=4, n_init=10, random_state=42).fit(X_scaled)
+df["segment"] = km.labels_
+
+# 군집별 평균 프로파일 — 업무 언어로 이름 붙이는 근거
+profile = df.groupby("segment")[
+    ["age", "premium", "n_contracts", "tenure_months"]
+].agg(["mean", "count"])
+print(profile.round(1))
+# 예: segment 2 = 고연령·고보험료·장기 유지 → 'VIP 장기고객'`,
+      },
+    ],
+  },
+  {
+    id: "hierarchical",
+    name: "계층적 군집",
+    en: "Hierarchical Clustering",
+    category: "ml",
+    weight: 1,
+    summary: "가까운 것부터 병합해 나무(덴드로그램)로 — k를 미리 정하지 않아도 됨",
+    intro:
+      "가장 가까운 점(군집)끼리 차례로 병합해 전체가 하나가 될 때까지의 과정을 나무 그림(덴드로그램)으로 남깁니다. 그림을 보고 적절한 높이에서 잘라 군집 수를 사후에 정할 수 있어, k를 미리 정해야 하는 K-평균과 보완 관계입니다.\n\n모든 쌍의 거리를 계산하므로 수천 건 이상에서는 느려집니다 — 대용량은 표본을 뽑아 구조를 본 뒤 K-평균으로 확정하는 절충이 실용적입니다.",
+    sections: [
+      {
+        title: "덴드로그램 + 군집 잘라내기",
+        code: `from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+
+X_scaled = StandardScaler().fit_transform(df[["age", "premium", "tenure_months"]])
+
+Z = linkage(X_scaled, method="ward")   # ward: 군집 내 분산 최소화
+
+plt.figure(figsize=(12, 5))
+dendrogram(Z, truncate_mode="lastp", p=30)
+plt.ylabel("병합 거리")
+plt.show()
+
+# 덴드로그램을 보고 군집 수 결정 → 라벨 부여
+df["cluster"] = fcluster(Z, t=4, criterion="maxclust")
+print(df["cluster"].value_counts())`,
+      },
+    ],
+  },
+  {
+    id: "pca",
+    name: "주성분분석(PCA)",
+    en: "Principal Component Analysis",
+    category: "ml",
+    weight: 3,
+    summary: "상관된 여러 변수를 소수의 축으로 압축 — 차원 축소·시각화·다중공선성 해소",
+    intro:
+      "분산이 가장 큰 방향부터 새로운 축(주성분)을 차례로 찾아, 서로 상관된 많은 변수를 정보 손실을 최소화하며 소수의 축으로 압축합니다. 수십 개 변수를 2~3개 축으로 줄여 시각화하거나, 회귀 전 다중공선성을 해소하는 전처리로 씁니다.\n\n각 주성분이 원래 변수들의 어떤 조합인지(로딩)를 읽으면 '종합 규모 축', '위험 성향 축' 같은 해석도 가능합니다.",
+    tips: "분산 기반이므로 스케일링 없이 쓰면 단위가 큰 변수가 축을 독점합니다. 누적 설명분산 80~90%를 기준으로 성분 수를 정하는 것이 관례입니다.",
+    sections: [
+      {
+        title: "설명분산 + 2차원 시각화 + 로딩",
+        code: `from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import matplotlib.pyplot as plt
+
+X_scaled = StandardScaler().fit_transform(X)
+
+pca = PCA()
+Z = pca.fit_transform(X_scaled)
+
+# 성분별 설명분산 — 누적 80~90%까지 채택
+ratio = pca.explained_variance_ratio_
+print(pd.Series(ratio.cumsum().round(3), name="누적설명분산"))
+
+# 첫 두 성분으로 산점도 (라벨 색)
+plt.scatter(Z[:, 0], Z[:, 1], c=y, s=8, alpha=0.5, cmap="coolwarm")
+plt.xlabel("PC1"); plt.ylabel("PC2")
+plt.show()
+
+# 로딩: 각 주성분이 어떤 변수의 조합인지
+loadings = pd.DataFrame(pca.components_[:2].T,
+                        index=X.columns, columns=["PC1", "PC2"])
+print(loadings.round(3))`,
+      },
+    ],
+  },
+  {
+    id: "cross-validation",
+    name: "교차검증·튜닝",
+    en: "Cross-validation · GridSearchCV",
+    category: "ml",
+    weight: 4,
+    summary: "데이터를 여러 번 나눠 성능을 안정적으로 추정하고 하이퍼파라미터를 탐색",
+    intro:
+      "한 번의 train/test 분할은 운에 좌우됩니다. k-겹 교차검증은 데이터를 k조각으로 나눠 k번 학습·평가한 평균으로 성능을 안정적으로 추정하며, GridSearchCV는 이 위에서 하이퍼파라미터 조합을 체계적으로 탐색합니다.\n\n어떤 모델을 쓰든 '이 성능 수치를 믿어도 되는가'를 보장하는 공통 인프라이므로, 개별 알고리즘보다 먼저 몸에 익혀야 하는 절차입니다.",
+    tips: "분류에서는 stratify(계층 분할)로 클래스 비율을 유지하세요. 스케일링·인코딩은 반드시 Pipeline 안에 넣어야 검증 폴드의 정보가 학습에 새는 것(data leakage)을 막을 수 있습니다.",
+    sections: [
+      {
+        title: "분할·교차검증 기본기",
+        code: `from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+
+# 최종 평가용 test는 처음에 떼어놓고 끝까지 봉인
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# 5-겹 교차검증 — 평균 ± 표준편차로 보고
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X_tr, y_tr, cv=cv, scoring="roc_auc")
+print(f"AUC = {scores.mean():.3f} ± {scores.std():.3f}")`,
+      },
+      {
+        title: "GridSearchCV — 파이프라인째 튜닝",
+        code: `from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("clf", LogisticRegression(max_iter=1000)),
+])
+
+grid = GridSearchCV(
+    pipe,
+    {"clf__C": [0.01, 0.1, 1, 10],
+     "clf__class_weight": [None, "balanced"]},
+    cv=5, scoring="roc_auc", n_jobs=-1,
+).fit(X_tr, y_tr)
+
+print(grid.best_params_, f"CV AUC={grid.best_score_:.3f}")
+print(f"봉인해둔 test AUC = {grid.score(X_te, y_te):.3f}")`,
+      },
+    ],
+  },
+  {
+    id: "model-eval",
+    name: "모델 평가 지표",
+    en: "Evaluation Metrics",
+    category: "ml",
+    weight: 3,
+    summary: "혼동행렬·정밀도·재현율·ROC-AUC·RMSE — 문제에 맞는 자로 재기",
+    intro:
+      "분류는 혼동행렬에서 출발합니다. 정밀도(해지 예측 중 실제 해지 비율)와 재현율(실제 해지 중 잡아낸 비율)은 서로 상충하므로 업무 비용에 따라 무게를 정하고, 임계값과 무관한 종합 지표로 ROC-AUC를 씁니다.\n\n회귀는 RMSE(큰 오차에 민감)·MAE(직관적인 평균 오차)·R²를 함께 봅니다. 클래스가 불균형하면 accuracy는 착시를 만드므로 반드시 피해야 합니다.",
+    tips: "해지 예측처럼 놓치는 비용이 큰 문제는 재현율을, 오탐 비용이 큰 문제(마케팅 발송 등)는 정밀도를 우선하세요. PR-AUC는 심한 불균형에서 ROC-AUC보다 민감한 지표입니다.",
+    sections: [
+      {
+        title: "분류 — 혼동행렬·리포트·ROC 곡선",
+        code: `from sklearn.metrics import (
+    confusion_matrix, classification_report,
+    roc_auc_score, RocCurveDisplay,
+)
+import matplotlib.pyplot as plt
+
+pred = model.predict(X_te)
+proba = model.predict_proba(X_te)[:, 1]
+
+print(confusion_matrix(y_te, pred))
+#           예측0   예측1
+#  실제0 [[ TN     FP ]
+#  실제1  [ FN     TP ]]
+
+print(classification_report(y_te, pred, target_names=["유지", "해지"]))
+print(f"ROC-AUC = {roc_auc_score(y_te, proba):.3f}")
+
+RocCurveDisplay.from_predictions(y_te, proba)
+plt.show()`,
+      },
+      {
+        title: "회귀 — RMSE·MAE·R²",
+        code: `from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import numpy as np
+
+pred = reg.predict(X_te)
+print(f"RMSE = {np.sqrt(mean_squared_error(y_te, pred)):,.0f}")  # 큰 오차에 민감
+print(f"MAE  = {mean_absolute_error(y_te, pred):,.0f}")          # 평균적 오차 크기
+print(f"R2   = {r2_score(y_te, pred):.3f}")                      # 설명 분산 비율`,
+      },
+    ],
+  },
+  /* ─────────────────────── 데이터 핸들링 (wrangle) ─────────────────────── */
+  {
+    id: "select-rows-cols",
+    name: "행·열 선택",
+    en: "loc · iloc",
+    category: "wrangle",
+    weight: 5,
+    summary: "라벨 기준 loc, 위치(정수) 기준 iloc — 특정 행·열을 꺼내는 기본 문법",
+    intro:
+      "pandas에서 데이터를 꺼내는 두 축입니다. loc는 라벨(인덱스 이름·열 이름) 기준, iloc는 위치(0부터 시작하는 정수) 기준으로 동작합니다. 둘 다 [행, 열] 순서로 지정하며, 콜론(:)은 '전부'를 뜻합니다.\n\n엑셀로 치면 loc는 이름으로 범위를 지정하는 것, iloc는 '3번째 행, 2번째 열'처럼 좌표로 집는 것에 해당합니다.",
+    tips: "loc의 슬라이스(a:c)는 끝을 포함하고, iloc의 슬라이스(0:3)는 끝을 제외합니다 — 파이썬 리스트와 같은 쪽은 iloc입니다. 한 열은 df[\"col\"](Series), 여러 열은 df[[\"a\",\"b\"]](대괄호 두 겹, DataFrame)로 구분하세요.",
+    sections: [
+      {
+        title: "열 선택",
+        code: `import pandas as pd
+
+df = pd.read_excel("policy.xlsx")
+
+s = df["premium"]                    # 한 열 → Series
+sub = df[["policy_id", "premium"]]   # 여러 열 → DataFrame (대괄호 두 겹)
+
+num = df.select_dtypes("number")     # 자료형으로 선택
+amt = df.filter(like="_amt")         # 이름 패턴으로 선택 (…_amt 열 전부)`,
+      },
+      {
+        title: "행·[행, 열] 선택 — loc와 iloc",
+        code: `# loc — 라벨 기준 [행, 열]
+df.loc[0]                                  # 인덱스 라벨 0인 행
+df.loc[0:4, ["policy_id", "premium"]]      # 라벨 0~4 (끝 포함!)
+df.loc[df["age"] >= 60, "premium"]         # 조건 행 + 특정 열
+
+# iloc — 위치 기준 [행, 열]
+df.iloc[0]                # 첫 행
+df.iloc[:5, :3]           # 앞 5행 × 앞 3열 (끝 제외)
+df.iloc[-10:]             # 마지막 10행
+df.iloc[[0, 5, 9], [1, 2]]  # 흩어진 위치 지정
+
+# 값 하나만 빠르게
+df.at[0, "premium"]       # 라벨 기준 단일 값
+df.iat[0, 3]              # 위치 기준 단일 값`,
+      },
+    ],
+  },
+  {
+    id: "filter-condition",
+    name: "조건 필터링",
+    en: "Boolean Indexing · query",
+    category: "wrangle",
+    weight: 5,
+    summary: "조건식으로 참인 행만 추출 — &(그리고) |(또는) 와 괄호가 핵심",
+    intro:
+      "조건식이 만든 True/False 배열(불리언 마스크)을 df[...]에 넣으면 참인 행만 남습니다. 여러 조건은 and/or가 아니라 &와 |로 잇고, 각 조건을 반드시 괄호로 감싸야 합니다 — 연산자 우선순위 때문에 괄호가 없으면 에러가 나거나 다른 결과가 나옵니다.\n\n조건이 길어지면 query()가 SQL의 WHERE처럼 읽기 좋은 대안이 됩니다.",
+    tips: "부정은 ~(물결)입니다: df[~mask]. 문자열 조건은 str.contains, 구간은 between이 간결합니다. 필터한 결과를 수정할 때는 SettingWithCopyWarning을 피하기 위해 .copy()를 붙이는 습관을 들이세요.",
+    sections: [
+      {
+        title: "불리언 인덱싱 — 단일·복수 조건",
+        code: `# 단일 조건
+seniors = df[df["age"] >= 60]
+
+# 복수 조건 — & | 와 괄호 필수
+target = df[(df["age"] >= 40) & (df["age"] < 60) & (df["product"] == "종신")]
+either = df[(df["region"] == "서울") | (df["region"] == "경기")]
+
+# 부정(~), 구간(between), 문자열 포함(str.contains)
+active = df[~df["lapsed"]]
+mid = df[df["premium"].between(50_000, 150_000)]        # 양끝 포함
+cancer = df[df["product_name"].str.contains("암", na=False)]`,
+      },
+      {
+        title: "query — SQL처럼 읽히는 조건식",
+        code: `# 같은 조건을 query로 — 열 이름을 따옴표 없이 그대로 사용
+target = df.query("40 <= age < 60 and product == '종신'")
+
+# 외부 변수는 @ 로 참조
+min_prem = 100_000
+high = df.query("premium >= @min_prem and not lapsed")
+
+# 결과 건수 빠른 확인
+print(len(target), "건 /", len(df), "건")`,
+      },
+    ],
+  },
+  {
+    id: "isin",
+    name: "isin 발췌",
+    en: "isin",
+    category: "wrangle",
+    weight: 3,
+    summary: "값이 목록 안에 있는 행만 추출 — ==를 여러 번 잇는 것보다 간결·빠름",
+    intro:
+      "'상품이 A 또는 B 또는 C인 행'처럼 값 목록에 해당하는 행을 뽑을 때 씁니다. (x == a) | (x == b) | ... 를 길게 잇는 대신 isin([a, b, c]) 한 번으로 끝나고, 목록이 길어져도 성능이 안정적입니다.\n\n다른 데이터프레임의 열을 목록으로 넘기면 'VIP 명단에 있는 계약만' 같은 대조 추출이 한 줄로 됩니다.",
+    tips: "~df[\"col\"].isin([...])으로 '목록에 없는 행'(제외)을 만들 수 있습니다. 대조 기준 열에 결측이 섞여 있으면 dropna() 후 넘기는 것이 안전합니다.",
+    sections: [
+      {
+        title: "목록 포함·제외·명단 대조",
+        code: `# 특정 상품군만 추출
+picked = df[df["product"].isin(["종신", "정기", "암보험"])]
+
+# 목록에 없는 행 (제외)
+others = df[~df["product"].isin(["종신", "정기", "암보험"])]
+
+# 다른 DataFrame의 명단과 대조 — VIP 고객의 계약만
+vip = pd.read_excel("vip_list.xlsx")
+vip_contracts = df[df["customer_id"].isin(vip["customer_id"])]
+
+# 여러 열 동시 대조는 merge가 더 적합 (join·merge 항목 참고)
+print(len(vip_contracts), "건")`,
+      },
+    ],
+  },
+  {
+    id: "conditional",
+    name: "조건 분기",
+    en: "np.where · np.select · case",
+    category: "wrangle",
+    weight: 3,
+    summary: "if/else·CASE WHEN을 벡터 연산으로 — 조건에 따라 다른 값을 부여",
+    intro:
+      "엑셀의 IF, SQL의 CASE WHEN에 해당합니다. 이항 분기는 np.where(조건, 참값, 거짓값), 다중 분기는 np.select(조건 목록, 값 목록, 기본값)로 처리합니다. 행마다 파이썬 if를 도는 apply보다 수십 배 빠른 벡터 연산입니다.\n\n연속값을 구간으로 나눌 때(연령대·금액대)는 조건을 나열하는 대신 pd.cut이 더 간결하고 안전합니다.",
+    tips: "np.select는 위에서부터 첫 번째로 참인 조건이 이깁니다 — 조건 순서가 결과를 바꿉니다. pandas 2.2+에는 메서드 체인 친화적인 Series.case_when도 있습니다.",
+    sections: [
+      {
+        title: "이항·다중 분기 — np.where · np.select",
+        code: `import numpy as np
+
+# 이항 분기 (IF)
+df["risk"] = np.where(df["age"] >= 60, "고위험", "일반")
+
+# 다중 분기 (CASE WHEN) — 첫 번째 참인 조건 적용
+conditions = [
+    df["loss_ratio"] >= 1.0,
+    df["loss_ratio"] >= 0.8,
+    df["loss_ratio"] >= 0.6,
+]
+choices = ["적자", "주의", "양호"]
+df["grade"] = np.select(conditions, choices, default="우수")
+
+print(df["grade"].value_counts())`,
+      },
+      {
+        title: "구간화 — pd.cut · pd.qcut",
+        code: `# 경계를 직접 지정 (연령대)
+df["age_band"] = pd.cut(
+    df["age"],
+    bins=[0, 20, 30, 40, 50, 60, 120],
+    labels=["~19", "20대", "30대", "40대", "50대", "60+"],
+    right=False,          # [20, 30) — 왼쪽 포함
+)
+
+# 분위수로 균등 분할 (보험료 4분위)
+df["prem_q"] = pd.qcut(df["premium"], q=4, labels=["Q1", "Q2", "Q3", "Q4"])
+
+print(pd.crosstab(df["age_band"], df["prem_q"]))`,
+      },
+    ],
+  },
+  {
+    id: "join-merge",
+    name: "join·merge",
+    en: "merge · concat",
+    category: "wrangle",
+    weight: 4,
+    summary: "키를 기준으로 두 표를 옆으로 결합(SQL JOIN) — how 옵션이 결과를 좌우",
+    intro:
+      "계약 테이블과 고객 테이블처럼 흩어진 표를 공통 키로 결합합니다. how='inner'(양쪽에 다 있는 키만), 'left'(왼쪽은 전부 유지), 'outer'(둘 다 전부)가 SQL JOIN과 동일하게 대응합니다.\n\n단순히 같은 구조의 표를 위아래로 쌓을 때는 merge가 아니라 concat을 씁니다(월별 파일 합치기 등).",
+    tips: "결합 후 행 수가 예상과 다르면 키 중복(1:N, N:M)을 의심하세요 — validate=\"one_to_many\" 같은 옵션이 잘못된 결합을 에러로 잡아 줍니다. indicator=True는 각 행이 어느 쪽에서 왔는지 표시해 검증에 유용합니다.",
+    sections: [
+      {
+        title: "merge — SQL JOIN 4종",
+        code: `contracts = pd.read_excel("contracts.xlsx")   # 계약 (customer_id 포함)
+customers = pd.read_excel("customers.xlsx")   # 고객 마스터
+
+# LEFT JOIN — 계약은 전부 유지, 고객 정보 붙이기
+merged = contracts.merge(customers, on="customer_id", how="left")
+
+# 키 이름이 서로 다를 때
+merged = contracts.merge(
+    customers, left_on="cust_id", right_on="customer_id", how="left"
+)
+
+# 검증 옵션 — 결합 품질 확인
+merged = contracts.merge(
+    customers, on="customer_id", how="left",
+    validate="many_to_one",   # 고객이 중복이면 에러로 알려줌
+    indicator=True,           # _merge 열: both / left_only
+)
+print(merged["_merge"].value_counts())   # left_only가 많으면 매칭 실패 다수`,
+      },
+      {
+        title: "concat — 위아래로 쌓기",
+        code: `# 월별 파일을 하나로
+jan = pd.read_excel("claims_2026_01.xlsx")
+feb = pd.read_excel("claims_2026_02.xlsx")
+all_claims = pd.concat([jan, feb], ignore_index=True)
+
+# 어떤 파일에서 왔는지 표시하며 쌓기
+all_claims = pd.concat({"1월": jan, "2월": feb}, names=["월"]).reset_index(0)`,
+      },
+    ],
+  },
+  {
+    id: "groupby",
+    name: "groupby 집계",
+    en: "groupby · agg · transform",
+    category: "wrangle",
+    weight: 5,
+    summary: "그룹별 합계·평균·건수 — 엑셀 피벗의 코드판이자 분석의 중심 동작",
+    intro:
+      "'상품별 평균 보험료', '지점별 월별 청구 건수'처럼 그룹 단위 요약은 분석의 중심 동작입니다. groupby(키)로 나눈 뒤 agg로 통계량을 지정하며, 이름 있는 집계(named aggregation)를 쓰면 결과 열 이름까지 한 번에 정리됩니다.\n\ntransform은 집계 결과를 원본 행 수 그대로 되돌려줍니다 — '자기 그룹 평균 대비 비율' 같은 파생변수를 만들 때 필수입니다.",
+    tips: "여러 키로 묶으면 결과가 멀티인덱스가 됩니다 — 표로 다루려면 reset_index()로 평평하게 만드세요. 그룹 조건으로 그룹째 거르기(우량 지점만)는 filter를 씁니다.",
+    sections: [
+      {
+        title: "agg — 이름 있는 집계",
+        code: `# 상품 × 채널별 요약표
+summary = (
+    df.groupby(["product", "channel"])
+    .agg(
+        건수=("policy_id", "count"),
+        보험료합계=("premium", "sum"),
+        평균보험료=("premium", "mean"),
+        평균연령=("age", "mean"),
+    )
+    .reset_index()
+)
+print(summary.round(1))`,
+      },
+      {
+        title: "transform·filter — 그룹값을 행으로, 그룹째 거르기",
+        code: `# 자기 상품군 평균 대비 보험료 비율 (행 수 유지)
+df["prem_vs_group"] = df["premium"] / df.groupby("product")["premium"].transform("mean")
+
+# 그룹 내 순번 (계약자별 최신 계약 = 1)
+df["nth"] = df.sort_values("issue_date", ascending=False).groupby("customer_id").cumcount() + 1
+
+# 계약 100건 이상인 지점만 남기기 (그룹째 필터)
+big = df.groupby("branch").filter(lambda g: len(g) >= 100)
+print(big["branch"].nunique(), "개 지점")`,
+      },
+    ],
+  },
+  {
+    id: "apply",
+    name: "apply·map",
+    en: "apply · map",
+    category: "wrangle",
+    weight: 4,
+    summary: "임의의 함수를 열·행 단위로 적용 — 유연하지만 벡터 연산이 있으면 그쪽 먼저",
+    intro:
+      "내장 연산으로 표현하기 어려운 사용자 정의 로직을 데이터에 적용합니다. Series.map은 값 하나씩 변환(사전 매핑 포함), df.apply(axis=1)는 행 전체를 받아 여러 열을 조합하는 계산에 씁니다.\n\n다만 apply는 내부적으로 파이썬 루프라서 느립니다 — 같은 일을 np.where·문자열 벡터 연산·산술 연산으로 할 수 있다면 항상 그쪽이 우선입니다.",
+    tips: "성능 순서: 벡터 연산 > map(사전) > apply. 수십만 행에 apply(axis=1)를 돌리기 전에 '이거 np.where나 groupby.transform으로 안 되나?'를 먼저 자문하세요.",
+    sections: [
+      {
+        title: "map — 값 변환·사전 매핑",
+        code: `# 사전으로 코드 → 이름 매핑
+code_map = {"L": "생명", "H": "건강", "A": "상해"}
+df["product_nm"] = df["product_cd"].map(code_map)
+
+# 함수 적용 (값 하나씩)
+df["premium_만원"] = df["premium"].map(lambda x: round(x / 10_000, 1))
+
+# 매핑에 없는 코드는 NaN — 확인 습관
+print(df.loc[df["product_nm"].isna(), "product_cd"].unique())`,
+      },
+      {
+        title: "apply — 여러 열 조합 (필요할 때만)",
+        code: `# 행 전체를 받아 조건 조합 — axis=1
+def risk_grade(row):
+    if row["age"] >= 65 and row["claim_cnt"] >= 3:
+        return "정밀심사"
+    if row["age"] >= 65 or row["claim_cnt"] >= 3:
+        return "주의"
+    return "일반"
+
+df["grade"] = df.apply(risk_grade, axis=1)
+
+# 같은 로직의 벡터 버전 — 대용량에서는 이쪽
+import numpy as np
+old, freq = df["age"] >= 65, df["claim_cnt"] >= 3
+df["grade"] = np.select([old & freq, old | freq], ["정밀심사", "주의"], "일반")`,
+      },
+    ],
+  },
+  {
+    id: "pivot",
+    name: "pivot_table·melt",
+    en: "pivot_table · melt",
+    category: "wrangle",
+    weight: 3,
+    summary: "행×열 교차 요약표(엑셀 피벗)와 그 역변환(wide→long)",
+    intro:
+      "pivot_table은 엑셀 피벗테이블 그대로입니다 — index(행)·columns(열)·values(값)·aggfunc(집계)를 지정해 교차표를 만듭니다. margins=True면 행·열 합계까지 붙습니다.\n\nmelt는 반대 방향입니다. 월별 열이 옆으로 늘어선 보고서형(wide) 표를, 분석·시각화가 요구하는 세로형(long)으로 되돌립니다.",
+    tips: "피벗 결과의 빈 칸(NaN)은 fill_value=0으로 채울 수 있지만, '거래 없음'과 '0원'이 업무적으로 다른 의미라면 구분해 두세요. groupby+unstack도 같은 결과를 만듭니다 — 편한 쪽을 쓰면 됩니다.",
+    sections: [
+      {
+        title: "pivot_table — 교차 요약표",
+        code: `# 상품(행) × 연령대(열) 평균 보험료
+pt = pd.pivot_table(
+    df,
+    index="product",
+    columns="age_band",
+    values="premium",
+    aggfunc="mean",
+    margins=True, margins_name="전체",   # 합계 행·열
+    fill_value=0,
+)
+print(pt.round(0))
+
+# 여러 값·여러 집계 동시
+pt2 = pd.pivot_table(df, index="product",
+                     values=["premium", "claim_amt"],
+                     aggfunc={"premium": "mean", "claim_amt": ["sum", "count"]})`,
+      },
+      {
+        title: "melt — wide를 long으로",
+        code: `# 월별 열(1월, 2월, …)이 옆으로 늘어선 표를 세로로
+wide = pd.read_excel("monthly_report.xlsx")   # 지점 | 1월 | 2월 | 3월 …
+long = wide.melt(
+    id_vars="지점",
+    var_name="월",
+    value_name="실적",
+)
+print(long.head())
+# long 형태여야 groupby·시각화·시계열 분석이 자연스러움`,
+      },
+    ],
+  },
+  {
+    id: "missing",
+    name: "결측치 처리",
+    en: "isna · fillna · dropna",
+    category: "wrangle",
+    weight: 4,
+    summary: "결측 파악 → 삭제 또는 대체 — 분석 전 반드시 거치는 관문",
+    intro:
+      "거의 모든 실무 데이터에는 빈 값이 있습니다. 먼저 isna().sum()으로 열별 결측 규모를 파악하고, 소수면 dropna로 삭제, 다수면 fillna로 대체합니다. 대체값은 수치형이면 중앙값(이상치에 강건), 범주형이면 최빈값이나 '미상' 범주가 무난합니다.\n\n결측이 무작위가 아니라 특정 집단에 몰려 있다면(예: 고연령 고객의 소득 미기재) 삭제·대체 모두 편향을 만들 수 있으므로, 결측 자체를 하나의 정보로 남기는 것도 방법입니다.",
+    tips: "겉보기엔 값이 있는데 '  '(공백)이나 '-' 같은 문자로 숨어 있는 결측이 흔합니다 — replace로 진짜 NaN으로 바꾼 뒤 세어야 정확합니다. 시계열은 평균 대체보다 ffill·interpolate가 자연스럽습니다.",
+    sections: [
+      {
+        title: "결측 파악 — 숨은 결측까지",
+        code: `import numpy as np
+
+# 숨은 결측(공백·대시)을 진짜 NaN으로
+df = df.replace(["", " ", "-", "N/A"], np.nan)
+
+# 열별 결측 수·비율
+na = df.isna().sum()
+print(pd.DataFrame({"결측수": na, "비율": (na / len(df)).round(3)})
+      .query("결측수 > 0").sort_values("결측수", ascending=False))
+
+# 특정 집단에 몰렸는지 확인
+print(df.groupby("channel")["income"].apply(lambda s: s.isna().mean()).round(3))`,
+      },
+      {
+        title: "삭제·대체·보간",
+        code: `# 핵심 열이 빈 행만 삭제
+df = df.dropna(subset=["policy_id", "premium"])
+
+# 수치형: 중앙값 / 범주형: '미상'
+df["income"] = df["income"].fillna(df["income"].median())
+df["job"] = df["job"].fillna("미상")
+
+# 그룹별 중앙값으로 더 정교하게
+df["income"] = df["income"].fillna(
+    df.groupby("age_band")["income"].transform("median")
+)
+
+# 시계열: 직전 값 유지·선형 보간
+ts = ts.ffill()
+ts = ts.interpolate(method="linear")
+
+# 결측 여부 자체를 변수로 보존
+df["income_missing"] = df["income"].isna().astype(int)`,
+      },
+    ],
+  },
+  {
+    id: "sort-dedup",
+    name: "정렬·중복·순위",
+    en: "sort_values · drop_duplicates · rank",
+    category: "wrangle",
+    weight: 2,
+    summary: "정렬, 중복 제거(기준·유지 규칙), 순위·상위 N — 마무리 손질 3종",
+    intro:
+      "결과 표를 만들 때 늘 따라오는 손질입니다. sort_values는 복수 키·방향 혼합 정렬을, drop_duplicates는 어떤 열 기준으로 무엇을 남길지(keep) 지정한 중복 제거를 지원합니다.\n\n'고객별 최신 계약 한 건만'처럼 정렬과 중복 제거를 조합하는 패턴, rank·nlargest로 순위와 상위 N을 뽑는 패턴이 실무 단골입니다.",
+    tips: "drop_duplicates 전에 반드시 정렬하세요 — keep='first'가 무엇을 남길지는 행 순서가 정합니다. duplicated()로 지우기 전에 어떤 행이 중복인지 눈으로 확인하는 습관이 사고를 막습니다.",
+    sections: [
+      {
+        title: "정렬·중복 제거·최신 1건",
+        code: `# 복수 키 정렬 — 상품 오름차순, 보험료 내림차순
+df = df.sort_values(["product", "premium"], ascending=[True, False])
+
+# 중복 확인 후 제거
+print(df.duplicated(subset=["customer_id", "product"]).sum(), "건 중복")
+dedup = df.drop_duplicates(subset=["customer_id", "product"], keep="first")
+
+# 고객별 최신 계약 1건 — 정렬 + keep 조합
+latest = (
+    df.sort_values("issue_date", ascending=False)
+    .drop_duplicates(subset="customer_id", keep="first")
+)`,
+      },
+      {
+        title: "순위·상위 N",
+        code: `# 지점별 실적 순위 (동점은 평균 순위)
+df["rank"] = df["sales"].rank(ascending=False, method="min")
+
+# 상위·하위 N — 정렬보다 빠르고 간결
+top10 = df.nlargest(10, "claim_amt")
+bottom5 = df.nsmallest(5, "loss_ratio")
+
+# 그룹 내 순위 — 채널별 실적 1등
+df["rank_in_ch"] = df.groupby("channel")["sales"].rank(ascending=False, method="min")
+winners = df[df["rank_in_ch"] == 1]`,
+      },
+    ],
+  },
+];
