@@ -16,7 +16,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { Check, ClipboardCopy, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   STAT_CATEGORIES,
   STAT_METHODS,
@@ -28,6 +28,10 @@ import {
 import PyRunner, {
   type RunnerLoadRequest,
 } from "@/components/feature/datalab/PyRunner";
+import {
+  CodeBlock,
+  CopyButton,
+} from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 방법 */
@@ -61,82 +65,10 @@ function hashOf(s: string): number {
   return Math.abs(h);
 }
 
-/* 클립보드 복사 — 실패 시 textarea 폴백 */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-      return ok;
-    } catch {
-      return false;
-    }
-  }
-}
-
-function CopyButton({
-  text,
-  label = "복사",
-  className = "",
-}: {
-  text: string;
-  label?: string;
-  className?: string;
-}) {
-  const [state, setState] = useState<"idle" | "done" | "fail">("idle");
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    []
-  );
-
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        const ok = await copyText(text);
-        setState(ok ? "done" : "fail");
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => setState("idle"), 1800);
-      }}
-      className={`inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground ${className}`}
-    >
-      {state === "done" ? <Check size={13} /> : <ClipboardCopy size={13} />}
-      {state === "done" ? "복사됨" : state === "fail" ? "복사 실패" : label}
-    </button>
-  );
-}
-
 /* ───────────────────────── 팝업 (코드+설명+파라미터) ───────────────────────── */
 
 const FONT_SCALE_MIN = 0.8;
 const FONT_SCALE_MAX = 1.6;
-
-function CodeBlock({ code, codeFz }: { code: string; codeFz: number }) {
-  return (
-    <div className="relative mt-2">
-      <CopyButton text={code} className="absolute right-2 top-2 z-10" />
-      <pre
-        className="overflow-x-auto rounded border border-border bg-surface px-4 py-3.5 font-mono leading-[1.75] text-foreground"
-        style={{ fontSize: codeFz }}
-      >
-        <code>{code}</code>
-      </pre>
-    </div>
-  );
-}
 
 function MethodDialog({
   method,

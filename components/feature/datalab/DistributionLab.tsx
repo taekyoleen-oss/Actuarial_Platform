@@ -1,0 +1,143 @@
+"use client";
+
+/**
+ * /datalab '확률분포' 탭 루트 — 연속형/이산형 두 그룹(접기) 아래에
+ * 분포를 상단 '버튼 행'으로 선택한다(사용자 결정). 버튼을 누르면 그 분포 하나만 표시.
+ * 그룹 자체는 접기/펼치기 가능(초기 펼침).
+ */
+import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  CONTINUOUS_DISTS,
+  DISCRETE_DISTS,
+  type Distribution,
+} from "@/lib/distributions";
+import { DistCard } from "@/components/feature/datalab/DistCard";
+
+/** 버튼 라벨 — '분포' 접미사를 떼어 짧게(정규분포→정규, 파레토분포 (2모수)→파레토 (2모수)). */
+function btnLabel(name: string): string {
+  return name.replace("분포", "").trim();
+}
+
+function DistGroup({
+  title,
+  subtitle,
+  color,
+  dists,
+  defaultOpen = true,
+}: {
+  title: string;
+  subtitle: string;
+  color: string;
+  dists: Distribution[];
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [selectedId, setSelectedId] = useState(dists[0].id);
+  const selected = dists.find((d) => d.id === selectedId) ?? dists[0];
+
+  return (
+    <section className="mb-6">
+      {/* 그룹 헤더 — 접기/펼치기 */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2.5 rounded-cover px-4 py-3 text-left"
+        style={{
+          background: `color-mix(in srgb, var(--chip-${color}-bg) 55%, white)`,
+        }}
+      >
+        <span className="text-tertiary" aria-hidden>
+          {open ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+        </span>
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ background: `var(--chip-${color}-fg)` }}
+          aria-hidden
+        />
+        <span className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-[16px] font-semibold text-foreground">
+            {title}
+          </span>
+          <span className="text-[12.5px] text-tertiary">{subtitle}</span>
+        </span>
+        <span className="ml-auto text-[12px] tabular-nums text-tertiary">
+          {dists.length}종
+        </span>
+      </button>
+
+      {open ? (
+        <div className="mt-3">
+          {/* 분포 선택 버튼 행 */}
+          <div
+            role="tablist"
+            aria-label={`${title} 선택`}
+            className="mb-4 flex flex-wrap gap-2"
+          >
+            {dists.map((d) => {
+              const active = d.id === selectedId;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setSelectedId(d.id)}
+                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                    active
+                      ? ""
+                      : "border-border text-tertiary hover:border-foreground hover:text-foreground"
+                  }`}
+                  style={
+                    active
+                      ? {
+                          background: `var(--chip-${color}-fg)`,
+                          color: "white",
+                          borderColor: `var(--chip-${color}-fg)`,
+                        }
+                      : undefined
+                  }
+                >
+                  {btnLabel(d.name)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 선택된 분포 — id 변경 시 remount로 파라미터 초기화 */}
+          <DistCard key={selected.id} dist={selected} />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+export function DistributionLab() {
+  return (
+    <section aria-label="확률분포" className="mb-10">
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="text-[17px] font-semibold text-foreground">
+          확률분포 — PDF·CDF 그래프와 통계량
+        </h2>
+        <p className="text-[12.5px] text-tertiary">
+          상단 버튼으로 분포를 고르면 그래프·수식·통계량이 바뀝니다 · 파라미터를
+          바꾸면 모양이 실시간으로 변하고, 파이썬 코드 팝업도 열 수 있습니다
+        </p>
+      </div>
+
+      <DistGroup
+        title="연속형 분포"
+        subtitle="정규 · 로그정규 · 지수 · 와이블 · 감마 · 베타 · 파레토"
+        color="blue"
+        dists={CONTINUOUS_DISTS}
+      />
+      <DistGroup
+        title="이산형 분포"
+        subtitle="이항 · 포아송 · 음이항"
+        color="violet"
+        dists={DISCRETE_DISTS}
+      />
+    </section>
+  );
+}

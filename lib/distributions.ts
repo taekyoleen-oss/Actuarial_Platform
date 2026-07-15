@@ -1,0 +1,751 @@
+/**
+ * 확률분포 탭(/datalab) 카탈로그 — 연속형 8종·이산형 3종.
+ * 각 분포: 파라미터 스펙 · pdf/pmf · cdf(연속) · 적률(정의여부 포함) ·
+ * KaTeX 수식 문자열 · 현재 파라미터가 반영된 파이썬(scipy.stats) 코드.
+ *
+ * React 의존 없음(순수 데이터+함수). p는 파라미터 key→값 맵.
+ */
+import {
+  betaln,
+  centralFromRaw,
+  factln,
+  lgamma,
+  logChoose,
+  lowerRegGamma,
+  normStdCdf,
+  quantileBisection,
+  regIncBeta,
+} from "./distMath";
+
+export type ChipColor =
+  | "blue"
+  | "teal"
+  | "amber"
+  | "rose"
+  | "violet"
+  | "green"
+  | "slate"
+  | "cyan";
+
+export interface DistParam {
+  key: string; // 코드/수식 변수명 (mu, sigma, alpha …)
+  label: string; // 표시 라벨
+  tex: string; // KaTeX 기호 (\\mu 등)
+  def: number; // 기본값
+  min: number;
+  max: number;
+  step: number;
+  integer?: boolean; // 슬라이더 정수 스텝(n 등)
+}
+
+export interface StatValue {
+  label: string; // 평균·분산·표준편차·왜도·초과첨도
+  tex: string; // 기호 수식 (KaTeX)
+  value: number | null; // 계산값 — 정의 안 되면 null
+  note?: string; // 정의 조건 (예: "α > 2 필요")
+}
+
+export type Params = Record<string, number>;
+
+interface DistBase {
+  id: string;
+  name: string; // 한글
+  en: string; // 영문
+  color: ChipColor;
+  params: DistParam[];
+  blurb: string; // 한 줄 설명
+  cdfTex: string; // CDF 수식
+  stats: (p: Params) => StatValue[];
+  python: (p: Params) => string;
+}
+
+export interface ContinuousDist extends DistBase {
+  kind: "continuous";
+  pdfTex: string;
+  pdf: (x: number, p: Params) => number;
+  cdf: (x: number, p: Params) => number;
+  domain: (p: Params) => [number, number]; // 그래프 x범위
+}
+
+export interface DiscreteDist extends DistBase {
+  kind: "discrete";
+  pmfTex: string;
+  pmf: (k: number, p: Params) => number;
+  kMax: (p: Params) => number; // 그래프 상한 k
+}
+
+export type Distribution = ContinuousDist | DiscreteDist;
+
+/* ───────────────────────────── 통계량 헬퍼 ───────────────────────────── */
+
+function stat(
+  label: string,
+  tex: string,
+  value: number | null,
+  note?: string
+): StatValue {
+  return { label, tex, value, note };
+}
+
+/** 평균·분산·표준편차·왜도·초과첨도 5행을 정형으로 만든다. */
+function stats5(
+  texs: { mean: string; var: string; std: string; skew: string; kurt: string },
+  m: { mean: number | null; variance: number | null; skew: number | null; kurt: number | null },
+  notes?: { mean?: string; var?: string; skew?: string; kurt?: string }
+): StatValue[] {
+  const std =
+    m.variance === null || m.variance < 0 ? null : Math.sqrt(m.variance);
+  return [
+    stat("평균", texs.mean, m.mean, notes?.mean),
+    stat("분산", texs.var, m.variance, notes?.var),
+    stat("표준편차", texs.std, std, notes?.var),
+    stat("왜도", texs.skew, m.skew, notes?.skew),
+    stat("초과첨도", texs.kurt, m.kurt, notes?.kurt),
+  ];
+}
+
+/* ───────────────────────── 파이썬 코드 템플릿 ───────────────────────── */
+
+/** 보기 좋은 숫자 문자열 — 정수는 정수로, 나머지는 불필요한 0 제거. */
+export function fmtParam(v: number): string {
+  if (Number.isInteger(v)) return String(v);
+  return String(Math.round(v * 1e6) / 1e6);
+}
+
+function pyContinuous(name: string, assign: string, distExpr: string): string {
+  return `import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# ${name}
+${assign}
+dist = ${distExpr}
+
+# PDF·CDF 그래프 (matplotlib 한글 폰트 이슈로 축 라벨은 영문)
+x = np.linspace(dist.ppf(0.001), dist.ppf(0.999), 400)
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
+ax[0].plot(x, dist.pdf(x)); ax[0].set_title("PDF")
+ax[1].plot(x, dist.cdf(x)); ax[1].set_title("CDF")
+plt.tight_layout(); plt.show()
+
+# 통계량 (평균·분산·표준편차·왜도·초과첨도)
+mean, var, skew, kurt = dist.stats(moments="mvsk")
+print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
+print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+}
+
+function pyDiscrete(
+  name: string,
+  assign: string,
+  distExpr: string,
+  kmaxExpr: string
+): string {
+  return `import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# ${name}
+${assign}
+dist = ${distExpr}
+
+# PMF(스템)·CDF(계단) 그래프
+k = np.arange(0, ${kmaxExpr} + 1)
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
+ax[0].vlines(k, 0, dist.pmf(k)); ax[0].plot(k, dist.pmf(k), "o", ms=4); ax[0].set_title("PMF")
+ax[1].step(k, dist.cdf(k), where="post"); ax[1].set_title("CDF")
+plt.tight_layout(); plt.show()
+
+# 통계량 (평균·분산·표준편차·왜도·초과첨도)
+mean, var, skew, kurt = dist.stats(moments="mvsk")
+print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
+print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+}
+
+/* 1모수 파레토의 고정 하한(θ) — 파라미터가 아닌 상수 */
+const PARETO1_THETA = 1;
+
+/* ═══════════════════════════ 연속형 분포 ═══════════════════════════ */
+
+const NORMAL: ContinuousDist = {
+  kind: "continuous",
+  id: "normal",
+  name: "정규분포",
+  en: "Normal",
+  color: "blue",
+  blurb: "종형 대칭 분포 — 오차·평균의 극한(중심극한정리).",
+  params: [
+    { key: "mu", label: "μ (평균)", tex: "\\mu", def: 0, min: -5, max: 5, step: 0.1 },
+    { key: "sigma", label: "σ (표준편차)", tex: "\\sigma", def: 1, min: 0.2, max: 4, step: 0.1 },
+  ],
+  pdfTex: "f(x)=\\dfrac{1}{\\sigma\\sqrt{2\\pi}}\\;e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}",
+  cdfTex: "F(x)=\\dfrac12\\!\\left[1+\\operatorname{erf}\\!\\left(\\dfrac{x-\\mu}{\\sigma\\sqrt2}\\right)\\right]",
+  pdf: (x, p) => {
+    const z = (x - p.mu) / p.sigma;
+    return Math.exp(-0.5 * z * z) / (p.sigma * Math.sqrt(2 * Math.PI));
+  },
+  cdf: (x, p) => normStdCdf((x - p.mu) / p.sigma),
+  domain: (p) => [p.mu - 4 * p.sigma, p.mu + 4 * p.sigma],
+  stats: (p) =>
+    stats5(
+      { mean: "\\mu", var: "\\sigma^2", std: "\\sigma", skew: "0", kurt: "0" },
+      { mean: p.mu, variance: p.sigma * p.sigma, skew: 0, kurt: 0 }
+    ),
+  python: (p) =>
+    pyContinuous(
+      `정규분포 Normal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
+      `mu, sigma = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
+      "stats.norm(loc=mu, scale=sigma)"
+    ),
+};
+
+const LOGNORMAL: ContinuousDist = {
+  kind: "continuous",
+  id: "lognormal",
+  name: "로그정규분포",
+  en: "Lognormal",
+  color: "blue",
+  blurb: "로그를 취하면 정규 — 오른쪽 꼬리, 손해심도 모형화에 자주 쓰임.",
+  params: [
+    { key: "mu", label: "μ (로그평균)", tex: "\\mu", def: 0, min: -2, max: 3, step: 0.1 },
+    { key: "sigma", label: "σ (로그표준편차)", tex: "\\sigma", def: 0.5, min: 0.1, max: 2, step: 0.05 },
+  ],
+  pdfTex:
+    "f(x)=\\dfrac{1}{x\\sigma\\sqrt{2\\pi}}\\;e^{-\\frac{(\\ln x-\\mu)^2}{2\\sigma^2}},\\quad x>0",
+  cdfTex: "F(x)=\\dfrac12\\!\\left[1+\\operatorname{erf}\\!\\left(\\dfrac{\\ln x-\\mu}{\\sigma\\sqrt2}\\right)\\right]",
+  pdf: (x, p) => {
+    if (x <= 0) return 0;
+    const z = (Math.log(x) - p.mu) / p.sigma;
+    return Math.exp(-0.5 * z * z) / (x * p.sigma * Math.sqrt(2 * Math.PI));
+  },
+  cdf: (x, p) => (x <= 0 ? 0 : normStdCdf((Math.log(x) - p.mu) / p.sigma)),
+  domain: (p) => [0, Math.exp(p.mu + 3.2 * p.sigma)],
+  stats: (p) => {
+    const s2 = p.sigma * p.sigma;
+    const mean = Math.exp(p.mu + s2 / 2);
+    const variance = (Math.exp(s2) - 1) * Math.exp(2 * p.mu + s2);
+    const skew = (Math.exp(s2) + 2) * Math.sqrt(Math.exp(s2) - 1);
+    const kurt =
+      Math.exp(4 * s2) + 2 * Math.exp(3 * s2) + 3 * Math.exp(2 * s2) - 6;
+    return stats5(
+      {
+        mean: "e^{\\mu+\\sigma^2/2}",
+        var: "(e^{\\sigma^2}\\!-\\!1)\\,e^{2\\mu+\\sigma^2}",
+        std: "\\sqrt{\\operatorname{Var}}",
+        skew: "(e^{\\sigma^2}\\!+\\!2)\\sqrt{e^{\\sigma^2}\\!-\\!1}",
+        kurt: "e^{4\\sigma^2}\\!+\\!2e^{3\\sigma^2}\\!+\\!3e^{2\\sigma^2}\\!-\\!6",
+      },
+      { mean, variance, skew, kurt }
+    );
+  },
+  python: (p) =>
+    pyContinuous(
+      `로그정규분포 Lognormal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
+      `mu, sigma = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
+      "stats.lognorm(s=sigma, scale=np.exp(mu))"
+    ),
+};
+
+const EXPONENTIAL: ContinuousDist = {
+  kind: "continuous",
+  id: "exponential",
+  name: "지수분포",
+  en: "Exponential",
+  color: "blue",
+  blurb: "무기억성 — 사건 간 대기시간. rate λ(=1/평균).",
+  params: [
+    { key: "lam", label: "λ (rate)", tex: "\\lambda", def: 1, min: 0.1, max: 3, step: 0.05 },
+  ],
+  pdfTex: "f(x)=\\lambda e^{-\\lambda x},\\quad x\\ge 0",
+  cdfTex: "F(x)=1-e^{-\\lambda x}",
+  pdf: (x, p) => (x < 0 ? 0 : p.lam * Math.exp(-p.lam * x)),
+  cdf: (x, p) => (x < 0 ? 0 : 1 - Math.exp(-p.lam * x)),
+  domain: (p) => [0, -Math.log(0.001) / p.lam],
+  stats: (p) =>
+    stats5(
+      {
+        mean: "1/\\lambda",
+        var: "1/\\lambda^2",
+        std: "1/\\lambda",
+        skew: "2",
+        kurt: "6",
+      },
+      {
+        mean: 1 / p.lam,
+        variance: 1 / (p.lam * p.lam),
+        skew: 2,
+        kurt: 6,
+      }
+    ),
+  python: (p) =>
+    pyContinuous(
+      `지수분포 Exponential(lambda=${fmtParam(p.lam)})`,
+      `lam = ${fmtParam(p.lam)}`,
+      "stats.expon(scale=1/lam)"
+    ),
+};
+
+const WEIBULL: ContinuousDist = {
+  kind: "continuous",
+  id: "weibull",
+  name: "와이블분포",
+  en: "Weibull",
+  color: "blue",
+  blurb: "형상 k로 고장률이 감소·일정·증가 — 신뢰성·수명 분석.",
+  params: [
+    { key: "k", label: "k (형상)", tex: "k", def: 1.5, min: 0.3, max: 5, step: 0.1 },
+    { key: "lam", label: "λ (척도)", tex: "\\lambda", def: 1, min: 0.2, max: 5, step: 0.1 },
+  ],
+  pdfTex:
+    "f(x)=\\dfrac{k}{\\lambda}\\!\\left(\\dfrac{x}{\\lambda}\\right)^{k-1}\\!e^{-(x/\\lambda)^k},\\quad x\\ge 0",
+  cdfTex: "F(x)=1-e^{-(x/\\lambda)^{k}}",
+  pdf: (x, p) => {
+    if (x < 0) return 0;
+    const { k, lam } = p;
+    if (x === 0) return k < 1 ? Infinity : k === 1 ? k / lam : 0;
+    const z = x / lam;
+    return (k / lam) * Math.pow(z, k - 1) * Math.exp(-Math.pow(z, k));
+  },
+  cdf: (x, p) => (x < 0 ? 0 : 1 - Math.exp(-Math.pow(x / p.lam, p.k))),
+  domain: (p) => [0, p.lam * Math.pow(-Math.log(0.001), 1 / p.k)],
+  stats: (p) => {
+    const g = (i: number) => Math.exp(lgamma(1 + i / p.k));
+    const g1 = g(1);
+    const g2 = g(2);
+    const g3 = g(3);
+    const g4 = g(4);
+    const mean = p.lam * g1;
+    const variance = p.lam * p.lam * (g2 - g1 * g1);
+    const v = g2 - g1 * g1;
+    const skew = (g3 - 3 * g1 * g2 + 2 * g1 ** 3) / Math.pow(v, 1.5);
+    const kurt =
+      (g4 - 4 * g1 * g3 + 6 * g1 * g1 * g2 - 3 * g1 ** 4) / (v * v) - 3;
+    return stats5(
+      {
+        mean: "\\lambda\\,\\Gamma\\!\\left(1+\\tfrac1k\\right)",
+        var: "\\lambda^2\\!\\left[\\Gamma\\!\\left(1+\\tfrac2k\\right)-\\Gamma\\!\\left(1+\\tfrac1k\\right)^2\\right]",
+        std: "\\sqrt{\\operatorname{Var}}",
+        skew: "\\dfrac{\\Gamma_3-3\\Gamma_1\\Gamma_2+2\\Gamma_1^3}{(\\Gamma_2-\\Gamma_1^2)^{3/2}}",
+        kurt: "\\dfrac{\\Gamma_4-4\\Gamma_1\\Gamma_3+6\\Gamma_1^2\\Gamma_2-3\\Gamma_1^4}{(\\Gamma_2-\\Gamma_1^2)^2}-3",
+      },
+      { mean, variance, skew, kurt }
+    );
+  },
+  python: (p) =>
+    pyContinuous(
+      `와이블분포 Weibull(k=${fmtParam(p.k)}, lambda=${fmtParam(p.lam)})`,
+      `k, lam = ${fmtParam(p.k)}, ${fmtParam(p.lam)}`,
+      "stats.weibull_min(c=k, scale=lam)"
+    ),
+};
+
+const GAMMA: ContinuousDist = {
+  kind: "continuous",
+  id: "gamma",
+  name: "감마분포",
+  en: "Gamma",
+  color: "blue",
+  blurb: "지수분포 합의 일반화 — 양의 연속량(손해심도) 모형.",
+  params: [
+    { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 2, min: 0.3, max: 10, step: 0.1 },
+    { key: "theta", label: "θ (척도)", tex: "\\theta", def: 1, min: 0.2, max: 5, step: 0.1 },
+  ],
+  pdfTex:
+    "f(x)=\\dfrac{1}{\\Gamma(\\alpha)\\theta^{\\alpha}}\\,x^{\\alpha-1}e^{-x/\\theta},\\quad x>0",
+  cdfTex: "F(x)=\\dfrac{\\gamma(\\alpha,\\,x/\\theta)}{\\Gamma(\\alpha)}=P\\!\\left(\\alpha,\\tfrac{x}{\\theta}\\right)",
+  pdf: (x, p) => {
+    if (x <= 0) return p.alpha < 1 ? Infinity : x === 0 && p.alpha === 1 ? 1 / p.theta : 0;
+    return Math.exp(
+      (p.alpha - 1) * Math.log(x) -
+        x / p.theta -
+        lgamma(p.alpha) -
+        p.alpha * Math.log(p.theta)
+    );
+  },
+  cdf: (x, p) => (x <= 0 ? 0 : lowerRegGamma(p.alpha, x / p.theta)),
+  domain: (p) => {
+    const cdf = (x: number) => (x <= 0 ? 0 : lowerRegGamma(p.alpha, x / p.theta));
+    const hi = p.theta * (p.alpha + 12 * Math.sqrt(p.alpha) + 12);
+    return [0, quantileBisection(cdf, 0.999, 0, hi)];
+  },
+  stats: (p) =>
+    stats5(
+      {
+        mean: "\\alpha\\theta",
+        var: "\\alpha\\theta^2",
+        std: "\\sqrt{\\alpha}\\,\\theta",
+        skew: "2/\\sqrt{\\alpha}",
+        kurt: "6/\\alpha",
+      },
+      {
+        mean: p.alpha * p.theta,
+        variance: p.alpha * p.theta * p.theta,
+        skew: 2 / Math.sqrt(p.alpha),
+        kurt: 6 / p.alpha,
+      }
+    ),
+  python: (p) =>
+    pyContinuous(
+      `감마분포 Gamma(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
+      `alpha, theta = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
+      "stats.gamma(a=alpha, scale=theta)"
+    ),
+};
+
+const BETA: ContinuousDist = {
+  kind: "continuous",
+  id: "beta",
+  name: "베타분포",
+  en: "Beta",
+  color: "blue",
+  blurb: "[0,1] 구간 비율·확률 모형 — 베이지안 사전분포로도 쓰임.",
+  params: [
+    { key: "alpha", label: "α", tex: "\\alpha", def: 2, min: 0.3, max: 8, step: 0.1 },
+    { key: "beta", label: "β", tex: "\\beta", def: 2, min: 0.3, max: 8, step: 0.1 },
+  ],
+  pdfTex:
+    "f(x)=\\dfrac{x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha,\\beta)},\\quad 0\\le x\\le 1",
+  cdfTex: "F(x)=I_x(\\alpha,\\beta)\\;\\text{(정규화 불완전 베타)}",
+  pdf: (x, p) => {
+    if (x <= 0 || x >= 1) {
+      // 끝점 발산·0 처리(그래프는 유한 클램프)
+      if (x <= 0) return p.alpha < 1 ? Infinity : p.alpha === 1 ? 1 / Math.exp(betaln(p.alpha, p.beta)) : 0;
+      return p.beta < 1 ? Infinity : p.beta === 1 ? 1 / Math.exp(betaln(p.alpha, p.beta)) : 0;
+    }
+    return Math.exp(
+      (p.alpha - 1) * Math.log(x) +
+        (p.beta - 1) * Math.log(1 - x) -
+        betaln(p.alpha, p.beta)
+    );
+  },
+  cdf: (x, p) => regIncBeta(x, p.alpha, p.beta),
+  domain: () => [0, 1],
+  stats: (p) => {
+    const a = p.alpha;
+    const b = p.beta;
+    const s = a + b;
+    const mean = a / s;
+    const variance = (a * b) / (s * s * (s + 1));
+    const skew =
+      (2 * (b - a) * Math.sqrt(s + 1)) / ((s + 2) * Math.sqrt(a * b));
+    const kurt =
+      (6 * ((a - b) ** 2 * (s + 1) - a * b * (s + 2))) /
+      (a * b * (s + 2) * (s + 3));
+    return stats5(
+      {
+        mean: "\\dfrac{\\alpha}{\\alpha+\\beta}",
+        var: "\\dfrac{\\alpha\\beta}{(\\alpha+\\beta)^2(\\alpha+\\beta+1)}",
+        std: "\\sqrt{\\operatorname{Var}}",
+        skew: "\\dfrac{2(\\beta-\\alpha)\\sqrt{\\alpha+\\beta+1}}{(\\alpha+\\beta+2)\\sqrt{\\alpha\\beta}}",
+        kurt: "\\dfrac{6[(\\alpha-\\beta)^2(\\alpha+\\beta+1)-\\alpha\\beta(\\alpha+\\beta+2)]}{\\alpha\\beta(\\alpha+\\beta+2)(\\alpha+\\beta+3)}",
+      },
+      { mean, variance, skew, kurt }
+    );
+  },
+  python: (p) =>
+    pyContinuous(
+      `베타분포 Beta(alpha=${fmtParam(p.alpha)}, beta=${fmtParam(p.beta)})`,
+      `a, b = ${fmtParam(p.alpha)}, ${fmtParam(p.beta)}`,
+      "stats.beta(a=a, b=b)"
+    ),
+};
+
+/** 파레토(2모수, Loss Models/Lomax): f=αθ^α/(x+θ)^{α+1}, x>0 */
+const PARETO2: ContinuousDist = {
+  kind: "continuous",
+  id: "pareto2",
+  name: "파레토분포 (2모수)",
+  en: "Pareto (two-parameter, Lomax)",
+  color: "blue",
+  blurb: "두꺼운 꼬리 손해분포 — Loss Models 관례(θ 이동). 적률은 α 조건부 존재.",
+  params: [
+    { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 3, min: 0.5, max: 8, step: 0.1 },
+    { key: "theta", label: "θ (척도)", tex: "\\theta", def: 1000, min: 100, max: 5000, step: 100 },
+  ],
+  pdfTex:
+    "f(x)=\\dfrac{\\alpha\\theta^{\\alpha}}{(x+\\theta)^{\\alpha+1}},\\quad x>0",
+  cdfTex: "F(x)=1-\\left(\\dfrac{\\theta}{x+\\theta}\\right)^{\\alpha}",
+  pdf: (x, p) => {
+    if (x < 0) return 0;
+    return Math.exp(
+      Math.log(p.alpha) +
+        p.alpha * Math.log(p.theta) -
+        (p.alpha + 1) * Math.log(x + p.theta)
+    );
+  },
+  cdf: (x, p) => (x < 0 ? 0 : 1 - Math.pow(p.theta / (x + p.theta), p.alpha)),
+  domain: (p) => [0, p.theta * (Math.pow(1 - 0.95, -1 / p.alpha) - 1)],
+  stats: (p) => paretoStats(p.alpha, p.theta, false),
+  python: (p) =>
+    pyContinuous(
+      `파레토(2모수) Lomax(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
+      `alpha, theta = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
+      "stats.lomax(c=alpha, scale=theta)"
+    ),
+};
+
+/** 파레토(1모수, single-parameter): f=αθ^α/x^{α+1}, x>θ(θ 고정) */
+const PARETO1: ContinuousDist = {
+  kind: "continuous",
+  id: "pareto1",
+  name: "파레토분포 (1모수)",
+  en: "Single-parameter Pareto",
+  color: "blue",
+  blurb: `하한 θ=${PARETO1_THETA} 고정, 형상 α만 추정 — 초과손해(θ 이상) 모형.`,
+  params: [
+    { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 3, min: 0.5, max: 8, step: 0.1 },
+  ],
+  pdfTex: `f(x)=\\dfrac{\\alpha\\,\\theta^{\\alpha}}{x^{\\alpha+1}},\\quad x>\\theta=${PARETO1_THETA}`,
+  cdfTex: `F(x)=1-\\left(\\dfrac{\\theta}{x}\\right)^{\\alpha},\\quad \\theta=${PARETO1_THETA}`,
+  pdf: (x, p) => {
+    if (x < PARETO1_THETA) return 0;
+    return Math.exp(
+      Math.log(p.alpha) +
+        p.alpha * Math.log(PARETO1_THETA) -
+        (p.alpha + 1) * Math.log(x)
+    );
+  },
+  cdf: (x, p) =>
+    x < PARETO1_THETA ? 0 : 1 - Math.pow(PARETO1_THETA / x, p.alpha),
+  domain: (p) => [
+    PARETO1_THETA,
+    PARETO1_THETA * Math.pow(1 - 0.95, -1 / p.alpha),
+  ],
+  stats: (p) => paretoStats(p.alpha, PARETO1_THETA, true),
+  python: (p) =>
+    pyContinuous(
+      `파레토(1모수) Pareto(alpha=${fmtParam(p.alpha)}, theta=${PARETO1_THETA})`,
+      `alpha, theta = ${fmtParam(p.alpha)}, ${PARETO1_THETA}`,
+      "stats.pareto(b=alpha, scale=theta)"
+    ),
+};
+
+/**
+ * 파레토 적률 — 원적률에서 중심적률로. single=true는 1모수(x>θ),
+ * false는 2모수(Lomax). 각 적률은 α > 차수일 때만 존재.
+ * 1모수: E[X^k]=αθ^k/(α−k). 2모수: E[X^k]=θ^k·k!/∏_{i=1}^k(α−i).
+ */
+function paretoStats(alpha: number, theta: number, single: boolean): StatValue[] {
+  const raw = (k: number): number | null => {
+    if (alpha <= k) return null;
+    if (single) return (alpha * Math.pow(theta, k)) / (alpha - k);
+    let num = Math.pow(theta, k);
+    for (let i = 1; i <= k; i++) num *= i / (alpha - i);
+    return num;
+  };
+  const m1 = raw(1);
+  const m2 = raw(2);
+  const m3 = raw(3);
+  const m4 = raw(4);
+  let mean: number | null = m1;
+  let variance: number | null = null;
+  let skew: number | null = null;
+  let kurt: number | null = null;
+  if (m1 !== null && m2 !== null) {
+    const cm =
+      m3 !== null && m4 !== null
+        ? centralFromRaw(m1, m2, m3, m4)
+        : { variance: m2 - m1 * m1, skewness: NaN, excessKurtosis: NaN };
+    variance = cm.variance;
+    if (m3 !== null) skew = centralFromRaw(m1, m2, m3, m4 ?? 0).skewness;
+    if (m4 !== null && m3 !== null) kurt = centralFromRaw(m1, m2, m3, m4).excessKurtosis;
+  }
+  const meanTex = single
+    ? "\\dfrac{\\alpha\\theta}{\\alpha-1}"
+    : "\\dfrac{\\theta}{\\alpha-1}";
+  return stats5(
+    {
+      mean: meanTex,
+      var: "E[X^2]-E[X]^2",
+      std: "\\sqrt{\\operatorname{Var}}",
+      skew: "\\dfrac{\\mu_3}{\\sigma^3}",
+      kurt: "\\dfrac{\\mu_4}{\\sigma^4}-3",
+    },
+    { mean, variance, skew, kurt },
+    {
+      mean: "α > 1 필요",
+      var: "α > 2 필요",
+      skew: "α > 3 필요",
+      kurt: "α > 4 필요",
+    }
+  );
+}
+
+/* ═══════════════════════════ 이산형 분포 ═══════════════════════════ */
+
+const BINOMIAL: DiscreteDist = {
+  kind: "discrete",
+  id: "binomial",
+  name: "이항분포",
+  en: "Binomial",
+  color: "violet",
+  blurb: "성공확률 p인 독립시행 n회 중 성공 횟수.",
+  params: [
+    { key: "n", label: "n (시행수)", tex: "n", def: 20, min: 1, max: 50, step: 1, integer: true },
+    { key: "p", label: "p (성공확률)", tex: "p", def: 0.5, min: 0.01, max: 0.99, step: 0.01 },
+  ],
+  pmfTex:
+    "P(X=k)=\\binom{n}{k}p^{k}(1-p)^{n-k},\\quad k=0,\\dots,n",
+  cdfTex: "F(k)=\\displaystyle\\sum_{i=0}^{k}\\binom{n}{i}p^{i}(1-p)^{n-i}",
+  pmf: (k, p) => {
+    const n = Math.round(p.n);
+    if (k < 0 || k > n) return 0;
+    return Math.exp(
+      logChoose(n, k) + k * Math.log(p.p) + (n - k) * Math.log(1 - p.p)
+    );
+  },
+  kMax: (p) => Math.round(p.n),
+  stats: (p) => {
+    const n = p.n;
+    const q = 1 - p.p;
+    const npq = n * p.p * q;
+    return stats5(
+      {
+        mean: "np",
+        var: "np(1-p)",
+        std: "\\sqrt{np(1-p)}",
+        skew: "\\dfrac{1-2p}{\\sqrt{np(1-p)}}",
+        kurt: "\\dfrac{1-6p(1-p)}{np(1-p)}",
+      },
+      {
+        mean: n * p.p,
+        variance: npq,
+        skew: (1 - 2 * p.p) / Math.sqrt(npq),
+        kurt: (1 - 6 * p.p * q) / npq,
+      }
+    );
+  },
+  python: (p) =>
+    pyDiscrete(
+      `이항분포 Binomial(n=${Math.round(p.n)}, p=${fmtParam(p.p)})`,
+      `n, p = ${Math.round(p.n)}, ${fmtParam(p.p)}`,
+      "stats.binom(n, p)",
+      "n"
+    ),
+};
+
+const POISSON: DiscreteDist = {
+  kind: "discrete",
+  id: "poisson",
+  name: "포아송분포",
+  en: "Poisson",
+  color: "violet",
+  blurb: "단위구간당 평균 λ회 발생하는 희귀사건 건수 — 사고건수 모형.",
+  params: [
+    { key: "lam", label: "λ (평균)", tex: "\\lambda", def: 3, min: 0.1, max: 20, step: 0.1 },
+  ],
+  pmfTex: "P(X=k)=\\dfrac{e^{-\\lambda}\\lambda^{k}}{k!},\\quad k=0,1,\\dots",
+  cdfTex: "F(k)=e^{-\\lambda}\\displaystyle\\sum_{i=0}^{k}\\dfrac{\\lambda^{i}}{i!}",
+  pmf: (k, p) => {
+    if (k < 0) return 0;
+    return Math.exp(-p.lam + k * Math.log(p.lam) - factln(k));
+  },
+  kMax: (p) => Math.ceil(p.lam + 4 * Math.sqrt(p.lam) + 8),
+  stats: (p) =>
+    stats5(
+      {
+        mean: "\\lambda",
+        var: "\\lambda",
+        std: "\\sqrt{\\lambda}",
+        skew: "1/\\sqrt{\\lambda}",
+        kurt: "1/\\lambda",
+      },
+      {
+        mean: p.lam,
+        variance: p.lam,
+        skew: 1 / Math.sqrt(p.lam),
+        kurt: 1 / p.lam,
+      }
+    ),
+  python: (p) =>
+    pyDiscrete(
+      `포아송분포 Poisson(lambda=${fmtParam(p.lam)})`,
+      `lam = ${fmtParam(p.lam)}`,
+      "stats.poisson(lam)",
+      "int(dist.ppf(0.999))"
+    ),
+};
+
+const NEGBINOM: DiscreteDist = {
+  kind: "discrete",
+  id: "negbinom",
+  name: "음이항분포",
+  en: "Negative Binomial",
+  color: "violet",
+  blurb: "r번째 성공까지의 실패 횟수 — 과산포(분산>평균) 건수 모형.",
+  params: [
+    { key: "r", label: "r (성공 목표수)", tex: "r", def: 5, min: 1, max: 20, step: 1 },
+    { key: "p", label: "p (성공확률)", tex: "p", def: 0.5, min: 0.05, max: 0.95, step: 0.05 },
+  ],
+  pmfTex:
+    "P(X=k)=\\binom{k+r-1}{k}p^{r}(1-p)^{k},\\quad k=0,1,\\dots",
+  cdfTex: "F(k)=\\displaystyle\\sum_{i=0}^{k}\\binom{i+r-1}{i}p^{r}(1-p)^{i}",
+  pmf: (k, p) => {
+    if (k < 0) return 0;
+    // C(k+r−1, k) = Γ(k+r)/(Γ(r)·k!) — r 실수 허용
+    return Math.exp(
+      lgamma(k + p.r) -
+        lgamma(p.r) -
+        factln(k) +
+        p.r * Math.log(p.p) +
+        k * Math.log(1 - p.p)
+    );
+  },
+  kMax: (p) => {
+    const mean = (p.r * (1 - p.p)) / p.p;
+    const sd = Math.sqrt((p.r * (1 - p.p)) / (p.p * p.p));
+    return Math.ceil(mean + 4 * sd + 8);
+  },
+  stats: (p) => {
+    const q = 1 - p.p;
+    const mean = (p.r * q) / p.p;
+    const variance = (p.r * q) / (p.p * p.p);
+    return stats5(
+      {
+        mean: "\\dfrac{r(1-p)}{p}",
+        var: "\\dfrac{r(1-p)}{p^2}",
+        std: "\\sqrt{\\operatorname{Var}}",
+        skew: "\\dfrac{2-p}{\\sqrt{r(1-p)}}",
+        kurt: "\\dfrac{p^2-6p+6}{r(1-p)}",
+      },
+      {
+        mean,
+        variance,
+        skew: (2 - p.p) / Math.sqrt(p.r * q),
+        kurt: (p.p * p.p - 6 * p.p + 6) / (p.r * q),
+      }
+    );
+  },
+  python: (p) =>
+    pyDiscrete(
+      `음이항분포 NegBinom(r=${fmtParam(p.r)}, p=${fmtParam(p.p)})`,
+      `r, p = ${fmtParam(p.r)}, ${fmtParam(p.p)}`,
+      "stats.nbinom(n=r, p=p)",
+      "int(dist.ppf(0.999))"
+    ),
+};
+
+/* ═══════════════════════════ 그룹·조회 ═══════════════════════════ */
+
+export const CONTINUOUS_DISTS: ContinuousDist[] = [
+  NORMAL,
+  LOGNORMAL,
+  EXPONENTIAL,
+  WEIBULL,
+  GAMMA,
+  BETA,
+  PARETO2,
+  PARETO1,
+];
+
+export const DISCRETE_DISTS: DiscreteDist[] = [BINOMIAL, POISSON, NEGBINOM];
+
+export const ALL_DISTS: Distribution[] = [
+  ...CONTINUOUS_DISTS,
+  ...DISCRETE_DISTS,
+];
+
+export function defaultParams(d: Distribution): Params {
+  const p: Params = {};
+  for (const par of d.params) p[par.key] = par.def;
+  return p;
+}
