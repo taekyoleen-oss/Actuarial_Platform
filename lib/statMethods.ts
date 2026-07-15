@@ -859,18 +859,18 @@ print("age 오즈비 95% CI =", np.round(np.quantile(ors, [0.025, 0.975]), 3))`,
   {
     id: "glm",
     name: "일반화선형모형(GLM)",
-    en: "GLM — Poisson · Gamma",
+    en: "GLM — Poisson · NegBinom · Gamma",
     category: "model",
     weight: 3,
     difficulty: 4,
     params: [
-      { name: "family", desc: "목표변수 분포 — Poisson(건수)·Gamma(양의 연속, 심도)·Binomial(비율)·Tweedie(0 뭉침+연속 꼬리, 순보험료 직접 모형화)." },
+      { name: "family", desc: "목표변수 분포 — Poisson(건수)·NegativeBinomial(과산포 건수, 분산=μ+α·μ²)·Gamma(양의 연속, 심도)·Binomial(비율)·Tweedie(0 뭉침+연속 꼬리, 순보험료 직접 모형화)." },
       { name: "link", desc: "링크함수. Gamma의 기본은 inverse이므로 요율 승수 해석을 원하면 link=Log()를 명시해야 합니다." },
       { name: "offset / exposure", desc: "노출 반영 — offset=np.log(exposure) 또는 exposure=... (내부에서 log 적용, 계수 1 고정). 노출이 다른 계약을 섞을 때 필수." },
       { name: "var_weights / freq_weights", desc: "관측 가중 — 심도 모형에서 건수 가중, 집계 데이터 사용 시 빈도 가중." },
       { name: "fit(scale='X2')", desc: "과산포 보정(quasi-Poisson) — 분산이 평균보다 클 때 표준오차를 부풀려 과신을 막습니다. 대안: 음이항 family." },
     ],
-    summary: "빈도(포아송)·심도(감마) 등 정규 아닌 분포를 링크함수로 모형화 — 보험료 산출의 표준",
+    summary: "빈도(포아송·과산포 시 음이항)·심도(감마) 등 정규 아닌 분포를 링크함수로 모형화 — 보험료 산출의 표준",
     intro:
       "선형회귀를 확장해 목표변수의 분포(포아송·감마·이항 등)와 링크함수를 명시적으로 지정합니다. 사고 건수는 포아송(로그 링크), 사고 금액은 감마(로그 링크)로 모형화하는 것이 보험요율 산출(빈도×심도)의 국제 표준 접근입니다.\n\n로그 링크에서는 exp(계수)가 승수(relativity)로 해석됩니다 — 요율 상대도를 바로 얻을 수 있어 계리 실무와 궁합이 좋습니다.",
     tips: "노출(경과 계약년수)이 다른 데이터는 반드시 offset=log(exposure)로 반영해야 합니다. 포아송에서 분산이 평균보다 크면(과산포) 음이항 모형이나 quasi-Poisson을 고려하세요.",
@@ -928,6 +928,44 @@ print(f"AIC = {freq.aic:.1f}   BIC = {freq.bic:.1f}")
 freq_qp = freq.model.fit(scale="X2")
 print("\\n[quasi-Poisson 보정 후 p-value 일부]")
 print(freq_qp.pvalues.round(4).head())`,
+      },
+      {
+        title: "과산포 건수 — 음이항 GLM (NB2)",
+        desc: "포아송에서 분산>평균(과산포)이면 음이항으로 교체. 음이항 = 포아송–감마 혼합(포아송 평균 μ가 감마로 흔들림)이라 분산 = μ + α·μ²로 초과분산을 흡수합니다. quasi-Poisson이 표준오차만 부풀리는 것과 달리 우도 기반 모형이라 AIC 비교가 가능합니다.",
+        code: `import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# ① α(과산포 파라미터)를 함께 MLE로 추정 — discrete 음이항(NB2)
+nb = smf.negativebinomial(
+    "n_claims ~ C(age_band) + C(region) + C(car_type)",
+    data=df,
+    offset=np.log(df["exposure"]),
+).fit()
+print(nb.summary())
+alpha_hat = nb.params["alpha"]           # 0에 가까우면 사실상 포아송, 크면 과산포 강함
+print(f"추정 과산포 alpha = {alpha_hat:.4f}")
+
+# 요율 상대도 — alpha는 분산 파라미터라 상대도 해석에서 제외
+relativity = np.exp(nb.params.drop("alpha"))
+print(relativity.round(3))
+
+# ② 같은 α를 GLM 프레임에 넣어 적합(요율 산출 파이프라인을 GLM으로 통일할 때)
+nb_glm = smf.glm(
+    "n_claims ~ C(age_band) + C(region) + C(car_type)",
+    data=df,
+    family=sm.families.NegativeBinomial(alpha=alpha_hat),
+    offset=np.log(df["exposure"]),
+).fit()
+print(np.exp(nb_glm.params).round(3))
+
+# ③ 포아송 대비 개선 확인 — AIC가 작아지면 음이항 채택 근거
+pois = smf.glm(
+    "n_claims ~ C(age_band) + C(region) + C(car_type)",
+    data=df, family=sm.families.Poisson(),
+    offset=np.log(df["exposure"]),
+).fit()
+print(f"AIC  Poisson={pois.aic:.1f}   NegBinom={nb.aic:.1f}")`,
       },
       {
         title: "규제 GLM — fit_regularized(alpha·L1_wt)",
