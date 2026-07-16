@@ -8,7 +8,7 @@
  * 선택=오버레이·QQ 팝업·파이썬 코드 팝업) → 몬테카를로 코드.
  */
 import { useMemo, useState } from "react";
-import { Code2, LineChart, Play, Table2 } from "lucide-react";
+import { Code2, Info, LineChart, Play, Table2 } from "lucide-react";
 import {
   empiricalFromGroups,
   empiricalFromValues,
@@ -38,6 +38,10 @@ import {
 import { DataSheetDialog } from "@/components/feature/datalab/DataSheetDialog";
 import { QqDialog } from "@/components/feature/datalab/QqDialog";
 import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
+import {
+  STAT_INFOS,
+  StatInfoDialog,
+} from "@/components/feature/datalab/StatInfoDialog";
 
 /* ─────────────────────── 분포 카탈로그(표시용) ─────────────────────── */
 
@@ -77,6 +81,17 @@ const SORT_ASC: Record<SortKey, boolean> = {
   chi2: true,
   logL: false,
 };
+
+const SORT_LABELS: Record<SortKey, string> = {
+  aic: "AIC",
+  bic: "BIC",
+  logL: "logL",
+  ksD: "KS D",
+  a2: "A²",
+  chi2: "χ²",
+};
+
+const MEDALS = ["🥇", "🥈", "🥉"];
 
 function sortRows(rows: FitResultRow[], key: SortKey): FitResultRow[] {
   const asc = SORT_ASC[key];
@@ -221,7 +236,24 @@ function ResultsTable({
   onCode: (row: FitResultRow) => void;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("aic");
+  const [statInfo, setStatInfo] = useState<string | null>(null);
   const sorted = useMemo(() => sortRows(rows, sortKey), [rows, sortKey]);
+
+  /** ⓘ — 통계량 설명 팝업 열기(정렬 클릭과 분리) */
+  const infoBtn = (infoKey: string) => (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        setStatInfo(infoKey);
+      }}
+      aria-label={`${STAT_INFOS[infoKey].name} 설명 보기`}
+      title={`${STAT_INFOS[infoKey].name} 설명·판단기준`}
+      className="ml-1 inline-flex translate-y-[1.5px] text-tertiary/70 hover:text-[var(--primary)]"
+    >
+      <Info size={12} />
+    </button>
+  );
 
   const th = (key: SortKey, label: string) => (
     <th
@@ -233,18 +265,62 @@ function ResultsTable({
     >
       {label}
       {sortKey === key ? (SORT_ASC[key] ? " ↑" : " ↓") : ""}
+      {infoBtn(key)}
     </th>
   );
+
+  const thPlain = (label: string, infoKey: string) => (
+    <th className="whitespace-nowrap px-2.5 py-1.5 text-right font-medium">
+      {label}
+      {infoBtn(infoKey)}
+    </th>
+  );
+
+  const top3 = sorted.filter((r) => r.ok).slice(0, 3);
 
   return (
     <div className="mb-6">
       <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h4 className="text-[13.5px] font-semibold text-foreground">{title}</h4>
         <span className="text-[12px] text-tertiary">
-          열 이름을 누르면 그 기준으로 순위 정렬 · 행을 누르면 위 그래프에 겹쳐
-          표시
+          열 이름을 누르면 그 기준으로 순위 정렬 · ⓘ=통계량 설명 · 행을 누르면
+          위 그래프에 겹쳐 표시
         </span>
       </div>
+
+      {/* 최적 적합 Top 3 — 현재 정렬 기준 순위 */}
+      {top3.length > 0 ? (
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
+          <span className="text-[12px] font-medium text-tertiary">
+            최적 적합 Top 3 ({SORT_LABELS[sortKey]} 기준)
+          </span>
+          {top3.map((r, i) => {
+            const active = r.id === selectedId;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => onSelect(r.id)}
+                title="클릭하면 위 그래프에 이 분포를 겹쳐 표시"
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] transition-colors ${
+                  active
+                    ? "border-[var(--primary)] bg-[color-mix(in_srgb,var(--chip-blue-bg)_55%,white)] text-foreground"
+                    : "border-border text-tertiary hover:border-foreground hover:text-foreground"
+                }`}
+              >
+                <span aria-hidden>{MEDALS[i]}</span>
+                <span className="font-medium">
+                  {i + 1}위 {nameOf(dists, r.id)}
+                </span>
+                <span className="tabular-nums text-tertiary">
+                  <Cell v={r[sortKey] as number | null} />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="overflow-x-auto rounded border border-border">
         <table className="w-full text-[12.5px]">
           <thead>
@@ -258,16 +334,12 @@ function ResultsTable({
               {isGrouped ? (
                 <>
                   {th("chi2", "χ²")}
-                  <th className="whitespace-nowrap px-2.5 py-1.5 text-right font-medium">
-                    χ² p
-                  </th>
+                  {thPlain("χ² p", "chi2P")}
                 </>
               ) : (
                 <>
                   {th("ksD", "KS D")}
-                  <th className="whitespace-nowrap px-2.5 py-1.5 text-right font-medium">
-                    KS p
-                  </th>
+                  {thPlain("KS p", "ksP")}
                   {th("a2", "A²")}
                 </>
               )}
@@ -370,6 +442,13 @@ function ResultsTable({
           </tbody>
         </table>
       </div>
+
+      {statInfo && STAT_INFOS[statInfo] ? (
+        <StatInfoDialog
+          info={STAT_INFOS[statInfo]}
+          onClose={() => setStatInfo(null)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -736,6 +815,9 @@ export function FitLab() {
                     적합: {nameOf(SEV_DISTS, sevRow.id)}
                   </span>
                 ) : null}
+                <span className="text-tertiary/80">
+                  그래프를 드래그하면 그 구간만 확대해 볼 수 있습니다
+                </span>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <DistChart

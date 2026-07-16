@@ -10,7 +10,7 @@
  *    B는 파선. 통계량은 A/B 두 열, 파이썬 코드도 두 분포를 겹쳐 그리는 코드로 바뀐다.
  */
 import { useMemo, useState } from "react";
-import { Code2, GitCompare } from "lucide-react";
+import { Code2, GitCompare, RotateCcw } from "lucide-react";
 import {
   comparePython,
   defaultParams,
@@ -561,6 +561,17 @@ export function DistCard({ dist }: { dist: Distribution }) {
                     </option>
                   ))}
                 </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDistB(dist);
+                    setParamsB({ ...params });
+                  }}
+                  title="B의 분포·파라미터를 A와 동일하게 초기화"
+                  className="ml-auto inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11.5px] text-tertiary hover:text-foreground"
+                >
+                  <RotateCcw size={12} aria-hidden /> A와 동일하게
+                </button>
               </div>
               <ParamGrid
                 key={distB.id}
