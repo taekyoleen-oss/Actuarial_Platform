@@ -10,13 +10,15 @@
  *    B는 파선. 통계량은 A/B 두 열, 파이썬 코드도 두 분포를 겹쳐 그리는 코드로 바뀐다.
  */
 import { useMemo, useState } from "react";
-import { Code2, GitCompare, RotateCcw } from "lucide-react";
+import { Code2, GitCompare, LineChart, RotateCcw } from "lucide-react";
 import {
   comparePython,
   defaultParams,
   meanOf,
   medianOf,
+  normalQuantile,
   peersOf,
+  quantileOf,
   singlePython,
   type Distribution,
   type DistParam,
@@ -31,6 +33,7 @@ import {
   type Series,
 } from "@/components/feature/datalab/DistChart";
 import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
+import { DistQqDialog } from "@/components/feature/datalab/DistQqDialog";
 import { Tex } from "@/components/feature/datalab/Tex";
 
 const N_SAMPLES = 240;
@@ -362,6 +365,7 @@ function LegendLine({ color, dashed }: { color: string; dashed?: boolean }) {
 export function DistCard({ dist }: { dist: Distribution }) {
   const [params, setParams] = useState<Params>(() => defaultParams(dist));
   const [showCode, setShowCode] = useState(false);
+  const [showQq, setShowQq] = useState(false);
   const [showMarkers, setShowMarkers] = useState(true);
   const [compare, setCompare] = useState(false);
   const [distB, setDistB] = useState<Distribution>(dist);
@@ -459,6 +463,96 @@ export function DistCard({ dist }: { dist: Distribution }) {
         : singlePython(dist, params),
     [compare, dist, params, distB, paramsB]
   );
+
+  /* QQ-plot 데이터 — 팝업이 열릴 때만 계산.
+     단일=모멘트 정합 정규 기준(정규 대비 왜도·꼬리 읽기), 비교=A vs B 분위수. */
+  const qq = useMemo(() => {
+    if (!showQq) return null;
+    const M = 99;
+    const probs = Array.from({ length: M }, (_, i) => (i + 0.5) / M);
+    const discreteNote =
+      dist.kind === "discrete"
+        ? "이산형 분포는 분위수가 정수라 점이 계단형으로 보입니다."
+        : null;
+
+    if (compare) {
+      const xs: number[] = [];
+      const ys: number[] = [];
+      for (const pr of probs) {
+        const qa = quantileOf(dist, params, pr);
+        const qb = quantileOf(distB, paramsB, pr);
+        if (qa !== null && qb !== null) {
+          xs.push(qa);
+          ys.push(qb);
+        }
+      }
+      return {
+        title: `QQ-plot — A ${dist.name} vs B ${distB.name}`,
+        subtitle:
+          "같은 누적확률(0.5%~99.5%) 99개 지점에서 두 분포의 분위수를 맞대어 봅니다",
+        theo: xs,
+        samp: ys,
+        xLabel: `A · ${dist.name} 분위수`,
+        yLabel: `B · ${distB.name} 분위수`,
+        notes: [
+          "점이 45° 점선 위에 있으면 그 구간에서 B의 분위수가 A보다 큽니다 — 오른쪽 끝이 위로 휘면 B의 오른쪽 꼬리가 더 두껍습니다.",
+          "두 분포가 완전히 같으면 점이 정확히 45° 선에 놓입니다.",
+          ...(discreteNote ? [discreteNote] : []),
+        ],
+      };
+    }
+
+    // 기준 정규: 평균·표준편차 정합 — 미정의(파레토 α≤2 등)면 중위수·IQR 정합
+    const meanV = stats.find((s) => s.label === "평균")?.value ?? null;
+    const sdV = stats.find((s) => s.label === "표준편차")?.value ?? null;
+    let mu: number;
+    let sigma: number;
+    let fallback = false;
+    if (
+      meanV !== null &&
+      sdV !== null &&
+      Number.isFinite(meanV) &&
+      Number.isFinite(sdV) &&
+      sdV > 0
+    ) {
+      mu = meanV;
+      sigma = sdV;
+    } else {
+      const med = quantileOf(dist, params, 0.5) ?? 0;
+      const q1 = quantileOf(dist, params, 0.25) ?? med - 1;
+      const q3 = quantileOf(dist, params, 0.75) ?? med + 1;
+      mu = med;
+      sigma = Math.max((q3 - q1) / 1.349, 1e-9);
+      fallback = true;
+    }
+    const xs: number[] = [];
+    const ys: number[] = [];
+    for (const pr of probs) {
+      const qd = quantileOf(dist, params, pr);
+      if (qd !== null) {
+        xs.push(normalQuantile(mu, sigma, pr));
+        ys.push(qd);
+      }
+    }
+    return {
+      title: `QQ-plot — ${dist.name} vs 정규분포`,
+      subtitle: `기준 정규 N(μ=${fmtVal(mu)}, σ=${fmtVal(sigma)})${
+        fallback
+          ? " — 평균·표준편차 미정의라 중위수·IQR로 정합"
+          : " (평균·표준편차 정합)"
+      }`,
+      theo: xs,
+      samp: ys,
+      xLabel: "정규분포 분위수 (기준)",
+      yLabel: `${dist.name} 분위수`,
+      notes: [
+        "점이 45° 점선과 일치할수록 정규분포에 가깝습니다 — 정규분포를 선택하면 정확히 선 위에 놓입니다.",
+        "오른쪽 끝에서 점이 선 위로 휘면 정규보다 오른쪽 꼬리가 두껍습니다(양의 왜도·두꺼운 꼬리).",
+        "왼쪽 끝에서 점이 선보다 위에 있으면 왼쪽 꼬리가 정규보다 짧습니다 — 양수 지지집합 분포의 전형입니다.",
+        ...(discreteNote ? [discreteNote] : []),
+      ],
+    };
+  }, [showQq, compare, dist, params, distB, paramsB, stats]);
 
   const sameDist = distB.id === dist.id;
   const chipBg = `var(--chip-${dist.color}-bg)`;
@@ -640,13 +734,27 @@ export function DistCard({ dist }: { dist: Distribution }) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowCode(true)}
-          className="inline-flex items-center gap-1.5 rounded border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-tertiary hover:text-foreground"
-        >
-          <Code2 size={14} /> 파이썬 코드 보기
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setShowCode(true)}
+            className="inline-flex items-center gap-1.5 rounded border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-tertiary hover:text-foreground"
+          >
+            <Code2 size={14} /> 파이썬 코드 보기
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowQq(true)}
+            title={
+              compare
+                ? "A·B 두 분포의 분위수를 맞대어 꼬리를 비교"
+                : "평균·표준편차를 맞춘 정규분포 대비 분위수 비교"
+            }
+            className="inline-flex items-center gap-1.5 rounded border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-tertiary hover:text-foreground"
+          >
+            <LineChart size={14} /> QQ-plot
+          </button>
+        </div>
       </div>
 
       {showCode ? (
@@ -655,6 +763,18 @@ export function DistCard({ dist }: { dist: Distribution }) {
           en={compare ? `${dist.en} vs ${distB.en}` : dist.en}
           code={code}
           onClose={() => setShowCode(false)}
+        />
+      ) : null}
+      {showQq && qq ? (
+        <DistQqDialog
+          title={qq.title}
+          subtitle={qq.subtitle}
+          theo={qq.theo}
+          samp={qq.samp}
+          xLabel={qq.xLabel}
+          yLabel={qq.yLabel}
+          notes={qq.notes}
+          onClose={() => setShowQq(false)}
         />
       ) : null}
     </div>

@@ -142,10 +142,13 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 # ${spec.label}
+# 파라미터를 넣어 분포를 '고정(frozen)'하면 dist.pdf / cdf / ppf / rvs 를
+# 바로 쓸 수 있습니다 (pdf=밀도, cdf=누적확률, ppf=분위수(cdf의 역함수), rvs=난수)
 ${spec.assign}
 dist = ${spec.expr}
 
-# PDF·CDF 그래프 (matplotlib 한글 폰트 이슈로 축 라벨은 영문)
+# PDF·CDF 그래프 — x범위는 0.1%~99.9% 분위수로 잡아 꼬리까지 보이게
+# (matplotlib 한글 폰트 이슈로 축 라벨은 영문)
 x = np.linspace(dist.ppf(0.001), dist.ppf(0.999), 400)
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
 ax[0].plot(x, dist.pdf(x)); ax[0].set_title("PDF")
@@ -163,10 +166,12 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 # ${spec.label}
+# 파라미터를 넣어 분포를 '고정(frozen)'하면 dist.pmf / cdf / ppf / rvs 를
+# 바로 쓸 수 있습니다 (pmf=확률질량 P(X=k), cdf=누적확률, rvs=난수)
 ${spec.assign}
 dist = ${spec.expr}
 
-# PMF(스템)·CDF(계단) 그래프
+# PMF(스템)·CDF(계단) 그래프 — 이산형은 정수 k에서만 확률이 있습니다
 k = np.arange(0, ${spec.kmax} + 1)
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
 ax[0].vlines(k, 0, dist.pmf(k)); ax[0].plot(k, dist.pmf(k), "o", ms=4); ax[0].set_title("PMF")
@@ -770,22 +775,43 @@ export function meanOf(d: Distribution, p: Params): number | null {
 }
 
 /**
- * 중위수 — 연속형은 CDF의 0.5분위(이분법, 도메인을 브래킷으로 사용),
- * 이산형은 누적확률이 0.5에 처음 도달하는 k.
+ * p-분위수 — 연속형은 CDF 이분법(도메인을 브래킷으로, 필요 시 상한 확장),
+ * 이산형은 누적확률이 prob에 처음 도달하는 k(수치 잔차로 못 닿으면 상한 k).
+ * QQ-plot·중위수 마커 공용.
  */
-export function medianOf(d: Distribution, p: Params): number | null {
+export function quantileOf(
+  d: Distribution,
+  p: Params,
+  prob: number
+): number | null {
+  if (!(prob > 0 && prob < 1)) return null;
   if (d.kind === "continuous") {
     const [lo, hi] = d.domain(p);
-    const m = quantileBisection((x) => d.cdf(x, p), 0.5, lo, hi);
-    return Number.isFinite(m) ? m : null;
+    const q = quantileBisection((x) => d.cdf(x, p), prob, lo, hi);
+    return Number.isFinite(q) ? q : null;
   }
   const kMax = Math.max(1, d.kMax(p));
   let acc = 0;
   for (let k = 0; k <= kMax; k++) {
     acc += d.pmf(k, p);
-    if (acc >= 0.5) return k;
+    if (acc >= prob) return k;
   }
-  return null;
+  return kMax;
+}
+
+/** 정규분포 분위수 — QQ-plot 기준선(모멘트 정합 정규)용. */
+export function normalQuantile(
+  mu: number,
+  sigma: number,
+  prob: number
+): number {
+  const z = quantileBisection((x) => normStdCdf(x), prob, -10, 10);
+  return mu + sigma * z;
+}
+
+/** 중위수 — 0.5 분위수. */
+export function medianOf(d: Distribution, p: Params): number | null {
+  return quantileOf(d, p, 0.5);
 }
 
 /* ═══════════════════════ 파이썬 코드 생성 ═══════════════════════ */

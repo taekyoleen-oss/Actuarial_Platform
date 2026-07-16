@@ -15,7 +15,18 @@ import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 const S = 340; // 정사각 viewBox
 const PAD = 40;
 
-function QqChart({ theo, samp }: { theo: number[]; samp: number[] }) {
+/** 45° 기준선 QQ 산점도 — 모델 적합(데이터 vs 적합)과 확률분포 탭(분포 vs 분포) 공용. */
+export function QqChart({
+  theo,
+  samp,
+  xLabel = "이론 분위수 (fitted)",
+  yLabel = "경험 분위수 (data)",
+}: {
+  theo: number[];
+  samp: number[];
+  xLabel?: string;
+  yLabel?: string;
+}) {
   const g = useMemo(() => {
     const all = [...theo, ...samp].filter((v) => Number.isFinite(v));
     if (all.length === 0) return null;
@@ -99,7 +110,7 @@ function QqChart({ theo, samp }: { theo: number[]; samp: number[] }) {
         className="fill-[var(--text-tertiary)]"
         style={{ fontSize: 10 }}
       >
-        이론 분위수 (fitted)
+        {xLabel}
       </text>
       <text
         x={10}
@@ -109,7 +120,7 @@ function QqChart({ theo, samp }: { theo: number[]; samp: number[] }) {
         className="fill-[var(--text-tertiary)]"
         style={{ fontSize: 10 }}
       >
-        경험 분위수 (data)
+        {yLabel}
       </text>
     </svg>
   );
