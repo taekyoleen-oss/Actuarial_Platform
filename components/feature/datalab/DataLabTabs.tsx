@@ -1,31 +1,35 @@
 "use client";
 
 /**
- * /datalab 상단 탭 — 모바일·데스크톱 모두 세 탭으로 분리:
+ * /datalab 상단 탭 — 모바일·데스크톱 모두 네 탭으로 분리:
  *  ① 데이터 분석: 워드클라우드 + 파이썬 실행기(analysis)
  *  ② 데이터 분석 예제: 검색·정렬 + 예제 카드(examples)
  *  ③ 확률분포: 분포별 PDF/CDF 그래프·통계량·파이썬 코드(distributions)
+ *  ④ 모델 적합: 데이터 입력→분포 적합·검정·QQ·몬테카를로(fitting)
  * 좁은 화면에서 한 줄에 들어가도록 라벨은 모바일에서 짧게 바뀐다.
  * 각 섹션은 한 번만 렌더하고 display만 토글(실행기 상태·Pyodide 유지).
  */
 import { useState, type ReactNode } from "react";
 
-type TabKey = "analysis" | "examples" | "distributions";
+type TabKey = "analysis" | "examples" | "distributions" | "fitting";
 
 const TABS: { key: TabKey; short: string; long: string }[] = [
   { key: "analysis", short: "분석", long: "데이터 분석" },
   { key: "examples", short: "예제", long: "데이터 분석 예제" },
   { key: "distributions", short: "확률분포", long: "확률분포" },
+  { key: "fitting", short: "모델적합", long: "모델 적합" },
 ];
 
 export function DataLabTabs({
   analysis,
   examples,
   distributions,
+  fitting,
 }: {
   analysis: ReactNode;
   examples: ReactNode;
   distributions: ReactNode;
+  fitting: ReactNode;
 }) {
   const [tab, setTab] = useState<TabKey>("analysis");
 
@@ -37,7 +41,7 @@ export function DataLabTabs({
     <div>
       <div
         role="tablist"
-        aria-label="데이터 분석 / 예제 / 확률분포"
+        aria-label="데이터 분석 / 예제 / 확률분포 / 모델 적합"
         className="mb-6 flex w-fit items-center gap-1 rounded-full border border-border p-0.5"
       >
         {TABS.map((t) => (
@@ -62,6 +66,7 @@ export function DataLabTabs({
       {panel("analysis", analysis)}
       {panel("examples", examples)}
       {panel("distributions", distributions)}
+      {panel("fitting", fitting)}
     </div>
   );
 }

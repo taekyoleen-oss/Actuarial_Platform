@@ -13,12 +13,15 @@ import { useMemo, type ReactNode } from "react";
 export interface Pt {
   x: number;
   y: number;
+  /** bar 변형 전용 — 구간 [x0,x1] 막대(히스토그램·그룹 구간) */
+  x0?: number;
+  x1?: number;
 }
 
 export interface Series {
   points: Pt[];
   color: string;
-  variant: "line" | "stem" | "step";
+  variant: "line" | "stem" | "step" | "bar";
   dashed?: boolean;
 }
 
@@ -51,6 +54,7 @@ export function fmtTick(v: number): string {
   if (Number.isInteger(v)) return String(v);
   if (a >= 10) return v.toFixed(0);
   if (a >= 1) return v.toFixed(1);
+  if (a < 0.005) return v.toExponential(0); // 미세 밀도(보험금 축 등) — 0.00 뭉개짐 방지
   return v.toFixed(2);
 }
 
@@ -98,7 +102,10 @@ export function DistChart({
   const g = useMemo(() => {
     const all = series.flatMap((s) => s.points);
     if (all.length === 0) return null;
-    const xs = all.map((p) => p.x);
+    // bar 구간 끝점(x0/x1)도 x범위에 포함
+    const xs = all.flatMap((p) =>
+      p.x0 !== undefined && p.x1 !== undefined ? [p.x0, p.x1] : [p.x]
+    );
     const ys = all.map((p) => p.y);
     const xmin = Math.min(...xs);
     const xmax = Math.max(...xs);
@@ -157,6 +164,31 @@ export function DistChart({
 
   const drawSeries = (s: Series, i: number): ReactNode => {
     const dash = s.dashed ? "5 3" : undefined;
+    if (s.variant === "bar") {
+      return (
+        <g key={i}>
+          {s.points.map((p, j) => {
+            const x0 = sx(p.x0 ?? p.x);
+            const x1 = sx(p.x1 ?? p.x);
+            const top = sy(p.y);
+            return (
+              <rect
+                key={j}
+                x={x0}
+                y={top}
+                width={Math.max(0.5, x1 - x0)}
+                height={Math.max(0, baseY - top)}
+                fill={s.color}
+                fillOpacity={0.22}
+                stroke={s.color}
+                strokeOpacity={0.55}
+                strokeWidth={0.7}
+              />
+            );
+          })}
+        </g>
+      );
+    }
     if (s.variant === "line") {
       const d = s.points
         .map((p, j) => `${j === 0 ? "M" : "L"}${sx(p.x).toFixed(2)},${sy(p.y).toFixed(2)}`)

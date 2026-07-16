@@ -1,0 +1,376 @@
+/**
+ * 모델 적합 탭 — Pyodide(scipy) 적합 엔진. 사용자 결정으로 계산은 전부
+ * 브라우저 파이썬(scipy)에서 수행한다(안내되는 파이썬 코드와 결과 일치).
+ *
+ * 흐름: 입력 JSON을 가상 FS(_fit_input.json)에 쓰고 FIT_SCRIPT를 실행,
+ * 마지막 표현식(json.dumps)을 파싱해 돌려준다. Pyodide 런타임은
+ * lib/pyRunner.ts의 싱글턴(getPyodide)을 재사용 — 파이썬 실행기와 캐시 공유.
+ *
+ * 방법 요약(스크립트 내 구현):
+ *  - 개별 데이터: scipy .fit MLE(위치모수 floc=0 고정 — 플랫폼 모수화와 일치),
+ *    logL·AIC·BIC·KS(D,p)·Anderson-Darling A², QQ 분위수(최대 150점), 오버레이 곡선.
+ *  - 그룹 데이터: 구간 우도(Loss Models) Σ nᵢ·log[F(bᵢ)−F(aᵢ)]를 Nelder-Mead로
+ *    최대화(모수는 log 변환으로 양수 보장), χ²(관측·기대도수)·p, ogive QQ.
+ *  - 빈도(연도별 건수): 포아송(λ=평균 MLE)·음이항(r 프로파일 MLE)·이항(n 정수
+ *    탐색+p=평균/n), χ²(꼬리 합산)·p, 건수 QQ.
+ */
+import { getPyodide, type RunPhase } from "./pyRunner";
+
+export type { RunPhase };
+
+/* ───────────────────────────── 타입 ───────────────────────────── */
+
+export interface FitParamOut {
+  name: string;
+  value: number;
+}
+
+export interface FitResultRow {
+  id: string;
+  ok: boolean;
+  error?: string;
+  params?: FitParamOut[];
+  /** 추정 모수 개수(AIC·BIC의 k) */
+  k?: number;
+  logL?: number | null;
+  aic?: number | null;
+  bic?: number | null;
+  ksD?: number | null;
+  ksP?: number | null;
+  a2?: number | null;
+  chi2?: number | null;
+  chi2P?: number | null;
+  chi2Df?: number | null;
+  /** grid에 대한 밀도·누적 y값(연속형) — null은 미정의 지점 */
+  pdfY?: (number | null)[];
+  cdfY?: (number | null)[];
+  /** kGrid에 대한 PMF·CDF(빈도) */
+  pmfY?: (number | null)[];
+  qq?: { theo: number[]; samp: number[] };
+}
+
+export interface FitRunResult {
+  severity: FitResultRow[];
+  frequency: FitResultRow[];
+}
+
+export interface FitPayload {
+  mode: "individual" | "grouped";
+  values?: number[];
+  groups?: { lo: number[]; hi: number[]; n: number[] };
+  /** 심도 오버레이 곡선 x그리드 */
+  grid: number[];
+  sevDists: string[];
+  freq?: { counts: number[]; dists: string[]; kGrid: number[] } | null;
+}
+
+/* ─────────────────────────── 파이썬 스크립트 ─────────────────────────── */
+
+const FIT_SCRIPT = `
+import json, math, warnings
+import numpy as np
+from scipy import stats
+from scipy.optimize import minimize, minimize_scalar
+
+warnings.filterwarnings("ignore")
+
+with open("_fit_input.json", "r", encoding="utf-8") as _f:
+    INP = json.load(_f)
+
+def _num(v):
+    try:
+        v = float(v)
+    except Exception:
+        return None
+    return v if math.isfinite(v) else None
+
+def _arr(a):
+    return [_num(v) for v in np.asarray(a, float).tolist()]
+
+OUT = {"severity": [], "frequency": []}
+GRID = np.asarray(INP.get("grid") or [], float)
+
+# ───── 심도: 개별 데이터 MLE (floc=0 — 플랫폼 모수화와 일치) ─────
+def fit_sev_individual(did, x):
+    if did == "normal":
+        mu, sig = stats.norm.fit(x)
+        return stats.norm(mu, sig), [("mu", mu), ("sigma", sig)], 2
+    if did == "lognormal":
+        s, _, sc = stats.lognorm.fit(x, floc=0)
+        return stats.lognorm(s, 0, sc), [("mu", math.log(sc)), ("sigma", s)], 2
+    if did == "exponential":
+        _, sc = stats.expon.fit(x, floc=0)
+        return stats.expon(0, sc), [("lambda", 1.0 / sc)], 1
+    if did == "weibull":
+        c, _, sc = stats.weibull_min.fit(x, floc=0)
+        return stats.weibull_min(c, 0, sc), [("k", c), ("lambda", sc)], 2
+    if did == "gamma":
+        a, _, sc = stats.gamma.fit(x, floc=0)
+        return stats.gamma(a, 0, sc), [("alpha", a), ("theta", sc)], 2
+    if did == "beta":
+        a, b, _, _ = stats.beta.fit(x, floc=0, fscale=1)
+        return stats.beta(a, b), [("alpha", a), ("beta", b)], 2
+    if did == "pareto2":
+        c, _, sc = stats.lomax.fit(x, floc=0)
+        return stats.lomax(c, 0, sc), [("alpha", c), ("theta", sc)], 2
+    if did == "pareto1":
+        th = float(np.min(x))
+        b, _, _ = stats.pareto.fit(x, floc=0, fscale=th)
+        return stats.pareto(b, 0, th), [("alpha", b), ("theta_min", th)], 1
+    raise ValueError("unknown dist: " + did)
+
+def gof_individual(fr, k, x):
+    n = len(x)
+    logL = float(np.sum(fr.logpdf(x)))
+    aic = 2 * k - 2 * logL
+    bic = k * math.log(n) - 2 * logL
+    ks = stats.kstest(x, fr.cdf)
+    xs = np.sort(x)
+    F = np.clip(fr.cdf(xs), 1e-12, 1 - 1e-12)
+    i = np.arange(1, n + 1)
+    a2 = float(-n - np.mean((2 * i - 1) * (np.log(F) + np.log(1 - F[::-1]))))
+    return logL, aic, bic, float(ks.statistic), float(ks.pvalue), a2
+
+def qq_points(fr, xs, m=150):
+    n = len(xs)
+    if n <= m:
+        pp = (np.arange(1, n + 1) - 0.5) / n
+        samp = np.asarray(xs, float)
+    else:
+        pp = (np.arange(1, m + 1) - 0.5) / m
+        samp = np.quantile(np.asarray(xs, float), pp)
+    theo = fr.ppf(pp)
+    okm = np.isfinite(theo) & np.isfinite(samp)
+    return {"theo": _arr(theo[okm]), "samp": _arr(samp[okm])}
+
+# ───── 심도: 그룹 데이터 — 구간 우도 MLE(모수 log 변환) ─────
+def grouped_specs(A, B, N):
+    mids = (A + B) / 2.0
+    m = float(np.average(mids, weights=N))
+    v = max(float(np.average((mids - m) ** 2, weights=N)), 1e-12)
+    sd = math.sqrt(v)
+    sp = {}
+    sp["normal"] = dict(
+        make=lambda t: stats.norm(t[0], math.exp(t[1])),
+        t0=[m, math.log(sd)],
+        disp=lambda t: [("mu", t[0]), ("sigma", math.exp(t[1]))], k=2)
+    if m > 0:
+        mu0 = math.log(m * m / math.sqrt(v + m * m))
+        s0 = math.sqrt(max(math.log(1 + v / (m * m)), 1e-6))
+        sp["lognormal"] = dict(
+            make=lambda t: stats.lognorm(math.exp(t[1]), 0, math.exp(t[0])),
+            t0=[mu0, math.log(s0)],
+            disp=lambda t: [("mu", t[0]), ("sigma", math.exp(t[1]))], k=2)
+        sp["exponential"] = dict(
+            make=lambda t: stats.expon(0, math.exp(-t[0])),
+            t0=[math.log(1 / m)],
+            disp=lambda t: [("lambda", math.exp(t[0]))], k=1)
+        sp["weibull"] = dict(
+            make=lambda t: stats.weibull_min(math.exp(t[0]), 0, math.exp(t[1])),
+            t0=[math.log(1.2), math.log(m)],
+            disp=lambda t: [("k", math.exp(t[0])), ("lambda", math.exp(t[1]))], k=2)
+        sp["gamma"] = dict(
+            make=lambda t: stats.gamma(math.exp(t[0]), 0, math.exp(t[1])),
+            t0=[math.log(max(m * m / v, 1e-3)), math.log(max(v / m, 1e-9))],
+            disp=lambda t: [("alpha", math.exp(t[0])), ("theta", math.exp(t[1]))], k=2)
+        sp["pareto2"] = dict(
+            make=lambda t: stats.lomax(math.exp(t[0]), 0, math.exp(t[1])),
+            t0=[math.log(2.5), math.log(m * 1.5)],
+            disp=lambda t: [("alpha", math.exp(t[0])), ("theta", math.exp(t[1]))], k=2)
+    if 0 <= float(np.min(A)) and float(np.max(B)) <= 1:
+        c0 = max(m * (1 - m) / v - 1, 0.2)
+        sp["beta"] = dict(
+            make=lambda t: stats.beta(math.exp(t[0]), math.exp(t[1])),
+            t0=[math.log(max(m * c0, 0.1)), math.log(max((1 - m) * c0, 0.1))],
+            disp=lambda t: [("alpha", math.exp(t[0])), ("beta", math.exp(t[1]))], k=2)
+    th1 = float(np.min(A))
+    if th1 > 0:
+        sp["pareto1"] = dict(
+            make=lambda t: stats.pareto(math.exp(t[0]), 0, th1),
+            t0=[math.log(2.0)],
+            disp=lambda t: [("alpha", math.exp(t[0])), ("theta_min", th1)], k=1)
+    return sp
+
+def fit_grouped(spec, A, B, N):
+    def nll(t):
+        try:
+            fr = spec["make"](t)
+            p = fr.cdf(B) - fr.cdf(A)
+            if not np.all(np.isfinite(p)) or np.any(p <= 0):
+                return 1e12
+            return -float(np.sum(N * np.log(p)))
+        except Exception:
+            return 1e12
+    res = minimize(nll, spec["t0"], method="Nelder-Mead",
+                   options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+    if not math.isfinite(res.fun) or res.fun >= 1e11:
+        raise ValueError("optimize_failed")
+    t = res.x
+    return spec["make"](t), spec["disp"](t), spec["k"], -float(res.fun)
+
+def chi2_grouped(fr, A, B, N, k):
+    total = float(np.sum(N))
+    E = total * (fr.cdf(B) - fr.cdf(A))
+    ok = E > 0
+    chi2 = float(np.sum((N[ok] - E[ok]) ** 2 / E[ok]))
+    df = int(ok.sum()) - 1 - k
+    p = float(stats.chi2.sf(chi2, df)) if df > 0 else None
+    return chi2, p, df
+
+def qq_grouped(fr, B, N):
+    total = float(np.sum(N))
+    cum = np.cumsum(N) / total
+    keep = cum < 1 - 1e-9
+    theo = fr.ppf(cum[keep])
+    samp = np.asarray(B, float)[keep]
+    okm = np.isfinite(theo)
+    return {"theo": _arr(theo[okm]), "samp": _arr(samp[okm])}
+
+# ───── 빈도(연도별 건수) MLE ─────
+def fit_freq(fid, c):
+    n = len(c)
+    mean = float(np.mean(c))
+    if fid == "poisson":
+        fr = stats.poisson(mean)
+        params = [("lambda", mean)]; k = 1
+    elif fid == "negbinom":
+        def nll(logr):
+            r = math.exp(logr)
+            p = r / (r + mean)
+            v = -float(np.sum(stats.nbinom.logpmf(c, r, p)))
+            return v if math.isfinite(v) else 1e12
+        res = minimize_scalar(nll, bounds=(math.log(1e-2), math.log(1e4)), method="bounded")
+        r = math.exp(res.x)
+        p = r / (r + mean)
+        fr = stats.nbinom(r, p)
+        params = [("r", r), ("p", p)]; k = 2
+    elif fid == "binomial":
+        kobs = max(int(np.max(c)), 1)
+        best = None
+        for nn in range(kobs, kobs * 10 + 21):
+            pp = mean / nn
+            if not (0 < pp < 1):
+                continue
+            ll = float(np.sum(stats.binom.logpmf(c, nn, pp)))
+            if math.isfinite(ll) and (best is None or ll > best[0]):
+                best = (ll, nn, pp)
+        if best is None:
+            raise ValueError("binomial_fit_failed")
+        fr = stats.binom(best[1], best[2])
+        params = [("n", best[1]), ("p", best[2])]; k = 2
+    else:
+        raise ValueError("unknown freq dist: " + fid)
+    logL = float(np.sum(fr.logpmf(c)))
+    aic = 2 * k - 2 * logL
+    bic = k * math.log(n) - 2 * logL
+    return fr, params, k, logL, aic, bic
+
+def chi2_freq(fr, c, k):
+    n = len(c)
+    K = int(np.max(c))
+    obs = np.bincount(np.asarray(c, int), minlength=K + 1).astype(float)
+    E = n * np.array([float(fr.pmf(j)) for j in range(K + 1)])
+    E[-1] += n * float(fr.sf(K))  # 꼬리(>K)를 마지막 빈에 합산
+    ok = E > 0
+    chi2 = float(np.sum((obs[ok] - E[ok]) ** 2 / E[ok]))
+    df = int(ok.sum()) - 1 - k
+    p = float(stats.chi2.sf(chi2, df)) if df > 0 else None
+    return chi2, p, df
+
+# ───── 실행 ─────
+mode = INP["mode"]
+if mode == "individual":
+    x = np.asarray(INP.get("values") or [], float)
+    for did in INP.get("sevDists") or []:
+        row = {"id": did, "ok": False}
+        try:
+            fr, params, k = fit_sev_individual(did, x)
+            logL, aic, bic, D, ksp, a2 = gof_individual(fr, k, x)
+            row.update(ok=True, k=k,
+                       params=[{"name": a, "value": _num(b)} for a, b in params],
+                       logL=_num(logL), aic=_num(aic), bic=_num(bic),
+                       ksD=_num(D), ksP=_num(ksp), a2=_num(a2),
+                       pdfY=_arr(fr.pdf(GRID)), cdfY=_arr(fr.cdf(GRID)),
+                       qq=qq_points(fr, np.sort(x)))
+        except Exception as e:
+            row["error"] = str(e)[:300]
+        OUT["severity"].append(row)
+elif mode == "grouped":
+    G = INP["groups"]
+    A = np.asarray(G["lo"], float)
+    B = np.asarray(G["hi"], float)
+    N = np.asarray(G["n"], float)
+    SPECS = grouped_specs(A, B, N)
+    for did in INP.get("sevDists") or []:
+        row = {"id": did, "ok": False}
+        try:
+            if did not in SPECS:
+                raise ValueError("not_supported_for_data")
+            fr, params, k, logL = fit_grouped(SPECS[did], A, B, N)
+            ntot = float(np.sum(N))
+            aic = 2 * k - 2 * logL
+            bic = k * math.log(ntot) - 2 * logL
+            c2, c2p, df = chi2_grouped(fr, A, B, N, k)
+            row.update(ok=True, k=k,
+                       params=[{"name": a, "value": _num(b)} for a, b in params],
+                       logL=_num(logL), aic=_num(aic), bic=_num(bic),
+                       chi2=_num(c2), chi2P=_num(c2p) if c2p is not None else None,
+                       chi2Df=df,
+                       pdfY=_arr(fr.pdf(GRID)), cdfY=_arr(fr.cdf(GRID)),
+                       qq=qq_grouped(fr, B, N))
+        except Exception as e:
+            row["error"] = str(e)[:300]
+        OUT["severity"].append(row)
+
+FREQ = INP.get("freq")
+if FREQ:
+    c = np.asarray(FREQ["counts"], int)
+    kg = np.asarray(FREQ["kGrid"], int)
+    for fid in FREQ.get("dists") or []:
+        row = {"id": fid, "ok": False}
+        try:
+            fr, params, k, logL, aic, bic = fit_freq(fid, c)
+            c2, c2p, df = chi2_freq(fr, c, k)
+            row.update(ok=True, k=k,
+                       params=[{"name": a, "value": _num(b)} for a, b in params],
+                       logL=_num(logL), aic=_num(aic), bic=_num(bic),
+                       chi2=_num(c2), chi2P=_num(c2p) if c2p is not None else None,
+                       chi2Df=df,
+                       pmfY=_arr(fr.pmf(kg)), cdfY=_arr(fr.cdf(kg)),
+                       qq=qq_points(fr, np.sort(c)))
+        except Exception as e:
+            row["error"] = str(e)[:300]
+        OUT["frequency"].append(row)
+
+json.dumps(OUT)
+`;
+
+/* ─────────────────────────── 실행 래퍼 ─────────────────────────── */
+
+/**
+ * 적합 실행 — Pyodide 로드(onPhase "boot") → numpy/scipy 로드("pkg") →
+ * 스크립트 실행("run"). 결과는 FitRunResult. 오류는 예외로 던진다.
+ */
+export async function runDistributionFit(
+  payload: FitPayload,
+  onPhase: (p: RunPhase) => void
+): Promise<FitRunResult> {
+  onPhase("boot");
+  const py = await getPyodide();
+
+  onPhase("pkg");
+  await py.loadPackage(["numpy", "scipy"]);
+
+  onPhase("run");
+  py.FS.writeFile(
+    "_fit_input.json",
+    new TextEncoder().encode(JSON.stringify(payload))
+  );
+  const res = await py.runPythonAsync(FIT_SCRIPT);
+  const text = typeof res === "string" ? res : String(res);
+  const parsed = JSON.parse(text) as FitRunResult;
+  return {
+    severity: parsed.severity ?? [],
+    frequency: parsed.frequency ?? [],
+  };
+}

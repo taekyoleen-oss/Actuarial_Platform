@@ -4,6 +4,7 @@ import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
 import { DataLabTabs } from "@/components/feature/datalab/DataLabTabs";
 import { MethodCloud } from "@/components/feature/datalab/MethodCloud";
 import { DistributionLab } from "@/components/feature/datalab/DistributionLab";
+import { FitLab } from "@/components/feature/datalab/FitLab";
 import { listDataPosts } from "@/lib/datalab";
 import type { SortOrder } from "@/types";
 
@@ -57,6 +58,7 @@ export default async function DataLabPage({
       <DataLabTabs
         analysis={<MethodCloud />}
         distributions={<DistributionLab />}
+        fitting={<FitLab />}
         examples={
           <>
             <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
