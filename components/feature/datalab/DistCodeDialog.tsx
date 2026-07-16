@@ -1,26 +1,42 @@
 "use client";
 
 /**
- * 확률분포 파이썬 코드 팝업 — 현재 파라미터 값이 반영된 scipy.stats 코드를
- * 보여주고 복사한다. MethodDialog와 같은 모달 관례(Escape·오버레이·스크롤락·
- * 뒤로가기 닫힘)를 따른다.
+ * 확률분포/모델 적합 파이썬 코드 팝업 — 현재 파라미터가 반영된 scipy.stats
+ * 코드를 보여주고 복사한다. tabs를 주면 탭 전환(예: 모델 적합 / 시뮬레이션)
+ * 팝업이 되고, 복사는 현재 탭의 코드를 복사한다. MethodDialog와 같은 모달
+ * 관례(Escape·오버레이·스크롤락·뒤로가기 닫힘)를 따른다.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+
+export interface CodeTab {
+  key: string;
+  label: string;
+  code: string;
+}
 
 export function DistCodeDialog({
   name,
   en,
   code,
+  tabs,
   onClose,
 }: {
   name: string;
   en: string;
-  code: string;
+  /** 단일 코드(기존 호출부) — tabs가 있으면 무시 */
+  code?: string;
+  /** 탭 구성(예: 모델 적합 / 시뮬레이션) */
+  tabs?: CodeTab[];
   onClose: () => void;
 }) {
+  const [tabKey, setTabKey] = useState<string>(tabs?.[0]?.key ?? "");
+  const activeCode = tabs
+    ? (tabs.find((t) => t.key === tabKey) ?? tabs[0])?.code ?? ""
+    : code ?? "";
+
   useHistoryDismiss(true, onClose);
 
   useEffect(() => {
@@ -64,7 +80,7 @@ export function DistCodeDialog({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <CopyButton text={code} label="전체 복사" />
+            <CopyButton text={activeCode} label="전체 복사" />
             <button
               type="button"
               onClick={onClose}
@@ -76,8 +92,36 @@ export function DistCodeDialog({
           </div>
         </header>
 
+        {tabs && tabs.length > 1 ? (
+          <div
+            role="tablist"
+            aria-label="코드 종류"
+            className="flex items-center gap-1 border-b border-border px-5 pt-2 sm:px-6"
+          >
+            {tabs.map((t) => {
+              const active = (tabs.find((q) => q.key === tabKey) ?? tabs[0]).key === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setTabKey(t.key)}
+                  className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                    active
+                      ? "border-[var(--primary)] text-foreground"
+                      : "border-transparent text-tertiary hover:text-foreground"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          <CodeBlock code={code} codeFz={12.5} />
+          <CodeBlock code={activeCode} codeFz={12.5} />
         </div>
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">

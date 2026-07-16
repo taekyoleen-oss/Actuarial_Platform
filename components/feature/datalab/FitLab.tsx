@@ -28,8 +28,10 @@ import {
 } from "@/lib/pyFit";
 import {
   frequencyFitCode,
+  frequencySimCode,
   monteCarloCode,
   severityFitCode,
+  severitySimCode,
 } from "@/lib/fitPython";
 import {
   DistChart,
@@ -37,7 +39,10 @@ import {
 } from "@/components/feature/datalab/DistChart";
 import { DataSheetDialog } from "@/components/feature/datalab/DataSheetDialog";
 import { QqDialog } from "@/components/feature/datalab/QqDialog";
-import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
+import {
+  DistCodeDialog,
+  type CodeTab,
+} from "@/components/feature/datalab/DistCodeDialog";
 import {
   STAT_INFOS,
   StatInfoDialog,
@@ -480,7 +485,8 @@ export function FitLab() {
   const [codeDialog, setCodeDialog] = useState<{
     name: string;
     en: string;
-    code: string;
+    code?: string;
+    tabs?: CodeTab[];
   } | null>(null);
 
   /* empirical — 데이터 확정 시 JS로 즉시 계산 */
@@ -625,16 +631,27 @@ export function FitLab() {
     return s;
   }, [emp, sevRow, grid]);
 
+  /* 빈도 PMF — 관측은 반투명 막대, 적합은 선+점(생성 파이썬 그림과 같은 표현).
+     stem 두 벌이 겹치면 읽기 어렵다는 사용자 피드백으로 변경(2026-07-16). */
   const pmfSeries = useMemo<Series[]>(() => {
     if (!freqEmp) return [];
     const s: Series[] = [
-      { variant: "stem", color: COLOR_EMP, points: freqEmp.pmf },
+      {
+        variant: "bar",
+        color: COLOR_EMP,
+        points: freqEmp.pmf.map((p) => ({
+          x: p.x,
+          y: p.y,
+          x0: Math.max(0, p.x - 0.38), // 건수는 0 이상 — x축이 음수로 시작하지 않게
+          x1: p.x + 0.38,
+        })),
+      },
     ];
     if (freqRow?.pmfY) {
       s.push({
-        variant: "stem",
+        variant: "line",
+        dots: true,
         color: COLOR_FIT,
-        dashed: true,
         points: kGrid
           .map((k, i) => ({ x: k, y: freqRow.pmfY![i] }))
           .filter((p): p is { x: number; y: number } => Number.isFinite(p.y as number))
@@ -644,21 +661,41 @@ export function FitLab() {
     return s;
   }, [freqEmp, freqRow, kGrid]);
 
-  /* 코드 팝업 헬퍼 */
+  /* 코드 팝업 헬퍼 — [모델 적합 | 시뮬레이션] 2탭(분포별 몬테카를로 방법·설명) */
   const openSevCode = (row: FitResultRow) => {
-    if (!data) return;
+    if (!data || !row.params) return;
+    const nm = nameOf(SEV_DISTS, row.id);
     setCodeDialog({
-      name: `${nameOf(SEV_DISTS, row.id)} 적합`,
+      name: nm,
       en: row.id,
-      code: severityFitCode(row.id, nameOf(SEV_DISTS, row.id), data),
+      tabs: [
+        { key: "fit", label: "모델 적합", code: severityFitCode(row.id, nm, data) },
+        {
+          key: "sim",
+          label: "시뮬레이션",
+          code: severitySimCode(row.id, nm, row.params),
+        },
+      ],
     });
   };
   const openFreqCode = (row: FitResultRow) => {
-    if (!freqEmp) return;
+    if (!freqEmp || !row.params) return;
+    const nm = nameOf(FREQ_DISTS, row.id);
     setCodeDialog({
-      name: `${nameOf(FREQ_DISTS, row.id)} 빈도 적합`,
+      name: `${nm} (빈도)`,
       en: row.id,
-      code: frequencyFitCode(row.id, nameOf(FREQ_DISTS, row.id), freqEmp.counts),
+      tabs: [
+        {
+          key: "fit",
+          label: "모델 적합",
+          code: frequencyFitCode(row.id, nm, freqEmp.counts),
+        },
+        {
+          key: "sim",
+          label: "시뮬레이션",
+          code: frequencySimCode(row.id, nm, row.params),
+        },
+      ],
     });
   };
   const openMcCode = () => {
@@ -852,10 +889,14 @@ export function FitLab() {
                     ? ` · 무사고 연도 ${freqEmp.zeroFilled}개는 0건으로 처리`
                     : ""}
                 </span>
+                <span className="inline-flex items-center gap-1.5 text-tertiary">
+                  <span className="inline-block h-2.5 w-2.5 rounded-[2px] bg-[var(--primary)] opacity-40" />
+                  관측(연도 비율)
+                </span>
                 {freqRow ? (
                   <span className="inline-flex items-center gap-1.5 text-tertiary">
                     <span className="inline-block h-0.5 w-4 bg-[var(--chip-rose-fg)]" />
-                    적합: {nameOf(FREQ_DISTS, freqRow.id)}
+                    적합 PMF: {nameOf(FREQ_DISTS, freqRow.id)}
                   </span>
                 ) : null}
               </div>
@@ -1008,6 +1049,7 @@ export function FitLab() {
           name={codeDialog.name}
           en={codeDialog.en}
           code={codeDialog.code}
+          tabs={codeDialog.tabs}
           onClose={() => setCodeDialog(null)}
         />
       ) : null}

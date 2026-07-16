@@ -30,6 +30,8 @@ export interface Series {
   color: string;
   variant: "line" | "stem" | "step" | "bar";
   dashed?: boolean;
+  /** line 전용 — 각 점에 원 마커(이산 PMF 적합선 등, 60점 이하일 때만) */
+  dots?: boolean;
 }
 
 /** 평균·중위수 등 수직 기준선. x가 그래프 범위 밖이면 그리지 않는다. */
@@ -290,6 +292,11 @@ export function DistChart({
             <path d={area} fill={s.color} fillOpacity={0.08} stroke="none" />
           ) : null}
           <path d={d} fill="none" stroke={s.color} strokeWidth={1.8} strokeDasharray={dash} />
+          {s.dots && s.points.length <= 60
+            ? s.points.map((p, j) => (
+                <circle key={j} cx={sx(p.x)} cy={sy(p.y)} r={2} fill={s.color} />
+              ))
+            : null}
         </g>
       );
     }
