@@ -47,6 +47,18 @@ export interface StatValue {
 
 export type Params = Record<string, number>;
 
+/**
+ * 파이썬 코드 조립 스펙 — 단일(접미사 "")과 비교(A는 "_a", B는 "_b") 코드가
+ * 같은 정의를 재사용한다. 접미사는 변수명에 붙어 두 분포를 한 스크립트에
+ * 담아도 이름이 충돌하지 않게 한다.
+ */
+export interface PySpec {
+  label: string; // 주석용 라벨 (분포명+파라미터)
+  assign: string; // 파라미터 변수 할당 줄
+  expr: string; // scipy.stats 생성자 (assign 변수를 사용)
+  kmax?: string; // 이산형 그래프 k 상한 (파이썬 식, dist<접미사> 참조 가능)
+}
+
 interface DistBase {
   id: string;
   name: string; // 한글
@@ -56,7 +68,7 @@ interface DistBase {
   blurb: string; // 한 줄 설명
   cdfTex: string; // CDF 수식
   stats: (p: Params) => StatValue[];
-  python: (p: Params) => string;
+  pySpec: (p: Params, sfx: string) => PySpec;
 }
 
 export interface ContinuousDist extends DistBase {
@@ -112,53 +124,58 @@ export function fmtParam(v: number): string {
   return String(Math.round(v * 1e6) / 1e6);
 }
 
-function pyContinuous(name: string, assign: string, distExpr: string): string {
+/** 평균(파선)·중위수(점선) 세로선 — 화면 그래프의 마커와 같은 표시. */
+const PY_MARKERS = `# 평균(파선)·중위수(점선) — 값이 유한할 때만 (파레토 α≤1 등은 평균 미정의)
+for _ax in ax:
+    for _v, _ls in [(float(dist.mean()), "--"), (float(dist.median()), ":")]:
+        if np.isfinite(_v):
+            _ax.axvline(_v, color="gray", ls=_ls, lw=1)`;
+
+const PY_STATS = `# 통계량 (평균·분산·표준편차·왜도·초과첨도)
+mean, var, skew, kurt = dist.stats(moments="mvsk")
+print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
+print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+
+function pyContinuous(spec: PySpec): string {
   return `import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 
-# ${name}
-${assign}
-dist = ${distExpr}
+# ${spec.label}
+${spec.assign}
+dist = ${spec.expr}
 
 # PDF·CDF 그래프 (matplotlib 한글 폰트 이슈로 축 라벨은 영문)
 x = np.linspace(dist.ppf(0.001), dist.ppf(0.999), 400)
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
 ax[0].plot(x, dist.pdf(x)); ax[0].set_title("PDF")
 ax[1].plot(x, dist.cdf(x)); ax[1].set_title("CDF")
+
+${PY_MARKERS}
 plt.tight_layout(); plt.show()
 
-# 통계량 (평균·분산·표준편차·왜도·초과첨도)
-mean, var, skew, kurt = dist.stats(moments="mvsk")
-print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
-print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+${PY_STATS}`;
 }
 
-function pyDiscrete(
-  name: string,
-  assign: string,
-  distExpr: string,
-  kmaxExpr: string
-): string {
+function pyDiscrete(spec: PySpec): string {
   return `import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 
-# ${name}
-${assign}
-dist = ${distExpr}
+# ${spec.label}
+${spec.assign}
+dist = ${spec.expr}
 
 # PMF(스템)·CDF(계단) 그래프
-k = np.arange(0, ${kmaxExpr} + 1)
+k = np.arange(0, ${spec.kmax} + 1)
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
 ax[0].vlines(k, 0, dist.pmf(k)); ax[0].plot(k, dist.pmf(k), "o", ms=4); ax[0].set_title("PMF")
 ax[1].step(k, dist.cdf(k), where="post"); ax[1].set_title("CDF")
+
+${PY_MARKERS}
 plt.tight_layout(); plt.show()
 
-# 통계량 (평균·분산·표준편차·왜도·초과첨도)
-mean, var, skew, kurt = dist.stats(moments="mvsk")
-print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
-print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+${PY_STATS}`;
 }
 
 /* 1모수 파레토의 고정 하한(θ) — 파라미터가 아닌 상수 */
@@ -190,12 +207,11 @@ const NORMAL: ContinuousDist = {
       { mean: "\\mu", var: "\\sigma^2", std: "\\sigma", skew: "0", kurt: "0" },
       { mean: p.mu, variance: p.sigma * p.sigma, skew: 0, kurt: 0 }
     ),
-  python: (p) =>
-    pyContinuous(
-      `정규분포 Normal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
-      `mu, sigma = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
-      "stats.norm(loc=mu, scale=sigma)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `정규분포 Normal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
+    assign: `mu${sfx}, sigma${sfx} = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
+    expr: `stats.norm(loc=mu${sfx}, scale=sigma${sfx})`,
+  }),
 };
 
 const LOGNORMAL: ContinuousDist = {
@@ -237,12 +253,11 @@ const LOGNORMAL: ContinuousDist = {
       { mean, variance, skew, kurt }
     );
   },
-  python: (p) =>
-    pyContinuous(
-      `로그정규분포 Lognormal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
-      `mu, sigma = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
-      "stats.lognorm(s=sigma, scale=np.exp(mu))"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `로그정규분포 Lognormal(mu=${fmtParam(p.mu)}, sigma=${fmtParam(p.sigma)})`,
+    assign: `mu${sfx}, sigma${sfx} = ${fmtParam(p.mu)}, ${fmtParam(p.sigma)}`,
+    expr: `stats.lognorm(s=sigma${sfx}, scale=np.exp(mu${sfx}))`,
+  }),
 };
 
 const EXPONENTIAL: ContinuousDist = {
@@ -276,12 +291,11 @@ const EXPONENTIAL: ContinuousDist = {
         kurt: 6,
       }
     ),
-  python: (p) =>
-    pyContinuous(
-      `지수분포 Exponential(lambda=${fmtParam(p.lam)})`,
-      `lam = ${fmtParam(p.lam)}`,
-      "stats.expon(scale=1/lam)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `지수분포 Exponential(lambda=${fmtParam(p.lam)})`,
+    assign: `lam${sfx} = ${fmtParam(p.lam)}`,
+    expr: `stats.expon(scale=1/lam${sfx})`,
+  }),
 };
 
 const WEIBULL: ContinuousDist = {
@@ -330,12 +344,11 @@ const WEIBULL: ContinuousDist = {
       { mean, variance, skew, kurt }
     );
   },
-  python: (p) =>
-    pyContinuous(
-      `와이블분포 Weibull(k=${fmtParam(p.k)}, lambda=${fmtParam(p.lam)})`,
-      `k, lam = ${fmtParam(p.k)}, ${fmtParam(p.lam)}`,
-      "stats.weibull_min(c=k, scale=lam)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `와이블분포 Weibull(k=${fmtParam(p.k)}, lambda=${fmtParam(p.lam)})`,
+    assign: `k${sfx}, lam${sfx} = ${fmtParam(p.k)}, ${fmtParam(p.lam)}`,
+    expr: `stats.weibull_min(c=k${sfx}, scale=lam${sfx})`,
+  }),
 };
 
 const GAMMA: ContinuousDist = {
@@ -383,12 +396,11 @@ const GAMMA: ContinuousDist = {
         kurt: 6 / p.alpha,
       }
     ),
-  python: (p) =>
-    pyContinuous(
-      `감마분포 Gamma(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
-      `alpha, theta = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
-      "stats.gamma(a=alpha, scale=theta)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `감마분포 Gamma(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
+    assign: `alpha${sfx}, theta${sfx} = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
+    expr: `stats.gamma(a=alpha${sfx}, scale=theta${sfx})`,
+  }),
 };
 
 const BETA: ContinuousDist = {
@@ -441,12 +453,11 @@ const BETA: ContinuousDist = {
       { mean, variance, skew, kurt }
     );
   },
-  python: (p) =>
-    pyContinuous(
-      `베타분포 Beta(alpha=${fmtParam(p.alpha)}, beta=${fmtParam(p.beta)})`,
-      `a, b = ${fmtParam(p.alpha)}, ${fmtParam(p.beta)}`,
-      "stats.beta(a=a, b=b)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `베타분포 Beta(alpha=${fmtParam(p.alpha)}, beta=${fmtParam(p.beta)})`,
+    assign: `a${sfx}, b${sfx} = ${fmtParam(p.alpha)}, ${fmtParam(p.beta)}`,
+    expr: `stats.beta(a=a${sfx}, b=b${sfx})`,
+  }),
 };
 
 /** 파레토(2모수, Loss Models/Lomax): f=αθ^α/(x+θ)^{α+1}, x>0 */
@@ -475,12 +486,11 @@ const PARETO2: ContinuousDist = {
   cdf: (x, p) => (x < 0 ? 0 : 1 - Math.pow(p.theta / (x + p.theta), p.alpha)),
   domain: (p) => [0, p.theta * (Math.pow(1 - 0.95, -1 / p.alpha) - 1)],
   stats: (p) => paretoStats(p.alpha, p.theta, false),
-  python: (p) =>
-    pyContinuous(
-      `파레토(2모수) Lomax(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
-      `alpha, theta = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
-      "stats.lomax(c=alpha, scale=theta)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `파레토(2모수) Lomax(alpha=${fmtParam(p.alpha)}, theta=${fmtParam(p.theta)})`,
+    assign: `alpha${sfx}, theta${sfx} = ${fmtParam(p.alpha)}, ${fmtParam(p.theta)}`,
+    expr: `stats.lomax(c=alpha${sfx}, scale=theta${sfx})`,
+  }),
 };
 
 /** 파레토(1모수, single-parameter): f=αθ^α/x^{α+1}, x>θ(θ 고정) */
@@ -511,12 +521,11 @@ const PARETO1: ContinuousDist = {
     PARETO1_THETA * Math.pow(1 - 0.95, -1 / p.alpha),
   ],
   stats: (p) => paretoStats(p.alpha, PARETO1_THETA, true),
-  python: (p) =>
-    pyContinuous(
-      `파레토(1모수) Pareto(alpha=${fmtParam(p.alpha)}, theta=${PARETO1_THETA})`,
-      `alpha, theta = ${fmtParam(p.alpha)}, ${PARETO1_THETA}`,
-      "stats.pareto(b=alpha, scale=theta)"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `파레토(1모수) Pareto(alpha=${fmtParam(p.alpha)}, theta=${PARETO1_THETA})`,
+    assign: `alpha${sfx}, theta${sfx} = ${fmtParam(p.alpha)}, ${PARETO1_THETA}`,
+    expr: `stats.pareto(b=alpha${sfx}, scale=theta${sfx})`,
+  }),
 };
 
 /**
@@ -614,13 +623,12 @@ const BINOMIAL: DiscreteDist = {
       }
     );
   },
-  python: (p) =>
-    pyDiscrete(
-      `이항분포 Binomial(n=${Math.round(p.n)}, p=${fmtParam(p.p)})`,
-      `n, p = ${Math.round(p.n)}, ${fmtParam(p.p)}`,
-      "stats.binom(n, p)",
-      "n"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `이항분포 Binomial(n=${Math.round(p.n)}, p=${fmtParam(p.p)})`,
+    assign: `n${sfx}, p${sfx} = ${Math.round(p.n)}, ${fmtParam(p.p)}`,
+    expr: `stats.binom(n${sfx}, p${sfx})`,
+    kmax: `n${sfx}`,
+  }),
 };
 
 const POISSON: DiscreteDist = {
@@ -656,13 +664,12 @@ const POISSON: DiscreteDist = {
         kurt: 1 / p.lam,
       }
     ),
-  python: (p) =>
-    pyDiscrete(
-      `포아송분포 Poisson(lambda=${fmtParam(p.lam)})`,
-      `lam = ${fmtParam(p.lam)}`,
-      "stats.poisson(lam)",
-      "int(dist.ppf(0.999))"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `포아송분포 Poisson(lambda=${fmtParam(p.lam)})`,
+    assign: `lam${sfx} = ${fmtParam(p.lam)}`,
+    expr: `stats.poisson(lam${sfx})`,
+    kmax: `int(dist${sfx}.ppf(0.999))`,
+  }),
 };
 
 const NEGBINOM: DiscreteDist = {
@@ -715,13 +722,12 @@ const NEGBINOM: DiscreteDist = {
       }
     );
   },
-  python: (p) =>
-    pyDiscrete(
-      `음이항분포 NegBinom(r=${fmtParam(p.r)}, p=${fmtParam(p.p)})`,
-      `r, p = ${fmtParam(p.r)}, ${fmtParam(p.p)}`,
-      "stats.nbinom(n=r, p=p)",
-      "int(dist.ppf(0.999))"
-    ),
+  pySpec: (p, sfx) => ({
+    label: `음이항분포 NegBinom(r=${fmtParam(p.r)}, p=${fmtParam(p.p)})`,
+    assign: `r${sfx}, p${sfx} = ${fmtParam(p.r)}, ${fmtParam(p.p)}`,
+    expr: `stats.nbinom(n=r${sfx}, p=p${sfx})`,
+    kmax: `int(dist${sfx}.ppf(0.999))`,
+  }),
 };
 
 /* ═══════════════════════════ 그룹·조회 ═══════════════════════════ */
@@ -748,4 +754,120 @@ export function defaultParams(d: Distribution): Params {
   const p: Params = {};
   for (const par of d.params) p[par.key] = par.def;
   return p;
+}
+
+/** 같은 종류(연속/이산)의 분포 목록 — 비교 대상 후보. */
+export function peersOf(d: Distribution): Distribution[] {
+  return d.kind === "continuous" ? CONTINUOUS_DISTS : DISCRETE_DISTS;
+}
+
+/* ═══════════════════════ 평균·중위수 (그래프 마커용) ═══════════════════════ */
+
+/** 평균 — 정의되지 않거나(파레토 α≤1) 발산하면 null. */
+export function meanOf(d: Distribution, p: Params): number | null {
+  const v = d.stats(p).find((s) => s.label === "평균")?.value;
+  return v !== undefined && v !== null && Number.isFinite(v) ? v : null;
+}
+
+/**
+ * 중위수 — 연속형은 CDF의 0.5분위(이분법, 도메인을 브래킷으로 사용),
+ * 이산형은 누적확률이 0.5에 처음 도달하는 k.
+ */
+export function medianOf(d: Distribution, p: Params): number | null {
+  if (d.kind === "continuous") {
+    const [lo, hi] = d.domain(p);
+    const m = quantileBisection((x) => d.cdf(x, p), 0.5, lo, hi);
+    return Number.isFinite(m) ? m : null;
+  }
+  const kMax = Math.max(1, d.kMax(p));
+  let acc = 0;
+  for (let k = 0; k <= kMax; k++) {
+    acc += d.pmf(k, p);
+    if (acc >= 0.5) return k;
+  }
+  return null;
+}
+
+/* ═══════════════════════ 파이썬 코드 생성 ═══════════════════════ */
+
+/** 단일 분포 코드 — 변수 접미사 없음. */
+export function singlePython(d: Distribution, p: Params): string {
+  const spec = d.pySpec(p, "");
+  return d.kind === "continuous" ? pyContinuous(spec) : pyDiscrete(spec);
+}
+
+/**
+ * 두 분포를 겹쳐 그리는 비교 코드 — A는 `_a`, B는 `_b` 접미사라 변수 충돌이 없다.
+ * UI가 같은 종류끼리만 비교하도록 제한하므로 a·b의 kind는 같다고 본다.
+ */
+export function comparePython(
+  a: Distribution,
+  pa: Params,
+  b: Distribution,
+  pb: Params
+): string {
+  const sa = a.pySpec(pa, "_a");
+  const sb = b.pySpec(pb, "_b");
+
+  const head = `import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# A: ${sa.label}
+${sa.assign}
+dist_a = ${sa.expr}
+
+# B: ${sb.label}
+${sb.assign}
+dist_b = ${sb.expr}`;
+
+  const markers = `# 평균(파선)·중위수(점선) — A는 파랑, B는 보라
+for _ax in ax:
+    for _d, _c in [(dist_a, "tab:blue"), (dist_b, "tab:purple")]:
+        for _v, _ls in [(float(_d.mean()), "--"), (float(_d.median()), ":")]:
+            if np.isfinite(_v):
+                _ax.axvline(_v, color=_c, ls=_ls, lw=1, alpha=0.6)
+plt.tight_layout(); plt.show()`;
+
+  const tail = `# 통계량 비교 (평균·분산·표준편차·왜도·초과첨도)
+for _name, _d in [("A", dist_a), ("B", dist_b)]:
+    mean, var, skew, kurt = _d.stats(moments="mvsk")
+    print(f"[{_name}] 평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
+    print(f"     왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
+
+  if (a.kind === "continuous" && b.kind === "continuous") {
+    return `${head}
+
+# 두 분포를 한 그래프에 — x범위는 두 분포의 합집합 (축 라벨은 영문)
+lo = min(dist_a.ppf(0.001), dist_b.ppf(0.001))
+hi = max(dist_a.ppf(0.999), dist_b.ppf(0.999))
+x = np.linspace(lo, hi, 400)
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
+ax[0].plot(x, dist_a.pdf(x), label="A"); ax[0].plot(x, dist_b.pdf(x), ls="--", label="B")
+ax[0].set_title("PDF"); ax[0].legend()
+ax[1].plot(x, dist_a.cdf(x), label="A"); ax[1].plot(x, dist_b.cdf(x), ls="--", label="B")
+ax[1].set_title("CDF"); ax[1].legend()
+
+${markers}
+
+${tail}`;
+  }
+
+  const kmaxA = sa.kmax ?? "int(dist_a.ppf(0.999))";
+  const kmaxB = sb.kmax ?? "int(dist_b.ppf(0.999))";
+  return `${head}
+
+# 두 분포를 한 그래프에 — k범위는 두 분포의 합집합
+k = np.arange(0, max(${kmaxA}, ${kmaxB}) + 1)
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
+ax[0].plot(k, dist_a.pmf(k), "o-", ms=3, lw=1, label="A")
+ax[0].plot(k, dist_b.pmf(k), "s--", ms=3, lw=1, label="B")
+ax[0].set_title("PMF"); ax[0].legend()
+ax[1].step(k, dist_a.cdf(k), where="post", label="A")
+ax[1].step(k, dist_b.cdf(k), where="post", ls="--", label="B")
+ax[1].set_title("CDF"); ax[1].legend()
+
+${markers}
+
+${tail}`;
 }

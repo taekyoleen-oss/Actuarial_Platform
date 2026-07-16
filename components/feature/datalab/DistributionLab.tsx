@@ -122,7 +122,8 @@ export function DistributionLab() {
         </h2>
         <p className="text-[12.5px] text-tertiary">
           상단 버튼으로 분포를 고르면 그래프·수식·통계량이 바뀝니다 · 파라미터를
-          바꾸면 모양이 실시간으로 변하고, 파이썬 코드 팝업도 열 수 있습니다
+          바꾸면 모양이 실시간으로 변하고, 그래프에는 평균·중위수가 표시됩니다 ·
+          &lsquo;비교&rsquo;를 켜면 두 분포를 겹쳐 볼 수 있습니다
         </p>
       </div>
 
