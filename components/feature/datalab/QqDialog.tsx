@@ -130,11 +130,14 @@ export function QqDialog({
   name,
   params,
   qq,
+  note,
   onClose,
 }: {
   name: string;
   params: FitParamOut[];
   qq: { theo: number[]; samp: number[] };
+  /** 추가 캡션 — 예: 면책·한도 반영 조건부 분위수·검열 n건 제외 */
+  note?: string;
   onClose: () => void;
 }) {
   useHistoryDismiss(true, onClose);
@@ -184,6 +187,11 @@ export function QqDialog({
 
         <div className="overflow-y-auto px-5 py-4">
           <QqChart theo={qq.theo} samp={qq.samp} />
+          {note ? (
+            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[var(--chip-amber-fg)]">
+              {note}
+            </p>
+          ) : null}
           <p className="mt-2 text-[12px] leading-relaxed text-tertiary">
             점이 점선(45°)에 가까울수록 적합이 좋습니다. 오른쪽 위(큰 손해
             구간)에서 점이 선 위로 벗어나면 실제 꼬리가 모형보다 두껍다는

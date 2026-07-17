@@ -146,6 +146,18 @@ print(policy.head())`;
 const SAMPLE_DATASETS: { file: string; label: string }[] = [
   { file: "policy.xlsx", label: "policy.xlsx — 계약·고객 (600행)" },
   { file: "claims.xlsx", label: "claims.xlsx — 청구·손해액 (600행)" },
+  {
+    file: "experience.xlsx",
+    label: "experience.xlsx — 경험데이터 (800행) · 위험률 산출·생존분석(KM)용",
+  },
+  {
+    file: "triangle.xlsx",
+    label: "triangle.xlsx — 런오프 누적 삼각형 (2016~2023) · 지급준비금(chain-ladder)용",
+  },
+  {
+    file: "mortality_table.xlsx",
+    label: "mortality_table.xlsx — 생명표 qx (0~100세) · 보험료 산출·위험률 보정용",
+  },
 ];
 
 /* ───────────────────────────── 셀 분할·직렬화 ───────────────────────────── */
@@ -1744,7 +1756,8 @@ export default function PyRunner({
             </li>
             <li>
               <strong>데이터 불러오기</strong>는 세 가지입니다 —{" "}
-              <strong>샘플 데이터셋</strong>(사이트에 호스팅된 policy·claims.xlsx),{" "}
+              <strong>샘플 데이터셋</strong>(사이트에 호스팅된 policy·claims와
+              계리용 experience·triangle·mortality_table.xlsx),{" "}
               <strong>내 파일 업로드</strong>, <strong>URL로 불러오기</strong>(CSV·XLSX
               링크). 모두 로드·속성 확인 셀(shape·columns·dtypes·head)이 자동으로
               만들어지니 먼저 실행해 열 이름을 확인하세요. 코드에서는 파일명을

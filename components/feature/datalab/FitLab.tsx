@@ -15,6 +15,7 @@ import {
   frequencyFromYears,
   fmtNum,
   severityEligibility,
+  truncationActive,
   FIT_KIND_LABEL,
   type EmpiricalCont,
   type FitData,
@@ -169,6 +170,21 @@ function SummaryCard({
     ["최소 / 최대", `${fmtNum(s.min)} / ${fmtNum(s.max)}`],
     ["사분위 Q1·중위·Q3", `${fmtNum(s.q1)} · ${fmtNum(s.median)} · ${fmtNum(s.q3)}`],
   ];
+  // 면책·한도 적용 시 — 적용값과 검열 건수 표시
+  if (truncationActive(data)) {
+    const u = data.limit;
+    const censored =
+      u !== undefined ? data.values.filter((v) => v >= u).length : 0;
+    rows.push([
+      "면책 d / 한도 u",
+      `${(data.deductible ?? 0) > 0 ? fmtNum(data.deductible) : "—"} / ${u !== undefined ? fmtNum(u) : "∞"}`,
+    ]);
+    if (u !== undefined)
+      rows.push([
+        "검열(≥u) 관측",
+        `${censored.toLocaleString()}건 (비검열 ${(s.n - censored).toLocaleString()}건)`,
+      ]);
+  }
   return (
     <div className="rounded-cover border border-border bg-white p-4 shadow-card">
       <h4 className="mb-2 text-[13px] font-semibold text-foreground">
@@ -522,6 +538,18 @@ export function FitLab() {
     );
   }, [data]);
 
+  /* 면책·한도(좌측 절단·우측 검열) 적용 여부·검열 건수 */
+  const trunc = useMemo(() => {
+    if (!data || !truncationActive(data)) return null;
+    const u = data.limit;
+    return {
+      d: data.deductible ?? 0,
+      u,
+      censored:
+        u !== undefined ? data.values.filter((v) => v >= u).length : 0,
+    };
+  }, [data]);
+
   const confirmData = (d: FitData, c: string[][]) => {
     setData(d);
     setCells(c);
@@ -564,6 +592,9 @@ export function FitLab() {
           freq: freqEmp
             ? { counts: freqEmp.counts, dists: freqIds, kGrid }
             : null,
+          // 면책·한도 — 미적용이면 null(기존 .fit 경로 그대로)
+          deductible: trunc && trunc.d > 0 ? trunc.d : null,
+          limit: trunc?.u ?? null,
         },
         setPhase
       );
@@ -709,7 +740,9 @@ export function FitLab() {
         { id: sev.id, name: nameOf(SEV_DISTS, sev.id), params: sev.params },
         freq?.params
           ? { id: freq.id, name: nameOf(FREQ_DISTS, freq.id), params: freq.params }
-          : null
+          : null,
+        // 면책·한도가 있으면 지급액 분포 섹션 추가(기본 표본은 원손해 기준 유지)
+        trunc ? { d: trunc.d > 0 ? trunc.d : undefined, u: trunc.u } : null
       ),
     });
   };
@@ -817,6 +850,13 @@ export function FitLab() {
             {data.kind === "grouped"
               ? `${data.groups?.length}구간 ${data.groups?.reduce((a, g) => a + g.count, 0).toLocaleString()}건`
               : `${data.values.length.toLocaleString()}건`}
+            {trunc
+              ? `${trunc.d > 0 ? ` · 면책 ${fmtNum(trunc.d)}` : ""}${
+                  trunc.u !== undefined
+                    ? ` · 한도 ${fmtNum(trunc.u)}(검열 ${trunc.censored}건)`
+                    : ""
+                }`
+              : ""}
           </span>
         )}
       </div>
@@ -850,6 +890,15 @@ export function FitLab() {
                   <span className="inline-flex items-center gap-1.5 text-tertiary">
                     <span className="inline-block h-0.5 w-4 bg-[var(--chip-rose-fg)]" />
                     적합: {nameOf(SEV_DISTS, sevRow.id)}
+                    {trunc ? " — 관측 조건부 f(x)/S(d)" : ""}
+                  </span>
+                ) : null}
+                {trunc ? (
+                  <span className="text-tertiary/80">
+                    면책·한도 반영 데이터
+                    {trunc.u !== undefined
+                      ? " — 한도 위치의 마지막 막대는 검열 뭉치입니다"
+                      : ""}
                   </span>
                 ) : null}
                 <span className="text-tertiary/80">
@@ -977,6 +1026,19 @@ export function FitLab() {
                 onQq={(row) => setQqTarget({ row, group: "sev" })}
                 onCode={openSevCode}
               />
+              {/* 절단·검열 규약은 심도 적합에만 해당 — 빈도 표 위(심도 표 직하)에 둔다 */}
+              {trunc ? (
+                <p className="-mt-4 mb-6 text-[11.5px] leading-relaxed text-tertiary">
+                  ※ 위 심도 적합은 면책·한도를 반영해 절단·검열 우도[비검열 log
+                  f(x)−log S(d), 검열 log S(u)−log S(d)]로 추정합니다. KS는 조건부
+                  CDF F*(x)=
+                  {trunc.u !== undefined
+                    ? "(F(x)−F(d))/(F(u)−F(d))"
+                    : "(F(x)−F(d))/(1−F(d))"}{" "}
+                  기준·비검열 관측({data.values.length - trunc.censored}건)만
+                  사용하며, 절단·검열 분포에 맞는 A²는 제공되지 않습니다('—').
+                </p>
+              ) : null}
               {results.frequency.length > 0 ? (
                 <ResultsTable
                   title="빈도 적합 결과"
@@ -996,6 +1058,9 @@ export function FitLab() {
                 ※ KS·χ² p값은 파라미터를 같은 데이터에서 추정했으므로 근사값입니다
                 (실제보다 관대). AIC·BIC는 작을수록, logL은 클수록 좋습니다. A²는
                 꼬리 적합에 민감한 Anderson-Darling 통계량입니다.
+                {trunc && results.frequency.length > 0
+                  ? " 빈도 적합은 연도별 건수를 세는 것이라 면책·한도의 절단·검열 규약과 무관하며, χ²는 그대로 제공됩니다."
+                  : ""}
               </p>
 
               {/* 몬테카를로 */}
@@ -1029,6 +1094,9 @@ export function FitLab() {
       {sheetOpen ? (
         <DataSheetDialog
           initialCells={cells}
+          initialTrunc={
+            data ? { deductible: data.deductible, limit: data.limit } : null
+          }
           onConfirm={confirmData}
           onClose={() => setSheetOpen(false)}
         />
@@ -1041,6 +1109,13 @@ export function FitLab() {
           )}
           params={qqTarget.row.params ?? []}
           qq={qqTarget.row.qq}
+          note={
+            qqTarget.group === "sev" && trunc
+              ? `면책 d=${trunc.d > 0 ? fmtNum(trunc.d) : 0} · 한도 u=${
+                  trunc.u !== undefined ? fmtNum(trunc.u) : "∞"
+                } 반영 — (d,u) 절단 조건부 분위수, 검열 ${trunc.censored}건 제외`
+              : undefined
+          }
           onClose={() => setQqTarget(null)}
         />
       ) : null}

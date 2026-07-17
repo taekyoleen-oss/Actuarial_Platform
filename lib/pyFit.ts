@@ -9,6 +9,9 @@
  * 방법 요약(스크립트 내 구현):
  *  - 개별 데이터: scipy .fit MLE(위치모수 floc=0 고정 — 플랫폼 모수화와 일치),
  *    logL·AIC·BIC·KS(D,p)·Anderson-Darling A², QQ 분위수(최대 150점), 오버레이 곡선.
+ *  - 개별 데이터 + 면책 d·한도 u: 좌측 절단·우측 검열 우도
+ *    [비검열 log f(x)−log S(d), 검열 log S(u)−log S(d)]를 Nelder-Mead로 최대화
+ *    (grouped_specs의 log-모수 재사용). KS는 조건부 CDF·비검열만, A²·χ²는 '—'.
  *  - 그룹 데이터: 구간 우도(Loss Models) Σ nᵢ·log[F(bᵢ)−F(aᵢ)]를 Nelder-Mead로
  *    최대화(모수는 log 변환으로 양수 보장), χ²(관측·기대도수)·p, ogive QQ.
  *  - 빈도(연도별 건수): 포아송(λ=평균 MLE)·음이항(r 프로파일 MLE)·이항(n 정수
@@ -62,6 +65,14 @@ export interface FitPayload {
   grid: number[];
   sevDists: string[];
   freq?: { counts: number[]; dists: string[]; kGrid: number[] } | null;
+  /**
+   * 면책 d(좌측 절단) — null/미지정=0. individual 모드 전용.
+   * d>0 또는 limit 지정 시 절단·검열 우도 수치최적화 경로로 전환된다
+   * (둘 다 미지정이면 기존 scipy .fit 경로 그대로 — 회귀 없음).
+   */
+  deductible?: number | null;
+  /** 보상한도 u(우측 검열, x≥u는 u로 기록) — null/미지정=∞. */
+  limit?: number | null;
 }
 
 /* ─────────────────────────── 파이썬 스크립트 ─────────────────────────── */
@@ -226,6 +237,77 @@ def qq_grouped(fr, B, N):
     okm = np.isfinite(theo)
     return {"theo": _arr(theo[okm]), "samp": _arr(samp[okm])}
 
+# ───── 심도: 면책 d(좌측 절단)·한도 u(우측 검열) 반영 MLE ─────
+# 관측 규약: 값은 원손해액. d 미만 미관측, u 이상은 u로 기록.
+# 우도: 비검열(d<x<u) log f(x) - log S(d) / 검열(x>=u) log S(u) - log S(d)
+# 모수화·초기값·최적화는 그룹 적합과 같은 스펙(grouped_specs, log 모수)을 재사용.
+def fit_truncated(spec, xu, nc, n, d, u):
+    def nll(t):
+        try:
+            fr = spec["make"](t)
+            ll = float(np.sum(fr.logpdf(xu)))
+            if not math.isfinite(ll):
+                return 1e12
+            if d > 0:
+                Sd = float(fr.sf(d))
+                if not (math.isfinite(Sd) and Sd > 0):
+                    return 1e12
+                ll -= n * math.log(Sd)
+            if nc > 0:
+                Su = float(fr.sf(u))
+                if not (math.isfinite(Su) and Su > 0):
+                    return 1e12
+                ll += nc * math.log(Su)
+            return -ll
+        except Exception:
+            return 1e12
+    res = minimize(nll, spec["t0"], method="Nelder-Mead",
+                   options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+    if not math.isfinite(res.fun) or res.fun >= 1e11:
+        raise ValueError("optimize_failed")
+    t = res.x
+    return spec["make"](t), spec["disp"](t), spec["k"], -float(res.fun)
+
+def ks_conditional(fr, xu, d, u):
+    # 조건부 CDF F*(x)=(F(x)-F(d))/(F(u)-F(d)) 기준 — 비검열 관측만
+    Fd = float(fr.cdf(d)) if d > 0 else 0.0
+    Fu = float(fr.cdf(u)) if math.isfinite(u) else 1.0
+    den = Fu - Fd
+    if not (den > 0 and math.isfinite(den)) or len(xu) < 2:
+        return None, None
+    ks = stats.kstest(xu, lambda z: np.clip((fr.cdf(z) - Fd) / den, 0.0, 1.0))
+    return float(ks.statistic), float(ks.pvalue)
+
+def qq_truncated(fr, xu, d, u, m=150):
+    # (d,u) 절단 조건부 분위수 vs 비검열 관측 분위수
+    xs = np.sort(np.asarray(xu, float))
+    nn = len(xs)
+    if nn <= m:
+        pp = (np.arange(1, nn + 1) - 0.5) / nn
+        samp = xs
+    else:
+        pp = (np.arange(1, m + 1) - 0.5) / m
+        samp = np.quantile(xs, pp)
+    Fd = float(fr.cdf(d)) if d > 0 else 0.0
+    Fu = float(fr.cdf(u)) if math.isfinite(u) else 1.0
+    theo = fr.ppf(Fd + pp * (Fu - Fd))
+    okm = np.isfinite(theo) & np.isfinite(samp)
+    return {"theo": _arr(theo[okm]), "samp": _arr(samp[okm])}
+
+def curves_truncated(fr, d, u):
+    # 오버레이 곡선 — 히스토그램(기록값)과 같은 스케일의 관측 조건부:
+    # 밀도 f(x)/S(d) (d<x<u), 누적 (F(x)-F(d))/S(d) (x>=u는 1 — u에 검열 원자)
+    Fd = float(fr.cdf(d)) if d > 0 else 0.0
+    Sd = max(1.0 - Fd, 1e-300)
+    py = fr.pdf(GRID) / Sd
+    cy = np.clip((fr.cdf(GRID) - Fd) / Sd, 0.0, 1.0)
+    py = np.where(GRID < d, np.nan, py)
+    cy = np.where(GRID < d, np.nan, cy)
+    if math.isfinite(u):
+        py = np.where(GRID > u, np.nan, py)
+        cy = np.where(GRID >= u, 1.0, cy)
+    return _arr(py), _arr(cy)
+
 # ───── 빈도(연도별 건수) MLE ─────
 def fit_freq(fid, c):
     n = len(c)
@@ -281,20 +363,54 @@ def chi2_freq(fr, c, k):
 mode = INP["mode"]
 if mode == "individual":
     x = np.asarray(INP.get("values") or [], float)
-    for did in INP.get("sevDists") or []:
-        row = {"id": did, "ok": False}
-        try:
-            fr, params, k = fit_sev_individual(did, x)
-            logL, aic, bic, D, ksp, a2 = gof_individual(fr, k, x)
-            row.update(ok=True, k=k,
-                       params=[{"name": a, "value": _num(b)} for a, b in params],
-                       logL=_num(logL), aic=_num(aic), bic=_num(bic),
-                       ksD=_num(D), ksP=_num(ksp), a2=_num(a2),
-                       pdfY=_arr(fr.pdf(GRID)), cdfY=_arr(fr.cdf(GRID)),
-                       qq=qq_points(fr, np.sort(x)))
-        except Exception as e:
-            row["error"] = str(e)[:300]
-        OUT["severity"].append(row)
+    _d = INP.get("deductible")
+    _u = INP.get("limit")
+    d = float(_d) if _d is not None else 0.0
+    u = float(_u) if _u is not None else math.inf
+    trunc = (d > 0) or math.isfinite(u)
+    if not trunc:
+        # 면책·한도 미적용 — 기존 scipy .fit 경로 그대로(회귀 없음)
+        for did in INP.get("sevDists") or []:
+            row = {"id": did, "ok": False}
+            try:
+                fr, params, k = fit_sev_individual(did, x)
+                logL, aic, bic, D, ksp, a2 = gof_individual(fr, k, x)
+                row.update(ok=True, k=k,
+                           params=[{"name": a, "value": _num(b)} for a, b in params],
+                           logL=_num(logL), aic=_num(aic), bic=_num(bic),
+                           ksD=_num(D), ksP=_num(ksp), a2=_num(a2),
+                           pdfY=_arr(fr.pdf(GRID)), cdfY=_arr(fr.cdf(GRID)),
+                           qq=qq_points(fr, np.sort(x)))
+            except Exception as e:
+                row["error"] = str(e)[:300]
+            OUT["severity"].append(row)
+    else:
+        # 면책·한도 반영 — 절단·검열 우도 수치최적화
+        xu = x[x < u]                    # 비검열(실제 값을 아는) 관측
+        nc = int(np.sum(x >= u))         # 검열(u 이상이라는 것만 아는) 관측 수
+        n = len(x)
+        SPECS = grouped_specs(xu, xu, np.ones(len(xu)))  # 초기값용 적률 = 비검열 값
+        for did in INP.get("sevDists") or []:
+            row = {"id": did, "ok": False}
+            try:
+                if did not in SPECS:
+                    raise ValueError("not_supported_for_data")
+                fr, params, k, logL = fit_truncated(SPECS[did], xu, nc, n, d, u)
+                aic = 2 * k - 2 * logL
+                bic = k * math.log(n) - 2 * logL
+                D, ksp = ks_conditional(fr, xu, d, u)
+                py_, cy_ = curves_truncated(fr, d, u)
+                row.update(ok=True, k=k,
+                           params=[{"name": a, "value": _num(b)} for a, b in params],
+                           logL=_num(logL), aic=_num(aic), bic=_num(bic),
+                           ksD=_num(D) if D is not None else None,
+                           ksP=_num(ksp) if ksp is not None else None,
+                           a2=None,  # A²는 검열 데이터에 표준 정의 없음 — '—' 표시
+                           pdfY=py_, cdfY=cy_,
+                           qq=qq_truncated(fr, xu, d, u))
+            except Exception as e:
+                row["error"] = str(e)[:300]
+            OUT["severity"].append(row)
 elif mode == "grouped":
     G = INP["groups"]
     A = np.asarray(G["lo"], float)

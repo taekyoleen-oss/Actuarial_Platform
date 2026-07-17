@@ -30,6 +30,16 @@ export interface FitData {
   groups?: GroupRow[];
   /** 헤더에서 추출한 값 열 이름(차트 축 라벨) */
   valueLabel?: string;
+  /**
+   * 면책(deductible) d — 좌측 절단. 값은 원손해액이며 d 미만 사고는 관측되지
+   * 않았다는 규약. 미입력(undefined)=0(미적용). individual·yearValue 전용.
+   */
+  deductible?: number;
+  /**
+   * 보상한도(limit) u — 우측 검열. u 이상 사고는 u로 기록(x≥u 관측을 검열
+   * 처리)이라는 규약. 미입력(undefined)=∞(미적용). individual·yearValue 전용.
+   */
+  limit?: number;
 }
 
 export interface DetectResult {
@@ -400,6 +410,73 @@ export function frequencyFromYears(yearRows: number[]): FreqEmpirical {
     cdf.push({ x: k, y: Math.min(1, acc) });
   }
   return { years, counts, pmf, cdf, kMax, mean, variance, zeroFilled };
+}
+
+/* ───────────────── 면책·한도(좌측 절단·우측 검열) 검증 ───────────────── */
+
+export interface TruncationCheck {
+  ok: boolean;
+  /** 사용자에게 그대로 보여줄 한국어 오류 */
+  error?: string;
+  /** u 이상(검열) 관측 수 */
+  censored: number;
+  /** u 미만(비검열) 관측 수 */
+  uncensored: number;
+}
+
+/**
+ * 면책 d·한도 u 입력 검증 — 개별·연도+값 심도 데이터 전용.
+ * 규약: 값은 원손해액, d 미만 미관측(좌측 절단), u 이상은 u로 기록(우측 검열).
+ * undefined = 미적용(d=0 / u=∞).
+ */
+export function checkTruncation(
+  values: number[],
+  d?: number,
+  u?: number
+): TruncationCheck {
+  const fail = (error: string): TruncationCheck => ({
+    ok: false,
+    error,
+    censored: 0,
+    uncensored: values.length,
+  });
+
+  if (d !== undefined && (!Number.isFinite(d) || d < 0))
+    return fail("면책 d는 0 이상의 숫자여야 합니다.");
+  if (u !== undefined && (!Number.isFinite(u) || u <= 0))
+    return fail("보상한도 u는 0보다 큰 숫자여야 합니다.");
+  const dd = d ?? 0;
+  if (u !== undefined && u <= dd)
+    return fail(`보상한도 u(${u})는 면책 d(${dd})보다 커야 합니다.`);
+
+  if (dd > 0) {
+    const below = values.filter((v) => v < dd).length;
+    if (below === values.length)
+      return fail(
+        `모든 관측이 면책 d=${dd} 미만입니다 — 관측 규약(d 미만 미관측)과 모순됩니다. d를 확인하세요.`
+      );
+    if (below > 0)
+      return fail(
+        `면책 d=${dd}보다 작은 값이 ${below}건 있습니다. 규약상 d 미만 사고는 데이터에 없어야 합니다(원손해액 기준) — d를 낮추거나 비워 주세요.`
+      );
+  }
+
+  const uu = u ?? Infinity;
+  const censored = values.filter((v) => v >= uu).length;
+  const uncensored = values.length - censored;
+  if (u !== undefined && uncensored < 2)
+    return fail(
+      `한도 u=${u} 미만(비검열) 관측이 ${uncensored}건뿐입니다 — 전부(또는 대부분) 검열이라 적합할 수 없습니다. u를 확인하세요.`
+    );
+  return { ok: true, censored, uncensored };
+}
+
+/** 데이터에 면책·한도 적합이 실제로 적용되는지(그룹 제외, d>0 또는 u 유한). */
+export function truncationActive(data: FitData): boolean {
+  return (
+    data.kind !== "grouped" &&
+    ((data.deductible ?? 0) > 0 || data.limit !== undefined)
+  );
 }
 
 /* ────────────────────── 적합 가능성(분포별 데이터 조건) ────────────────────── */
