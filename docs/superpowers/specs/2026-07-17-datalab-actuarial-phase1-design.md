@@ -68,6 +68,32 @@
 - 팝업 [코드 적용] 탭: 섹션 헤더에 기본/고급 칩 + 상단 [전체 | 기본 | 고급] 필터.
 - wrangle 10종은 전부 기본(고급 없음). 계리 8종도 동일 규칙 적용(예: chain-ladder CL=기본, BF·Mack=고급).
 
+## 2단계 (2026-07-18 사용자 승인) — 손실함수·그래프 콤보박스·PCA 결과투영
+
+원 제안서의 A1·A3·A4. Workflow 구현 후 하네스 검토.
+
+### A1. 손실함수 사전 항목 (신규 방법 1종, `model` 카테고리)
+- id `loss-functions`, 이름 "손실함수·비용민감 학습", weight 3·difficulty 3. 별도 `_workspace/phase2/loss.entry.ts`로 작성 후 statMethods.ts에 통합(pca-projection과 파일 충돌 회피).
+- 섹션: [basic] MSE·MAE·RMSE 계산과 의미(이상치 1개가 MSE를 키우는 시연) / [advanced] Huber·분위수(pinball)→QuantileRegressor 90% 분위수(=VaR 개념) / [advanced] 포아송·감마·Tweedie deviance→순보험료 부스팅(HistGradientBoostingRegressor loss="poisson", d2_tweedie_score) / [advanced] 분류 log loss vs hinge + 비대칭 비용 임계값 최적화(언더라이팅).
+- 이론(methodTheory 키 추가): 정의(손실=예측오차를 한 수로, 모델이 최소화하는 대상) / 산출식(MSE·MAE·Huber·pinball·deviance·log loss·hinge) / 활용 / 해석.
+
+### A3. 그래프 셀 콤보박스 (신규 `lib/plotSnippets.ts` + PyRunner)
+- `데이터 핸들링 ▾` 콤보박스와 동일 패턴: `PLOT_SNIPPET_GROUPS`(id/label/desc/code) + `plotInsertCode()`, PyRunner 셀에 `그래프 ▾` `<select>` 하나 추가(wrangle 콤보 바로 옆).
+- 그룹: **탐색**(히스토그램+KDE·box/violin 집단비교·산점도+회귀선·상관 히트맵·산점도 행렬) / **모델 진단**(잔차 플롯·학습곡선 learning_curve·검증곡선·ROC·PR·캘리브레이션·리프트/게인) / **해석**(변수 중요도·순열 중요도·PDP·ICE).
+- 모델 진단·해석 스니펫은 자체 완결(인라인으로 빠른 모델 적합, "이미 model·X_te가 있으면 그 줄만 지우세요" 주석). 전 스니펫 로컬 실행 검증(matplotlib Agg). matplotlib·sklearn 내장만(SHAP 제외).
+
+### A4. PCA 2차원 결과 투영 확산 (기존 statMethods.ts 항목에 [advanced] 섹션 추가)
+- kmeans·pca는 이미 2D 산점도 보유 → **추가 안 함**.
+- hierarchical: "군집 라벨을 PCA 2차원에 투영"(산점도+중심).
+- decision-tree·svm·knn: "PCA 2축 결정경계 시각화"(2 PCA 성분에 적합 후 DecisionBoundaryDisplay — 직관용 2D 투영 모델임을 명시).
+- pca: "t-SNE — 비선형 2차원 임베딩 대안"(sklearn TSNE, 웹 실행 가능).
+- 전부 [advanced] level, 기본→고급 순서 유지. 로컬 실행 검증.
+
+### 파일 충돌 설계
+- 콘텐츠(병렬, 서로소 파일): loss-author(_workspace) · plot-snippets(lib/plotSnippets.ts + PyRunner.tsx) · pca-projection(lib/statMethods.ts 기존 항목). 동시 tsc는 읽기 전용이라 안전(권위 검증은 빌드 단계).
+- 통합(순차): integrate-loss가 statMethods.ts에 loss 항목 추가 + methodTheory.ts 키 추가(pca-projection 완료 후).
+- MethodCloud.tsx **무변경**(신규 항목·섹션은 기존 렌더·필터가 자동 처리, 사분면 겹침만 리뷰).
+
 ## 검증·리뷰 계획
 
 1. 파이썬 전 섹션 로컬 실행(에이전트별) → 2. `tsc --noEmit`·`next build` 통과까지 수정 → 3. 3렌즈 적대 리뷰(계리·통계 정확성 / Pyodide 호환 / 프로젝트 컨벤션·디자인 비협상) 후 수정 → 4. 하네스 qa-integrator 경계면 검토 → 5. 커밋·푸시·드래프트 PR.

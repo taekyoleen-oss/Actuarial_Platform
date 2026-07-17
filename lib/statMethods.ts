@@ -1348,6 +1348,293 @@ print(f"AIC(부분우도): 기본 {cox.AIC_partial_:,.1f} vs 규제 {cox_pen.AIC
       },
     ],
   },
+  {
+    id: "loss-functions",
+    name: "손실함수·비용민감 학습",
+    en: "Loss Functions & Cost-sensitive Learning",
+    category: "model",
+    weight: 3,
+    difficulty: 3,
+    params: [
+      { name: "loss (회귀)", desc: "회귀 손실 선택 — 'squared_error'(MSE, 큰 오차에 제곱 벌점·이상치 민감)·'absolute_error'(MAE, 강건)·Huber(둘의 절충)·분위수(pinball). 목적이 '평균'이면 MSE, '중앙값·강건'이면 MAE, '꼬리 분위수(VaR)'면 pinball." },
+      { name: "epsilon (HuberRegressor)", desc: "제곱↔절대 전환 경계(관례 1.35) — |표준화 잔차|<epsilon는 MSE처럼, 그 밖은 MAE처럼 선형으로만 벌해 이상치 영향을 잘라냄. 작을수록 더 강건(더 많은 점을 이상치로 취급)." },
+      { name: "quantile / solver (QuantileRegressor)", desc: "예측할 분위수(0~1) — 0.9면 '90% 확률로 이 값 이하'=VaR(90%). pinball 손실을 선형계획으로 최소화하므로 solver='highs'(scipy 내장, 웹 실행 가능) 권장." },
+      { name: "loss='poisson' (HistGradientBoostingRegressor)", desc: "부스팅의 목적함수를 Poisson deviance로 — 사고 건수처럼 양의 정수·오른쪽 치우침 데이터에 MSE보다 적합(항상 양의 예측, 편향 작음). 'gamma'·'squared_error'도 선택 가능." },
+      { name: "power (TweedieRegressor)", desc: "Tweedie 분산함수 Var(Y)=φ·μ^p의 지수 — 1<p<2가 복합 포아송–감마=순보험료(0 뭉침+양의 꼬리)의 손실. 1.5가 관례적 출발점. d2_tweedie_score(power)로 평가." },
+      { name: "임계값·비용비(FN:FP)", desc: "분류 판정 임계값은 미탐(FN)·오탐(FP) 비용이 같을 때만 0.5가 최적 — 비용이 다르면 총비용 FP·c_FP+FN·c_FN을 최소화하는 임계값을 격자 탐색으로 찾음(청구/사기 심사의 핵심 레버)." },
+    ],
+    summary:
+      "예측오차를 한 수로 요약하는 손실함수를 이해·선택 — MSE·MAE부터 분위수(VaR)·Poisson/Tweedie deviance·비대칭 비용 임계값까지",
+    intro:
+      "손실함수(loss function)는 예측이 실제에서 얼마나 벗어났는지를 하나의 숫자로 압축한 것이고, 모델 학습은 이 숫자를 가장 작게 만드는 과정입니다. 그래서 '어떤 손실로 학습하느냐'가 곧 '모델이 무엇을 잘 맞추려 애쓰느냐'를 정합니다 — 같은 데이터라도 MSE로 학습하면 평균을, MAE로 학습하면 중앙값을, 분위수(pinball) 손실로 학습하면 특정 백분위수를 겨냥합니다.\n\n보험 데이터는 대형 사고로 꼬리가 두껍고(이상치), 사고 건수·순보험료처럼 0이 뭉치고 양으로 치우친 분포가 흔해서 손실 선택이 특히 중요합니다. 이 항목은 회귀 손실 세 가지(MSE·MAE·RMSE)의 기본 감각에서 시작해, 이상치에 강건한 Huber·분위수 손실(=VaR 예측), 건수·순보험료에 맞는 Poisson·Tweedie deviance 부스팅, 그리고 분류에서 미탐≠오탐 비용을 반영한 임계값 최적화까지 다룹니다. 요율 상대도·LEV 등 요율산정 전체 흐름은 '순보험료·요율산정(pure-premium)'·'GLM' 항목과 이어집니다.",
+    tips: "MSE/RMSE는 큰 오차를 특히 피해야 할 때, MAE는 이상치가 흔할 때, 분위수 손실은 꼬리(안전할증·재보험 한도)를 예측할 때 씁니다. 건수·순보험료는 MSE 대신 Poisson·Tweedie deviance가 편향이 작고, 불균형 분류에서는 정확도가 아니라 '업무 비용'을 목적함수로 두어 임계값을 옮기는 것이 핵심입니다.",
+    sections: [
+      {
+        title: "회귀 손실 이해 — MSE·MAE·RMSE",
+        desc: "예측 vs 실제에서 세 손실을 직접 계산하고, 이상치 1건이 MSE를 어떻게 키우는지(MAE는 강건) 시연합니다.",
+        level: "basic",
+        code: `import numpy as np
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+
+rng = np.random.default_rng(42)
+
+# ── 1) 손실이란? 예측이 실제에서 얼마나 벗어났는지(오차)를 '한 개의 숫자'로 압축한 것.
+#    모델 학습은 이 숫자(손실)를 가장 작게 만드는 방향으로 계수를 조정하는 과정이다.
+# 실제 손해액(만원)과 어떤 모델의 예측값 — 대체로 잘 맞지만 완벽하진 않다.
+y_true = np.array([100.0, 120.0, 95.0, 110.0, 130.0, 105.0, 115.0, 125.0])
+y_pred = np.array([103.0, 116.0, 99.0, 108.0, 133.0, 101.0, 118.0, 121.0])
+
+err = y_pred - y_true          # 잔차(residual) = 예측 − 실제
+print("잔차:", err)
+
+# ── 2) 세 손실을 '직접' 계산해 정의를 눈으로 확인 (라이브러리 값과 대조)
+mse = np.mean(err ** 2)                 # 평균제곱오차 — 오차를 제곱해 평균
+mae = np.mean(np.abs(err))              # 평균절대오차 — 오차의 절댓값을 평균
+rmse = np.sqrt(mse)                     # 제곱근을 씌워 원래 단위(만원)로 되돌림
+print(f"\\n[직접 계산]  MSE={mse:.3f}  MAE={mae:.3f}  RMSE={rmse:.3f}")
+
+# sklearn으로 교차 확인 — 값이 같아야 정상
+print(f"[sklearn]    MSE={mean_squared_error(y_true, y_pred):.3f} "
+      f" MAE={mean_absolute_error(y_true, y_pred):.3f} "
+      f" RMSE={np.sqrt(mean_squared_error(y_true, y_pred)):.3f}")
+print("→ RMSE는 MSE에 √를 씌운 값이라 '예측이 평균 몇 만원 빗나가나'로 바로 읽힌다(단위가 원자료와 같음).")
+
+# ── 3) 핵심 시연: 이상치(대형 사고) 1건이 들어오면 MSE가 어떻게 폭발하는가
+#    한 계약의 실제 손해액을 500만원 크게(대형 사고), 나머지는 그대로 두고 다시 계산.
+y_true_out = y_true.copy()
+y_true_out[3] += 500.0                  # 4번째 관측이 이상치로 돌변
+err_out = y_pred - y_true_out
+mse_out = np.mean(err_out ** 2)
+mae_out = np.mean(np.abs(err_out))
+print(f"\\n[이상치 1건 추가 후]  MSE={mse_out:,.1f}  MAE={mae_out:.3f}  RMSE={np.sqrt(mse_out):.3f}")
+print(f"→ MSE는 {mse:.1f} → {mse_out:,.0f}  ({mse_out / mse:.0f}배 폭증)  |  "
+      f"MAE는 {mae:.2f} → {mae_out:.2f}  ({mae_out / mae:.1f}배)")
+print("  이유: MSE는 오차를 '제곱'해 큰 오차에 훨씬 큰 벌점을 준다(약 500의 제곱 ≈ 25만).")
+print("  MAE는 절댓값이라 이상치 1건의 영향이 1/n로 희석돼 강건(robust)하다.")
+
+# ── 4) 언제 무엇을 쓰나 — 실무 판단 요약
+print("\\n[선택 가이드]")
+print(" · MSE/RMSE : 큰 오차를 특히 피하고 싶을 때(대형 사고 과소예측이 치명적). 단, 이상치에 민감.")
+print(" · MAE      : 이상치가 흔한 손해액·중앙값 성격의 예측. 오차를 '금액 그대로' 해석하고 싶을 때.")
+print(" · RMSE     : MSE로 학습하되 보고는 원단위로 — 실무에서 가장 흔한 조합.")`,
+      },
+      {
+        title: "이상치 강건·분위수 손실 — Huber·pinball",
+        desc: "HuberRegressor로 이상치에 강건한 회귀, QuantileRegressor(quantile=0.9)로 90% 분위수 예측(=보험 VaR 개념). 여러 분위수를 겹쳐 그립니다.",
+        level: "advanced",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression, HuberRegressor, QuantileRegressor
+
+rng = np.random.default_rng(42)
+
+# ── 1) 데이터 — 나이(age)에 따라 손해액이 오르는 관계 + 대형 사고(이상치) 몇 건
+n = 200
+age = rng.uniform(20, 70, n)
+loss = 30 + 1.2 * age + rng.normal(0, 12, n)      # 참 관계: 기울기 1.2
+# 이상치 주입 — 상위 6건을 대형 사고로 크게 부풀림(꼬리가 두꺼운 손해액의 전형)
+idx = rng.choice(n, 6, replace=False)
+loss[idx] += rng.uniform(120, 260, 6)
+X = age.reshape(-1, 1)
+
+# ── 2) 손실함수가 다르면 적합선이 달라진다
+#    OLS(제곱손실)는 이상치에 끌려가고, Huber는 큰 오차를 선형으로만 벌해 강건하다.
+ols = LinearRegression().fit(X, loss)
+# Huber: |오차|<epsilon는 제곱(MSE처럼), 그 밖은 절대값(MAE처럼) — 이상치 영향을 잘라낸다.
+huber = HuberRegressor(epsilon=1.35, alpha=0.0).fit(X, loss)
+print(f"OLS   기울기={ols.coef_[0]:.3f}  (이상치에 끌려 참값 1.2에서 벗어남)")
+print(f"Huber 기울기={huber.coef_[0]:.3f}  (참값 1.2에 더 가까움 — 강건)")
+print(f"Huber가 벌점을 선형으로 줄여 down-weight한 관측: {int(huber.outliers_.sum())}건 / {n}건 "
+      "(epsilon 밖 잔차 — 주입한 대형사고 6건을 포함해 꼬리 관측 전반)")
+
+# ── 3) 분위수 회귀 — '평균'이 아니라 '분위수'를 예측한다
+#    pinball(핀볼) 손실: 과소예측과 과대예측에 서로 다른 벌점을 줘 원하는 분위수로 선을 끌어올린다.
+#      L_q(y, f) = max(q·(y−f), (q−1)·(y−f))   — q=0.9면 과소예측(y>f)에 9배 무겁게 벌점
+#    q=0.9 선은 "관측의 약 90%가 이 아래" → 보험의 VaR(Value at Risk) 개념과 정확히 같다.
+def pinball(y, f, q):
+    d = y - f
+    return np.mean(np.maximum(q * d, (q - 1) * d))
+
+quantiles = [0.5, 0.9, 0.99]
+models = {}
+for q in quantiles:
+    # solver='highs'는 선형계획 기반 — scipy에 포함되어 웹(Pyodide)에서도 동작
+    qr = QuantileRegressor(quantile=q, alpha=0.0, solver="highs").fit(X, loss)
+    models[q] = qr
+    covered = np.mean(loss <= qr.predict(X))       # 실제로 선 아래 비율(≈ q여야 정상)
+    print(f"q={q}: 기울기={qr.coef_[0]:.3f}, 절편={qr.intercept_:.1f}, "
+          f"선 아래 비율={covered:.2f}, pinball={pinball(loss, qr.predict(X), q):.3f}")
+print("→ q=0.9 예측선 = '90% 확률로 이 금액을 넘지 않는다' = 세그먼트별 손해액 VaR(90%). "
+      "요율 안전할증·재보험 부보한도 설정의 직접 근거가 된다.")
+
+# ── 4) 여러 분위수를 겹쳐 그리기 — 중앙(0.5)·꼬리(0.9·0.99)가 부챗살처럼 벌어진다
+order = np.argsort(age)
+xs = age[order].reshape(-1, 1)
+plt.figure(figsize=(7, 5))
+plt.scatter(age, loss, s=14, alpha=0.4, color="#3E6AE1", label="관측(손해액)")
+plt.plot(xs, ols.predict(xs), "--", color="#94A3B8", lw=1.6, label="OLS 평균선")
+colors = {0.5: "#0E9F8E", 0.9: "#E0A400", 0.99: "#D8574F"}
+for q in quantiles:
+    plt.plot(xs, models[q].predict(xs), color=colors[q], lw=2, label=f"분위수 q={q}")
+plt.xlabel("가입연령")
+plt.ylabel("손해액(만원)")
+plt.title("분위수 회귀 — 평균선(OLS) 위로 꼬리 분위수가 벌어짐")
+plt.legend(fontsize=9)
+plt.tight_layout()
+plt.show()`,
+      },
+      {
+        title: "포아송·Tweedie deviance — 순보험료 부스팅",
+        desc: "HistGradientBoostingRegressor(loss=\"poisson\")로 사고건수, TweedieRegressor·d2_tweedie_score로 순보험료 직접. deviance가 왜 MSE보다 적절한지(양수·치우친 분포) 확인합니다. 요율 상대도·LEV 등 요율산정 흐름은 'pure-premium' 항목 참조.",
+        level: "advanced",
+        code: `import numpy as np
+import pandas as pd
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.linear_model import TweedieRegressor
+from sklearn.metrics import mean_poisson_deviance, d2_tweedie_score
+from sklearn.model_selection import train_test_split
+
+rng = np.random.default_rng(42)
+
+# ── 1) 합성 포트폴리오 4000건 — 위험특성 → 빈도·순보험료
+#    순보험료(총손해액/노출)는 '0이 잔뜩 뭉치고(무사고), 사고 계약만 양의 꼬리'를 갖는다.
+n = 4000
+age = rng.uniform(20, 70, n)
+region = rng.integers(0, 3, n)                      # 지역 0/1/2
+exposure = rng.uniform(0.3, 1.0, n).round(2)        # 노출(경과 계약년수)
+# 참 빈도: 로그선형(나이·지역이 곱으로 작용) × 노출
+lam = np.exp(-2.3 + 0.02 * age + 0.25 * region) * exposure
+n_claims = rng.poisson(lam)                          # 사고 건수 ~ Poisson
+# 건별 심도 ~ 감마(shape=2), 총손해액 = 건수 × 심도 합
+sev_scale = np.exp(4.0 + 0.01 * age)                 # 평균심도도 나이에 따라 소폭 증가
+total_loss = np.array([rng.gamma(2.0 * k, sev_scale[i] / 2.0) if k > 0 else 0.0
+                       for i, k in enumerate(n_claims)])
+df = pd.DataFrame({"age": age, "region": region.astype(float),
+                   "exposure": exposure, "n_claims": n_claims, "total_loss": total_loss})
+print(f"계약 {n}건 · 무사고 비율 {(df.n_claims == 0).mean():.1%} · 총사고 {int(df.n_claims.sum())}건")
+
+X = df[["age", "region"]]
+Xtr, Xte, itr, ite = train_test_split(np.arange(n), np.arange(n), test_size=0.25,
+                                      random_state=42)  # 인덱스로 split해 여러 타깃 공유
+Xtr, Xte = X.iloc[itr], X.iloc[ite]
+
+# ── 2) 빈도 부스팅 — loss="poisson"이 왜 MSE보다 적절한가
+#    사고 건수는 0,1,2… 양의 정수에 오른쪽으로 치우친 분포. MSE는 이 분포에 대칭 벌점을 줘
+#    큰 건수의 과대예측을 과하게 벌하고 음수 예측도 허용한다. Poisson deviance는 '건수 데이터의
+#    최대우도'에 대응하는 손실이라 편향이 작고 항상 양의 예측을 낸다.
+y_freq = df["n_claims"].values / df["exposure"].values     # 노출 보정 = 연율화 빈도
+w = df["exposure"].values                                  # 노출을 표본가중치로
+gb_pois = HistGradientBoostingRegressor(loss="poisson", learning_rate=0.05,
+                                        max_iter=300, max_depth=3, random_state=42)
+gb_pois.fit(Xtr, y_freq[itr], sample_weight=w[itr])
+gb_mse = HistGradientBoostingRegressor(loss="squared_error", learning_rate=0.05,
+                                       max_iter=300, max_depth=3, random_state=42)
+gb_mse.fit(Xtr, y_freq[itr], sample_weight=w[itr])
+# 평가도 Poisson deviance로(작을수록 우수). 예측이 0 이하가 되지 않도록 클립.
+p_pois = np.clip(gb_pois.predict(Xte), 1e-6, None)
+p_mse = np.clip(gb_mse.predict(Xte), 1e-6, None)
+print("\\n[빈도 예측 — 낮을수록 우수]")
+print(f"  Poisson 손실 학습 → 검증 Poisson deviance = {mean_poisson_deviance(y_freq[ite], p_pois, sample_weight=w[ite]):.4f}")
+print(f"  MSE     손실 학습 → 검증 Poisson deviance = {mean_poisson_deviance(y_freq[ite], p_mse, sample_weight=w[ite]):.4f}")
+print("  → 건수 데이터에 맞는 손실(Poisson)로 학습한 모델이 같은 척도에서 더 낮은 편차를 낸다.")
+
+# ── 3) 순보험료 직접 적합 — Tweedie(1<power<2) 손실
+#    순보험료 y=총손해액/노출은 '0 뭉침 + 양의 연속 꼬리' = 복합 포아송-감마 = Tweedie(power≈1.5).
+#    d2_tweedie_score는 Tweedie deviance 기반 R² (1=완벽, 0=평균예측 수준, 클수록 우수).
+y_pp = df["total_loss"].values / df["exposure"].values     # 순보험료(연율화)
+w = df["exposure"].values                                  # 노출 가중치
+power = 1.5
+tw = TweedieRegressor(power=power, alpha=0.0, link="log", max_iter=1000)
+tw.fit(Xtr, y_pp[itr], sample_weight=w[itr])
+gb_tw = HistGradientBoostingRegressor(loss="squared_error", learning_rate=0.05,
+                                      max_iter=300, max_depth=3, random_state=42)
+gb_tw.fit(Xtr, np.log1p(y_pp[itr]), sample_weight=w[itr])   # MSE는 로그변환으로 겨우 대응
+pred_tw = np.clip(tw.predict(Xte), 1e-6, None)
+pred_gb = np.clip(np.expm1(gb_tw.predict(Xte)), 1e-6, None)
+print("\\n[순보험료 예측 — D² Tweedie score, 높을수록 우수]")
+print(f"  TweedieRegressor(power=1.5) : D2 = {d2_tweedie_score(y_pp[ite], pred_tw, power=power):.4f}")
+print(f"  MSE(log변환) 부스팅         : D2 = {d2_tweedie_score(y_pp[ite], pred_gb, power=power):.4f}")
+print(f"  총량 균형: 예측 순보험료 합 {pred_tw.sum():,.0f} vs 실제 {y_pp[ite].sum():,.0f}")
+print("  → deviance 계열 손실은 왜곡분포(양수·치우침)에서 MSE보다 편향이 작고 총량도 잘 맞춘다.")`,
+      },
+      {
+        title: "분류 손실·비대칭 비용 — log loss vs hinge, 임계값 최적화",
+        desc: "log_loss·hinge 개념을 비교하고, 미탐 비용≠오탐 비용일 때 총비용을 최소화하는 임계값을 탐색합니다(청구/사기 심사 실무). 비용곡선을 그립니다.",
+        level: "advanced",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss, hinge_loss, confusion_matrix
+from sklearn.model_selection import train_test_split
+
+rng = np.random.default_rng(42)
+
+# ── 1) 데이터 — 사기(또는 고액) 청구 여부(1=사기). 실무처럼 불균형(사기 ~15%).
+n = 3000
+x1 = rng.normal(0, 1, n)          # 심사 지표 A(예: 청구/보험료 비율)
+x2 = rng.normal(0, 1, n)          # 심사 지표 B(예: 가입 후 경과월 역수)
+lin = -2.6 + 1.5 * x1 + 1.1 * x2
+p = 1 / (1 + np.exp(-lin))
+y = (rng.random(n) < p).astype(int)
+X = np.column_stack([x1, x2])
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
+print(f"사기 비율 = {y.mean():.1%} (불균형 — 정확도만 보면 '전부 정상' 예측이 85%로 무의미)")
+
+# ── 2) 분류 손실 두 가지의 성격 — 개념 비교
+#    · log loss(로그손실, = 이진 교차엔트로피): 확률 예측을 벌한다. 확신을 갖고 틀리면(p→1인데 실제 0)
+#      벌점이 무한대로 커진다 → 잘 보정된 '확률'이 필요할 때. 로지스틱 회귀가 최소화하는 손실.
+#    · hinge loss(경첩손실): SVM이 쓰는 '마진' 손실. 결정경계에서 충분히 떨어져 맞으면 벌점 0,
+#      경계 근처·틀림에만 선형 벌점 → 확률이 아니라 '경계'가 목적일 때.
+clf = LogisticRegression(max_iter=1000, class_weight="balanced").fit(Xtr, ytr)
+proba = clf.predict_proba(Xte)[:, 1]
+dfun = clf.decision_function(Xte)         # 부호 있는 결정함수값(마진) — hinge 입력용
+print(f"\\nlog loss  = {log_loss(yte, proba):.4f}   (0에 가까울수록 확률 예측이 정확)")
+print(f"hinge loss= {hinge_loss(yte, dfun):.4f}   (0에 가까울수록 마진 여유 있게 정분류)")
+
+# ── 3) 비대칭 비용 — 미탐(사기를 놓침)과 오탐(정상을 사기로 의심)의 대가가 다르다
+#    실무 예: 사기 1건을 놓치면(FN) 평균 지급손실 300만원, 정상을 오탐(FP)하면 조사·민원비용 20만원.
+#    기본 임계값 0.5는 '두 오류가 같은 비용'일 때만 최적 → 비용이 다르면 임계값을 옮겨야 한다.
+COST_FN = 300.0   # False Negative(사기 미탐) 1건 비용(만원)
+COST_FP = 20.0    # False Positive(정상 오탐) 1건 비용(만원)
+
+thresholds = np.linspace(0.02, 0.98, 97)
+total_cost = []
+for t in thresholds:
+    pred = (proba >= t).astype(int)
+    tn, fp, fn, tp = confusion_matrix(yte, pred).ravel()
+    total_cost.append(fp * COST_FP + fn * COST_FN)
+total_cost = np.array(total_cost)
+t_star = thresholds[int(np.argmin(total_cost))]
+
+# 기본 0.5 vs 비용최적 임계값 비교
+def report(t):
+    pred = (proba >= t).astype(int)
+    tn, fp, fn, tp = confusion_matrix(yte, pred).ravel()
+    cost = fp * COST_FP + fn * COST_FN
+    print(f"  임계값 {t:.2f}: 미탐(FN)={fn:3d}  오탐(FP)={fp:3d}  총비용={cost:8,.0f}만원")
+
+print(f"\\n미탐 비용 {COST_FN}만원 ≫ 오탐 비용 {COST_FP}만원 → 임계값을 낮춰 더 적극적으로 잡아내는 게 이득")
+report(0.50)
+report(t_star)
+saved = total_cost[int(np.argmin(np.abs(thresholds - 0.5)))] - total_cost.min()
+print(f"→ 비용최소 임계값 = {t_star:.2f}  (총비용 {total_cost.min():,.0f}만원, 0.5 대비 {saved:,.0f}만원 절감)")
+print("  정확도(accuracy)가 아니라 '업무 비용'을 목적함수로 두면 최적 임계값이 0.5에서 크게 벗어난다.")
+
+# ── 4) 비용곡선 — 임계값에 따른 총비용이 U자를 그리며 최소점을 지난다
+plt.figure(figsize=(7, 5))
+plt.plot(thresholds, total_cost, color="#3E6AE1", lw=2)
+plt.axvline(0.5, ls="--", color="#94A3B8", lw=1.4, label="기본 임계값 0.5")
+plt.axvline(t_star, ls="-", color="#D8574F", lw=1.8, label=f"비용최소 {t_star:.2f}")
+plt.scatter([t_star], [total_cost.min()], color="#D8574F", zorder=5)
+plt.xlabel("판정 임계값 (이 확률 이상이면 '사기'로 심사)")
+plt.ylabel("총 기대비용(만원)")
+plt.title(f"비대칭 비용곡선 — 미탐 {COST_FN:.0f} vs 오탐 {COST_FP:.0f}만원")
+plt.legend(fontsize=9)
+plt.tight_layout()
+plt.show()`,
+      },
+    ],
+  },
   /* ───────────────────────── 머신러닝 (ml) ───────────────────────── */
   {
     id: "decision-tree",
@@ -1456,6 +1743,44 @@ pruned = DecisionTreeClassifier(ccp_alpha=best_alpha, class_weight="balanced",
 print(f"잎 노드 수 = {pruned.get_n_leaves()}, 깊이 = {pruned.get_depth()}")
 print(f"가지치기 test ROC-AUC = {roc_auc_score(y_te, pruned.predict_proba(X_te)[:, 1]):.3f}")
 print(f"기본(max_depth=4) test ROC-AUC = {roc_auc_score(y_te, proba):.3f}")`,
+      },
+      {
+        title: "PCA 2축 결정경계 시각화",
+        desc: "변수를 PCA 2축으로 압축한 평면 위에 결정경계를 색으로 그려 나무의 계단형 경계를 눈으로 봅니다. 전체 변수 모델이 아니라 2D 투영 직관용입니다.",
+        level: "advanced",
+        code: `import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.inspection import DecisionBoundaryDisplay
+
+# 합성 데이터(자체 완결용) — 실제로는 X=df[[...]], y=df["lapsed"]를 씁니다
+X, y = make_classification(n_samples=500, n_features=5, n_informative=3,
+                           n_redundant=1, n_classes=2, random_state=42)
+cols = ["age", "premium", "bmi", "tenure_months", "n_contracts"]
+df = pd.DataFrame(X, columns=cols); df["lapsed"] = y
+
+# ① 스케일링 → PCA로 변수 5개를 2축으로 압축(결정경계를 평면에 그리기 위함)
+X_scaled = StandardScaler().fit_transform(df[cols])
+P = PCA(n_components=2, random_state=42).fit_transform(X_scaled)
+
+# ② 주의: 여기서 적합하는 나무는 '원변수 5개' 모델이 아니라 'PCA 2축' 위의 모델입니다.
+#    경계를 눈으로 보기 위한 직관용 2D 투영일 뿐, 실제 예측 모델은 전체 변수로 따로 학습하세요.
+clf2d = DecisionTreeClassifier(max_depth=4, random_state=42).fit(P, y)
+
+# ③ 2축 평면에 결정경계를 색으로 칠하고 실제 점을 위에 겹쳐 그림
+fig, ax = plt.subplots(figsize=(7, 6))
+DecisionBoundaryDisplay.from_estimator(clf2d, P, response_method="predict",
+                                       alpha=0.3, cmap="coolwarm", ax=ax)
+ax.scatter(P[:, 0], P[:, 1], c=y, s=12, edgecolor="k", linewidth=0.3, cmap="coolwarm")
+ax.set_xlabel("PC1"); ax.set_ylabel("PC2")
+ax.set_title("의사결정나무 결정경계 (PCA 2축 투영 · 직관용)")
+plt.show()
+
+# 나무는 축에 평행한 계단 모양 경계를 만듭니다 — 이 특성이 눈에 바로 보입니다.
+print(f"2D 투영 모델 학습 정확도 = {clf2d.score(P, y):.3f}  (전체 변수 모델과 다를 수 있음)")`,
       },
     ],
   },
@@ -1751,6 +2076,44 @@ print(grid.best_params_)
 print(f"CV best AUC = {grid.best_score_:.3f}")
 print(f"test  score = {grid.score(X_te, y_te):.3f}")`,
       },
+      {
+        title: "PCA 2축 결정경계 시각화",
+        desc: "스케일링 후 PCA 2축 평면에 rbf 커널의 곡선 경계를 그립니다. 전체 변수 모델이 아니라 2D 투영 직관용입니다.",
+        level: "advanced",
+        code: `import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.svm import SVC
+from sklearn.inspection import DecisionBoundaryDisplay
+
+# 합성 데이터(자체 완결용) — 실제로는 X=df[[...]], y=df["lapsed"]를 씁니다
+X, y = make_classification(n_samples=500, n_features=5, n_informative=3,
+                           n_redundant=1, n_classes=2, random_state=42)
+cols = ["age", "premium", "bmi", "tenure_months", "n_contracts"]
+df = pd.DataFrame(X, columns=cols); df["lapsed"] = y
+
+# ① SVM은 거리 기반이라 스케일링이 필수 → 그다음 PCA로 2축 압축
+X_scaled = StandardScaler().fit_transform(df[cols])
+P = PCA(n_components=2, random_state=42).fit_transform(X_scaled)
+
+# ② 주의: 여기 SVC는 '원변수 5개' 모델이 아니라 'PCA 2축' 위의 모델입니다.
+#    rbf 커널의 곡선 경계를 눈으로 보기 위한 직관용 2D 투영이며, 실제 모델은 전체 변수로 학습하세요.
+clf2d = SVC(kernel="rbf", C=1.0, gamma="scale", random_state=42).fit(P, y)
+
+# ③ 2축 평면에 결정경계를 색으로 칠하고 실제 점을 위에 겹쳐 그림
+fig, ax = plt.subplots(figsize=(7, 6))
+DecisionBoundaryDisplay.from_estimator(clf2d, P, response_method="predict",
+                                       alpha=0.3, cmap="coolwarm", ax=ax)
+ax.scatter(P[:, 0], P[:, 1], c=y, s=12, edgecolor="k", linewidth=0.3, cmap="coolwarm")
+ax.set_xlabel("PC1"); ax.set_ylabel("PC2")
+ax.set_title("SVM(rbf) 결정경계 (PCA 2축 투영 · 직관용)")
+plt.show()
+
+# rbf 커널은 나무의 계단 경계와 달리 매끈하게 휘어지는 경계를 그립니다 — 차이가 눈에 보입니다.
+print(f"2D 투영 모델 학습 정확도 = {clf2d.score(P, y):.3f}  (전체 변수 모델과 다를 수 있음)")`,
+      },
     ],
   },
   {
@@ -1856,6 +2219,47 @@ print(f"ROC-AUC  = {roc_auc_score(y_te, proba_t):.3f}")
 print("혼동행렬\\n", confusion_matrix(y_te, pred_t))
 print(classification_report(y_te, pred_t, target_names=["유지", "해지"], zero_division=0))
 # 기본(k=5)의 ROC-AUC와 비교해 개선이 미미하면 단순한 쪽을 택하는 편이 낫습니다.`,
+      },
+      {
+        title: "PCA 2축 결정경계 시각화",
+        desc: "스케일링 후 PCA 2축 평면에 이웃 기반 경계를 그립니다. 전체 변수 모델이 아니라 2D 투영 직관용입니다.",
+        level: "advanced",
+        code: `import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.model_selection import cross_val_score
+
+# 합성 데이터(자체 완결용) — 실제로는 X=df[[...]], y=df["lapsed"]를 씁니다
+X, y = make_classification(n_samples=500, n_features=5, n_informative=3,
+                           n_redundant=1, n_classes=2, random_state=42)
+cols = ["age", "premium", "bmi", "tenure_months", "n_contracts"]
+df = pd.DataFrame(X, columns=cols); df["lapsed"] = y
+
+# ① KNN도 거리 기반이라 스케일링이 필수 → 그다음 PCA로 2축 압축
+X_scaled = StandardScaler().fit_transform(df[cols])
+P = PCA(n_components=2, random_state=42).fit_transform(X_scaled)
+
+# ② 주의: 여기 KNN은 '원변수 5개' 모델이 아니라 'PCA 2축' 위의 모델입니다.
+#    이웃 기반 경계를 눈으로 보기 위한 직관용 2D 투영이며, 실제 모델은 전체 변수로 학습하세요.
+clf2d = KNeighborsClassifier(n_neighbors=15, weights="distance").fit(P, y)
+
+# ③ 2축 평면에 결정경계를 색으로 칠하고 실제 점을 위에 겹쳐 그림
+fig, ax = plt.subplots(figsize=(7, 6))
+DecisionBoundaryDisplay.from_estimator(clf2d, P, response_method="predict",
+                                       alpha=0.3, cmap="coolwarm", ax=ax)
+ax.scatter(P[:, 0], P[:, 1], c=y, s=12, edgecolor="k", linewidth=0.3, cmap="coolwarm")
+ax.set_xlabel("PC1"); ax.set_ylabel("PC2")
+ax.set_title("KNN(k=15) 결정경계 (PCA 2축 투영 · 직관용)")
+plt.show()
+
+# k가 작으면 경계가 울퉁불퉁(과적합), 크면 매끈해집니다 — k를 바꿔가며 경계 모양을 보세요.
+# 거리가중 KNN은 학습 정확도가 항상 1.0(자기 자신이 가장 가까운 이웃)이라 5겹 CV로 평가합니다.
+cv_acc = cross_val_score(clf2d, P, y, cv=5).mean()
+print(f"2D 투영 모델 5겹 CV 정확도 = {cv_acc:.3f}  (전체 변수 모델과 다를 수 있음)")`,
       },
     ],
   },
@@ -2156,6 +2560,51 @@ for method in ["ward", "average", "complete", "single"]:
 # 실루엣 점수가 높아도 [597, 1, 1, 1] 같은 크기 분포면 업무적으로 쓸 수 없습니다 —
 # 점수 하나만 보지 말고 군집 크기 분포를 반드시 함께 확인하세요.`,
       },
+      {
+        title: "군집을 PCA 2차원에 투영 — 눈으로 분리 확인",
+        desc: "군집 라벨을 PCA 2축 산점도에 색으로 얹어, 군집이 실제로 갈라지는지 눈으로 확인합니다. 군집 중심도 함께 표시.",
+        level: "advanced",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.decomposition import PCA
+
+# 합성 데이터 — 실제로는 df[["age","premium",...]]를 씁니다(여기선 자체 완결용 합성)
+# make_blobs = 뭉쳐 있는 군집을 일부러 만들어 주는 함수(random_state=42로 재현 고정)
+X, _ = make_blobs(n_samples=400, centers=4, n_features=5,
+                  cluster_std=1.6, random_state=42)
+cols = ["age", "premium", "bmi", "tenure_months", "n_contracts"]
+df = pd.DataFrame(X, columns=cols)
+
+# ① 거리 기반이라 스케일링이 먼저 — 단위 큰 변수가 거리를 독점하지 않게(평균0·표준편차1)
+X_scaled = StandardScaler().fit_transform(df[cols])
+
+# ② 계층적 군집으로 라벨 부여 — 군집 수 4를 지정(ward = 군집 내 분산이 가장 적게 늘게 병합)
+labels = AgglomerativeClustering(n_clusters=4, linkage="ward").fit_predict(X_scaled)
+
+# ③ 변수 5개를 PCA 2축으로 눌러 담아 눈으로 확인 — 군집이 실제로 갈라지는지 보기 위함
+proj = PCA(n_components=2, random_state=42).fit(X_scaled)
+P = proj.transform(X_scaled)
+ev = proj.explained_variance_ratio_
+
+# ④ 산점도 — 군집 라벨로 색을 나누고, 군집별 중심(점들의 평균 위치)을 X로 표시
+plt.figure(figsize=(7, 6))
+plt.scatter(P[:, 0], P[:, 1], c=labels, s=12, alpha=0.6, cmap="viridis")
+for k in np.unique(labels):
+    cx, cy = P[labels == k, 0].mean(), P[labels == k, 1].mean()
+    plt.scatter(cx, cy, c="red", marker="X", s=200, edgecolor="white")
+    plt.text(cx, cy, f"  {k}", fontsize=12, weight="bold")
+plt.xlabel(f"PC1 ({ev[0]:.1%})"); plt.ylabel(f"PC2 ({ev[1]:.1%})")
+plt.title("계층적 군집 → PCA 2축 투영 (X=군집 중심)")
+plt.show()
+
+# 군집이 PCA 평면에서 서로 떨어져 보이면 실제로 분리가 잘 된 것입니다.
+# 겹쳐 보이면: 2축 누적 설명분산이 낮거나(아래 %) 군집 수가 과·부족일 수 있습니다.
+print(f"2축 누적 설명분산 = {ev.sum():.1%}")`,
+      },
     ],
   },
   {
@@ -2266,6 +2715,51 @@ pipe.fit(X, y)
 print("자동 선택된 성분 수:", pipe.named_steps["pca"].n_components_, f"(원 변수 {X.shape[1]}개)")
 # 샘플처럼 변수들이 서로 거의 무상관이면 압축할 여지가 없어 성분 수가 줄지 않습니다.
 # PCA는 '변수들이 서로 상관되어 있을 때' 효과가 나는 방법입니다 — 먼저 상관행렬을 확인하세요.`,
+      },
+      {
+        title: "t-SNE — 비선형 2차원 임베딩 대안",
+        desc: "PCA(선형)로 군집이 잘 안 갈릴 때, 이웃 관계를 보존하는 비선형 임베딩 t-SNE를 나란히 비교합니다. 계산량·해석에 주의(거리 왜곡).",
+        level: "advanced",
+        code: `import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+
+# 합성 데이터(자체 완결용) — 실제로는 X=df[[...]], y=색으로 나눌 라벨을 씁니다
+X, y = make_classification(n_samples=500, n_features=6, n_informative=4,
+                           n_redundant=1, n_classes=3, n_clusters_per_class=1,
+                           random_state=42)
+cols = ["age", "premium", "bmi", "tenure_months", "n_contracts", "claims"]
+df = pd.DataFrame(X, columns=cols); df["grade"] = y
+
+# ① 분산 기반이라 스케일링이 먼저
+X_scaled = StandardScaler().fit_transform(df[cols])
+
+# ② PCA: 선형 — 분산이 큰 방향으로 곧게 투영(빠르고 해석 가능, 축=원변수의 조합)
+P = PCA(n_components=2, random_state=42).fit_transform(X_scaled)
+
+# ③ t-SNE: 비선형 — 가까운 점들의 '이웃 관계'를 보존해 군집을 더 잘 떼어 놓습니다
+#    perplexity = 각 점이 고려하는 이웃 수(보통 5~50, 표본이 적으면 낮춤)
+#    init="pca" = PCA 결과에서 출발(무작위 시작보다 안정적·재현적)
+#    random_state=42 = 재현 고정
+#    주의: 계산량이 큽니다(수천 건 이상이면 느림). 또 축 자체와 군집 사이 '거리'는
+#          해석하면 안 됩니다(t-SNE는 국소 이웃만 보존하고 전역 거리는 왜곡).
+emb = TSNE(n_components=2, perplexity=30, init="pca",
+           random_state=42).fit_transform(X_scaled)
+
+# ④ 같은 데이터를 PCA와 t-SNE로 나란히 비교 — 군집이 얼마나 더 잘 갈리는지
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].scatter(P[:, 0], P[:, 1], c=y, s=12, alpha=0.6, cmap="viridis")
+axes[0].set_title("PCA (선형)"); axes[0].set_xlabel("PC1"); axes[0].set_ylabel("PC2")
+axes[1].scatter(emb[:, 0], emb[:, 1], c=y, s=12, alpha=0.6, cmap="viridis")
+axes[1].set_title("t-SNE (비선형)"); axes[1].set_xlabel("dim 1"); axes[1].set_ylabel("dim 2")
+plt.show()
+
+# 대개 t-SNE 쪽에서 군집이 더 또렷이 뭉쳐 보입니다 — 다만 '시각화 전용'이며,
+# 이 좌표를 회귀·군집의 입력으로 넣는 것은 권하지 않습니다(거리 왜곡·비결정 재현 한계).
+print("PCA·t-SNE 임베딩 완료 — 좌우 그림의 군집 분리를 비교하세요.")`,
       },
     ],
   },

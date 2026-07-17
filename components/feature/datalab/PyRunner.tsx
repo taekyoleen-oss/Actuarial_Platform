@@ -31,6 +31,7 @@ import {
   type RunPhase,
 } from "@/lib/pyRunner";
 import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
+import { PLOT_SNIPPET_GROUPS, plotInsertCode } from "@/lib/plotSnippets";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
@@ -1421,6 +1422,31 @@ export default function PyRunner({
                     </optgroup>
                   ))}
                 </select>
+                {/* 그래프 삽입 — matplotlib 그래프 조각을 이 셀에 넣는다 */}
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const [gid, sid] = e.target.value.split("::");
+                    const grp = PLOT_SNIPPET_GROUPS.find((g) => g.id === gid);
+                    const sn = grp?.snippets.find((s) => s.id === sid);
+                    if (sn) insertSnippet(c.id, plotInsertCode(sn));
+                    e.target.value = "";
+                  }}
+                  aria-label="그래프 삽입"
+                  title="matplotlib 그래프 코드 조각을 이 셀에 삽입합니다"
+                  className="h-6 max-w-[152px] rounded border border-border bg-white px-1 text-[11px] text-body"
+                >
+                  <option value="">그래프 ▾</option>
+                  {PLOT_SNIPPET_GROUPS.map((g) => (
+                    <optgroup key={g.id} label={g.label}>
+                      {g.snippets.map((s) => (
+                        <option key={s.id} value={`${g.id}::${s.id}`}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
                 {/* 취소 — 방금 삽입/입력을 되돌림(Ctrl+Z와 동일 undo 스택) */}
                 <button
                   type="button"
@@ -1773,6 +1799,16 @@ export default function PyRunner({
               삽입·입력을 되돌릴 수 있습니다. 셀은 <strong>▲/▼</strong>로 순서를
               바꿀 수 있고, 왼쪽 번호는 위치, <strong>In [n]</strong>은 실행
               순서(색으로 실행 상태)입니다.
+            </li>
+            <li>
+              각 셀의 <strong>그래프 ▾</strong> 콤보박스에서 matplotlib 그래프
+              조각을 골라 삽입할 수 있습니다 — <strong>탐색(EDA)</strong>(히스토그램
+              +KDE·박스/바이올린·산점도+회귀선·상관 히트맵·산점도 행렬)은 샘플
+              <code>df</code> 기준이고, <strong>모델 진단</strong>(잔차·학습/검증곡선
+              ·ROC·PR·캘리브레이션·리프트/게인)과 <strong>해석</strong>(변수 중요도·
+              순열 중요도·PDP·ICE)은 <strong>자체 완결</strong>이라 조각 안에서 빠른
+              모델까지 함께 적합합니다(이미 적합한 <code>model</code>이 있으면 조각
+              첫 줄 안내대로 준비 블록만 지우세요).
             </li>
             <li>
               <strong>폴더에 저장</strong>은 analysis.py(셀을 # %% 구분자로 이은
