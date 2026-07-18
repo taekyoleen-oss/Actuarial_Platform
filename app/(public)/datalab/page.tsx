@@ -4,6 +4,7 @@ import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
 import { DataLabTabs } from "@/components/feature/datalab/DataLabTabs";
 import { ExcelFunctionCloud } from "@/components/feature/datalab/ExcelFunctionCloud";
 import { MethodCloud } from "@/components/feature/datalab/MethodCloud";
+import { RunnerPanel } from "@/components/feature/datalab/RunnerPanel";
 import { DistributionLab } from "@/components/feature/datalab/DistributionLab";
 import { FitLab } from "@/components/feature/datalab/FitLab";
 import { listDataPosts } from "@/lib/datalab";
@@ -58,6 +59,7 @@ export default async function DataLabPage({
 
       <DataLabTabs
         excel={<ExcelFunctionCloud />}
+        pyrun={<RunnerPanel />}
         analysis={<MethodCloud />}
         distributions={<DistributionLab />}
         fitting={<FitLab />}

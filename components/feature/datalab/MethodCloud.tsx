@@ -35,9 +35,7 @@ import {
   PIE_GENERAL_NOTE,
   PACKAGE_STATUS_META,
 } from "@/lib/methodExcelCode";
-import PyRunner, {
-  type RunnerLoadRequest,
-} from "@/components/feature/datalab/PyRunner";
+import { useRunner } from "@/components/feature/datalab/RunnerContext";
 import {
   CodeBlock,
   CopyButton,
@@ -463,8 +461,8 @@ function MethodDialog({
                       className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
                       title={
                         level === "all"
-                          ? "아래 파이썬 실행기에 이 코드를 담고 이동합니다"
-                          : `아래 파이썬 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 이동합니다`
+                          ? "‘파이썬 코드 실행’ 탭 실행기에 이 코드를 담고 그 탭으로 이동합니다"
+                          : `‘파이썬 코드 실행’ 탭 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 그 탭으로 이동합니다`
                       }
                     >
                       ▶ 실행기로 보내기{scopeSuffix}
@@ -1117,9 +1115,9 @@ function WranglePanel({
             ))}
           </div>
           <p className="mt-2 px-1 text-[11.5px] leading-relaxed text-tertiary">
-            클릭하면 정의·코드 팝업이 열립니다. 실제 삽입은 아래 파이썬 실행기 각
-            셀의 &lsquo;데이터 핸들링 ▾&rsquo; 콤보박스에서 세부 항목으로 바로 할
-            수 있습니다.
+            클릭하면 정의·코드 팝업이 열립니다. 실제 삽입은 &lsquo;파이썬 코드 실행&rsquo;
+            탭 실행기 각 셀의 &lsquo;데이터 핸들링 ▾&rsquo; 콤보박스에서 세부 항목으로
+            바로 할 수 있습니다.
           </p>
         </>
       ) : null}
@@ -1202,22 +1200,20 @@ export function MethodCloud() {
   const [openId, setOpenId] = useState<string | null>(null);
   // 팝업 글자 배율 — 팝업을 닫았다 열어도 유지
   const [fontScale, setFontScale] = useState(1);
-  // 파이썬 실행기에 코드 주입(팝업 "실행기로 보내기") — seq 증가로 재전송 감지
-  const [runnerLoad, setRunnerLoad] = useState<RunnerLoadRequest | null>(null);
-  // 실행기 콤보박스/실행기로 보내기로 불러온 방법 — 워드클라우드에서 강조
-  const [highlightId, setHighlightId] = useState<string | null>(null);
   // 데이터 핸들링 세부 스니펫 — 간단 코드(파이썬·엑셀) 팝업
   const [snippet, setSnippet] = useState<WrangleSnippet | null>(null);
+  // 실행기는 '파이썬 코드 실행' 탭으로 분리 — 공유 컨텍스트로 코드 전송·탭 전환
+  const runner = useRunner();
+  // 실행기가 별도 탭이라 클라우드 강조 트리거는 없음(항상 null)
+  const highlightId: string | null = null;
 
-  // 팝업이 현재 필터로 보여주는 코드(code)를 그대로 실행기에 — 화면과 범위가 어긋나지 않게
+  // 팝업이 현재 필터로 보여주는 코드(code)를 그대로 실행기 탭으로 — 화면과 범위가 어긋나지 않게
   const sendToRunner = (m: StatMethod, code: string, level: LevelFilter) => {
     const scope = level === "all" ? "" : ` — ${LEVEL_META[level].label}`;
-    setRunnerLoad((prev) => ({
-      code: `# ═══ ${m.name} (${m.en})${scope} ═══\n${code}`,
-      label: `${m.name} (${m.en})${scope}`,
-      seq: (prev?.seq ?? 0) + 1,
-      methodId: m.id,
-    }));
+    runner?.sendToRunner(
+      `# ═══ ${m.name} (${m.en})${scope} ═══\n${code}`,
+      `${m.name} (${m.en})${scope}`
+    );
     setOpenId(null);
   };
 
@@ -1256,7 +1252,7 @@ export function MethodCloud() {
       {WEB_LIMITED.length > 0 ? (
         <div className="mt-4 rounded border border-border bg-surface/60 px-4 py-3">
           <p className="text-[12.5px] font-semibold text-foreground">
-            아래 파이썬 실행기(브라우저)에서 제한되는 방법
+            &lsquo;파이썬 코드 실행&rsquo; 탭 실행기(브라우저)에서 제한되는 방법
           </p>
           <ul className="mt-1.5 space-y-1 text-[12px] leading-relaxed text-tertiary">
             {WEB_LIMITED.map((m) => (
@@ -1285,13 +1281,11 @@ export function MethodCloud() {
             <span style={{ borderBottom: "1.5px dashed currentColor" }}>
               점선 밑줄
             </span>
-            은 일부 블록만 실행됩니다. 그 밖의 방법은 아래 실행기에서 바로 돌려볼
-            수 있습니다.
+            은 일부 블록만 실행됩니다. 그 밖의 방법은 &lsquo;파이썬 코드 실행&rsquo;
+            탭 실행기에서 바로 돌려볼 수 있습니다.
           </p>
         </div>
       ) : null}
-
-      <PyRunner loadRequest={runnerLoad} onLoadMethod={setHighlightId} />
 
       {open && openCat ? (
         <MethodDialog
