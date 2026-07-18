@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ClipboardPaste, Plus, Trash2, X } from "lucide-react";
 import {
   buildFitData,
+  checkTruncation,
   detectFormat,
   splitClipboard,
   FIT_KIND_LABEL,
@@ -28,11 +29,14 @@ const emptyRows = (n: number): string[][] =>
 
 export function DataSheetDialog({
   initialCells,
+  initialTrunc,
   onConfirm,
   onClose,
 }: {
   /** 다시 열 때 기존 입력 복원 */
   initialCells?: string[][] | null;
+  /** 다시 열 때 기존 면책·한도 입력 복원 */
+  initialTrunc?: { deductible?: number; limit?: number } | null;
   onConfirm: (data: FitData, cells: string[][]) => void;
   onClose: () => void;
 }) {
@@ -45,6 +49,13 @@ export function DataSheetDialog({
   // 확인 단계 상태 — null이면 시트 단계
   const [det, setDet] = useState<DetectResult | null>(null);
   const [kind, setKind] = useState<FitKind>("individual");
+  // 면책 d·한도 u — 선택 입력(빈칸=미적용). 개별·연도+값 심도 전용.
+  const [dedStr, setDedStr] = useState<string>(() =>
+    initialTrunc?.deductible !== undefined ? String(initialTrunc.deductible) : ""
+  );
+  const [limStr, setLimStr] = useState<string>(() =>
+    initialTrunc?.limit !== undefined ? String(initialTrunc.limit) : ""
+  );
   const gridRef = useRef<HTMLDivElement>(null);
 
   useHistoryDismiss(true, onClose);
@@ -104,15 +115,35 @@ export function DataSheetDialog({
     }
   };
 
+  /** "1,234" 같은 콤마 입력 허용 — 빈칸은 undefined(미적용). */
+  const parseOptNum = (s: string): number | undefined => {
+    const t = s.trim().replace(/,/g, "");
+    if (t === "") return undefined;
+    return Number(t);
+  };
+
   const confirm = () => {
     if (!det) return;
+    let data: FitData;
     try {
-      const data = buildFitData(det, kind);
-      onConfirm(data, cells);
+      data = buildFitData(det, kind);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setDet(null); // 형식 오류 → 시트로 복귀해 수정
+      return;
     }
+    if (kind !== "grouped") {
+      const d = parseOptNum(dedStr);
+      const u = parseOptNum(limStr);
+      const chk = checkTruncation(data.values, d, u);
+      if (!chk.ok) {
+        setError(chk.error ?? "면책·한도 입력을 확인하세요.");
+        return; // 확인 단계 유지 — d·u만 고치면 됨
+      }
+      if (d !== undefined && d > 0) data.deductible = d;
+      if (u !== undefined) data.limit = u;
+    }
+    onConfirm(data, cells);
   };
 
   return (
@@ -299,6 +330,59 @@ export function DataSheetDialog({
                 연도+데이터값은 빈도(연도별 건수)와 심도(값)를 함께 적합하고,
                 개별·그룹 데이터는 연속형(심도) 분포만 적합합니다.
               </p>
+
+              {/* 면책·한도(선택) — 좌측 절단·우측 검열 반영 적합 */}
+              <div className="mt-4 rounded border border-border bg-[color-mix(in_srgb,var(--chip-blue-bg)_35%,white)] px-4 py-3.5">
+                <p className="text-[12.5px] font-medium text-foreground">
+                  면책·보상한도 반영 적합 (선택)
+                </p>
+                {kind !== "grouped" ? (
+                  <>
+                    <p className="mt-1 text-[12px] leading-relaxed text-tertiary">
+                      값이 원손해액이고 실제 보험 클레임처럼 면책(d) 미만은
+                      관측되지 않았으며(좌측 절단), 한도(u) 이상은 u로
+                      기록되었다면(우측 검열) 입력하세요 — 이 규약에 맞는 우도로
+                      적합합니다. 빈칸=미적용.
+                    </p>
+                    <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                      <label className="block text-[12px] font-medium text-foreground">
+                        면책 d (deductible)
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={dedStr}
+                          onChange={(e) => setDedStr(e.target.value)}
+                          placeholder="예: 500 (빈칸=0, 미적용)"
+                          className="mt-1 block w-full rounded border border-border bg-white px-3 py-1.5 text-[13px] text-foreground focus-visible:border-foreground focus-visible:outline-none"
+                        />
+                      </label>
+                      <label className="block text-[12px] font-medium text-foreground">
+                        보상한도 u (limit)
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={limStr}
+                          onChange={(e) => setLimStr(e.target.value)}
+                          placeholder="예: 10000 (빈칸=∞, 미적용)"
+                          className="mt-1 block w-full rounded border border-border bg-white px-3 py-1.5 text-[13px] text-foreground focus-visible:border-foreground focus-visible:outline-none"
+                        />
+                      </label>
+                    </div>
+                    <p className="mt-2 text-[11.5px] leading-relaxed text-tertiary">
+                      u는 d보다 커야 하며, u 이상으로 기록된 관측은 검열로
+                      처리됩니다(정확한 값 대신 &quot;u 이상&quot;이라는 정보만
+                      사용). KS는 조건부 CDF·비검열 관측 기준, A²·χ²는 제공되지
+                      않습니다.
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[12px] leading-relaxed text-tertiary">
+                    그룹(최소·최대·건수) 데이터는 면책·한도 적합을 지원하지
+                    않습니다 — 구간 우도와 절단·검열 규약이 겹쳐 식별이
+                    어렵습니다. 개별 값(1열) 또는 연도+값(2열) 형식을 사용하세요.
+                  </p>
+                )}
+              </div>
 
               {error ? (
                 <p className="mt-3 rounded border border-[var(--chip-rose-fg)]/30 bg-[var(--chip-rose-bg)] px-3 py-2 text-[12.5px] text-[var(--chip-rose-fg)]">

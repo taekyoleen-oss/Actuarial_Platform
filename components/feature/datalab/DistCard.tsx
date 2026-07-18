@@ -20,6 +20,8 @@ import {
   peersOf,
   quantileOf,
   singlePython,
+  tailValueAtRisk,
+  valueAtRisk,
   type Distribution,
   type DistParam,
   type Params,
@@ -345,6 +347,155 @@ function FormulaBlock({
   );
 }
 
+interface RiskPair {
+  varq: number | null;
+  tvar: number | null;
+}
+
+/** 위험측도 값 포맷 — null(정의 안 됨)은 안내 문구. */
+function fmtRisk(v: number | null): string {
+  return v === null ? "정의 안 됨" : fmtVal(v);
+}
+
+/** 위험측도 값 타일 — VaR/TVaR 한 칸. */
+function RiskTile({
+  label,
+  sub,
+  value,
+  color,
+}: {
+  label: string;
+  sub: string;
+  value: number | null;
+  color: string;
+}) {
+  return (
+    <div className="rounded border border-border bg-white px-3 py-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[12px] font-semibold" style={{ color }}>
+          {label}
+        </span>
+        <span className="text-[10.5px] text-tertiary">{sub}</span>
+      </div>
+      <div
+        className={`mt-0.5 tabular-nums ${
+          value === null
+            ? "text-[12px] text-tertiary"
+            : "text-[15px] font-semibold text-foreground"
+        }`}
+      >
+        {fmtRisk(value)}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 위험 측도(VaR·TVaR) 영역 — q 슬라이더 + 값. 비교 모드면 A/B 두 행.
+ * VaR_q=q 분위수(그 확률로 이 값 이하), TVaR_q=E[X|X>VaR](최악 1−q 평균).
+ */
+function RiskMeasures({
+  q,
+  setQ,
+  riskA,
+  riskB,
+  nameA,
+  nameB,
+}: {
+  q: number;
+  setQ: (v: number) => void;
+  riskA: RiskPair;
+  riskB: RiskPair | null;
+  nameA: string;
+  nameB: string;
+}) {
+  const pct = (q * 100).toFixed(1);
+  const tailPct = ((1 - q) * 100).toFixed(1);
+  return (
+    <div className="rounded border border-border bg-surface/40 px-3.5 py-3">
+      <label className="mb-3 flex items-center gap-3">
+        <span className="whitespace-nowrap text-[12px] font-medium text-foreground">
+          q = {pct}%
+        </span>
+        <input
+          type="range"
+          min={0.9}
+          max={0.999}
+          step={0.001}
+          value={q}
+          onChange={(e) => setQ(Number(e.target.value))}
+          className="h-1.5 flex-1 cursor-pointer accent-[var(--primary)]"
+          aria-label="위험측도 신뢰수준 q"
+        />
+      </label>
+
+      {riskB ? (
+        <div className="overflow-x-auto rounded border border-border">
+          <table className="w-full text-[12.5px]">
+            <thead>
+              <tr className="bg-surface text-tertiary">
+                <th className="px-3 py-1.5 text-left font-medium">분포</th>
+                <th className="px-3 py-1.5 text-right font-medium">
+                  VaR<span className="ml-1 text-[10.5px]">({pct}%)</span>
+                </th>
+                <th className="px-3 py-1.5 text-right font-medium">
+                  TVaR<span className="ml-1 text-[10.5px]">(=CTE)</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-border">
+                <td className="whitespace-nowrap px-3 py-1.5 font-medium text-foreground">
+                  <span style={{ color: COLOR_A }}>A</span> · {nameA}
+                </td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-foreground">
+                  {fmtRisk(riskA.varq)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-foreground">
+                  {fmtRisk(riskA.tvar)}
+                </td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="whitespace-nowrap px-3 py-1.5 font-medium text-foreground">
+                  <span style={{ color: COLOR_B }}>B</span> · {nameB}
+                </td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-foreground">
+                  {fmtRisk(riskB.varq)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-foreground">
+                  {fmtRisk(riskB.tvar)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2.5">
+          <RiskTile
+            label="VaR"
+            sub={`q=${pct}%`}
+            value={riskA.varq}
+            color={COLOR_MEAN}
+          />
+          <RiskTile
+            label="TVaR"
+            sub="=CTE"
+            value={riskA.tvar}
+            color={COLOR_MEDIAN}
+          />
+        </div>
+      )}
+
+      <p className="mt-2.5 text-[11.5px] leading-relaxed text-tertiary">
+        <b className="font-semibold text-foreground">VaR</b>는 {pct}% 확률로 손해가
+        이 값 이하임을(꼬리 임계),{" "}
+        <b className="font-semibold text-foreground">TVaR</b>(=CTE)는 그 임계를
+        넘는 최악 {tailPct}% 구간의 평균 손해를 뜻합니다.
+      </p>
+    </div>
+  );
+}
+
 /** 비교 모드 범례 — 선 모양(실선/파선)과 분포명. */
 function LegendLine({ color, dashed }: { color: string; dashed?: boolean }) {
   return (
@@ -368,6 +519,7 @@ export function DistCard({ dist }: { dist: Distribution }) {
   const [showQq, setShowQq] = useState(false);
   const [showMarkers, setShowMarkers] = useState(true);
   const [compare, setCompare] = useState(false);
+  const [q, setQ] = useState(0.99); // 위험측도 신뢰수준
   const [distB, setDistB] = useState<Distribution>(dist);
   const [paramsB, setParamsB] = useState<Params>(() => defaultParams(dist));
 
@@ -459,9 +611,27 @@ export function DistCard({ dist }: { dist: Distribution }) {
   const code = useMemo(
     () =>
       compare
-        ? comparePython(dist, params, distB, paramsB)
-        : singlePython(dist, params),
-    [compare, dist, params, distB, paramsB]
+        ? comparePython(dist, params, distB, paramsB, q)
+        : singlePython(dist, params, q),
+    [compare, dist, params, distB, paramsB, q]
+  );
+
+  const riskA = useMemo<RiskPair>(
+    () => ({
+      varq: valueAtRisk(dist, params, q),
+      tvar: tailValueAtRisk(dist, params, q),
+    }),
+    [dist, params, q]
+  );
+  const riskB = useMemo<RiskPair | null>(
+    () =>
+      compare
+        ? {
+            varq: valueAtRisk(distB, paramsB, q),
+            tvar: tailValueAtRisk(distB, paramsB, q),
+          }
+        : null,
+    [compare, distB, paramsB, q]
   );
 
   /* QQ-plot 데이터 — 팝업이 열릴 때만 계산.
@@ -574,6 +744,19 @@ export function DistCard({ dist }: { dist: Distribution }) {
           </span>
           <span className="text-[12.5px] text-tertiary">{dist.en}</span>
         </span>
+        {dist.usage ? (
+          <span
+            className="ml-auto inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+            style={{
+              background: "var(--chip-amber-bg)",
+              color: "var(--chip-amber-fg)",
+            }}
+            title="보험 실무에서의 대표 용례"
+          >
+            <span aria-hidden>◆</span>
+            {dist.usage}
+          </span>
+        ) : null}
       </div>
 
       <div className="px-4 py-4 sm:px-5">
@@ -732,6 +915,21 @@ export function DistCard({ dist }: { dist: Distribution }) {
           ) : (
             <StatTable stats={stats} />
           )}
+        </div>
+
+        {/* 위험 측도 — VaR·TVaR (계리·리스크관리 지표) */}
+        <div className="mb-4">
+          <h4 className="mb-2 text-[12.5px] font-semibold text-foreground">
+            위험 측도 · VaR &middot; TVaR
+          </h4>
+          <RiskMeasures
+            q={q}
+            setQ={setQ}
+            riskA={riskA}
+            riskB={riskB}
+            nameA={dist.name}
+            nameB={distB.name}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">

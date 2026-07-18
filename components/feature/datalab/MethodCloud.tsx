@@ -1,12 +1,15 @@
 "use client";
 
 /**
- * 통계·ML 파이썬 사전 — /datalab 상단.
- * PC(md+): 사분면 2차원 그래프 — 4개 카테고리가 각 사분면(카테고리 이름은 사각형 바깥),
- *   가로축=사용 빈도(중심 세로선에 가까울수록 자주), 세로축=난이도(중심 가로선에서 멀수록 어려움).
- * 모바일(md 미만): 카테고리 클러스터 워드클라우드 폴백.
- * 클릭 시 팝업: 코드+설명+주요 파라미터·옵션, 글자 확대/축소(가−/가+), 전체·블록별 복사.
- * 칩 색은 뮤트 팔레트(--chip-*) 한정 스코프(카테고리 고정색).
+ * 통계·ML·계리 파이썬 사전 — /datalab 상단.
+ * PC(md+): 사분면 2차원 그래프 — 4개 카테고리(기초 통계·회귀/통계모형·머신러닝·보험/계리)가
+ *   각 사분면(카테고리 이름은 사각형 바깥), 가로축=사용 빈도(중심 세로선에 가까울수록 자주),
+ *   세로축=난이도(중심 가로선에서 멀수록 어려움). 데이터 핸들링(wrangle)은 각 셀 콤보박스가
+ *   주 동선이므로 사분면 대신 아래 컴팩트 칩 스트립으로 둔다(팝업 동작은 동일).
+ * 모바일(md 미만): 5개 카테고리 클러스터 워드클라우드 폴백.
+ * 클릭 시 팝업 2탭: [정의 및 방법](이론·산출식·활용·해석) / [코드 적용](파라미터·코드·복사·실행기).
+ *   코드 탭은 섹션별 기본/고급 수준 칩 + [전체|기본|고급] 필터, 글자 확대/축소(가−/가+).
+ * 칩 색은 뮤트 팔레트(--chip-*) 한정 스코프(카테고리 고정색 + 수준 칩 slate/cyan).
  */
 import {
   useEffect,
@@ -23,8 +26,10 @@ import {
   methodFullCode,
   type MethodCategory,
   type MethodChipColor,
+  type MethodCodeSection,
   type StatMethod,
 } from "@/lib/statMethods";
+import { METHOD_THEORY } from "@/lib/methodTheory";
 import PyRunner, {
   type RunnerLoadRequest,
 } from "@/components/feature/datalab/PyRunner";
@@ -32,7 +37,14 @@ import {
   CodeBlock,
   CopyButton,
 } from "@/components/feature/datalab/code-popup";
+import { Tex } from "@/components/feature/datalab/Tex";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+
+/** 사분면에 배치되는 카테고리 — wrangle은 아래 칩 스트립으로 분리 */
+const QUAD_CATEGORIES: MethodCategory[] = STAT_CATEGORIES.filter(
+  (c) => c.id !== "wrangle"
+);
+const WRANGLE_CATEGORY = STAT_CATEGORIES.find((c) => c.id === "wrangle")!;
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 방법 */
 const SIZE: Record<number, { fs: number; fw: number }> = {
@@ -65,10 +77,152 @@ function hashOf(s: string): number {
   return Math.abs(h);
 }
 
-/* ───────────────────────── 팝업 (코드+설명+파라미터) ───────────────────────── */
+/* ───────────────── 팝업 (정의 및 방법 / 코드 적용 2탭) ───────────────── */
 
 const FONT_SCALE_MIN = 0.8;
 const FONT_SCALE_MAX = 1.6;
+
+type DialogTab = "theory" | "code";
+type LevelFilter = "all" | "basic" | "advanced";
+type SectionLevel = "basic" | "advanced";
+
+/** 섹션 수준 — 미지정은 기본으로 취급 */
+const levelOf = (s: MethodCodeSection): SectionLevel => s.level ?? "basic";
+
+/** 수준 칩 색 — 카테고리 고정색(blue/violet/teal/rose/amber)과 겹치지 않는 저채도 2색 */
+const LEVEL_META: Record<SectionLevel, { label: string; chip: "slate" | "cyan" }> = {
+  basic: { label: "기본", chip: "slate" },
+  advanced: { label: "고급", chip: "cyan" },
+};
+
+const LEVEL_FILTERS: { key: LevelFilter; label: string }[] = [
+  { key: "all", label: "전체" },
+  { key: "basic", label: "기본" },
+  { key: "advanced", label: "고급" },
+];
+
+function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number }) {
+  const { label, chip } = LEVEL_META[level];
+  return (
+    <span
+      className="inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 font-medium"
+      style={{
+        fontSize,
+        background: `var(--chip-${chip}-bg)`,
+        color: `var(--chip-${chip}-fg)`,
+      }}
+      title={
+        level === "basic"
+          ? "기본 — 하이퍼파라미터·변수를 지정해 바로 결과를 산출하는 첫 실행 경로"
+          : "고급 — 최적화·튜닝·교차검증·진단·시뮬레이션"
+      }
+    >
+      {label}
+    </span>
+  );
+}
+
+/** [정의 및 방법] 탭 — 이론 레지스트리(METHOD_THEORY)가 있으면 구조화, 없으면 intro+tips 폴백 */
+function TheoryPanel({
+  method,
+  fz,
+  fontScale,
+}: {
+  method: StatMethod;
+  fz: (px: number) => { fontSize: number };
+  fontScale: number;
+}) {
+  const theory = METHOD_THEORY[method.id];
+  const paras = (text: string) => text.split("\n\n").filter(Boolean);
+
+  const Block = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div className="mt-6 first:mt-0">
+      <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+
+  if (!theory) {
+    // 폴백 — 이론 미수록 항목은 기존 개념 설명·해석 포인트를 같은 레이아웃으로
+    return (
+      <div>
+        <Block title="정의 및 개념">
+          {paras(method.intro).map((p, i) => (
+            <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(14)}>
+              {p}
+            </p>
+          ))}
+        </Block>
+        {method.tips ? (
+          <Block title="해석·의미">
+            <p className="mt-2 leading-[1.8] text-body" style={fz(13.5)}>
+              {method.tips}
+            </p>
+          </Block>
+        ) : null}
+        <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12)}>
+          이 방법의 산출식·활용 해설은 준비 중입니다. 실행 가능한 코드는{" "}
+          <strong>코드 적용</strong> 탭에서 확인하세요.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Block title="정의 및 개념">
+        {paras(theory.definition).map((p, i) => (
+          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(14)}>
+            {p}
+          </p>
+        ))}
+      </Block>
+
+      {theory.formulas.length > 0 ? (
+        <Block title="산출식">
+          <div className="mt-2 divide-y divide-border rounded border border-border">
+            {theory.formulas.map((f) => (
+              <div key={f.label} className="px-3.5 py-3">
+                <p className="font-medium text-foreground" style={fz(12.5)}>
+                  {f.label}
+                </p>
+                <div
+                  className="mt-1.5 overflow-x-auto py-0.5"
+                  style={{ fontSize: Math.round(15 * fontScale * 10) / 10 }}
+                >
+                  <Tex expr={f.tex} block />
+                </div>
+                {f.note ? (
+                  <p className="mt-1 leading-[1.75] text-tertiary" style={fz(12.5)}>
+                    {f.note}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </Block>
+      ) : null}
+
+      <Block title="활용 방법">
+        {paras(theory.usage).map((p, i) => (
+          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(13.5)}>
+            {p}
+          </p>
+        ))}
+      </Block>
+
+      <Block title="해석·의미">
+        {paras(theory.interpretation).map((p, i) => (
+          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(13.5)}>
+            {p}
+          </p>
+        ))}
+      </Block>
+    </div>
+  );
+}
 
 function MethodDialog({
   method,
@@ -84,9 +238,14 @@ function MethodDialog({
   categoryLabel: string;
   fontScale: number;
   onFontScale: Dispatch<SetStateAction<number>>;
-  onSendToRunner: (m: StatMethod) => void;
+  // 코드는 팝업이 현재 보여주는 수준 필터 기준으로 넘긴다(전체 복사와 같은 범위)
+  onSendToRunner: (m: StatMethod, code: string, level: LevelFilter) => void;
   onClose: () => void;
 }) {
+  // 기본 탭 = 정의 및 방법(개념을 먼저 이해하고 코드로)
+  const [tab, setTab] = useState<DialogTab>("theory");
+  const [level, setLevel] = useState<LevelFilter>("all");
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -107,8 +266,24 @@ function MethodDialog({
       Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Math.round((cur + d) * 10) / 10))
     );
 
-  // 전체 복사: 블록 제목을 주석으로 달아 모든 코드를 이어붙임
-  const allCode = useMemo(() => methodFullCode(method), [method]);
+  // 수준 필터에 보이는 섹션만 — 전체 복사도 이 기준(주석 결합 규칙은 methodFullCode와 동일)
+  const visibleSections = useMemo(
+    () =>
+      method.sections.filter((s) => level === "all" || levelOf(s) === level),
+    [method, level]
+  );
+  const allCode = useMemo(
+    () =>
+      level === "all"
+        ? methodFullCode(method)
+        : visibleSections
+            .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
+            .join("\n\n\n"),
+    [method, level, visibleSections]
+  );
+  const hasAdvanced = method.sections.some((s) => levelOf(s) === "advanced");
+  // 수준 필터 UI는 [코드 적용] 탭에만 보이므로, 헤더의 복사·전송 버튼에 현재 범위를 표기
+  const scopeSuffix = level === "all" ? "" : ` (${LEVEL_META[level].label})`;
 
   return (
     <div
@@ -175,17 +350,26 @@ function MethodDialog({
                   가+
                 </button>
               </div>
-              <CopyButton text={allCode} label="전체 코드 복사" />
-              {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
-              {method.category !== "wrangle" ? (
-                <button
-                  type="button"
-                  onClick={() => onSendToRunner(method)}
-                  className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
-                  title="아래 파이썬 실행기에 이 코드를 담고 이동합니다"
-                >
-                  ▶ 실행기로 보내기
-                </button>
+              {/* 코드 복사·실행기 전송은 [코드 적용] 탭 전용 액션 — 이론 탭에선 숨김 */}
+              {tab === "code" ? (
+                <>
+                  <CopyButton text={allCode} label={`전체 코드 복사${scopeSuffix}`} />
+                  {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
+                  {method.category !== "wrangle" ? (
+                    <button
+                      type="button"
+                      onClick={() => onSendToRunner(method, allCode, level)}
+                      className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+                      title={
+                        level === "all"
+                          ? "아래 파이썬 실행기에 이 코드를 담고 이동합니다"
+                          : `아래 파이썬 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 이동합니다`
+                      }
+                    >
+                      ▶ 실행기로 보내기{scopeSuffix}
+                    </button>
+                  ) : null}
+                </>
               ) : null}
               <button
                 type="button"
@@ -199,7 +383,40 @@ function MethodDialog({
           </div>
         </header>
 
+        {/* 탭 — [정의 및 방법 | 코드 적용] */}
+        <div
+          role="tablist"
+          aria-label="방법 설명 종류"
+          className="flex items-center gap-1 border-b border-border px-5 pt-2 sm:px-6"
+        >
+          {(
+            [
+              { key: "theory", label: "정의 및 방법" },
+              { key: "code", label: "코드 적용" },
+            ] as { key: DialogTab; label: string }[]
+          ).map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.key}
+              onClick={() => setTab(t.key)}
+              className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                tab === t.key
+                  ? "border-[var(--primary)] text-foreground"
+                  : "border-transparent text-tertiary hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          {tab === "theory" ? (
+            <TheoryPanel method={method} fz={fz} fontScale={fontScale} />
+          ) : (
+            <>
           {method.intro.split("\n\n").map((p, i) => (
             <p
               key={i}
@@ -224,12 +441,52 @@ function MethodDialog({
             </div>
           ) : null}
 
-          {method.sections.map((s, i) => (
+          {/* 수준 필터 — 기본(바로 산출) / 고급(최적화·진단·시뮬레이션) */}
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="text-[12px] text-tertiary">코드 수준</span>
+            <div className="flex items-center rounded border border-border">
+              {LEVEL_FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  aria-pressed={level === f.key}
+                  onClick={() => setLevel(f.key)}
+                  className={`px-2.5 py-1 text-[12px] font-medium transition-colors first:rounded-l last:rounded-r ${
+                    level === f.key
+                      ? "bg-surface text-foreground"
+                      : "text-tertiary hover:text-foreground"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <span className="text-[11.5px] text-tertiary">
+              기본 = 값을 지정해 바로 산출 · 고급 = 최적화·진단·시뮬레이션
+              {hasAdvanced ? "" : " (이 방법은 기본 코드만 제공)"}
+            </span>
+          </div>
+
+          {visibleSections.length === 0 ? (
+            <p className="mt-4 rounded bg-surface px-4 py-3 text-[12.5px] leading-relaxed text-tertiary">
+              이 방법에는 <strong>{level === "basic" ? "기본" : "고급"}</strong>{" "}
+              수준 코드가 없습니다. 위에서 <strong>전체</strong>를 선택해 모든
+              코드를 확인하세요.
+            </p>
+          ) : null}
+
+          {visibleSections.map((s, i) => (
             <div key={s.title} className="mt-6">
-              <h3 className="font-semibold text-foreground" style={fz(14.5)}>
-                {method.sections.length > 1 ? `${i + 1}. ` : ""}
-                {s.title}
-              </h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+                  {visibleSections.length > 1 ? `${i + 1}. ` : ""}
+                  {s.title}
+                </h3>
+                <LevelChip
+                  level={levelOf(s)}
+                  fontSize={Math.round(11 * fontScale * 10) / 10}
+                />
+              </div>
               {s.desc ? (
                 <p className="mt-1 leading-[1.8] text-tertiary" style={fz(13)}>
                   {s.desc}
@@ -280,12 +537,14 @@ function MethodDialog({
               </p>
             </div>
           ) : null}
+            </>
+          )}
         </div>
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
-          블록의 &lsquo;복사&rsquo;는 해당 코드만, &lsquo;전체 코드 복사&rsquo;는
-          모든 블록을 복사합니다. 텍스트를 드래그하면 필요한 부분만 복사할 수도
-          있습니다.
+          {tab === "theory"
+            ? "정의·산출식·활용을 먼저 확인한 뒤 '코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
+            : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
         </footer>
       </div>
     </div>
@@ -317,11 +576,13 @@ interface Box {
   y2: number;
 }
 
-/* 겹침 회피 이동 후보 — 총 변위(가로 가중 1.6배) 오름차순. 세로 이동 우선. */
+/* 겹침 회피 이동 후보 — 총 변위(가로 가중 1.6배) 오름차순. 세로 이동 우선.
+ * ml 카테고리가 14종으로 늘며 좁은 폭(≈1024px)에서 한 사분면이 붐벼 세로 범위를
+ * 200까지 넓혀 탈출 자리를 더 확보한다(넓은 폭에선 가까운 자리가 먼저 뽑혀 무영향). */
 const NUDGES: [number, number][] = (() => {
   const out: [number, number][] = [[0, 0]];
-  for (let dy = 0; dy <= 150; dy += 10) {
-    for (let dx = 0; dx <= 120; dx += 20) {
+  for (let dy = 0; dy <= 200; dy += 10) {
+    for (let dx = 0; dx <= 140; dx += 20) {
       if (dx === 0 && dy === 0) continue;
       if (dx === 0) out.push([0, dy], [0, -dy]);
       else if (dy === 0) out.push([dx, 0], [-dx, 0]);
@@ -350,6 +611,13 @@ function layoutQuadrants(w: number, h: number): PlacedItem[] {
     boxes.some(
       (b) => !(r.x2 < b.x1 || r.x1 > b.x2 || r.y2 < b.y1 || r.y1 > b.y2)
     );
+  // 겹침 넓이 합 — 완전 회피가 불가능할 때 '가장 덜 겹치는' 자리를 고르는 폴백용.
+  const overlapArea = (r: Box) =>
+    boxes.reduce((sum, b) => {
+      const ox = Math.max(0, Math.min(r.x2, b.x2) - Math.max(r.x1, b.x1));
+      const oy = Math.max(0, Math.min(r.y2, b.y2) - Math.max(r.y1, b.y1));
+      return sum + ox * oy;
+    }, 0);
   const boxAt = (x: number, y: number, bw: number, bh: number): Box => ({
     x1: x - bw / 2 - 4,
     y1: y - bh / 2 - 4,
@@ -364,7 +632,7 @@ function layoutQuadrants(w: number, h: number): PlacedItem[] {
   boxes.push(boxAt(44, cy, 68, 18));
   boxes.push(boxAt(w - 44, cy, 68, 18));
 
-  const items = STAT_CATEGORIES.flatMap((cat, qi) =>
+  const items = QUAD_CATEGORIES.flatMap((cat, qi) =>
     STAT_METHODS.filter((m) => m.category === cat.id).map((m) => ({
       m,
       color: cat.color,
@@ -408,14 +676,31 @@ function layoutQuadrants(w: number, h: number): PlacedItem[] {
 
     let px = clamp(baseX, xLo, xHi);
     let py = clamp(baseY, yLo, yHi);
+    // 완전 회피 자리를 찾되, 없으면 '최소 겹침' 자리로 폴백(겹치는 base 그대로 두지 않음).
+    let bestX = px;
+    let bestY = py;
+    let bestOv = Infinity;
+    let found = false;
     for (const [dx, dy] of NUDGES) {
       const x = clamp(baseX + dx, xLo, xHi);
       const y = clamp(baseY + dy, yLo, yHi);
-      if (!overlaps(boxAt(x, y, tw, th))) {
+      const box = boxAt(x, y, tw, th);
+      if (!overlaps(box)) {
         px = x;
         py = y;
+        found = true;
         break;
       }
+      const ov = overlapArea(box);
+      if (ov < bestOv) {
+        bestOv = ov;
+        bestX = x;
+        bestY = y;
+      }
+    }
+    if (!found) {
+      px = bestX;
+      py = bestY;
     }
     boxes.push(boxAt(px, py, tw, th));
     out.push({ m, color, x: px, y: py, fs, fw });
@@ -480,13 +765,13 @@ function QuadrantChart({
     <div className="hidden md:block">
       {/* 카테고리 이름 — 사각형 바깥(위) */}
       <div className="mb-2 flex items-center justify-between px-1">
-        <CategoryTag cat={STAT_CATEGORIES[0]} align="l" />
-        <CategoryTag cat={STAT_CATEGORIES[1]} align="r" />
+        <CategoryTag cat={QUAD_CATEGORIES[0]} align="l" />
+        <CategoryTag cat={QUAD_CATEGORIES[1]} align="r" />
       </div>
 
       <div ref={ref} className="relative h-[500px] lg:h-[540px]">
         {/* 사분면 배경 — 카테고리 색, 십자 여백이 축 역할 */}
-        {STAT_CATEGORIES.map((cat, qi) => (
+        {QUAD_CATEGORIES.map((cat, qi) => (
           <div
             key={cat.id}
             className="absolute rounded-[10px]"
@@ -554,14 +839,77 @@ function QuadrantChart({
 
       {/* 카테고리 이름 — 사각형 바깥(아래) */}
       <div className="mt-2 flex items-center justify-between px-1">
-        <CategoryTag cat={STAT_CATEGORIES[2]} align="l" />
-        <CategoryTag cat={STAT_CATEGORIES[3]} align="r" />
+        <CategoryTag cat={QUAD_CATEGORIES[2]} align="l" />
+        <CategoryTag cat={QUAD_CATEGORIES[3]} align="r" />
       </div>
 
       <p className="mt-3 text-center text-[12px] text-tertiary">
         가로축 — 중심 세로선에 가까울수록 자주 사용 · 세로축 — 중심 가로선에서
         위·아래로 멀수록 난이도 높음 (글자가 클수록 자주 쓰는 방법)
       </p>
+    </div>
+  );
+}
+
+/* ──────────── 데이터 핸들링 칩 스트립 (md+, 사분면 아래) ──────────── */
+
+/**
+ * wrangle은 실행기 각 셀의 '데이터 핸들링 ▾' 콤보박스가 주 동선이라 사분면에서 제외하고,
+ * 사전으로서의 열람은 이 컴팩트 스트립으로 유지한다(클릭 → 동일 팝업).
+ */
+function WrangleStrip({
+  onOpen,
+  highlightId,
+}: {
+  onOpen: (id: string) => void;
+  highlightId: string | null;
+}) {
+  const cat = WRANGLE_CATEGORY;
+  const methods = useMemo(
+    () => STAT_METHODS.filter((m) => m.category === cat.id),
+    [cat.id]
+  );
+  if (methods.length === 0) return null;
+
+  return (
+    <div
+      className="mt-4 hidden rounded-cover px-4 py-3 md:block"
+      style={{
+        background: `color-mix(in srgb, var(--chip-${cat.color}-bg) 55%, white)`,
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="flex items-center gap-2">
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ background: `var(--chip-${cat.color}-fg)` }}
+            aria-hidden
+          />
+          <span className="text-[13.5px] font-semibold text-foreground">
+            {cat.label}
+          </span>
+        </span>
+        <span className="hidden text-[11.5px] text-tertiary lg:inline">
+          {cat.hint} — 실행기 각 셀의 &lsquo;데이터 핸들링 ▾&rsquo;에서 바로
+          삽입할 수 있습니다
+        </span>
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          {methods.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onOpen(m.id)}
+              title={m.summary}
+              className={`method-term whitespace-nowrap rounded px-1 text-[13px] font-medium leading-snug ${
+                highlightId === m.id ? "method-term-active" : ""
+              }`}
+              style={webTermStyle(m, cat.color)}
+            >
+              {m.name}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -646,10 +994,12 @@ export function MethodCloud() {
   // 실행기 콤보박스/실행기로 보내기로 불러온 방법 — 워드클라우드에서 강조
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
-  const sendToRunner = (m: StatMethod) => {
+  // 팝업이 현재 필터로 보여주는 코드(code)를 그대로 실행기에 — 화면과 범위가 어긋나지 않게
+  const sendToRunner = (m: StatMethod, code: string, level: LevelFilter) => {
+    const scope = level === "all" ? "" : ` — ${LEVEL_META[level].label}`;
     setRunnerLoad((prev) => ({
-      code: `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
-      label: `${m.name} (${m.en})`,
+      code: `# ═══ ${m.name} (${m.en})${scope} ═══\n${code}`,
+      label: `${m.name} (${m.en})${scope}`,
       seq: (prev?.seq ?? 0) + 1,
       methodId: m.id,
     }));
@@ -674,11 +1024,13 @@ export function MethodCloud() {
           분석 방법 사전 — 파이썬 코드
         </h2>
         <p className="text-[12.5px] text-tertiary">
-          클릭하면 코드·설명·파라미터 팝업이 열립니다
+          클릭하면 [정의 및 방법 · 코드 적용] 팝업이 열립니다
         </p>
       </div>
 
       <QuadrantChart onOpen={setOpenId} highlightId={highlightId} />
+      <WrangleStrip onOpen={setOpenId} highlightId={highlightId} />
+      {/* 모바일은 데이터 핸들링을 포함한 5개 카테고리를 클러스터로 */}
       <ClusterCloud onOpen={setOpenId} highlightId={highlightId} />
 
       {/* 웹 실행기 제한 안내 — 회색(실행 불가)·점선(일부만) 표시 설명 */}
@@ -724,6 +1076,8 @@ export function MethodCloud() {
 
       {open && openCat ? (
         <MethodDialog
+          // 다른 방법을 열면 탭·수준 필터를 초기 상태로(정의 및 방법 / 전체)
+          key={open.id}
           method={open}
           color={openCat.color}
           categoryLabel={openCat.label}

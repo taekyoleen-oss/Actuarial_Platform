@@ -30,6 +30,16 @@ export interface FitData {
   groups?: GroupRow[];
   /** 헤더에서 추출한 값 열 이름(차트 축 라벨) */
   valueLabel?: string;
+  /**
+   * 면책(deductible) d — 좌측 절단. 값은 원손해액이며 d 미만 사고는 관측되지
+   * 않았다는 규약. 미입력(undefined)=0(미적용). individual·yearValue 전용.
+   */
+  deductible?: number;
+  /**
+   * 보상한도(limit) u — 우측 검열. u 이상 사고는 u로 기록(x≥u 관측을 검열
+   * 처리)이라는 규약. 미입력(undefined)=∞(미적용). individual·yearValue 전용.
+   */
+  limit?: number;
 }
 
 export interface DetectResult {
@@ -402,6 +412,151 @@ export function frequencyFromYears(yearRows: number[]): FreqEmpirical {
   return { years, counts, pmf, cdf, kMax, mean, variance, zeroFilled };
 }
 
+/* ─────────────────────────── 꼬리 진단(JS 계산) ─────────────────────────── */
+
+export interface TailDiagnostics {
+  /** 유효(양수 아닐 수 있음) 표본 수 */
+  n: number;
+  /** 평균초과 e(u)=E[X−u | X>u] — x=임계값 u, y=e(u). 우상향 직선=파레토성 */
+  meanExcess: XY[];
+  /** log-log 생존함수 — x=log(값), y=−log S(=log 1/S). 직선=멱법칙(두꺼운 꼬리) */
+  logLogSurvival: XY[];
+  /** Hill plot — x=상위 순서통계 개수 k, y=꼬리지수 α̂=1/H_k. 안정 구간이 α 추정 */
+  hill: XY[];
+  /** log 기반 그림(log-log·Hill)을 위해 필요한 양수 조건 충족 여부 */
+  positiveOnly: boolean;
+}
+
+/** 배열을 최대 cap개로 균등 서브샘플(양 끝 보존). */
+function subsample<T>(arr: T[], cap: number): T[] {
+  if (arr.length <= cap) return arr;
+  const step = (arr.length - 1) / (cap - 1);
+  const out: T[] = [];
+  for (let i = 0; i < cap; i++) out.push(arr[Math.round(i * step)]);
+  return out;
+}
+
+/**
+ * 심도(개별·연도+값) 데이터의 꼬리 두께 진단 3종을 JS로 계산(Pyodide 불필요).
+ * 정렬된 표본만으로 평균초과·log-log 생존함수·Hill plot을 산출한다.
+ * n<8이면 진단이 불안정하므로 null.
+ */
+export function tailDiagnostics(values: number[]): TailDiagnostics | null {
+  const xs = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  const n = xs.length;
+  if (n < 8) return null;
+  const positiveOnly = xs[0] > 0;
+
+  // ── 평균초과 e(u) — u=xs[i](i=0..n−2), 뒤 누적합으로 O(n) ──
+  // e(xs[i]) = mean(xs[i+1..n−1]) − xs[i]. 표본이 5개 미만 남는 극단 우측은
+  // 분산이 커 노이즈가 심하므로(cnt<5) 제외한다.
+  const meAll: XY[] = [];
+  let tailSum = 0;
+  for (let i = n - 2; i >= 0; i--) {
+    tailSum += xs[i + 1];
+    const cnt = n - 1 - i; // xs[i] 초과(뒤쪽) 개수
+    if (cnt >= 5) meAll[i] = { x: xs[i], y: tailSum / cnt - xs[i] };
+  }
+  const meanExcess = subsample(
+    meAll.filter((p): p is XY => p !== undefined),
+    60
+  );
+
+  // ── log-log 생존함수 & Hill (양수 데이터에서만 정의) ──
+  let logLogSurvival: XY[] = [];
+  let hill: XY[] = [];
+  if (positiveOnly) {
+    // 생존함수: i번째 오름차순 순서통계(1-index)의 S_i = 1 − i/(n+1)
+    const llAll: XY[] = [];
+    for (let i = 1; i <= n; i++) {
+      const s = 1 - i / (n + 1);
+      if (s > 0) llAll.push({ x: Math.log(xs[i - 1]), y: -Math.log(s) });
+    }
+    logLogSurvival = subsample(llAll, 60);
+
+    // Hill: 내림차순 순서통계 lnDesc[0]=max. H_k=(1/k)Σ_{i<k}(lnDesc[i]−lnDesc[k])
+    const lnDesc = new Array<number>(n);
+    for (let i = 0; i < n; i++) lnDesc[i] = Math.log(xs[n - 1 - i]);
+    let acc = 0; // Σ_{i=0..k−1} lnDesc[i]
+    const hAll: XY[] = [];
+    for (let k = 1; k <= n - 1; k++) {
+      acc += lnDesc[k - 1];
+      const H = acc / k - lnDesc[k];
+      if (H > 0) hAll.push({ x: k, y: 1 / H });
+    }
+    hill = subsample(hAll, 60);
+  }
+
+  return { n, meanExcess, logLogSurvival, hill, positiveOnly };
+}
+
+/* ───────────────── 면책·한도(좌측 절단·우측 검열) 검증 ───────────────── */
+
+export interface TruncationCheck {
+  ok: boolean;
+  /** 사용자에게 그대로 보여줄 한국어 오류 */
+  error?: string;
+  /** u 이상(검열) 관측 수 */
+  censored: number;
+  /** u 미만(비검열) 관측 수 */
+  uncensored: number;
+}
+
+/**
+ * 면책 d·한도 u 입력 검증 — 개별·연도+값 심도 데이터 전용.
+ * 규약: 값은 원손해액, d 미만 미관측(좌측 절단), u 이상은 u로 기록(우측 검열).
+ * undefined = 미적용(d=0 / u=∞).
+ */
+export function checkTruncation(
+  values: number[],
+  d?: number,
+  u?: number
+): TruncationCheck {
+  const fail = (error: string): TruncationCheck => ({
+    ok: false,
+    error,
+    censored: 0,
+    uncensored: values.length,
+  });
+
+  if (d !== undefined && (!Number.isFinite(d) || d < 0))
+    return fail("면책 d는 0 이상의 숫자여야 합니다.");
+  if (u !== undefined && (!Number.isFinite(u) || u <= 0))
+    return fail("보상한도 u는 0보다 큰 숫자여야 합니다.");
+  const dd = d ?? 0;
+  if (u !== undefined && u <= dd)
+    return fail(`보상한도 u(${u})는 면책 d(${dd})보다 커야 합니다.`);
+
+  if (dd > 0) {
+    const below = values.filter((v) => v < dd).length;
+    if (below === values.length)
+      return fail(
+        `모든 관측이 면책 d=${dd} 미만입니다 — 관측 규약(d 미만 미관측)과 모순됩니다. d를 확인하세요.`
+      );
+    if (below > 0)
+      return fail(
+        `면책 d=${dd}보다 작은 값이 ${below}건 있습니다. 규약상 d 미만 사고는 데이터에 없어야 합니다(원손해액 기준) — d를 낮추거나 비워 주세요.`
+      );
+  }
+
+  const uu = u ?? Infinity;
+  const censored = values.filter((v) => v >= uu).length;
+  const uncensored = values.length - censored;
+  if (u !== undefined && uncensored < 2)
+    return fail(
+      `한도 u=${u} 미만(비검열) 관측이 ${uncensored}건뿐입니다 — 전부(또는 대부분) 검열이라 적합할 수 없습니다. u를 확인하세요.`
+    );
+  return { ok: true, censored, uncensored };
+}
+
+/** 데이터에 면책·한도 적합이 실제로 적용되는지(그룹 제외, d>0 또는 u 유한). */
+export function truncationActive(data: FitData): boolean {
+  return (
+    data.kind !== "grouped" &&
+    ((data.deductible ?? 0) > 0 || data.limit !== undefined)
+  );
+}
+
 /* ────────────────────── 적합 가능성(분포별 데이터 조건) ────────────────────── */
 
 export interface EligibilityCheck {
@@ -428,6 +583,7 @@ export function severityEligibility(
       case "exponential":
       case "weibull":
       case "pareto2":
+      case "genpareto":
         return loMin >= 0
           ? { ok: true }
           : { ok: false, reason: "음수 구간 포함 — 0 이상 데이터 필요" };
@@ -454,6 +610,7 @@ export function severityEligibility(
     case "exponential":
     case "weibull":
     case "pareto2":
+    case "genpareto":
       return min >= 0
         ? { ok: true }
         : { ok: false, reason: "음수 값 포함 — 0 이상 데이터 필요" };

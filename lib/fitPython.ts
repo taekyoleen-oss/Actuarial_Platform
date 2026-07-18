@@ -60,10 +60,40 @@ export function sevFrozenExpr(id: string, params: FitParamOut[]): string {
       return `stats.lomax(${f(p(params, "alpha"))}, 0, ${f(p(params, "theta"))})`;
     case "pareto1":
       return `stats.pareto(${f(p(params, "alpha"))}, 0, ${f(p(params, "theta_min"))})`;
+    case "genpareto":
+      return `stats.genpareto(${f(p(params, "xi"))}, 0, ${f(p(params, "sigma"))})`;
     default:
       return "stats.norm()";
   }
 }
+
+/**
+ * 제로팽창 분포 헬퍼(파이썬) — scipy에 없어 재현 코드에도 직접 정의를 넣는다.
+ * frequencyFitCode(zip/zinb)·frequencySimCode·monteCarloCode에서 공유.
+ */
+export const ZI_PY_CLASS = `# 제로팽창 분포 헬퍼 — scipy에는 없어 직접 정의합니다.
+# 원리: 확률 pi로 '무조건 0'(구조적 0), (1-pi)로 기저분포(poisson/nbinom)를 따릅니다.
+class ZeroInflated:
+    def __init__(self, pi, base):
+        self.pi = pi; self.base = base           # base = scipy 이산분포(frozen)
+    def pmf(self, k):
+        k = np.asarray(k, float)
+        p0 = self.pi + (1 - self.pi) * self.base.pmf(0)    # k=0은 두 경로가 합쳐짐
+        return np.where(k == 0, p0, (1 - self.pi) * self.base.pmf(k))
+    def logpmf(self, k):
+        return np.log(np.clip(self.pmf(k), 1e-300, None))
+    def cdf(self, k):
+        return self.pi + (1 - self.pi) * self.base.cdf(np.asarray(k, float))
+    def sf(self, k):
+        return 1.0 - self.cdf(k)
+    def mean(self):
+        return (1 - self.pi) * self.base.mean()
+    def var(self):
+        m, v = self.base.mean(), self.base.var()
+        return (1 - self.pi) * (v + m * m) - ((1 - self.pi) * m) ** 2
+    def rvs(self, size, random_state=None):
+        rng = random_state if random_state is not None else np.random
+        return np.where(rng.random(size) < self.pi, 0, self.base.rvs(size, random_state=rng))`;
 
 export function freqFrozenExpr(id: string, params: FitParamOut[]): string {
   switch (id) {
@@ -73,6 +103,13 @@ export function freqFrozenExpr(id: string, params: FitParamOut[]): string {
       return `stats.nbinom(${f(p(params, "r"))}, ${f(p(params, "p"))})`;
     case "binomial":
       return `stats.binom(${Math.round(p(params, "n"))}, ${f(p(params, "p"))})`;
+    case "zip":
+      return `ZeroInflated(${f(p(params, "pi"))}, stats.poisson(${f(p(params, "lambda"))}))`;
+    case "zinb": {
+      const r = p(params, "r");
+      const mu = p(params, "mu");
+      return `ZeroInflated(${f(p(params, "pi"))}, stats.nbinom(${f(r)}, ${f(r / (r + mu))}))`;
+    }
     default:
       return "stats.poisson(1)";
   }
@@ -132,6 +169,13 @@ b, _, _ = stats.pareto.fit(x, floc=0, fscale=theta)
 dist = stats.pareto(b, 0, theta)
 print(f"alpha={b:.6g}, theta(고정)={theta:.6g}")
 k = 1`;
+    case "genpareto":
+      return `# GPD(일반화 파레토): 임계값 초과(POT) 이론의 표준 꼬리 분포.
+# xi=형상(클수록 두꺼운 꼬리·xi≥1이면 평균 발산), sigma=척도. floc=0으로 위치 고정
+c, _, scale = stats.genpareto.fit(x, floc=0)
+dist = stats.genpareto(c, 0, scale)
+print(f"xi(형상)={c:.6g}, sigma(척도)={scale:.6g}")
+k = 2`;
     default:
       return "";
   }
@@ -177,6 +221,11 @@ unpack = lambda t: (np.exp(t[0]), np.exp(t[1]))`;
 t0 = [np.log(2.5), np.log(m*1.5)]
 names, k = ["alpha", "theta"], 2
 unpack = lambda t: (np.exp(t[0]), np.exp(t[1]))`;
+    case "genpareto":
+      return `make = lambda t: stats.genpareto(t[0], 0, np.exp(t[1]))
+t0 = [0.1, np.log(m)]                        # xi(형상)는 음수도 가능 → log 변환 없이 그대로
+names, k = ["xi", "sigma"], 2
+unpack = lambda t: (t[0], np.exp(t[1]))`;
     case "pareto1":
       return `theta = float(np.min(lo))                   # 하한 θ = 최소 구간 하한(고정)
 make = lambda t: stats.pareto(np.exp(t[0]), 0, theta)
@@ -188,9 +237,126 @@ unpack = lambda t: (np.exp(t[0]),)`;
   }
 }
 
+/** 절단·검열 코드용 스펙 조각 — grouped와 동일하되 pareto1 하한만 관측 최솟값. */
+function truncSpecLines(id: string): string {
+  if (id === "pareto1") {
+    return `theta = float(np.min(xu))                   # 하한 θ = 비검열 관측 최솟값(고정)
+make = lambda t: stats.pareto(np.exp(t[0]), 0, theta)
+t0 = [np.log(2.0)]
+names, k = ["alpha"], 1
+unpack = lambda t: (np.exp(t[0]),)`;
+  }
+  return groupedSpecLines(id);
+}
+
+/** 면책 d·한도 u 반영(좌측 절단·우측 검열) 적합 코드 — 화면 계산과 동일 우도. */
+function severityFitCodeTruncated(
+  id: string,
+  name: string,
+  data: FitData
+): string {
+  const arr = pyArray(data.values);
+  const d = data.deductible ?? 0;
+  const u = data.limit;
+  return `# ══════════════════════════════════════════════════════
+# ${name} 적합 — 면책·한도 반영(좌측 절단·우측 검열) MLE
+# ══════════════════════════════════════════════════════
+# 실제 보험 클레임 데이터의 특징(값은 원손해액 기준):
+#  · 면책(d) 미만 사고는 청구되지 않아 데이터에 아예 없습니다 → '좌측 절단'
+#  · 한도(u) 이상 사고는 u로 기록됩니다 → '우측 검열'(정확한 값 대신 "u 이상"만 앎)
+# 이런 데이터에 보통의 .fit()을 쓰면 파라미터가 편향됩니다. 관측 규약에 맞는
+# 우도를 직접 만들어 수치최적화합니다(화면의 적합 계산과 동일한 방법):
+#   비검열(d<x<u): log f(x) - log S(d)   /   검열(x≥u): log S(u) - log S(d)
+#   (S = 1 - F 생존함수. S(d)로 나누는 것이 'd 이상만 관측된다'는 절단 보정)
+import numpy as np
+from scipy import stats
+from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+
+# 1) 데이터 입력 — 기록된 손해액(u 이상은 u로 기록되어 있음)
+${arr.truncated ? truncNote(data.values.length) : ""}x = np.array(${arr.code}, float)
+d = ${f(d)}          # 면책(deductible) — 이 금액 미만 사고는 데이터에 없음
+u = ${u !== undefined ? f(u) : "np.inf"}          # 보상한도(limit) — u 이상은 u로 기록${u === undefined ? " (미적용=무한대)" : ""}
+
+xu = x[x < u]                  # 비검열 관측(실제 값을 아는 사고)
+nc = int(np.sum(x >= u))       # 검열 관측 수(u 이상이라는 것만 아는 사고)
+n  = len(x)
+print(f"관측 {n}건 = 비검열 {len(xu)}건 + 검열 {nc}건")
+
+# 2) 초기값용 근사 적률 — 비검열 값 기준(최적화 출발점일 뿐, 결과가 아님)
+m = float(np.mean(xu)); v = max(float(np.var(xu)), 1e-12); sd = float(np.sqrt(v))
+
+# 3) 이 분포의 파라미터 변환 — log를 취해 최적화 중 항상 양수를 보장
+${truncSpecLines(id)}
+
+# 4) 절단·검열 음의 로그우도(작을수록 좋음)
+def nll(t):
+    try:
+        fr = make(t)
+        ll = float(np.sum(fr.logpdf(xu)))          # 비검열: log f(x)
+        if not np.isfinite(ll):
+            return 1e12
+        if d > 0:
+            Sd = float(fr.sf(d))                   # 절단 보정: 모든 관측을 S(d)로 나눔
+            if not (np.isfinite(Sd) and Sd > 0):
+                return 1e12
+            ll -= n * np.log(Sd)
+        if nc > 0:
+            Su = float(fr.sf(u))                   # 검열: 값 대신 P(X≥u)=S(u) 사용
+            if not (np.isfinite(Su) and Su > 0):
+                return 1e12
+            ll += nc * np.log(Su)
+        return -ll
+    except Exception:
+        return 1e12
+
+# 5) Nelder-Mead 최적화 — 미분 없이 동작하는 견고한 방법
+res = minimize(nll, t0, method="Nelder-Mead",
+               options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+dist = make(res.x)
+logL = -res.fun
+print("파라미터:", dict(zip(names, np.round(unpack(res.x), 6))))
+print(f"logL={logL:.4f}  AIC={2*k - 2*logL:.4f}  BIC={k*np.log(n) - 2*logL:.4f}")
+
+# 6) 조건부 KS 검정 — F*(x)=(F(x)-F(d))/(F(u)-F(d)) 기준, 비검열 관측만
+#    (검열 관측은 '정확한 값'이 없어 KS에서 제외합니다. A²·χ²도 같은 이유로 생략)
+Fd = float(dist.cdf(d)) if d > 0 else 0.0
+Fu = float(dist.cdf(u)) if np.isfinite(u) else 1.0
+ks = stats.kstest(xu, lambda z: np.clip((dist.cdf(z) - Fd) / (Fu - Fd), 0, 1))
+print(f"KS D={ks.statistic:.4f}  p={ks.pvalue:.4f}  (조건부 CDF 기준·근사)")
+
+# 7) 그림 — 기록값 히스토그램 vs 관측 조건부 밀도 f(x)/S(d)
+#    (한도가 있으면 u 자리에 검열 뭉치(마지막 막대 스파이크)가 생기는 것이 정상)
+xs = np.sort(xu)
+hi = float(np.max(x))
+xg = np.linspace(max(float(xs[0]), d), hi, 300)
+plt.figure(figsize=(6, 3.2))
+plt.hist(x, bins="auto", density=True, alpha=0.3, label="recorded")
+plt.plot(xg, dist.pdf(xg) / (1 - Fd), "r-", label="fitted (conditional)")
+plt.legend(); plt.title("PDF — 관측 조건부"); plt.tight_layout(); plt.show()
+
+# 8) QQ-plot — (d,u) 절단 조건부 분위수 vs 비검열 관측(검열 관측 제외)
+nn = len(xs)
+pp = (np.arange(1, nn + 1) - 0.5) / nn
+theo = dist.ppf(Fd + pp * (Fu - Fd))
+plt.figure(figsize=(4, 4))
+plt.scatter(theo, xs, s=10)
+lim_ = [float(xs[0]), float(xs[-1])]
+plt.plot(lim_, lim_, "k--", lw=1)
+plt.xlabel("Theoretical (conditional)"); plt.ylabel("Sample (uncensored)")
+plt.title(f"Q-Q plot — 검열 {nc}건 제외")
+plt.tight_layout(); plt.show()`;
+}
+
 /* ─────────────────────────── 심도 적합 코드 ─────────────────────────── */
 
 export function severityFitCode(id: string, name: string, data: FitData): string {
+  if (
+    data.kind !== "grouped" &&
+    ((data.deductible ?? 0) > 0 || data.limit !== undefined)
+  ) {
+    return severityFitCodeTruncated(id, name, data);
+  }
   if (data.kind === "grouped") {
     const g = data.groups ?? [];
     const lo = pyArray(g.map((r) => r.lo));
@@ -352,7 +518,7 @@ r = float(np.exp(res.x)); p = r / (r + mean)
 dist = stats.nbinom(r, p)
 print(f"r={r:.6g}, p={p:.6g}")   # r이 아주 크면 포아송과 거의 같아집니다
 k = 2`;
-  } else {
+  } else if (id === "binomial") {
     fit = `# 이항 MLE — n(시행수)은 정수라서 관측 최대값부터 하나씩 대입해 탐색,
 # 각 n에서 p = 평균/n 으로 두고 로그우도가 가장 큰 조합을 고릅니다
 mean = counts.mean(); kobs = max(int(counts.max()), 1)
@@ -368,6 +534,49 @@ ll, n_hat, p_hat = best
 dist = stats.binom(n_hat, p_hat)
 print(f"n={n_hat}, p={p_hat:.6g}")
 k = 2`;
+  } else if (id === "zip") {
+    fit = `${ZI_PY_CLASS}
+from scipy.optimize import minimize
+# 제로팽창 포아송(ZIP) — 청구 자체가 없던 해(구조적 0)가 많은 빈도에 적합.
+# pi(구조적 0 확률)·lambda(포아송 평균)를 커스텀 우도로 동시 추정합니다
+# (scipy에 ZIP MLE가 없어 음의 로그우도를 직접 만들어 최소화).
+cf = counts.astype(float); mean = cf.mean(); p0hat = float((cf == 0).mean())
+lam0 = max(mean, 0.5)                             # 초기값(모멘트 근사)
+pi0 = min(max((p0hat - np.exp(-lam0)) / (1 - np.exp(-lam0) + 1e-9), 0.02), 0.9)
+nz = float((cf == 0).sum()); pos = cf[cf > 0]
+def nll(t):
+    pi = 1/(1+np.exp(-t[0])); lam = np.exp(t[1])  # 로짓·로그로 제약(0<pi<1, lam>0)
+    p0 = pi + (1-pi)*np.exp(-lam)                 # P(N=0) = 구조적 0 + 포아송의 0
+    if not (0 < p0 < 1): return 1e12
+    ll = nz*np.log(p0) + np.sum(np.log(1-pi) + stats.poisson.logpmf(pos, lam))
+    return -ll if np.isfinite(ll) else 1e12
+res = minimize(nll, [np.log(pi0/(1-pi0)), np.log(lam0)], method="Nelder-Mead",
+               options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+pi = 1/(1+np.exp(-res.x[0])); lam = np.exp(res.x[1])
+dist = ZeroInflated(pi, stats.poisson(lam))
+print(f"pi(구조적 0 확률)={pi:.6g}, lambda={lam:.6g}")
+k = 2`;
+  } else {
+    fit = `${ZI_PY_CLASS}
+from scipy.optimize import minimize
+# 제로팽창 음이항(ZINB) — 구조적 0 + 과산포(분산>평균)를 함께 다루는 빈도 모형.
+# pi·r(음이항 형상)·mu(평균)를 커스텀 우도로 동시 추정합니다.
+cf = counts.astype(float); mean = cf.mean(); p0hat = float((cf == 0).mean())
+mu0 = max(mean, 0.5); pi0 = min(max(p0hat - np.exp(-mu0), 0.02), 0.9)
+nz = float((cf == 0).sum()); pos = cf[cf > 0]
+def nll(t):
+    pi = 1/(1+np.exp(-t[0])); r = np.exp(t[1]); mu = np.exp(t[2])
+    p = r/(r+mu); base0 = float(stats.nbinom.pmf(0, r, p))
+    p0 = pi + (1-pi)*base0
+    if not (0 < p0 < 1): return 1e12
+    ll = nz*np.log(p0) + np.sum(np.log(1-pi) + stats.nbinom.logpmf(pos, r, p))
+    return -ll if np.isfinite(ll) else 1e12
+res = minimize(nll, [np.log(pi0/(1-pi0)), np.log(5.0), np.log(mu0)],
+               method="Nelder-Mead", options={"maxiter": 6000, "xatol": 1e-9, "fatol": 1e-10})
+pi = 1/(1+np.exp(-res.x[0])); r = np.exp(res.x[1]); mu = np.exp(res.x[2]); p = r/(r+mu)
+dist = ZeroInflated(pi, stats.nbinom(r, p))
+print(f"pi={pi:.6g}, r={r:.6g}, mu={mu:.6g}")
+k = 3`;
   }
   return `# ══════════════════════════════════════════════════════
 # ${name} 적합 — 연도별 사고건수(빈도)의 최대우도추정(MLE)
@@ -466,6 +675,15 @@ const SEV_SIM_NOTES: Record<
 #   U = rng.uniform(size=n_sim);  xs_alt = theta * (1 - U)**(-1/alpha)`,
     caution: `# ⚠ α가 작으면 꼬리가 매우 두꺼워 표본 평균 수렴이 느립니다(α≤1이면 발산).`,
   },
+  genpareto: {
+    intro: `# [일반화 파레토(GPD) 특성] 임계값 초과(peaks-over-threshold)의 극한분포 —
+# 재보험·대형손해 꼬리 모형의 표준입니다. xi(형상)가 꼬리 두께를 지배합니다
+# (xi>0 발산형 두꺼운 꼬리, xi=0 지수, xi<0 유한 상한).`,
+    alt: `# 다른 방법(역변환법): xi≠0이면 F(x)=1-(1+xi·x/sigma)^(-1/xi)를 뒤집어
+#   U = rng.uniform(size=n_sim);  xs_alt = sigma/xi * ((1 - U)**(-xi) - 1)`,
+    caution: `# ⚠ xi≥1이면 이론 평균이 무한대, xi≥0.5면 분산이 무한대입니다 — 표본
+#   평균·표준편차가 안정되지 않을 수 있으니 분위수·VaR로 판단하세요.`,
+  },
 };
 
 /**
@@ -541,6 +759,10 @@ const FREQ_SIM_NOTES: Record<string, string> = {
 # 포트폴리오의 건수 모형으로 포아송보다 현실적일 때가 많습니다.`,
   binomial: `# [이항 특성] 분산 < 평균(과소산포). 시행수 n이 정해진 성공 횟수 모형 —
 # 계약 n건 중 사고 난 건수 같은 상황에 맞습니다.`,
+  zip: `# [제로팽창 포아송(ZIP) 특성] '무사고 해(구조적 0)'가 포아송이 예측하는 것보다
+# 훨씬 많은 빈도에 적합. 확률 pi로 무조건 0, (1-pi)로 포아송(lambda)를 섞습니다.`,
+  zinb: `# [제로팽창 음이항(ZINB) 특성] 구조적 0 과다 + 과산포(분산>평균)를 동시에
+# 표현. 확률 pi로 무조건 0, (1-pi)로 음이항(r, mu)를 섞습니다.`,
 };
 
 /**
@@ -552,6 +774,7 @@ export function frequencySimCode(
   params: FitParamOut[]
 ): string {
   const paramCmt = params.map((q) => `${q.name}=${f(q.value)}`).join(", ");
+  const isZi = id === "zip" || id === "zinb";
   return `# ══════════════════════════════════════════════════════
 # 몬테카를로 시뮬레이션 — ${name} 빈도 (적합 결과: ${paramCmt})
 # ══════════════════════════════════════════════════════
@@ -561,7 +784,7 @@ ${FREQ_SIM_NOTES[id] ?? ""}
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-
+${isZi ? `\n${ZI_PY_CLASS}\n` : ""}
 # 1) 적합된 분포 고정(frozen) — 숫자는 화면의 적합 결과입니다
 dist = ${freqFrozenExpr(id, params)}
 
@@ -601,13 +824,39 @@ plt.tight_layout(); plt.show()
 /**
  * 시뮬레이션 이어가기 코드(하단 섹션) — 빈도+심도가 모두 있으면 집합손해
  * S=ΣX(연간 총손해)·VaR·TVaR, 심도만이면 표본추출·분위수.
+ * du(면책·한도)가 있으면 지급액 분포 섹션을 실제 입력값으로 추가한다
+ * (기본 표본은 원손해 기준 유지 — 사용자 규약).
  */
 export function monteCarloCode(
   sev: { id: string; name: string; params: FitParamOut[] },
-  freq?: { id: string; name: string; params: FitParamOut[] } | null
+  freq?: { id: string; name: string; params: FitParamOut[] } | null,
+  du?: { d?: number; u?: number } | null
 ): string {
   const sevExpr = sevFrozenExpr(sev.id, sev.params);
+  const duActive = du && ((du.d ?? 0) > 0 || du.u !== undefined);
+  const dLit = f(du?.d ?? 0);
+  const uLit = du?.u !== undefined ? f(du.u) : "np.inf";
   if (!freq) {
+    const duBlock = duActive
+      ? `
+
+# ── 면책 d·한도 u 반영 지급액(입력값 반영) ──
+# 면책 d 미만 사고는 청구되지 않으므로 '청구 1건'의 원손해는 조건부 X|X>d 입니다.
+# 역변환법: F(d)~1 구간의 균등난수를 ppf에 넣으면 X|X>d 표본이 됩니다.
+d, u = ${dLit}, ${uLit}
+Fd = float(sev.cdf(d)) if d > 0 else 0.0
+U = rng.uniform(Fd, 1.0, size=n_sim)
+x_claims = sev.ppf(U)                     # X | X > d 표본(청구된 사고의 원손해)
+paid = np.clip(x_claims - d, 0, (u - d) if np.isfinite(u) else np.inf)
+print(f"청구 1건당 기대지급액(면책·한도 반영) = {paid.mean():,.2f}")
+if np.isfinite(u):
+    print(f"한도 도달(u-d 전액 지급) 비율 ≈ {(x_claims >= u).mean():.4f}")`
+      : `
+
+# 응용: 자기부담금(ded)·보상한도(lim) 적용 후 기대지급액
+# ded, lim = 1000, 50000
+# paid = np.clip(xs - ded, 0, lim - ded)
+# print("기대지급액:", paid.mean())`;
     return `# ══════════════════════════════════════════════════════
 # 몬테카를로 — 적합된 심도분포(${sev.name})에서 표본추출
 # ══════════════════════════════════════════════════════
@@ -629,15 +878,43 @@ for q in [0.50, 0.75, 0.90, 0.95, 0.99, 0.995]:
 
 plt.figure(figsize=(6, 3.2))
 plt.hist(xs, bins=80, density=True, alpha=0.5)
-plt.title("Simulated severity"); plt.tight_layout(); plt.show()
-
-# 응용: 자기부담금(ded)·보상한도(lim) 적용 후 기대지급액
-# ded, lim = 1000, 50000
-# paid = np.clip(xs - ded, 0, lim - ded)
-# print("기대지급액:", paid.mean())`;
+plt.title("Simulated severity"); plt.tight_layout(); plt.show()${duBlock}`;
   }
 
   const freqExpr = freqFrozenExpr(freq.id, freq.params);
+  const dPos = (du?.d ?? 0) > 0;
+  // 면책 d>0이면 빈도 N은 '청구된 사고(X>d)'만 센 값이므로 심도도 조건부 X|X>d 로
+  // 뽑아야 총손해 S가 정합한다(무조건부 표본을 쓰면 평균·VaR·TVaR가 체계적으로 과소).
+  const duHead = duActive
+    ? `
+d, u = ${dLit}, ${uLit}                   # 화면 입력의 면책·한도`
+    : "";
+  const sevDraw = dPos
+    ? `# 빈도 N은 '청구된 사고(X>d)'만 세어 적합됐으므로, 심도도 같은 기준인
+# 조건부 X|X>d 로 뽑습니다(무조건부로 뽑으면 S가 체계적으로 과소평가됨).
+# 역변환법: F(d)~1 구간의 균등난수를 ppf에 넣으면 X|X>d 표본이 됩니다.
+Fd = float(sev.cdf(d))
+all_x = sev.ppf(rng.uniform(Fd, 1.0, size=total))   # 청구 1건당 원손해(X|X>d)`
+    : `all_x = sev.rvs(total, random_state=rng)`;
+  const grossNote = dPos
+    ? `
+# ※ 여기서 S는 '청구된 사고(X>d)의 원손해 합' — 면책 미만 소액사고는 청구되지
+#    않으므로 애초에 집계 대상이 아닙니다. 실제 지급액은 아래 블록에서 산출합니다.
+`
+    : "";
+  const duBlockAgg = duActive
+    ? `
+
+# ── 면책 d·한도 u 반영 연간 총지급액(입력값 반영) ──
+# 위 2)에서 뽑은 청구별 원손해 all_x에 면책·한도를 적용해 '지급액'으로 환산합니다
+# (같은 표본을 쓰므로 원손해 S와 지급 S_paid가 같은 사고 집합에 대응).
+paid_x = np.clip(all_x - d, 0, (u - d) if np.isfinite(u) else np.inf)
+S_paid = np.array([paid_x[idx[i]:idx[i+1]].sum() for i in range(n_years)])
+print(f"연간 총지급 평균={S_paid.mean():,.2f}")
+for q in [0.95, 0.99]:
+    vq = np.quantile(S_paid, q)
+    print(f"  지급 기준 VaR {q:.0%} = {vq:,.2f}   TVaR {q:.0%} = {S_paid[S_paid >= vq].mean():,.2f}")`
+    : "";
   return `# ══════════════════════════════════════════════════════
 # 몬테카를로 집합손해모형 — 연간 총손해 S = X1 + … + XN
 # ══════════════════════════════════════════════════════
@@ -650,7 +927,7 @@ plt.title("Simulated severity"); plt.tight_layout(); plt.show()
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-
+${freq.id === "zip" || freq.id === "zinb" ? `\n${ZI_PY_CLASS}\n` : ""}
 rng = np.random.default_rng(42)          # seed 고정 = 재현 가능
 freq = ${freqExpr}
 sev  = ${sevExpr}
@@ -661,12 +938,12 @@ N = freq.rvs(n_years, random_state=rng)
 
 # 2) 필요한 심도를 '한 번에' 뽑아 연도별로 잘라 담기(루프보다 훨씬 빠름)
 S = np.zeros(n_years)
-total = int(N.sum())
-all_x = sev.rvs(total, random_state=rng)
+total = int(N.sum())${duHead}
+${sevDraw}
 idx = np.r_[0, np.cumsum(N)]              # 연도별 시작 위치
 for i in range(n_years):
     S[i] = all_x[idx[i]:idx[i+1]].sum()   # 그 해의 총손해
-
+${grossNote}
 # 3) 결과 — VaR(분위수)와 TVaR(그 분위수를 넘는 해들의 평균 손해)
 print(f"연간 건수 평균={N.mean():.3f}  연간 총손해 평균={S.mean():,.2f}")
 for q in [0.95, 0.99]:
@@ -683,5 +960,5 @@ plt.title("Aggregate loss S"); plt.legend(); plt.tight_layout(); plt.show()
 # 응용: 재보험 초과손해(XL) 층별 기대손해 — 층(att~lim)에 걸리는 손해만 출재
 # att, lim = np.quantile(S, 0.90), np.quantile(S, 0.99)
 # ceded = np.clip(S - att, 0, lim - att)
-# print("층별 기대손해(출재):", ceded.mean())`;
+# print("층별 기대손해(출재):", ceded.mean())${duBlockAgg}`;
 }

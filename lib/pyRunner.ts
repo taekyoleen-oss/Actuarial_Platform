@@ -126,6 +126,42 @@ export function writeDataFile(py: PyodideAPI, name: string, bytes: Uint8Array): 
 }
 
 /**
+ * matplotlib 한글 폰트(나눔고딕) 보장 — 한 번만 등록.
+ * Pyodide 기본 matplotlib은 DejaVu Sans만 있어 차트 제목·라벨의 한글이 □(두부)로
+ * 깨진다. public/fonts/의 나눔고딕(OFL)을 같은 출처에서 받아 가상 FS에 쓰고
+ * font_manager에 등록한 뒤 rcParams 기본 폰트로 지정한다. NanumGothic에 없는
+ * 유니코드 마이너스(U+2212)는 DejaVu Sans 폴백 + axes.unicode_minus=False로 처리.
+ * 확장자가 .ttf라 listFsDataFiles(데이터 파일 목록)에는 잡히지 않는다.
+ */
+const KOREAN_FONT_FILE = "NanumGothic-Regular.ttf";
+let koreanFontReady: Promise<void> | null = null;
+export async function ensureKoreanFont(py: PyodideAPI): Promise<void> {
+  if (!koreanFontReady) {
+    koreanFontReady = (async () => {
+      const res = await fetch(`/fonts/${KOREAN_FONT_FILE}`);
+      if (!res.ok) throw new Error(`korean_font_fetch_failed_${res.status}`);
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      py.FS.writeFile(KOREAN_FONT_FILE, bytes);
+      await py.runPythonAsync(
+        [
+          "import matplotlib",
+          "from matplotlib import font_manager as _fm",
+          `_fm.fontManager.addfont(${JSON.stringify(KOREAN_FONT_FILE)})`,
+          "import matplotlib.pyplot as _plt",
+          // 나눔고딕 우선 + DejaVu Sans 폴백(라틴·마이너스 글리프)
+          '_plt.rcParams["font.family"] = ["NanumGothic", "DejaVu Sans"]',
+          '_plt.rcParams["axes.unicode_minus"] = False',
+        ].join("\n")
+      );
+    })().catch((e) => {
+      koreanFontReady = null; // 실패 시 다음 실행에서 재시도(폰트 없이도 코드는 실행)
+      throw e;
+    });
+  }
+  return koreanFontReady;
+}
+
+/**
  * 현재 세션의 데이터 스키마를 수집한다 — 로드된 DataFrame/Series 변수의
  * 열 이름·자료형·크기와 작업 폴더의 데이터 파일 목록(JSON 문자열).
  * AI 어시스턴트가 '앞의 데이터'를 읽고 실제 열 이름으로 코드를 쓰도록 하는 컨텍스트.
@@ -227,6 +263,15 @@ export async function runPythonCode(
       await py.loadPackage("scipy");
     } catch {
       // 로드 실패 시 실행 단계에서 ImportError로 표면화
+    }
+  }
+  // matplotlib을 쓰면 한글 폰트를 등록해 차트 제목·라벨의 한글 깨짐(□)을 막는다.
+  // 폰트 등록 실패(네트워크 등)는 무시 — 폰트 없이도 코드는 정상 실행되어야 한다.
+  if (/matplotlib|pyplot/.test(code)) {
+    try {
+      await ensureKoreanFont(py);
+    } catch {
+      // 폰트 미등록 시 한글은 □로 나오지만 실행은 계속
     }
   }
 

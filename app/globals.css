@@ -158,6 +158,25 @@ mark.key-phrase {
   -webkit-box-decoration-break: clone;
 }
 
+/* 상단 내비 항목 필(pill) — SiteNav 한정 (2026-07-17, 메뉴 항목 구분)
+   hover: 연블루 틴트(--chip-blue-bg 55%)+primary 텍스트, 활성: 저채도 필(--chip-blue-bg 원색).
+   그라데이션·트랜스폼 없음 — 색 전환은 전역 * 트랜지션(0.33s color/background-color)이 담당. */
+.nav-pill {
+  border-radius: 9999px;
+  color: var(--text-tertiary);
+}
+.nav-pill:hover,
+.nav-pill:focus-visible {
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--chip-blue-bg) 55%, transparent);
+}
+.nav-pill-active,
+.nav-pill-active:hover,
+.nav-pill-active:focus-visible {
+  color: var(--primary);
+  background-color: var(--chip-blue-bg);
+}
+
 /* 용어 점선 밑줄 (인라인 용어 팝오버 트리거) */
 .term-trigger {
   text-decoration: underline dotted;
