@@ -6,15 +6,18 @@
  * 팝업이 되고, 복사는 현재 탭의 코드를 복사한다. MethodDialog와 같은 모달
  * 관례(Escape·오버레이·스크롤락·뒤로가기 닫힘)를 따른다.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+import { toExcelPython, PIE_CODE_NOTE } from "@/lib/methodExcelCode";
 
 export interface CodeTab {
   key: string;
   label: string;
   code: string;
+  /** 코드 위에 표시할 안내(선택) — '엑셀 적용 코드' 탭 등 */
+  note?: string;
 }
 
 export function DistCodeDialog({
@@ -32,10 +35,28 @@ export function DistCodeDialog({
   tabs?: CodeTab[];
   onClose: () => void;
 }) {
-  const [tabKey, setTabKey] = useState<string>(tabs?.[0]?.key ?? "");
-  const activeCode = tabs
-    ? (tabs.find((t) => t.key === tabKey) ?? tabs[0])?.code ?? ""
-    : code ?? "";
+  const baseTabs: CodeTab[] = useMemo(
+    () =>
+      tabs && tabs.length > 0
+        ? tabs
+        : [{ key: "py", label: "파이썬 코드", code: code ?? "" }],
+    [tabs, code]
+  );
+  // '엑셀 적용 코드' 탭 자동 추가 — 첫 코드를 Python in Excel용으로 변환
+  const allTabs: CodeTab[] = useMemo(
+    () => [
+      ...baseTabs,
+      {
+        key: "__excel",
+        label: "엑셀 적용 코드",
+        code: toExcelPython(baseTabs[0].code),
+        note: PIE_CODE_NOTE,
+      },
+    ],
+    [baseTabs]
+  );
+  const [tabKey, setTabKey] = useState<string>(baseTabs[0].key);
+  const active = allTabs.find((t) => t.key === tabKey) ?? allTabs[0];
 
   useHistoryDismiss(true, onClose);
 
@@ -80,7 +101,7 @@ export function DistCodeDialog({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <CopyButton text={activeCode} label="전체 복사" />
+            <CopyButton text={active.code} label="전체 복사" />
             <button
               type="button"
               onClick={onClose}
@@ -92,36 +113,49 @@ export function DistCodeDialog({
           </div>
         </header>
 
-        {tabs && tabs.length > 1 ? (
-          <div
-            role="tablist"
-            aria-label="코드 종류"
-            className="flex items-center gap-1 border-b border-border px-5 pt-2 sm:px-6"
-          >
-            {tabs.map((t) => {
-              const active = (tabs.find((q) => q.key === tabKey) ?? tabs[0]).key === t.key;
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setTabKey(t.key)}
-                  className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-                    active
-                      ? "border-[var(--primary)] text-foreground"
-                      : "border-transparent text-tertiary hover:text-foreground"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
+        <div
+          role="tablist"
+          aria-label="코드 종류"
+          className="flex items-center gap-1 border-b border-border px-5 pt-2 sm:px-6"
+        >
+          {allTabs.map((t) => {
+            const isActive = active.key === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setTabKey(t.key)}
+                className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                  isActive
+                    ? "border-[var(--primary)] text-foreground"
+                    : "border-transparent text-tertiary hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          <CodeBlock code={activeCode} codeFz={12.5} />
+          {active.note ? (
+            <div
+              className="mb-4 rounded px-4 py-3 leading-[1.8] text-body"
+              style={{
+                fontSize: 12.5,
+                background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
+              }}
+            >
+              <span className="font-semibold text-foreground">
+                엑셀의 Python(=PY())에서 쓰는 법
+              </span>
+              <br />
+              {active.note}
+            </div>
+          ) : null}
+          <CodeBlock code={active.code} codeFz={12.5} />
         </div>
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
