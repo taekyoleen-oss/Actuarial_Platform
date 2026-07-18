@@ -19,7 +19,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import {
   STAT_CATEGORIES,
   STAT_METHODS,
@@ -30,6 +30,11 @@ import {
   type StatMethod,
 } from "@/lib/statMethods";
 import { METHOD_THEORY } from "@/lib/methodTheory";
+import {
+  METHOD_EXCEL_CODE,
+  PIE_GENERAL_NOTE,
+  PACKAGE_STATUS_META,
+} from "@/lib/methodExcelCode";
 import PyRunner, {
   type RunnerLoadRequest,
 } from "@/components/feature/datalab/PyRunner";
@@ -82,7 +87,7 @@ function hashOf(s: string): number {
 const FONT_SCALE_MIN = 0.8;
 const FONT_SCALE_MAX = 1.6;
 
-type DialogTab = "theory" | "code";
+type DialogTab = "theory" | "code" | "excel";
 type LevelFilter = "all" | "basic" | "advanced";
 type SectionLevel = "basic" | "advanced";
 
@@ -119,6 +124,96 @@ function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number 
     >
       {label}
     </span>
+  );
+}
+
+/** [엑셀 적용 코드] 탭 — Python in Excel(=PY()) 적용 코드. 없으면 공통 안내 + 폴백 */
+function ExcelCodePanel({
+  method,
+  fz,
+  fontScale,
+}: {
+  method: StatMethod;
+  fz: (px: number) => { fontSize: number };
+  fontScale: number;
+}) {
+  const data = METHOD_EXCEL_CODE[method.id];
+  return (
+    <div>
+      {/* 공통 차이점 안내 — 코드 위 */}
+      <div
+        className="rounded px-4 py-3 leading-[1.8] text-body"
+        style={{
+          ...fz(12.5),
+          background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
+        }}
+      >
+        <span className="font-semibold text-foreground">
+          엑셀의 Python(=PY())에서 쓰는 법
+        </span>
+        <br />
+        {PIE_GENERAL_NOTE}
+      </div>
+
+      {data ? (
+        <>
+          {/* 이 방법의 패키지 상태 + 차이점 */}
+          <div className="mt-4 flex flex-wrap items-start gap-2">
+            <span
+              className="mt-0.5 inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium"
+              style={{
+                background: `var(--chip-${PACKAGE_STATUS_META[data.packageStatus].color}-bg)`,
+                color: `var(--chip-${PACKAGE_STATUS_META[data.packageStatus].color}-fg)`,
+              }}
+            >
+              {PACKAGE_STATUS_META[data.packageStatus].label}
+            </span>
+            <p
+              className="min-w-[12rem] flex-1 leading-[1.8] text-body"
+              style={fz(13)}
+            >
+              {data.note}
+            </p>
+          </div>
+
+          {/* 적응 코드 섹션 */}
+          {data.sections.map((s, i) => (
+            <div key={`${s.title}-${i}`} className="mt-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+                  {data.sections.length > 1 ? `${i + 1}. ` : ""}
+                  {s.title}
+                </h3>
+                <LevelChip
+                  level={s.level}
+                  fontSize={Math.round(11 * fontScale * 10) / 10}
+                />
+                <span
+                  className="inline-flex items-center whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-[10.5px] font-medium text-tertiary"
+                  title={
+                    s.sameAsOriginal
+                      ? "데이터 로드 줄 정도만 다르고 로직은 '코드 적용' 탭과 사실상 동일"
+                      : "Python in Excel 환경에 맞게 로직·API가 바뀜"
+                  }
+                >
+                  {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
+                </span>
+              </div>
+              <CodeBlock code={s.code.trim()} codeFz={12.5 * fontScale} />
+            </div>
+          ))}
+        </>
+      ) : (
+        <p
+          className="mt-4 rounded bg-surface px-4 py-3 leading-relaxed text-tertiary"
+          style={fz(12.5)}
+        >
+          이 방법의 <strong>Python in Excel</strong> 적용 코드는 준비 중입니다. 위
+          공통 차이점(데이터는 <code>xl()</code> · print는 진단창 · Anaconda
+          패키지)을 <strong>코드 적용</strong> 탭의 코드에 적용해 사용하세요.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -393,6 +488,7 @@ function MethodDialog({
             [
               { key: "theory", label: "정의 및 방법" },
               { key: "code", label: "코드 적용" },
+              { key: "excel", label: "엑셀 적용 코드" },
             ] as { key: DialogTab; label: string }[]
           ).map((t) => (
             <button
@@ -415,6 +511,8 @@ function MethodDialog({
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           {tab === "theory" ? (
             <TheoryPanel method={method} fz={fz} fontScale={fontScale} />
+          ) : tab === "excel" ? (
+            <ExcelCodePanel method={method} fz={fz} fontScale={fontScale} />
           ) : (
             <>
           {method.intro.split("\n\n").map((p, i) => (
@@ -544,6 +642,8 @@ function MethodDialog({
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
           {tab === "theory"
             ? "정의·산출식·활용을 먼저 확인한 뒤 '코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
+            : tab === "excel"
+            ? "엑셀 셀에 =PY( 를 입력해 파이썬 편집 모드로 들어간 뒤, 블록의 ‘복사’로 코드를 붙여 넣으세요. 데이터는 xl()로 시트·표를 참조합니다."
             : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
         </footer>
       </div>
@@ -853,63 +953,122 @@ function QuadrantChart({
 
 /* ──────────── 데이터 핸들링 칩 스트립 (md+, 사분면 아래) ──────────── */
 
+/** 데이터 핸들링 3면 구분(작업 흐름순) — 클릭 → 사분면과 동일한 팝업 */
+const WRANGLE_PANES: { label: string; color: string; ids: string[] }[] = [
+  {
+    label: "선택·필터",
+    color: "amber",
+    ids: ["select-rows-cols", "filter-condition", "isin", "conditional"],
+  },
+  { label: "결합·집계", color: "cyan", ids: ["join-merge", "groupby", "pivot"] },
+  { label: "정제·변형", color: "slate", ids: ["missing", "sort-dedup", "apply"] },
+];
+
 /**
- * wrangle은 실행기 각 셀의 '데이터 핸들링 ▾' 콤보박스가 주 동선이라 사분면에서 제외하고,
- * 사전으로서의 열람은 이 컴팩트 스트립으로 유지한다(클릭 → 동일 팝업).
+ * 데이터 핸들링(wrangle)은 사분면 바로 아래 '보이기/숨기기' 접이식 패널로 둔다(기본 접힘).
+ * 펼치면 작업 흐름순 3면(선택·필터 / 결합·집계 / 정제·변형)으로 나눠 열람하고,
+ * 클릭하면 사분면과 동일한 팝업이 열린다. 실제 삽입은 실행기 셀 콤보박스가 주 동선.
  */
-function WrangleStrip({
+function WranglePanel({
   onOpen,
   highlightId,
 }: {
   onOpen: (id: string) => void;
   highlightId: string | null;
 }) {
-  const cat = WRANGLE_CATEGORY;
-  const methods = useMemo(
-    () => STAT_METHODS.filter((m) => m.category === cat.id),
-    [cat.id]
+  const [open, setOpen] = useState(false);
+  const total = useMemo(
+    () => STAT_METHODS.filter((m) => m.category === "wrangle").length,
+    []
   );
-  if (methods.length === 0) return null;
+  if (total === 0) return null;
+  const byId = (id: string) => STAT_METHODS.find((m) => m.id === id);
 
   return (
-    <div
-      className="mt-4 hidden rounded-cover px-4 py-3 md:block"
-      style={{
-        background: `color-mix(in srgb, var(--chip-${cat.color}-bg) 55%, white)`,
-      }}
-    >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <span className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ background: `var(--chip-${cat.color}-fg)` }}
-            aria-hidden
-          />
-          <span className="text-[13.5px] font-semibold text-foreground">
-            {cat.label}
-          </span>
+    <div className="mt-4 hidden md:block">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 rounded-cover border border-border bg-surface/60 px-4 py-2.5 text-left transition-colors hover:bg-surface"
+      >
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-tertiary transition-transform ${
+            open ? "" : "-rotate-90"
+          }`}
+          aria-hidden
+        />
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: `var(--chip-${WRANGLE_CATEGORY.color}-fg)` }}
+          aria-hidden
+        />
+        <span className="text-[13.5px] font-semibold text-foreground">
+          데이터 핸들링
         </span>
-        <span className="hidden text-[11.5px] text-tertiary lg:inline">
-          {cat.hint} — 실행기 각 셀의 &lsquo;데이터 핸들링 ▾&rsquo;에서 바로
-          삽입할 수 있습니다
+        <span className="rounded-full bg-white px-1.5 py-px text-[11px] font-medium text-tertiary">
+          {total}
         </span>
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          {methods.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => onOpen(m.id)}
-              title={m.summary}
-              className={`method-term whitespace-nowrap rounded px-1 text-[13px] font-medium leading-snug ${
-                highlightId === m.id ? "method-term-active" : ""
-              }`}
-              style={webTermStyle(m, cat.color)}
-            >
-              {m.name}
-            </button>
-          ))}
-        </div>
-      </div>
+        <span className="hidden text-[11.5px] text-tertiary sm:inline">
+          선택·필터 · 결합·집계 · 정제·변형
+        </span>
+        <span className="ml-auto text-[12px] font-medium text-tertiary">
+          {open ? "접기" : "펼치기"}
+        </span>
+      </button>
+
+      {open ? (
+        <>
+          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {WRANGLE_PANES.map((pane) => (
+              <div
+                key={pane.label}
+                className="rounded-cover px-4 py-3.5"
+                style={{
+                  background: `color-mix(in srgb, var(--chip-${pane.color}-bg) 55%, white)`,
+                }}
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: `var(--chip-${pane.color}-fg)` }}
+                    aria-hidden
+                  />
+                  <span className="text-[13px] font-semibold text-foreground">
+                    {pane.label}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                  {pane.ids.map((id) => {
+                    const m = byId(id);
+                    if (!m) return null;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => onOpen(id)}
+                        title={m.summary}
+                        className={`method-term whitespace-nowrap rounded px-1 text-[13px] font-medium leading-snug ${
+                          highlightId === id ? "method-term-active" : ""
+                        }`}
+                        style={{ color: `var(--chip-${pane.color}-fg)` }}
+                      >
+                        {m.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 px-1 text-[11.5px] leading-relaxed text-tertiary">
+            클릭하면 정의·코드 팝업이 열립니다. 실제 삽입은 아래 파이썬 실행기 각
+            셀의 &lsquo;데이터 핸들링 ▾&rsquo; 콤보박스에서 세부 항목으로 바로 할
+            수 있습니다.
+          </p>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1029,7 +1188,7 @@ export function MethodCloud() {
       </div>
 
       <QuadrantChart onOpen={setOpenId} highlightId={highlightId} />
-      <WrangleStrip onOpen={setOpenId} highlightId={highlightId} />
+      <WranglePanel onOpen={setOpenId} highlightId={highlightId} />
       {/* 모바일은 데이터 핸들링을 포함한 5개 카테고리를 클러스터로 */}
       <ClusterCloud onOpen={setOpenId} highlightId={highlightId} />
 
