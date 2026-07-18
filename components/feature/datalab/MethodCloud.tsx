@@ -34,6 +34,8 @@ import {
   METHOD_EXCEL_CODE,
   PIE_GENERAL_NOTE,
   PACKAGE_STATUS_META,
+  noteToBullets,
+  toExcelPython,
 } from "@/lib/methodExcelCode";
 import { useRunner } from "@/components/feature/datalab/RunnerContext";
 import {
@@ -148,9 +150,9 @@ function ExcelCodePanel({
   const data = METHOD_EXCEL_CODE[method.id];
   return (
     <div>
-      {/* 공통 차이점 안내 — 코드 위 */}
+      {/* 공통 차이점 안내 — 코드 위(글머리) */}
       <div
-        className="rounded px-4 py-3 leading-[1.8] text-body"
+        className="rounded px-4 py-3 text-body"
         style={{
           ...fz(12.5),
           background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
@@ -159,8 +161,11 @@ function ExcelCodePanel({
         <span className="font-semibold text-foreground">
           엑셀의 Python(=PY())에서 쓰는 법
         </span>
-        <br />
-        {PIE_GENERAL_NOTE}
+        <ul className="mt-1.5 list-disc space-y-1 pl-4 leading-[1.7] marker:text-tertiary">
+          {PIE_GENERAL_NOTE.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
       </div>
 
       {data ? (
@@ -176,12 +181,14 @@ function ExcelCodePanel({
             >
               {PACKAGE_STATUS_META[data.packageStatus].label}
             </span>
-            <p
-              className="min-w-[12rem] flex-1 leading-[1.8] text-body"
+            <ul
+              className="min-w-[12rem] flex-1 list-disc space-y-1 pl-4 leading-[1.7] text-body marker:text-tertiary"
               style={fz(13)}
             >
-              {data.note}
-            </p>
+              {noteToBullets(data.note).map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
           </div>
 
           {/* 적응 코드 섹션 */}
@@ -207,7 +214,10 @@ function ExcelCodePanel({
                   {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
                 </span>
               </div>
-              <CodeBlock code={s.code.trim()} codeFz={12.5 * fontScale} />
+              <CodeBlock
+                code={toExcelPython(s.code).trim()}
+                codeFz={12.5 * fontScale}
+              />
             </div>
           ))}
         </>

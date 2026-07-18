@@ -16,8 +16,8 @@ export interface CodeTab {
   key: string;
   label: string;
   code: string;
-  /** 코드 위에 표시할 안내(선택) — '엑셀 적용 코드' 탭 등 */
-  note?: string;
+  /** 코드 위에 표시할 안내(선택) — 문자열 또는 글머리 목록 */
+  note?: string | string[];
 }
 
 export function DistCodeDialog({
@@ -148,7 +148,7 @@ export function DistCodeDialog({
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           {active.note ? (
             <div
-              className="mb-4 rounded px-4 py-3 leading-[1.8] text-body"
+              className="mb-4 rounded px-4 py-3 text-body"
               style={{
                 fontSize: 12.5,
                 background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
@@ -157,8 +157,13 @@ export function DistCodeDialog({
               <span className="font-semibold text-foreground">
                 엑셀의 Python(=PY())에서 쓰는 법
               </span>
-              <br />
-              {active.note}
+              <ul className="mt-1.5 list-disc space-y-1 pl-4 leading-[1.7] marker:text-tertiary">
+                {(Array.isArray(active.note) ? active.note : [active.note]).map(
+                  (b, i) => (
+                    <li key={i}>{b}</li>
+                  )
+                )}
+              </ul>
             </div>
           ) : null}
           <CodeBlock code={active.code} codeFz={12.5} />

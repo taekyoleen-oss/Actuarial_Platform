@@ -26,6 +26,7 @@ import {
   isDataFileName,
   isPyodideRequested,
   listFsDataFiles,
+  resetNamespace,
   runPythonCode,
   writeDataFile,
   type RunPhase,
@@ -33,6 +34,15 @@ import {
 import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
 import { PLOT_SNIPPET_GROUPS, plotInsertCode } from "@/lib/plotSnippets";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+import {
+  loadTabs,
+  saveTabs,
+  loadWorkspace,
+  saveWorkspace,
+  removeWorkspace,
+  bytesToB64,
+  b64ToBytes,
+} from "@/lib/pyRunnerStore";
 
 /** AI 어시스턴트 호출(서버 라우트) — 실패 시 사용자용 메시지로 throw. */
 async function callAssist(body: {
@@ -361,8 +371,6 @@ interface Cell {
   /** '변수 반영' 변수 선택 드롭다운 */
   varPickerOpen?: boolean;
   varOptions?: string[];
-  /** 실행 결과 접힘 여부 */
-  outputCollapsed?: boolean;
   /** 마지막 실행 순서(In [n]) — 실행할 때마다 증가(주피터 실행 카운터) */
   execOrder?: number;
   /** 코드 되돌리기(취소·Ctrl+Z) 스냅샷 스택 — 삽입·타이핑 버스트 직전 코드 */
@@ -413,10 +421,204 @@ function autoSize(el: HTMLTextAreaElement): void {
   el.style.height = `${Math.min(el.scrollHeight + 2, 460)}px`;
 }
 
+/**
+ * 파이썬 실행기 — 상단에 '작업 탭'을 두어 독립 노트북을 여러 개 만든다.
+ * 각 탭은 자기만의 셀·데이터 목록·파이썬 네임스페이스(nsKey)를 가져 변수가 섞이지
+ * 않는다(Pyodide 런타임·모듈 캐시·가상 FS는 공유). 모든 탭을 마운트한 채 표시만
+ * 토글해 탭을 오가도 각 탭의 상태(셀·출력)가 유지된다.
+ */
 export default function PyRunner({
   loadRequest,
   onLoadMethod,
 }: {
+  loadRequest: RunnerLoadRequest | null;
+  onLoadMethod?: (methodId: string | null) => void;
+}) {
+  const [workspaces, setWorkspaces] = useState<{ id: number; name: string }[]>([
+    { id: 1, name: "작업 1" },
+  ]);
+  const [activeId, setActiveId] = useState(1);
+  const wsCounter = useRef(1);
+  // 들어온 '실행기로 보내기' 요청을 그 시점의 활성 탭으로만 라우팅(탭 전환 시 재주입 방지)
+  const [pending, setPending] = useState<Record<number, RunnerLoadRequest | null>>(
+    {}
+  );
+  const routedSeq = useRef(0);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftName, setDraftName] = useState("");
+
+  // ── 브라우저 영속(localStorage) — 작업 탭 목록·활성 탭 복원(기기·브라우저 단위) ──
+  const [tabsHydrated, setTabsHydrated] = useState(false);
+  useEffect(() => {
+    const t = loadTabs();
+    if (t) {
+      setWorkspaces(t.workspaces);
+      setActiveId(
+        t.workspaces.some((w) => w.id === t.activeId)
+          ? t.activeId
+          : t.workspaces[0].id
+      );
+      wsCounter.current = Math.max(t.wsCounter ?? 1, ...t.workspaces.map((w) => w.id));
+    }
+    setTabsHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (!tabsHydrated) return;
+    saveTabs({ workspaces, activeId, wsCounter: wsCounter.current });
+  }, [workspaces, activeId, tabsHydrated]);
+
+  useEffect(() => {
+    if (loadRequest && loadRequest.seq !== routedSeq.current) {
+      routedSeq.current = loadRequest.seq;
+      setPending((p) => ({ ...p, [activeId]: loadRequest }));
+    }
+  }, [loadRequest, activeId]);
+
+  const addWorkspace = () => {
+    const id = ++wsCounter.current;
+    setWorkspaces((ws) => [...ws, { id, name: `작업 ${id}` }]);
+    setActiveId(id);
+  };
+
+  const closeWorkspace = (id: number) => {
+    setWorkspaces((ws) => {
+      if (ws.length <= 1) return ws;
+      const idx = ws.findIndex((w) => w.id === id);
+      const next = ws.filter((w) => w.id !== id);
+      if (id === activeId) {
+        const fallback = next[Math.max(0, idx - 1)] ?? next[0];
+        setActiveId(fallback.id);
+      }
+      return next;
+    });
+    resetNamespace(`ws-${id}`); // 닫은 탭의 파이썬 네임스페이스 해제
+    removeWorkspace(`ws-${id}`); // 저장된 셀·데이터도 제거
+  };
+
+  const commitRename = () => {
+    if (editingId != null) {
+      const name = draftName.trim();
+      if (name)
+        setWorkspaces((ws) =>
+          ws.map((w) => (w.id === editingId ? { ...w, name } : w))
+        );
+    }
+    setEditingId(null);
+  };
+
+  return (
+    <div
+      className="mt-8 rounded-cover border border-[color:var(--chip-blue-fg)]/20 p-5 sm:p-6"
+      style={{ background: "color-mix(in srgb, var(--chip-blue-bg) 60%, white)" }}
+    >
+      <div>
+        <h3 className="text-[16px] font-semibold text-foreground">
+          🐍 파이썬 실행기
+        </h3>
+        <p className="mt-0.5 text-[12.5px] text-tertiary">
+          작업 탭마다 데이터를 불러오고 셀(단락) 단위로 독립 실행합니다 — 변수는 탭
+          사이에 섞이지 않고, 데이터는 PC를 벗어나지 않습니다.
+        </p>
+      </div>
+
+      {/* 작업 탭 바 — 여러 개의 독립 노트북(＋ 새 작업 · 더블클릭 이름변경 · × 닫기) */}
+      <div
+        role="tablist"
+        aria-label="파이썬 실행기 작업 탭"
+        className="mt-3 flex flex-wrap items-center gap-1.5"
+      >
+        {workspaces.map((w) => {
+          const active = w.id === activeId;
+          return (
+            <div
+              key={w.id}
+              className={`inline-flex items-center gap-0.5 rounded-full border pl-1 pr-0.5 ${
+                active
+                  ? "border-[var(--primary)] bg-white"
+                  : "border-border bg-white/70"
+              }`}
+            >
+              {editingId === w.id ? (
+                <input
+                  autoFocus
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitRename();
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                  aria-label="작업 탭 이름"
+                  className="w-24 rounded-full px-2 py-1 text-[12.5px] text-foreground focus-visible:outline-none"
+                />
+              ) : (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveId(w.id)}
+                  onDoubleClick={() => {
+                    setEditingId(w.id);
+                    setDraftName(w.name);
+                  }}
+                  title="더블클릭하면 이름을 바꿀 수 있습니다"
+                  className={`rounded-full px-2.5 py-1 text-[12.5px] font-medium ${
+                    active
+                      ? "text-[var(--primary)]"
+                      : "text-tertiary hover:text-foreground"
+                  }`}
+                >
+                  {w.name}
+                </button>
+              )}
+              {workspaces.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => closeWorkspace(w.id)}
+                  aria-label={`${w.name} 탭 닫기`}
+                  className="rounded-full p-1 text-tertiary hover:text-foreground"
+                >
+                  <X size={13} />
+                </button>
+              ) : null}
+            </div>
+          );
+        })}
+        <button
+          type="button"
+          onClick={addWorkspace}
+          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-1 text-[12.5px] font-medium text-tertiary hover:text-foreground"
+        >
+          ＋ 새 작업
+        </button>
+      </div>
+
+      {/* 작업 탭별 독립 워크스페이스(전부 마운트, 표시만 토글해 상태 유지).
+          loadRequest는 라우팅으로 활성 탭에만 채워지므로 onLoadMethod는 전 탭에
+          동일하게 넘겨 탭 전환 시 주입 effect가 재실행되지 않게 한다(사용자 편집 보존). */}
+      {workspaces.map((w) => (
+        <div key={w.id} className={w.id === activeId ? "block" : "hidden"}>
+          <RunnerWorkspace
+            nsKey={`ws-${w.id}`}
+            loadRequest={pending[w.id] ?? null}
+            onLoadMethod={onLoadMethod}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 하나의 '작업 탭' = 독립 노트북. nsKey로 파이썬 네임스페이스가 탭마다 분리되어
+ * 변수(df 등)가 탭 사이에 섞이지 않는다(런타임·데이터 파일은 공유).
+ */
+function RunnerWorkspace({
+  nsKey,
+  loadRequest,
+  onLoadMethod,
+}: {
+  nsKey: string;
   loadRequest: RunnerLoadRequest | null;
   onLoadMethod?: (methodId: string | null) => void;
 }) {
@@ -439,7 +641,6 @@ export default function PyRunner({
     []
   );
 
-  const [open, setOpen] = useState(false);
   const [cells, setCells] = useState<Cell[]>(() => [
     {
       id: 0,
@@ -467,6 +668,75 @@ export default function PyRunner({
     setFsSupported(dirPicker() !== null);
   }, []);
 
+  // ── 브라우저 영속(localStorage) — 새로고침·재접속 후에도 이 탭의 셀·데이터 복원 ──
+  const [wsHydrated, setWsHydrated] = useState(false);
+  useEffect(() => {
+    const p = loadWorkspace(nsKey);
+    if (p && p.cells?.length) {
+      setCells(
+        p.cells.map((c) => ({
+          id: c.id,
+          code: c.code,
+          output: c.output ?? "",
+          images: c.images ?? [],
+          // 런타임이 초기화되므로 '실행 중'으로 저장된 셀은 대기로 되돌린다
+          status: c.status === "running" ? "idle" : c.status ?? "idle",
+          ms: c.ms,
+          execOrder: c.execOrder,
+        }))
+      );
+      setLoadedLabel(p.loadedLabel ?? null);
+      nextId.current =
+        p.nextId ?? Math.max(0, ...p.cells.map((c) => c.id)) + 1;
+      execCounter.current = p.execCounter ?? 0;
+      if (p.files?.length) {
+        const map = new Map<string, Uint8Array>();
+        for (const f of p.files) {
+          try {
+            map.set(f.name, b64ToBytes(f.b64));
+          } catch {
+            // 손상된 항목은 건너뜀
+          }
+        }
+        dataBytes.current = map;
+        setDataFiles(
+          [...map.entries()].map(([name, b]) => ({ name, size: b.length }))
+        );
+      }
+    }
+    setWsHydrated(true);
+  }, [nsKey]);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!wsHydrated) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      const files = [...dataBytes.current.entries()].map(([name, bytes]) => ({
+        name,
+        b64: bytesToB64(bytes),
+      }));
+      saveWorkspace(nsKey, {
+        cells: cells.map((c) => ({
+          id: c.id,
+          code: c.code,
+          output: c.output,
+          images: c.images,
+          status: c.status,
+          ms: c.ms,
+          execOrder: c.execOrder,
+        })),
+        loadedLabel,
+        files,
+        execCounter: execCounter.current,
+        nextId: nextId.current,
+      });
+    }, 600);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [cells, loadedLabel, dataFiles, wsHydrated, nsKey]);
+
   const setCellsFromCode = useCallback(
     (code: string, label: string | null) => {
       setCells(splitIntoCells(code).map((c) => newCell(c)));
@@ -475,10 +745,9 @@ export default function PyRunner({
     [newCell]
   );
 
-  // 팝업 "실행기로 보내기" — 셀 분할 주입 + 패널 열고 스크롤 + 워드클라우드 강조
+  // 팝업 "실행기로 보내기" — 셀 분할 주입 + 스크롤 + 워드클라우드 강조
   useEffect(() => {
     if (!loadRequest) return;
-    setOpen(true);
     setCellsFromCode(loadRequest.code, loadRequest.label);
     setSelectedId(loadRequest.methodId ?? "");
     if (loadRequest.methodId) onLoadMethod?.(loadRequest.methodId);
@@ -649,7 +918,8 @@ export default function PyRunner({
             setCells((prev) =>
               prev.map((c) => (c.id === id ? { ...c, output: c.output + s } : c))
             ),
-          (phase) => patchCell(id, { phase })
+          (phase) => patchCell(id, { phase }),
+          nsKey
         );
         patchCell(id, { status: "done", ms: elapsedMs, images, phase: undefined });
         return true;
@@ -673,7 +943,7 @@ export default function PyRunner({
         setBusy(false);
       }
     },
-    [patchCell]
+    [patchCell, nsKey]
   );
 
   /** 전체 실행 — 위에서부터 순서대로, 오류 셀에서 중단 */
@@ -686,22 +956,16 @@ export default function PyRunner({
     }
   }, [runCell]);
 
-  /** 세션 변수 초기화 — 사용자 정의 변수만 제거(데이터 파일·런타임은 유지) */
-  const resetVars = useCallback(async () => {
+  /** 이 작업 탭의 변수 초기화 — 탭의 네임스페이스만 비운다(데이터 파일·런타임은 유지) */
+  const resetVars = useCallback(() => {
     if (busyRef.current) return;
     if (!isPyodideRequested()) {
       setNotice("아직 실행한 적이 없어 초기화할 변수가 없습니다.");
       return;
     }
-    const py = await getPyodide();
-    await py.runPythonAsync(
-      [
-        "for _k in [k for k in list(globals().keys()) if not k.startswith('__')]:",
-        "    del globals()[_k]",
-      ].join("\n")
-    );
-    setNotice("세션 변수를 초기화했습니다 — 데이터 파일은 유지됩니다.");
-  }, []);
+    resetNamespace(nsKey);
+    setNotice("이 작업 탭의 변수를 초기화했습니다 — 데이터 파일은 유지됩니다.");
+  }, [nsKey]);
 
   const clearOutputs = useCallback(() => {
     setCells((prev) =>
@@ -795,7 +1059,7 @@ export default function PyRunner({
         varPickerOpen: false,
       });
       try {
-        const schema = await collectDataSchema();
+        const schema = await collectDataSchema(nsKey);
         const result = await callAssist({
           mode,
           code: cell.code,
@@ -828,7 +1092,7 @@ export default function PyRunner({
         });
       }
     },
-    [patchCell, priorCodeOf]
+    [patchCell, priorCodeOf, nsKey]
   );
 
   /** 변수 반영 — 세션의 실제 DataFrame 변수 목록을 열어 그중 하나를 고르게 한다 */
@@ -842,7 +1106,7 @@ export default function PyRunner({
       }
       patchCell(id, { aiBusy: true, aiError: null });
       try {
-        const schema = await collectDataSchema();
+        const schema = await collectDataSchema(nsKey);
         let vars: string[] = [];
         try {
           const parsed = JSON.parse(schema) as {
@@ -870,7 +1134,7 @@ export default function PyRunner({
         });
       }
     },
-    [patchCell]
+    [patchCell, nsKey]
   );
 
   /** 에러분석 — 팝업으로 에러·수정안을 안내(반영 여부 확인) */
@@ -884,7 +1148,7 @@ export default function PyRunner({
       if (!cell || cell.aiBusy || cell.status !== "error") return;
       patchCell(id, { aiBusy: true, aiError: null });
       try {
-        const schema = await collectDataSchema();
+        const schema = await collectDataSchema(nsKey);
         const result = await callAssist({
           mode: "fix",
           code: cell.code,
@@ -916,7 +1180,7 @@ export default function PyRunner({
         });
       }
     },
-    [patchCell, priorCodeOf]
+    [patchCell, priorCodeOf, nsKey]
   );
 
   /** 에러 팝업 '반영' — 기존(오류) 셀은 위에 그대로 두고, 수정된 코드만 담은
@@ -1008,7 +1272,24 @@ export default function PyRunner({
       setGenError(e instanceof Error ? e.message : "AI 요청에 실패했습니다.");
       setGenBusy(false);
     }
-  }, [genRequest, genBusy, newCell]);
+  }, [genRequest, genBusy, newCell, nsKey]);
+
+  /** 이 작업 탭 전체 리셋 — 셀·데이터 목록·출력·변수를 처음 상태로(런타임·FS는 유지) */
+  const resetWorkspace = useCallback(() => {
+    if (busyRef.current) return;
+    resetNamespace(nsKey);
+    dataBytes.current.clear();
+    execCounter.current = 0;
+    setCells([newCell("")]);
+    setLoadedLabel(null);
+    setSelectedId("");
+    setDataFiles([]);
+    setUrlInput("");
+    setGenRequest("");
+    setGenError(null);
+    setErrModal(null);
+    setNotice("이 작업 탭을 리셋했습니다 — 데이터 파일·런타임은 유지됩니다.");
+  }, [nsKey, newCell]);
 
   /** 폴더에 저장 — analysis.py(# %% 셀 구분) + workspace.json + 데이터 파일 일체 */
   const saveToFolder = useCallback(async () => {
@@ -1103,36 +1384,9 @@ export default function PyRunner({
   };
 
   return (
-    <div
-      ref={rootRef}
-      className="mt-8 rounded-cover border border-[color:var(--chip-blue-fg)]/20 p-5 sm:p-6"
-      style={{
-        background: "color-mix(in srgb, var(--chip-blue-bg) 60%, white)",
-      }}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="text-[16px] font-semibold text-foreground">
-            🐍 파이썬 실행기
-          </h3>
-          <p className="mt-0.5 text-[12.5px] text-tertiary">
-            사전의 코드를 브라우저 안에서 셀(단락) 단위로 실행합니다 —
-            변수가 셀 사이에 유지되고, 데이터는 PC를 벗어나지 않습니다.
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant={open ? "secondary" : "primary"}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? "접기" : "실행기 열기"}
-        </Button>
-      </div>
-
-      {open ? (
-        <div className="mt-4">
-          {/* 툴바 — 코드 로드 · 데이터 · 폴더 저장/불러오기 */}
+    <div ref={rootRef}>
+      <div className="mt-2">
+        {/* 툴바 — 코드 로드 · 데이터 · 폴더 저장/불러오기 */}
           <div className="flex flex-wrap items-center gap-2">
             <select
               value={selectedId}
@@ -1274,10 +1528,20 @@ export default function PyRunner({
               type="button"
               size="sm"
               variant="secondary"
-              onClick={() => void resetVars()}
+              onClick={resetVars}
               disabled={busy}
             >
               변수 초기화
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={resetWorkspace}
+              disabled={busy}
+              title="이 작업 탭의 셀·데이터·변수를 처음 상태로 되돌립니다"
+            >
+              ↺ 리셋
             </Button>
             {loadedLabel ? (
               <span className="text-[12.5px] text-tertiary">
@@ -1649,38 +1913,21 @@ export default function PyRunner({
               />
               {c.output || c.images.length > 0 ? (
                 <div className="border-t border-border">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      patchCell(c.id, { outputCollapsed: !c.outputCollapsed })
-                    }
-                    className="flex w-full items-center gap-1 border-y border-[color:var(--chip-slate-fg)]/15 px-3 py-1 text-[11px] font-medium text-[color:var(--chip-slate-fg)] hover:opacity-80"
-                    style={{ background: "var(--chip-slate-bg)" }}
-                    aria-expanded={!c.outputCollapsed}
-                  >
-                    {c.outputCollapsed
-                      ? `▸ 실행 결과 펼치기${c.images.length ? ` (그래프 ${c.images.length})` : ""}`
-                      : "▾ 실행 결과 접기"}
-                  </button>
-                  {!c.outputCollapsed ? (
-                    <>
-                      {c.output ? (
-                        <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap bg-surface px-3 pb-3 font-mono text-[12px] leading-[1.65] text-foreground">
-                          {c.output}
-                        </pre>
-                      ) : null}
-                      {c.images.map((b64, j) => (
-                        // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={j}
-                          src={`data:image/png;base64,${b64}`}
-                          alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
-                          className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
-                        />
-                      ))}
-                    </>
+                  {c.output ? (
+                    <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap bg-surface px-3 py-3 font-mono text-[12px] leading-[1.65] text-foreground">
+                      {c.output}
+                    </pre>
                   ) : null}
+                  {c.images.map((b64, j) => (
+                    // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={j}
+                      src={`data:image/png;base64,${b64}`}
+                      alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
+                      className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
+                    />
+                  ))}
                 </div>
               ) : null}
 
@@ -1743,6 +1990,13 @@ export default function PyRunner({
           </button>
 
           <ul className="mt-4 list-disc space-y-1 pl-5 text-[12px] leading-relaxed text-tertiary">
+            <li>
+              <strong>작업 탭·셀·데이터는 이 브라우저에 자동 저장</strong>되어
+              새로고침·브라우저 종료·PC 재부팅 뒤에도 그대로 복원됩니다. 서버로
+              보내지 않으므로 <strong>기기·브라우저마다 별도</strong>로 유지됩니다
+              (모바일·PC·다른 PC 각각). 단, 실행된 파이썬 변수는 메모리라 복원되지
+              않으니 셀을 다시 실행하세요.
+            </li>
             <li>
               실행은 전부 브라우저 안(Pyodide·WebAssembly)에서 이루어집니다 —
               코드·데이터가 서버로 전송되지 않습니다.
@@ -1818,7 +2072,6 @@ export default function PyRunner({
             </li>
           </ul>
         </div>
-      ) : null}
 
       {errModal ? (
         <ErrorFixModal

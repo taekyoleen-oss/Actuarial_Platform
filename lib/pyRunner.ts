@@ -13,7 +13,10 @@ interface PyProxyLike {
 }
 
 interface PyodideAPI {
-  runPythonAsync(code: string): Promise<unknown>;
+  runPythonAsync(
+    code: string,
+    options?: { globals?: unknown; locals?: unknown }
+  ): Promise<unknown>;
   loadPackagesFromImports(code: string): Promise<unknown>;
   loadPackage(pkg: string | string[]): Promise<unknown>;
   pyimport(name: string): { install(pkg: string): Promise<void> };
@@ -88,6 +91,36 @@ export async function getPyodide(): Promise<PyodideAPI> {
 /** 이미 로드됐는지(로딩 시작 여부) — UI 안내용 */
 export function isPyodideRequested(): boolean {
   return pyodidePromise !== null;
+}
+
+/**
+ * 실행기 '작업 탭'별 독립 네임스페이스 — 탭마다 자기만의 globals 딕셔너리를 쓴다.
+ * 같은 Pyodide 런타임(모듈 캐시·가상 FS)은 공유하되, 변수(df 등)는 탭 사이에 섞이지
+ * 않는다. nsKey가 없으면(기존 호출) 메인 globals에서 실행한다.
+ */
+const namespaces = new Map<string, PyProxyLike>();
+
+async function getNamespaceGlobals(
+  py: PyodideAPI,
+  nsKey: string
+): Promise<PyProxyLike> {
+  let ns = namespaces.get(nsKey);
+  if (!ns) {
+    ns = (await py.runPythonAsync("dict()")) as PyProxyLike;
+    namespaces.set(nsKey, ns);
+  }
+  return ns;
+}
+
+/** 작업 탭의 네임스페이스를 비운다(변수 초기화·탭 닫기·리셋). 런타임·FS는 유지. */
+export function resetNamespace(nsKey: string): void {
+  const ns = namespaces.get(nsKey);
+  try {
+    ns?.destroy?.();
+  } catch {
+    // 이미 파괴된 프록시 등은 무시
+  }
+  namespaces.delete(nsKey);
 }
 
 /**
@@ -167,9 +200,12 @@ export async function ensureKoreanFont(py: PyodideAPI): Promise<void> {
  * AI 어시스턴트가 '앞의 데이터'를 읽고 실제 열 이름으로 코드를 쓰도록 하는 컨텍스트.
  * 아직 아무것도 실행되지 않았으면 파일 목록만(또는 빈 값) 반환.
  */
-export async function collectDataSchema(): Promise<string> {
+export async function collectDataSchema(nsKey?: string): Promise<string> {
   if (!isPyodideRequested()) return '{"vars":{},"files":[]}';
   const py = await getPyodide();
+  const runOpts = nsKey
+    ? { globals: await getNamespaceGlobals(py, nsKey) }
+    : undefined;
   const snippet = [
     "import json as _json",
     "def _collect_schema():",
@@ -203,7 +239,7 @@ export async function collectDataSchema(): Promise<string> {
     "_collect_schema()",
   ].join("\n");
   try {
-    const res = await py.runPythonAsync(snippet);
+    const res = await py.runPythonAsync(snippet, runOpts);
     return typeof res === "string" ? res : String(res);
   } catch {
     return '{"vars":{},"files":[]}';
@@ -240,10 +276,15 @@ export interface RunResult {
 export async function runPythonCode(
   code: string,
   onOutput: (s: string) => void,
-  onPhase: (p: RunPhase) => void
+  onPhase: (p: RunPhase) => void,
+  nsKey?: string
 ): Promise<RunResult> {
   onPhase("boot");
   const py = await getPyodide();
+  // 작업 탭별 네임스페이스(있으면) — 없으면 메인 globals에서 실행
+  const runOpts = nsKey
+    ? { globals: await getNamespaceGlobals(py, nsKey) }
+    : undefined;
 
   onPhase("pkg");
   try {
@@ -280,7 +321,7 @@ export async function runPythonCode(
 
   onPhase("run");
   const t0 = performance.now();
-  const result = await py.runPythonAsync(code);
+  const result = await py.runPythonAsync(code, runOpts);
   const elapsedMs = performance.now() - t0;
 
   if (result !== undefined && result !== null) {

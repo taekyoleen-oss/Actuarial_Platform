@@ -3,6 +3,12 @@
 // 대부분 샘플(df=policy)·소형 인라인 프레임으로 바로 실행되며, 실제 데이터면 열
 // 이름만 바꾸면 된다. 그룹은 콤보박스 optgroup, 각 항목은 한 조각(삽입 단위).
 // 삽입 시 snippetInsertCode()가 상단에 '무슨 코드인지' 설명 헤더(#)를 붙인다.
+//
+// 결과 출력 규칙(중요): 각 조각은 '함수 실행(대입)'과 '결과 보기'를 분리한다.
+//  · 마지막 줄은 print()가 아니라 결과 '값(식)'을 그대로 둔다.
+//    → 브라우저 실행기는 마지막 식의 repr을 보여주고, 엑셀의 Python(=PY())은
+//      그 값을 셀에 바로 반환한다(엑셀에서 print는 셀이 아닌 진단창으로 감).
+//  · 콘솔에 더 보고 싶으면 필요할 때 print(...)를 별도로 추가한다.
 
 export interface WrangleSnippet {
   id: string;
@@ -38,22 +44,30 @@ export const WRANGLE_SNIPPET_GROUPS: WrangleSnippetGroup[] = [
         code: `# 한 열은 Series, 여러 열은 대괄호 두 겹(DataFrame)
 s = df["premium"]                      # Series
 sub = df[["policy_id", "premium"]]     # DataFrame
-print(sub.head())`,
+
+# 결과 보기 — 마지막 값이 반환됨(콘솔은 필요하면 print(sub.head()))
+sub.head()`,
       },
       {
         id: "select-loc",
         label: "loc — 라벨·조건으로 [행, 열]",
         desc: "loc — 인덱스·열 '라벨' 기준으로 행/열을 선택합니다(슬라이스 끝 포함).",
-        code: `# loc: 라벨 기준 [행, 열] (슬라이스 끝 포함)
-print(df.loc[df["age"] >= 60, ["policy_id", "premium"]].head())`,
+        code: `# loc: 라벨 기준 [행, 열] (슬라이스 끝 포함) — 결과를 sub에 저장
+sub = df.loc[df["age"] >= 60, ["policy_id", "premium"]]
+
+# 결과 보기 (콘솔은 필요하면 print(sub.head()))
+sub.head()`,
       },
       {
         id: "select-iloc",
         label: "iloc — 위치(정수)로 [행, 열]",
         desc: "iloc — '정수 위치' 기준으로 행/열을 선택합니다(슬라이스 끝 제외).",
         code: `# iloc: 위치 기준 [행, 열] (슬라이스 끝 제외)
-print(df.iloc[:5, :3])       # 앞 5행 × 앞 3열
-print(df.iloc[-10:])         # 마지막 10행`,
+front = df.iloc[:5, :3]      # 앞 5행 × 앞 3열
+back = df.iloc[-10:]         # 마지막 10행
+
+# 결과 보기 — 마지막 값이 반환됨(다른 값은 필요하면 print(front))
+back`,
       },
       {
         id: "select-dtypes",
@@ -61,7 +75,9 @@ print(df.iloc[-10:])         # 마지막 10행`,
         desc: "자료형(select_dtypes)이나 이름 패턴(filter)으로 열 묶음을 고릅니다.",
         code: `num = df.select_dtypes("number")     # 수치형 열만
 amt = df.filter(like="_amt")         # 이름에 _amt 든 열
-print(num.columns.tolist())`,
+
+# 결과 보기 (콘솔은 필요하면 print(num.columns.tolist()))
+num.columns.tolist()`,
       },
     ],
   },
@@ -75,7 +91,9 @@ print(num.columns.tolist())`,
         desc: "여러 조건을 & (그리고)·| (또는)로 잇고 각 조건을 괄호로 감쌉니다.",
         code: `# 각 조건을 괄호로 감싸고 & (그리고) · | (또는)
 target = df[(df["age"] >= 40) & (df["age"] < 60) & (df["product"] == "종신")]
-print(target.shape)`,
+
+# 결과 보기 — 건수·열수(콘솔은 필요하면 print(target.shape))
+target.shape`,
       },
       {
         id: "filter-query",
@@ -84,28 +102,35 @@ print(target.shape)`,
         code: `# 열 이름을 따옴표 없이, 외부 변수는 @변수
 min_prem = 100_000
 high = df.query("age >= 60 and premium >= @min_prem")
-print(len(high), "건 /", len(df), "건")`,
+
+# 결과 보기 — 추출 건수·열수(콘솔은 print(len(high), "/", len(df)))
+high.shape`,
       },
       {
         id: "filter-isin",
         label: "isin — 값 목록 포함",
         desc: "값 목록에 해당하는 행만 추출합니다.",
         code: `picked = df[df["product"].isin(["종신", "정기", "암보험"])]
-print(picked["product"].value_counts())`,
+
+# 결과 보기 (콘솔은 필요하면 print(picked["product"].value_counts()))
+picked["product"].value_counts()`,
       },
       {
         id: "filter-not-isin",
         label: "isin 제외 (~)",
         desc: "~ isin으로 목록에 없는 행만 남깁니다(제외 필터).",
-        code: `others = df[~df["product"].isin(["종신", "정기"])]
-print(others.shape)`,
+        code: `# ~ 로 목록에 없는 행만 남김(제외 필터)
+others = df[~df["product"].isin(["종신", "정기"])]
+
+others.shape   # 결과 보기 (콘솔은 print(others.shape))`,
       },
       {
         id: "filter-between",
         label: "between — 구간 조건",
         desc: "between으로 구간 조건(기본 양끝 포함)을 겁니다.",
         code: `mid = df[df["premium"].between(50_000, 150_000)]   # 양끝 포함
-print(mid.shape)`,
+
+mid.shape   # 결과 보기 (콘솔은 print(mid.shape))`,
       },
     ],
   },
@@ -120,7 +145,9 @@ print(mid.shape)`,
         code: `import numpy as np
 # 조건이 참이면 앞 값, 거짓이면 뒤 값
 df["risk"] = np.where(df["age"] >= 60, "고위험", "일반")
-print(df["risk"].value_counts())`,
+
+# 결과 보기 (콘솔은 필요하면 print(df["risk"].value_counts()))
+df["risk"].value_counts()`,
       },
       {
         id: "branch-select",
@@ -131,7 +158,9 @@ print(df["risk"].value_counts())`,
 conds = [df["age"] >= 60, df["age"] >= 40]
 labels = ["60+", "40-59"]
 df["age_grp"] = np.select(conds, labels, default="~39")
-print(df["age_grp"].value_counts())`,
+
+# 결과 보기 (콘솔은 필요하면 print(df["age_grp"].value_counts()))
+df["age_grp"].value_counts()`,
       },
       {
         id: "branch-cut",
@@ -141,7 +170,9 @@ print(df["age_grp"].value_counts())`,
 # 경계(bins)를 직접 지정 — right=False면 [a, b) 왼쪽 포함
 df["age_band"] = pd.cut(df["age"], bins=[0, 30, 40, 50, 60, 120],
                         labels=["~29", "30대", "40대", "50대", "60+"], right=False)
-print(df["age_band"].value_counts().sort_index())`,
+
+# 결과 보기 (콘솔은 print(df["age_band"].value_counts().sort_index()))
+df["age_band"].value_counts().sort_index()`,
       },
       {
         id: "branch-qcut",
@@ -150,7 +181,8 @@ print(df["age_band"].value_counts().sort_index())`,
         code: `import pandas as pd
 # 분위수로 균등 분할(각 구간 건수가 비슷)
 df["prem_q"] = pd.qcut(df["premium"], q=4, labels=["Q1", "Q2", "Q3", "Q4"])
-print(df["prem_q"].value_counts())`,
+
+df["prem_q"].value_counts()   # 결과 보기 (콘솔은 print(...))`,
       },
     ],
   },
@@ -168,7 +200,8 @@ left = pd.DataFrame({"id": [1, 2, 3], "amt": [100, 200, 300]})
 right = pd.DataFrame({"id": [2, 3, 4], "grade": ["A", "B", "C"]})
 
 # 양쪽에 모두 있는 키(2,3)만 남음
-print(left.merge(right, on="id", how="inner"))`,
+merged = left.merge(right, on="id", how="inner")
+merged   # 결과 보기 (콘솔은 필요하면 print(merged))`,
       },
       {
         id: "join-left",
@@ -179,7 +212,8 @@ left = pd.DataFrame({"id": [1, 2, 3], "amt": [100, 200, 300]})
 right = pd.DataFrame({"id": [2, 3, 4], "grade": ["A", "B", "C"]})
 
 # 왼쪽 전부 유지 — 매칭 안 되는 id 1은 grade=NaN
-print(left.merge(right, on="id", how="left"))`,
+merged = left.merge(right, on="id", how="left")
+merged   # 결과 보기 (콘솔은 print(merged))`,
       },
       {
         id: "join-right",
@@ -190,7 +224,8 @@ left = pd.DataFrame({"id": [1, 2, 3], "amt": [100, 200, 300]})
 right = pd.DataFrame({"id": [2, 3, 4], "grade": ["A", "B", "C"]})
 
 # 오른쪽 전부 유지 — 매칭 안 되는 id 4는 amt=NaN
-print(left.merge(right, on="id", how="right"))`,
+merged = left.merge(right, on="id", how="right")
+merged   # 결과 보기 (콘솔은 print(merged))`,
       },
       {
         id: "join-outer",
@@ -201,7 +236,8 @@ left = pd.DataFrame({"id": [1, 2, 3], "amt": [100, 200, 300]})
 right = pd.DataFrame({"id": [2, 3, 4], "grade": ["A", "B", "C"]})
 
 # 양쪽 키 전부(1,2,3,4) — 없는 값은 NaN
-print(left.merge(right, on="id", how="outer"))`,
+merged = left.merge(right, on="id", how="outer")
+merged   # 결과 보기 (콘솔은 print(merged))`,
       },
       {
         id: "join-cross",
@@ -212,7 +248,8 @@ a = pd.DataFrame({"plan": ["기본", "고급"]})
 b = pd.DataFrame({"rider": ["암", "실손"]})
 
 # 모든 조합 2×2 = 4행 (요금표·시나리오 전개 등)
-print(a.merge(b, how="cross"))`,
+combos = a.merge(b, how="cross")
+combos   # 결과 보기 (콘솔은 print(combos))`,
       },
       {
         id: "join-keys",
@@ -223,8 +260,9 @@ contracts = pd.DataFrame({"cust_id": [1, 2], "amt": [100, 200]})
 customers = pd.DataFrame({"customer_id": [1, 2], "name": ["김", "이"]})
 
 # 키 이름이 다르면 left_on·right_on으로 각각 지정
-print(contracts.merge(customers, left_on="cust_id",
-                      right_on="customer_id", how="left"))`,
+merged = contracts.merge(customers, left_on="cust_id",
+                         right_on="customer_id", how="left")
+merged   # 결과 보기 (콘솔은 print(merged))`,
       },
       {
         id: "join-validate",
@@ -238,7 +276,9 @@ right = pd.DataFrame({"id": [2, 3, 4], "grade": ["A", "B", "C"]})
 m = left.merge(right, on="id", how="left",
                validate="one_to_one",   # 키 중복이면 에러로 알림
                indicator=True)          # _merge: both / left_only
-print(m["_merge"].value_counts())       # left_only가 많으면 매칭 실패 다수`,
+
+# left_only가 많으면 매칭 실패 다수(콘솔은 print(m["_merge"].value_counts()))
+m["_merge"].value_counts()`,
       },
     ],
   },
@@ -255,7 +295,8 @@ jan = pd.DataFrame({"amt": [10, 20]})
 feb = pd.DataFrame({"amt": [30, 40]})
 
 # 같은 열 구조를 세로로 이어붙임 — ignore_index로 인덱스 재부여
-print(pd.concat([jan, feb], ignore_index=True))`,
+stacked = pd.concat([jan, feb], ignore_index=True)
+stacked   # 결과 보기 (콘솔은 print(stacked))`,
       },
       {
         id: "concat-col",
@@ -266,7 +307,8 @@ a = pd.DataFrame({"amt": [10, 20]})
 b = pd.DataFrame({"grade": ["A", "B"]})
 
 # 행 순서(인덱스)가 같은 표를 가로로 붙임(axis=1)
-print(pd.concat([a, b], axis=1))`,
+joined = pd.concat([a, b], axis=1)
+joined   # 결과 보기 (콘솔은 print(joined))`,
       },
     ],
   },
@@ -283,7 +325,7 @@ s = pd.DataFrame({"full": ["서울-강남", "부산-해운대", "경기-성남"]
 
 # 구분자('-')로 나눠 여러 열에 배치(expand=True)
 s[["시도", "시군구"]] = s["full"].str.split("-", expand=True)
-print(s)`,
+s   # 결과 보기 (콘솔은 print(s))`,
       },
       {
         id: "split-explode",
@@ -293,7 +335,8 @@ print(s)`,
 s = pd.DataFrame({"id": [1, 2], "riders": [["암", "실손"], ["종신"]]})
 
 # 리스트 한 칸 → 여러 행으로 펼치기
-print(s.explode("riders").reset_index(drop=True))`,
+exploded = s.explode("riders").reset_index(drop=True)
+exploded   # 결과 보기 (콘솔은 print(exploded))`,
       },
       {
         id: "split-chunks",
@@ -302,7 +345,9 @@ print(s.explode("riders").reset_index(drop=True))`,
         code: `import numpy as np
 # df를 행 기준 3등분(각 조각은 DataFrame)
 parts = np.array_split(df, 3)
-print("조각 수:", len(parts), "| 각 행수:", [len(p) for p in parts])`,
+
+# 결과 보기 — 각 조각 행수(콘솔은 print(len(parts), [len(p) for p in parts]))
+[len(p) for p in parts]`,
       },
       {
         id: "split-mask",
@@ -312,7 +357,9 @@ print("조각 수:", len(parts), "| 각 행수:", [len(p) for p in parts])`,
 mask = df["age"] >= 60
 seniors = df[mask]
 others = df[~mask]
-print("60+ :", len(seniors), "| 그 외 :", len(others))`,
+
+# 결과 보기 — 두 그룹 크기(콘솔은 print(len(seniors), len(others)))
+seniors.shape, others.shape`,
       },
       {
         id: "split-groups",
@@ -320,8 +367,9 @@ print("60+ :", len(seniors), "| 그 외 :", len(others))`,
         desc: "키 값별로 각각의 DataFrame(딕셔너리)으로 분리합니다.",
         code: `# 키 값별로 각각의 DataFrame으로 분리(딕셔너리)
 groups = {k: g for k, g in df.groupby("product")}
-for k, g in groups.items():
-    print(k, "->", len(g), "행")`,
+
+# 결과 보기 — 그룹별 행수(콘솔은 for k, g in groups.items(): print(k, len(g)))
+{k: len(g) for k, g in groups.items()}`,
       },
     ],
   },
@@ -334,21 +382,26 @@ for k, g in groups.items():
         label: "Groupby-sum — 그룹별 합계",
         desc: "그룹별 합계를 구합니다.",
         code: `# 상품군별 보험료 합계
-print(df.groupby("product")["premium"].sum())`,
+by_sum = df.groupby("product")["premium"].sum()
+by_sum   # 결과 보기 (콘솔은 print(by_sum))`,
       },
       {
         id: "groupby-mean",
         label: "Groupby-mean — 그룹별 평균",
         desc: "그룹별 평균을 구합니다.",
         code: `# 상품군별 보험료 평균
-print(df.groupby("product")["premium"].mean().round(0))`,
+by_mean = df.groupby("product")["premium"].mean().round(0)
+by_mean   # 결과 보기 (콘솔은 print(by_mean))`,
       },
       {
         id: "groupby-count",
         label: "Groupby-count — 그룹별 건수",
         desc: "그룹별 행 수(건수)를 셉니다.",
-        code: `print(df.groupby("product").size())          # 그룹별 행 수
-print(df.groupby("product")["policy_id"].count())  # 결측 제외 건수`,
+        code: `sizes = df.groupby("product").size()                  # 그룹별 행 수
+counts = df.groupby("product")["policy_id"].count()   # 결측 제외 건수
+
+# 결과 보기 — 마지막 값 반환(행 수는 필요하면 print(sizes))
+counts`,
       },
       {
         id: "groupby-agg",
@@ -362,7 +415,7 @@ summary = (
          보험료합계=("premium", "sum"))
     .reset_index()
 )
-print(summary.round(1))`,
+summary.round(1)   # 결과 보기 (콘솔은 print(summary.round(1)))`,
       },
       {
         id: "groupby-transform",
@@ -370,7 +423,9 @@ print(summary.round(1))`,
         desc: "집계값을 원본 행 수 그대로 되돌려 파생변수를 만듭니다.",
         code: `# 자기 그룹 평균 대비 비율(행 수를 그대로 유지)
 df["prem_vs_grp"] = df["premium"] / df.groupby("product")["premium"].transform("mean")
-print(df[["product", "premium", "prem_vs_grp"]].head())`,
+
+# 결과 보기 (콘솔은 print(df[["product", "premium", "prem_vs_grp"]].head()))
+df[["product", "premium", "prem_vs_grp"]].head()`,
       },
       {
         id: "groupby-filter",
@@ -378,7 +433,8 @@ print(df[["product", "premium", "prem_vs_grp"]].head())`,
         desc: "그룹 조건으로 그룹 전체를 채택/제외합니다.",
         code: `# 계약 100건 이상인 상품군만 남기기(그룹째 필터)
 big = df.groupby("product").filter(lambda g: len(g) >= 100)
-print(big["product"].value_counts())`,
+
+big["product"].value_counts()   # 결과 보기 (콘솔은 print(...))`,
       },
     ],
   },
@@ -395,7 +451,7 @@ print(big["product"].value_counts())`,
 pt = pd.pivot_table(df, index="product", columns="channel",
                     values="premium", aggfunc="mean",
                     margins=True, margins_name="전체", fill_value=0)
-print(pt.round(0))`,
+pt.round(0)   # 결과 보기 (콘솔은 print(pt.round(0)))`,
       },
       {
         id: "pivot-melt",
@@ -405,7 +461,7 @@ print(pt.round(0))`,
 wide = pd.DataFrame({"지점": ["A", "B"], "1월": [10, 20], "2월": [30, 40]})
 # 유지할 식별 열(id_vars) 외 나머지를 세로로 녹임
 long = wide.melt(id_vars="지점", var_name="월", value_name="실적")
-print(long)`,
+long   # 결과 보기 (콘솔은 print(long))`,
       },
     ],
   },
@@ -420,8 +476,9 @@ print(long)`,
         code: `import pandas as pd
 na = df.isna().sum()
 # 결측이 있는 열만 개수·비율로 정리
-print(pd.DataFrame({"결측수": na, "비율": (na / len(df)).round(3)})
-      .query("결측수 > 0").sort_values("결측수", ascending=False))`,
+na_summary = (pd.DataFrame({"결측수": na, "비율": (na / len(df)).round(3)})
+              .query("결측수 > 0").sort_values("결측수", ascending=False))
+na_summary   # 결과 보기 (콘솔은 print(na_summary))`,
       },
       {
         id: "missing-drop",
@@ -430,7 +487,9 @@ print(pd.DataFrame({"결측수": na, "비율": (na / len(df)).round(3)})
         code: `before = len(df)
 # subset 열이 비면 그 행 삭제
 clean = df.dropna(subset=["premium"])
-print(f"{before} -> {len(clean)} 행")`,
+
+# 결과 보기 — 남은 행수·열수(콘솔은 print(f"{before} -> {len(clean)}"))
+clean.shape`,
       },
       {
         id: "missing-fill",
@@ -438,7 +497,9 @@ print(f"{before} -> {len(clean)} 행")`,
         desc: "결측을 중앙값(수치형)·범주값으로 대체합니다.",
         code: `# 수치형은 중앙값(이상치에 강건)
 df["income"] = df["income"].fillna(df["income"].median())
-print(df["income"].isna().sum(), "개 남음")`,
+
+# 결과 보기 — 남은 결측 수(콘솔은 print(df["income"].isna().sum()))
+df["income"].isna().sum()`,
       },
       {
         id: "missing-group-fill",
@@ -448,7 +509,9 @@ print(df["income"].isna().sum(), "개 남음")`,
 df["income"] = df["income"].fillna(
     df.groupby("age_band")["income"].transform("median")
 )
-print(df["income"].isna().sum(), "개 남음")`,
+
+# 결과 보기 — 남은 결측 수(콘솔은 print(df["income"].isna().sum()))
+df["income"].isna().sum()`,
       },
     ],
   },
@@ -462,16 +525,20 @@ print(df["income"].isna().sum(), "개 남음")`,
         desc: "여러 키·방향(오름/내림 혼합)으로 정렬합니다.",
         code: `# 상품 오름차순, 보험료 내림차순
 out = df.sort_values(["product", "premium"], ascending=[True, False])
-print(out[["product", "premium"]].head())`,
+
+# 결과 보기 (콘솔은 print(out[["product", "premium"]].head()))
+out[["product", "premium"]].head()`,
       },
       {
         id: "drop-duplicates",
         label: "drop_duplicates — 중복 제거",
         desc: "기준 열로 중복을 확인하고 제거합니다(정렬이 무엇을 남길지 결정).",
         code: `# 지우기 전 중복 건수 확인
-print(df.duplicated(subset=["customer_id", "product"]).sum(), "건 중복")
+dup_count = df.duplicated(subset=["customer_id", "product"]).sum()
 dedup = df.drop_duplicates(subset=["customer_id", "product"], keep="first")
-print(dedup.shape)`,
+
+# 결과 보기 — 마지막 값 반환(중복 건수는 필요하면 print(dup_count))
+dedup.shape`,
       },
       {
         id: "latest-one",
@@ -482,7 +549,7 @@ latest = (
     df.sort_values("tenure_months", ascending=False)
     .drop_duplicates(subset="customer_id", keep="first")
 )
-print(latest.shape)`,
+latest.shape   # 결과 보기 (콘솔은 print(latest.shape))`,
       },
       {
         id: "rank-topn",
@@ -491,7 +558,9 @@ print(latest.shape)`,
         code: `# 순위 부여(동점은 최소 순위) + 상위 10건
 df["rank"] = df["premium"].rank(ascending=False, method="min")
 top10 = df.nlargest(10, "premium")
-print(top10[["policy_id", "premium", "rank"]])`,
+
+# 결과 보기 (콘솔은 print(top10[["policy_id", "premium", "rank"]]))
+top10[["policy_id", "premium", "rank"]]`,
       },
     ],
   },
@@ -506,7 +575,8 @@ print(top10[["policy_id", "premium", "rank"]])`,
         code: `# 사전 매핑 — 없는 값은 NaN이 되므로 확인 습관
 code_map = {"설계사": "FC", "방카": "BA", "다이렉트": "DM"}
 df["channel_cd"] = df["channel"].map(code_map)
-print(df["channel_cd"].value_counts())`,
+
+df["channel_cd"].value_counts()   # 결과 보기 (콘솔은 print(...))`,
       },
       {
         id: "apply-row",
@@ -521,7 +591,8 @@ def grade(row):
     return "일반"
 
 df["grade"] = df.apply(grade, axis=1)
-print(df["grade"].value_counts())`,
+
+df["grade"].value_counts()   # 결과 보기 (콘솔은 print(...))`,
       },
     ],
   },

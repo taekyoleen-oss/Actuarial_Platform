@@ -8,7 +8,7 @@
  * 선택=오버레이·QQ 팝업·파이썬 코드 팝업) → 몬테카를로 코드.
  */
 import { useMemo, useState } from "react";
-import { Activity, Code2, Info, LineChart, Play, Table2 } from "lucide-react";
+import { Activity, Code2, Info, LineChart, Play, RotateCcw, Table2 } from "lucide-react";
 import {
   empiricalFromGroups,
   empiricalFromValues,
@@ -510,6 +510,23 @@ export function FitLab() {
     tabs?: CodeTab[];
   } | null>(null);
 
+  /* 리셋 — 입력 데이터·적합 결과를 지우고 처음 상태(분포 전체 선택)로 되돌린다 */
+  const resetFit = () => {
+    setCells(null);
+    setData(null);
+    setResults(null);
+    setFitError(null);
+    setPhase(null);
+    setOverlaySev(null);
+    setOverlayFreq(null);
+    setSelSev(new Set(SEV_DISTS.map((d) => d.id)));
+    setSelFreq(new Set(FREQ_DISTS.map((d) => d.id)));
+    setTailOpen(false);
+    setQqTarget(null);
+    setCodeDialog(null);
+    setSheetOpen(false);
+  };
+
   /* empirical — 데이터 확정 시 JS로 즉시 계산 */
   const emp = useMemo<EmpiricalCont | null>(() => {
     if (!data) return null;
@@ -874,10 +891,20 @@ export function FitLab() {
             <Activity size={14} /> 꼬리 진단
           </button>
         ) : null}
+        {data ? (
+          <button
+            type="button"
+            onClick={resetFit}
+            title="입력한 데이터·적합 결과를 지우고 처음 상태로 되돌립니다"
+            className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-2 text-[12.5px] text-tertiary hover:text-foreground"
+          >
+            <RotateCcw size={14} /> 리셋
+          </button>
+        ) : null}
       </div>
 
       {!data || !emp ? (
-        <div className="rounded-cover border border-dashed border-border bg-white/60 px-6 py-14 text-center">
+        <div className="rounded-cover border border-dashed border-border bg-white/60 px-6 py-12 text-center">
           <LineChart size={28} className="mx-auto mb-3 text-tertiary" aria-hidden />
           <p className="text-[13.5px] text-foreground">
             아직 데이터가 없습니다 — 위 버튼으로 데이터를 입력하세요.
@@ -886,6 +913,45 @@ export function FitLab() {
             개별 값 1열, 연도+값 2열(빈도·심도 동시 분석), 최소·최대·건수
             3열(그룹)을 지원합니다. 형식은 자동으로 감지해 확인을 받습니다.
           </p>
+
+          {/* 데이터 없이도 '무엇을 적합할 수 있는지' 먼저 보여준다 */}
+          <div className="mx-auto mt-6 max-w-xl space-y-3 text-left">
+            <div className="rounded border border-border bg-white px-4 py-3">
+              <p className="mb-2 text-[12px] font-semibold text-foreground">
+                적합 가능한 연속형(심도) 분포 · {SEV_DISTS.length}종
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {SEV_DISTS.map((d) => (
+                  <span
+                    key={d.id}
+                    className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--chip-blue-bg)_55%,white)] px-2.5 py-0.5 text-[11.5px] text-[var(--primary)]"
+                  >
+                    {d.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded border border-border bg-white px-4 py-3">
+              <p className="mb-2 text-[12px] font-semibold text-foreground">
+                적합 가능한 이산형(빈도) 분포 · {FREQ_DISTS.length}종
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {FREQ_DISTS.map((d) => (
+                  <span
+                    key={d.id}
+                    className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--chip-rose-bg)_55%,white)] px-2.5 py-0.5 text-[11.5px] text-[var(--chip-rose-fg)]"
+                  >
+                    {d.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11.5px] leading-relaxed text-tertiary">
+              연속형(심도)은 개별 값(1열)·그룹(3열)·연도+값(2열)에서 적합하고,
+              이산형(빈도)은 연도+값(2열) 데이터의 연간 건수 분포로 적합합니다.
+              데이터 형식·꼬리 두께에 따라 일부 분포는 자동으로 비활성화됩니다.
+            </p>
+          </div>
         </div>
       ) : (
         <>

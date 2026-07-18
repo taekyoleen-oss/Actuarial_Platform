@@ -6,7 +6,8 @@
  *  ④ 모델 적합(fitting) ⑤ 파이썬 코드 실행(pyrun·실행기) ⑥ 예제 데이터 분석(examples)
  * 실행기(PyRunner)는 pyrun 탭에 있고, 상태(loadRequest)는 여기서 소유해 RunnerContext로 공유한다.
  * analysis 탭 방법 팝업의 '실행기로 보내기' → sendToRunner가 코드를 주입하고 pyrun 탭으로 전환.
- * 각 섹션은 한 번만 렌더하고 display만 토글(실행기·Pyodide 상태 유지). 넘치면 탭바가 가로 스크롤.
+ * 각 섹션은 한 번만 렌더하고 display만 토글(실행기·Pyodide 상태 유지).
+ * 탭바는 좁은 화면(모바일)에서 가로 스크롤 대신 여러 줄로 줄바꿈해 모든 탭을 노출한다(md+는 한 줄 알약).
  */
 import { useCallback, useState, type ReactNode } from "react";
 import { RunnerContext } from "@/components/feature/datalab/RunnerContext";
@@ -62,7 +63,7 @@ export function DataLabTabs({
         <div
           role="tablist"
           aria-label="엑셀 분석함수 / 파이썬 분석코드 / 확률분포 / 모델 적합 / 파이썬 코드 실행 / 예제 데이터 분석"
-          className="mb-6 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border p-0.5"
+          className="mb-6 flex flex-wrap items-center justify-center gap-1 rounded-2xl border border-border p-1 md:w-fit md:max-w-full md:flex-nowrap md:justify-start md:overflow-x-auto md:rounded-full md:p-0.5"
         >
           {TABS.map((t) => (
             <button
