@@ -24,11 +24,16 @@ import {
   EXCEL_FUNCTIONS,
   VERSION_SUP,
   VERSION_FULL,
+  excelCategory,
   type ExcelCategory,
   type ExcelChipColor,
   type ExcelFunction,
 } from "@/lib/excelFunctions";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
+import {
+  FunctionSearch,
+  type SearchItem,
+} from "@/components/feature/datalab/FunctionSearch";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 함수 */
@@ -728,6 +733,21 @@ export function ExcelFunctionCloud() {
 
   useHistoryDismiss(!!(open && openCat), () => setOpenId(null));
 
+  const searchItems: SearchItem[] = useMemo(
+    () =>
+      EXCEL_FUNCTIONS.map((f) => {
+        const cat = excelCategory(f.category);
+        return {
+          id: f.id,
+          name: f.name,
+          summary: f.summary,
+          meta: cat.label,
+          color: cat.color,
+        };
+      }),
+    []
+  );
+
   return (
     <section
       aria-label="엑셀 분석함수 사전"
@@ -741,6 +761,12 @@ export function ExcelFunctionCloud() {
           함수를 클릭하면 개념·구문·인수·예제(기초→고급) 팝업이 열립니다
         </p>
       </div>
+
+      <FunctionSearch
+        items={searchItems}
+        onOpen={setOpenId}
+        placeholder="엑셀 함수 검색 — 이름·설명 (예: 합계, XLOOKUP, 분위수)"
+      />
 
       {EXCEL_FUNCTIONS.length === 0 ? (
         <p className="py-16 text-center text-sm text-tertiary">

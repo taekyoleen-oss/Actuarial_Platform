@@ -42,6 +42,10 @@ import {
 } from "@/components/feature/datalab/code-popup";
 import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
 import {
+  FunctionSearch,
+  type SearchItem,
+} from "@/components/feature/datalab/FunctionSearch";
+import {
   WRANGLE_SNIPPET_GROUPS,
   snippetInsertCode,
   type WrangleSnippet,
@@ -1225,6 +1229,21 @@ export function MethodCloud() {
   // 팝업(사전) 열림 중 브라우저 뒤로가기 → 뒤 페이지 이동 대신 팝업만 닫기
   useHistoryDismiss(!!(open && openCat), () => setOpenId(null));
 
+  const searchItems: SearchItem[] = useMemo(
+    () =>
+      STAT_METHODS.map((m) => {
+        const cat = STAT_CATEGORIES.find((c) => c.id === m.category);
+        return {
+          id: m.id,
+          name: m.name,
+          summary: m.summary,
+          meta: m.en,
+          color: cat?.color,
+        };
+      }),
+    []
+  );
+
   return (
     <section
       aria-label="통계·머신러닝 파이썬 사전"
@@ -1238,6 +1257,12 @@ export function MethodCloud() {
           클릭하면 [정의 및 방법 · 파이썬 코드 적용 · 엑셀 코드 적용] 팝업이 열립니다
         </p>
       </div>
+
+      <FunctionSearch
+        items={searchItems}
+        onOpen={setOpenId}
+        placeholder="분석 방법 검색 — 이름·설명 (예: 회귀, 분포, groupby)"
+      />
 
       <QuadrantChart onOpen={setOpenId} highlightId={highlightId} />
       <WranglePanel
