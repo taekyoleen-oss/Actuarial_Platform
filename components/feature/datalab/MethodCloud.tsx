@@ -42,6 +42,12 @@ import {
   CodeBlock,
   CopyButton,
 } from "@/components/feature/datalab/code-popup";
+import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
+import {
+  WRANGLE_SNIPPET_GROUPS,
+  snippetInsertCode,
+  type WrangleSnippet,
+} from "@/lib/wrangleSnippets";
 import { Tex } from "@/components/feature/datalab/Tex";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 
@@ -964,6 +970,35 @@ const WRANGLE_PANES: { label: string; color: string; ids: string[] }[] = [
   { label: "정제·변형", color: "slate", ids: ["missing", "sort-dedup", "apply"] },
 ];
 
+/* wrangle 방법 id → 세부 스니펫(코드 조각) — 각 방법 아래 리스트, 클릭 시 간단 코드 팝업 */
+const ALL_WRANGLE_SNIPPETS: WrangleSnippet[] = WRANGLE_SNIPPET_GROUPS.flatMap(
+  (g) => g.snippets
+);
+const snippetById = (id: string) => ALL_WRANGLE_SNIPPETS.find((s) => s.id === id);
+const groupSnippetIds = (gid: string) =>
+  (WRANGLE_SNIPPET_GROUPS.find((g) => g.id === gid)?.snippets ?? []).map(
+    (s) => s.id
+  );
+const METHOD_SNIPPET_IDS: Record<string, string[]> = {
+  "select-rows-cols": groupSnippetIds("select"),
+  "filter-condition": groupSnippetIds("filter").filter(
+    (id) => !id.includes("isin")
+  ),
+  isin: ["filter-isin", "filter-not-isin"],
+  conditional: groupSnippetIds("branch"),
+  "join-merge": [...groupSnippetIds("join"), ...groupSnippetIds("concat")],
+  groupby: groupSnippetIds("groupby"),
+  pivot: groupSnippetIds("pivot"),
+  missing: groupSnippetIds("missing"),
+  "sort-dedup": groupSnippetIds("sort-dedup"),
+  apply: groupSnippetIds("apply-map"),
+};
+function snippetsForMethod(id: string): WrangleSnippet[] {
+  return (METHOD_SNIPPET_IDS[id] ?? [])
+    .map(snippetById)
+    .filter((s): s is WrangleSnippet => Boolean(s));
+}
+
 /**
  * 데이터 핸들링(wrangle)은 사분면 바로 아래 '보이기/숨기기' 접이식 패널로 둔다(기본 접힘).
  * 펼치면 작업 흐름순 3면(선택·필터 / 결합·집계 / 정제·변형)으로 나눠 열람하고,
@@ -971,9 +1006,11 @@ const WRANGLE_PANES: { label: string; color: string; ids: string[] }[] = [
  */
 function WranglePanel({
   onOpen,
+  onOpenSnippet,
   highlightId,
 }: {
   onOpen: (id: string) => void;
+  onOpenSnippet: (s: WrangleSnippet) => void;
   highlightId: string | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -1039,23 +1076,40 @@ function WranglePanel({
                     {pane.label}
                   </span>
                 </div>
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                <div className="space-y-2.5">
                   {pane.ids.map((id) => {
                     const m = byId(id);
                     if (!m) return null;
+                    const snips = snippetsForMethod(id);
                     return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => onOpen(id)}
-                        title={m.summary}
-                        className={`method-term whitespace-nowrap rounded px-1 text-[13px] font-medium leading-snug ${
-                          highlightId === id ? "method-term-active" : ""
-                        }`}
-                        style={{ color: `var(--chip-${pane.color}-fg)` }}
-                      >
-                        {m.name}
-                      </button>
+                      <div key={id}>
+                        <button
+                          type="button"
+                          onClick={() => onOpen(id)}
+                          title={`${m.summary} — 클릭하면 정의·코드 전체 팝업`}
+                          className={`method-term rounded px-1 text-[13px] font-semibold leading-snug ${
+                            highlightId === id ? "method-term-active" : ""
+                          }`}
+                          style={{ color: `var(--chip-${pane.color}-fg)` }}
+                        >
+                          {m.name}
+                        </button>
+                        {snips.length > 0 ? (
+                          <div className="mt-1 flex flex-wrap gap-1 pl-2">
+                            {snips.map((s) => (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => onOpenSnippet(s)}
+                                title={`${s.desc} — 클릭하면 간단 코드(파이썬·엑셀) 팝업`}
+                                className="rounded border border-border bg-white/70 px-1.5 py-0.5 text-[11px] leading-tight text-tertiary transition-colors hover:bg-white hover:text-foreground"
+                              >
+                                {s.label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     );
                   })}
                 </div>
@@ -1152,6 +1206,8 @@ export function MethodCloud() {
   const [runnerLoad, setRunnerLoad] = useState<RunnerLoadRequest | null>(null);
   // 실행기 콤보박스/실행기로 보내기로 불러온 방법 — 워드클라우드에서 강조
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  // 데이터 핸들링 세부 스니펫 — 간단 코드(파이썬·엑셀) 팝업
+  const [snippet, setSnippet] = useState<WrangleSnippet | null>(null);
 
   // 팝업이 현재 필터로 보여주는 코드(code)를 그대로 실행기에 — 화면과 범위가 어긋나지 않게
   const sendToRunner = (m: StatMethod, code: string, level: LevelFilter) => {
@@ -1188,7 +1244,11 @@ export function MethodCloud() {
       </div>
 
       <QuadrantChart onOpen={setOpenId} highlightId={highlightId} />
-      <WranglePanel onOpen={setOpenId} highlightId={highlightId} />
+      <WranglePanel
+        onOpen={setOpenId}
+        onOpenSnippet={setSnippet}
+        highlightId={highlightId}
+      />
       {/* 모바일은 데이터 핸들링을 포함한 5개 카테고리를 클러스터로 */}
       <ClusterCloud onOpen={setOpenId} highlightId={highlightId} />
 
@@ -1244,6 +1304,23 @@ export function MethodCloud() {
           onFontScale={setFontScale}
           onSendToRunner={sendToRunner}
           onClose={() => setOpenId(null)}
+        />
+      ) : null}
+
+      {snippet ? (
+        <DistCodeDialog
+          name={snippet.label}
+          en="데이터 핸들링"
+          hideFooter
+          subtitle="선택한 데이터 핸들링 조각의 코드입니다. ‘엑셀 코드 적용’ 탭에서 Python in Excel용도 함께 볼 수 있습니다."
+          tabs={[
+            {
+              key: "py",
+              label: "파이썬 코드 적용",
+              code: snippetInsertCode(snippet),
+            },
+          ]}
+          onClose={() => setSnippet(null)}
         />
       ) : null}
     </section>

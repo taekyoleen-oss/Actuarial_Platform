@@ -25,6 +25,8 @@ export function DistCodeDialog({
   en,
   code,
   tabs,
+  subtitle,
+  hideFooter,
   onClose,
 }: {
   name: string;
@@ -33,6 +35,10 @@ export function DistCodeDialog({
   code?: string;
   /** 탭 구성(예: 모델 적합 / 시뮬레이션) */
   tabs?: CodeTab[];
+  /** 헤더 아래 설명(미지정 시 확률분포용 기본 문구) */
+  subtitle?: string;
+  /** 확률분포용 하단 안내(matplotlib·dist.stats) 숨김 — 데이터 핸들링 스니펫 등 */
+  hideFooter?: boolean;
   onClose: () => void;
 }) {
   const baseTabs: CodeTab[] = useMemo(
@@ -96,8 +102,8 @@ export function DistCodeDialog({
               <span className="text-[13px] text-tertiary">{en}</span>
             </div>
             <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
-              현재 파라미터 값이 반영된 scipy.stats 코드입니다. 복사해 데이터
-              분석 탭의 파이썬 실행기나 로컬에서 활용하세요.
+              {subtitle ??
+                "현재 파라미터 값이 반영된 scipy.stats 코드입니다. 복사해 데이터 분석 탭의 파이썬 실행기나 로컬에서 활용하세요."}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -158,11 +164,13 @@ export function DistCodeDialog({
           <CodeBlock code={active.code} codeFz={12.5} />
         </div>
 
-        <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
-          그래프 축 라벨은 matplotlib 한글 폰트 이슈로 영문입니다.
-          <code className="mx-1 font-mono">dist.stats(moments=&quot;mvsk&quot;)</code>
-          로 평균·분산·왜도·첨도를 한 번에 얻습니다.
-        </footer>
+        {hideFooter ? null : (
+          <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
+            그래프 축 라벨은 matplotlib 한글 폰트 이슈로 영문입니다.
+            <code className="mx-1 font-mono">dist.stats(moments=&quot;mvsk&quot;)</code>
+            로 평균·분산·왜도·첨도를 한 번에 얻습니다.
+          </footer>
+        )}
       </div>
     </div>
   );
