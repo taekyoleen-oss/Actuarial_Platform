@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
 import { DataLabTabs } from "@/components/feature/datalab/DataLabTabs";
+import { ExcelFunctionCloud } from "@/components/feature/datalab/ExcelFunctionCloud";
 import { MethodCloud } from "@/components/feature/datalab/MethodCloud";
 import { DistributionLab } from "@/components/feature/datalab/DistributionLab";
 import { FitLab } from "@/components/feature/datalab/FitLab";
@@ -56,6 +57,7 @@ export default async function DataLabPage({
       </header>
 
       <DataLabTabs
+        excel={<ExcelFunctionCloud />}
         analysis={<MethodCloud />}
         distributions={<DistributionLab />}
         fitting={<FitLab />}
