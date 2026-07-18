@@ -576,11 +576,13 @@ interface Box {
   y2: number;
 }
 
-/* 겹침 회피 이동 후보 — 총 변위(가로 가중 1.6배) 오름차순. 세로 이동 우선. */
+/* 겹침 회피 이동 후보 — 총 변위(가로 가중 1.6배) 오름차순. 세로 이동 우선.
+ * ml 카테고리가 14종으로 늘며 좁은 폭(≈1024px)에서 한 사분면이 붐벼 세로 범위를
+ * 200까지 넓혀 탈출 자리를 더 확보한다(넓은 폭에선 가까운 자리가 먼저 뽑혀 무영향). */
 const NUDGES: [number, number][] = (() => {
   const out: [number, number][] = [[0, 0]];
-  for (let dy = 0; dy <= 150; dy += 10) {
-    for (let dx = 0; dx <= 120; dx += 20) {
+  for (let dy = 0; dy <= 200; dy += 10) {
+    for (let dx = 0; dx <= 140; dx += 20) {
       if (dx === 0 && dy === 0) continue;
       if (dx === 0) out.push([0, dy], [0, -dy]);
       else if (dy === 0) out.push([dx, 0], [-dx, 0]);
@@ -609,6 +611,13 @@ function layoutQuadrants(w: number, h: number): PlacedItem[] {
     boxes.some(
       (b) => !(r.x2 < b.x1 || r.x1 > b.x2 || r.y2 < b.y1 || r.y1 > b.y2)
     );
+  // 겹침 넓이 합 — 완전 회피가 불가능할 때 '가장 덜 겹치는' 자리를 고르는 폴백용.
+  const overlapArea = (r: Box) =>
+    boxes.reduce((sum, b) => {
+      const ox = Math.max(0, Math.min(r.x2, b.x2) - Math.max(r.x1, b.x1));
+      const oy = Math.max(0, Math.min(r.y2, b.y2) - Math.max(r.y1, b.y1));
+      return sum + ox * oy;
+    }, 0);
   const boxAt = (x: number, y: number, bw: number, bh: number): Box => ({
     x1: x - bw / 2 - 4,
     y1: y - bh / 2 - 4,
@@ -667,14 +676,31 @@ function layoutQuadrants(w: number, h: number): PlacedItem[] {
 
     let px = clamp(baseX, xLo, xHi);
     let py = clamp(baseY, yLo, yHi);
+    // 완전 회피 자리를 찾되, 없으면 '최소 겹침' 자리로 폴백(겹치는 base 그대로 두지 않음).
+    let bestX = px;
+    let bestY = py;
+    let bestOv = Infinity;
+    let found = false;
     for (const [dx, dy] of NUDGES) {
       const x = clamp(baseX + dx, xLo, xHi);
       const y = clamp(baseY + dy, yLo, yHi);
-      if (!overlaps(boxAt(x, y, tw, th))) {
+      const box = boxAt(x, y, tw, th);
+      if (!overlaps(box)) {
         px = x;
         py = y;
+        found = true;
         break;
       }
+      const ov = overlapArea(box);
+      if (ov < bestOv) {
+        bestOv = ov;
+        bestX = x;
+        bestY = y;
+      }
+    }
+    if (!found) {
+      px = bestX;
+      py = bestY;
     }
     boxes.push(boxAt(px, py, tw, th));
     out.push({ m, color, x: px, y: py, fs, fw });

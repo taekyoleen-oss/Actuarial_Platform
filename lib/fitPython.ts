@@ -60,10 +60,40 @@ export function sevFrozenExpr(id: string, params: FitParamOut[]): string {
       return `stats.lomax(${f(p(params, "alpha"))}, 0, ${f(p(params, "theta"))})`;
     case "pareto1":
       return `stats.pareto(${f(p(params, "alpha"))}, 0, ${f(p(params, "theta_min"))})`;
+    case "genpareto":
+      return `stats.genpareto(${f(p(params, "xi"))}, 0, ${f(p(params, "sigma"))})`;
     default:
       return "stats.norm()";
   }
 }
+
+/**
+ * 제로팽창 분포 헬퍼(파이썬) — scipy에 없어 재현 코드에도 직접 정의를 넣는다.
+ * frequencyFitCode(zip/zinb)·frequencySimCode·monteCarloCode에서 공유.
+ */
+export const ZI_PY_CLASS = `# 제로팽창 분포 헬퍼 — scipy에는 없어 직접 정의합니다.
+# 원리: 확률 pi로 '무조건 0'(구조적 0), (1-pi)로 기저분포(poisson/nbinom)를 따릅니다.
+class ZeroInflated:
+    def __init__(self, pi, base):
+        self.pi = pi; self.base = base           # base = scipy 이산분포(frozen)
+    def pmf(self, k):
+        k = np.asarray(k, float)
+        p0 = self.pi + (1 - self.pi) * self.base.pmf(0)    # k=0은 두 경로가 합쳐짐
+        return np.where(k == 0, p0, (1 - self.pi) * self.base.pmf(k))
+    def logpmf(self, k):
+        return np.log(np.clip(self.pmf(k), 1e-300, None))
+    def cdf(self, k):
+        return self.pi + (1 - self.pi) * self.base.cdf(np.asarray(k, float))
+    def sf(self, k):
+        return 1.0 - self.cdf(k)
+    def mean(self):
+        return (1 - self.pi) * self.base.mean()
+    def var(self):
+        m, v = self.base.mean(), self.base.var()
+        return (1 - self.pi) * (v + m * m) - ((1 - self.pi) * m) ** 2
+    def rvs(self, size, random_state=None):
+        rng = random_state if random_state is not None else np.random
+        return np.where(rng.random(size) < self.pi, 0, self.base.rvs(size, random_state=rng))`;
 
 export function freqFrozenExpr(id: string, params: FitParamOut[]): string {
   switch (id) {
@@ -73,6 +103,13 @@ export function freqFrozenExpr(id: string, params: FitParamOut[]): string {
       return `stats.nbinom(${f(p(params, "r"))}, ${f(p(params, "p"))})`;
     case "binomial":
       return `stats.binom(${Math.round(p(params, "n"))}, ${f(p(params, "p"))})`;
+    case "zip":
+      return `ZeroInflated(${f(p(params, "pi"))}, stats.poisson(${f(p(params, "lambda"))}))`;
+    case "zinb": {
+      const r = p(params, "r");
+      const mu = p(params, "mu");
+      return `ZeroInflated(${f(p(params, "pi"))}, stats.nbinom(${f(r)}, ${f(r / (r + mu))}))`;
+    }
     default:
       return "stats.poisson(1)";
   }
@@ -132,6 +169,13 @@ b, _, _ = stats.pareto.fit(x, floc=0, fscale=theta)
 dist = stats.pareto(b, 0, theta)
 print(f"alpha={b:.6g}, theta(고정)={theta:.6g}")
 k = 1`;
+    case "genpareto":
+      return `# GPD(일반화 파레토): 임계값 초과(POT) 이론의 표준 꼬리 분포.
+# xi=형상(클수록 두꺼운 꼬리·xi≥1이면 평균 발산), sigma=척도. floc=0으로 위치 고정
+c, _, scale = stats.genpareto.fit(x, floc=0)
+dist = stats.genpareto(c, 0, scale)
+print(f"xi(형상)={c:.6g}, sigma(척도)={scale:.6g}")
+k = 2`;
     default:
       return "";
   }
@@ -177,6 +221,11 @@ unpack = lambda t: (np.exp(t[0]), np.exp(t[1]))`;
 t0 = [np.log(2.5), np.log(m*1.5)]
 names, k = ["alpha", "theta"], 2
 unpack = lambda t: (np.exp(t[0]), np.exp(t[1]))`;
+    case "genpareto":
+      return `make = lambda t: stats.genpareto(t[0], 0, np.exp(t[1]))
+t0 = [0.1, np.log(m)]                        # xi(형상)는 음수도 가능 → log 변환 없이 그대로
+names, k = ["xi", "sigma"], 2
+unpack = lambda t: (t[0], np.exp(t[1]))`;
     case "pareto1":
       return `theta = float(np.min(lo))                   # 하한 θ = 최소 구간 하한(고정)
 make = lambda t: stats.pareto(np.exp(t[0]), 0, theta)
@@ -469,7 +518,7 @@ r = float(np.exp(res.x)); p = r / (r + mean)
 dist = stats.nbinom(r, p)
 print(f"r={r:.6g}, p={p:.6g}")   # r이 아주 크면 포아송과 거의 같아집니다
 k = 2`;
-  } else {
+  } else if (id === "binomial") {
     fit = `# 이항 MLE — n(시행수)은 정수라서 관측 최대값부터 하나씩 대입해 탐색,
 # 각 n에서 p = 평균/n 으로 두고 로그우도가 가장 큰 조합을 고릅니다
 mean = counts.mean(); kobs = max(int(counts.max()), 1)
@@ -485,6 +534,49 @@ ll, n_hat, p_hat = best
 dist = stats.binom(n_hat, p_hat)
 print(f"n={n_hat}, p={p_hat:.6g}")
 k = 2`;
+  } else if (id === "zip") {
+    fit = `${ZI_PY_CLASS}
+from scipy.optimize import minimize
+# 제로팽창 포아송(ZIP) — 청구 자체가 없던 해(구조적 0)가 많은 빈도에 적합.
+# pi(구조적 0 확률)·lambda(포아송 평균)를 커스텀 우도로 동시 추정합니다
+# (scipy에 ZIP MLE가 없어 음의 로그우도를 직접 만들어 최소화).
+cf = counts.astype(float); mean = cf.mean(); p0hat = float((cf == 0).mean())
+lam0 = max(mean, 0.5)                             # 초기값(모멘트 근사)
+pi0 = min(max((p0hat - np.exp(-lam0)) / (1 - np.exp(-lam0) + 1e-9), 0.02), 0.9)
+nz = float((cf == 0).sum()); pos = cf[cf > 0]
+def nll(t):
+    pi = 1/(1+np.exp(-t[0])); lam = np.exp(t[1])  # 로짓·로그로 제약(0<pi<1, lam>0)
+    p0 = pi + (1-pi)*np.exp(-lam)                 # P(N=0) = 구조적 0 + 포아송의 0
+    if not (0 < p0 < 1): return 1e12
+    ll = nz*np.log(p0) + np.sum(np.log(1-pi) + stats.poisson.logpmf(pos, lam))
+    return -ll if np.isfinite(ll) else 1e12
+res = minimize(nll, [np.log(pi0/(1-pi0)), np.log(lam0)], method="Nelder-Mead",
+               options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+pi = 1/(1+np.exp(-res.x[0])); lam = np.exp(res.x[1])
+dist = ZeroInflated(pi, stats.poisson(lam))
+print(f"pi(구조적 0 확률)={pi:.6g}, lambda={lam:.6g}")
+k = 2`;
+  } else {
+    fit = `${ZI_PY_CLASS}
+from scipy.optimize import minimize
+# 제로팽창 음이항(ZINB) — 구조적 0 + 과산포(분산>평균)를 함께 다루는 빈도 모형.
+# pi·r(음이항 형상)·mu(평균)를 커스텀 우도로 동시 추정합니다.
+cf = counts.astype(float); mean = cf.mean(); p0hat = float((cf == 0).mean())
+mu0 = max(mean, 0.5); pi0 = min(max(p0hat - np.exp(-mu0), 0.02), 0.9)
+nz = float((cf == 0).sum()); pos = cf[cf > 0]
+def nll(t):
+    pi = 1/(1+np.exp(-t[0])); r = np.exp(t[1]); mu = np.exp(t[2])
+    p = r/(r+mu); base0 = float(stats.nbinom.pmf(0, r, p))
+    p0 = pi + (1-pi)*base0
+    if not (0 < p0 < 1): return 1e12
+    ll = nz*np.log(p0) + np.sum(np.log(1-pi) + stats.nbinom.logpmf(pos, r, p))
+    return -ll if np.isfinite(ll) else 1e12
+res = minimize(nll, [np.log(pi0/(1-pi0)), np.log(5.0), np.log(mu0)],
+               method="Nelder-Mead", options={"maxiter": 6000, "xatol": 1e-9, "fatol": 1e-10})
+pi = 1/(1+np.exp(-res.x[0])); r = np.exp(res.x[1]); mu = np.exp(res.x[2]); p = r/(r+mu)
+dist = ZeroInflated(pi, stats.nbinom(r, p))
+print(f"pi={pi:.6g}, r={r:.6g}, mu={mu:.6g}")
+k = 3`;
   }
   return `# ══════════════════════════════════════════════════════
 # ${name} 적합 — 연도별 사고건수(빈도)의 최대우도추정(MLE)
@@ -583,6 +675,15 @@ const SEV_SIM_NOTES: Record<
 #   U = rng.uniform(size=n_sim);  xs_alt = theta * (1 - U)**(-1/alpha)`,
     caution: `# ⚠ α가 작으면 꼬리가 매우 두꺼워 표본 평균 수렴이 느립니다(α≤1이면 발산).`,
   },
+  genpareto: {
+    intro: `# [일반화 파레토(GPD) 특성] 임계값 초과(peaks-over-threshold)의 극한분포 —
+# 재보험·대형손해 꼬리 모형의 표준입니다. xi(형상)가 꼬리 두께를 지배합니다
+# (xi>0 발산형 두꺼운 꼬리, xi=0 지수, xi<0 유한 상한).`,
+    alt: `# 다른 방법(역변환법): xi≠0이면 F(x)=1-(1+xi·x/sigma)^(-1/xi)를 뒤집어
+#   U = rng.uniform(size=n_sim);  xs_alt = sigma/xi * ((1 - U)**(-xi) - 1)`,
+    caution: `# ⚠ xi≥1이면 이론 평균이 무한대, xi≥0.5면 분산이 무한대입니다 — 표본
+#   평균·표준편차가 안정되지 않을 수 있으니 분위수·VaR로 판단하세요.`,
+  },
 };
 
 /**
@@ -658,6 +759,10 @@ const FREQ_SIM_NOTES: Record<string, string> = {
 # 포트폴리오의 건수 모형으로 포아송보다 현실적일 때가 많습니다.`,
   binomial: `# [이항 특성] 분산 < 평균(과소산포). 시행수 n이 정해진 성공 횟수 모형 —
 # 계약 n건 중 사고 난 건수 같은 상황에 맞습니다.`,
+  zip: `# [제로팽창 포아송(ZIP) 특성] '무사고 해(구조적 0)'가 포아송이 예측하는 것보다
+# 훨씬 많은 빈도에 적합. 확률 pi로 무조건 0, (1-pi)로 포아송(lambda)를 섞습니다.`,
+  zinb: `# [제로팽창 음이항(ZINB) 특성] 구조적 0 과다 + 과산포(분산>평균)를 동시에
+# 표현. 확률 pi로 무조건 0, (1-pi)로 음이항(r, mu)를 섞습니다.`,
 };
 
 /**
@@ -669,6 +774,7 @@ export function frequencySimCode(
   params: FitParamOut[]
 ): string {
   const paramCmt = params.map((q) => `${q.name}=${f(q.value)}`).join(", ");
+  const isZi = id === "zip" || id === "zinb";
   return `# ══════════════════════════════════════════════════════
 # 몬테카를로 시뮬레이션 — ${name} 빈도 (적합 결과: ${paramCmt})
 # ══════════════════════════════════════════════════════
@@ -678,7 +784,7 @@ ${FREQ_SIM_NOTES[id] ?? ""}
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-
+${isZi ? `\n${ZI_PY_CLASS}\n` : ""}
 # 1) 적합된 분포 고정(frozen) — 숫자는 화면의 적합 결과입니다
 dist = ${freqFrozenExpr(id, params)}
 
@@ -821,7 +927,7 @@ for q in [0.95, 0.99]:
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-
+${freq.id === "zip" || freq.id === "zinb" ? `\n${ZI_PY_CLASS}\n` : ""}
 rng = np.random.default_rng(42)          # seed 고정 = 재현 가능
 freq = ${freqExpr}
 sev  = ${sevExpr}

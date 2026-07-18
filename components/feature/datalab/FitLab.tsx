@@ -8,7 +8,7 @@
  * 선택=오버레이·QQ 팝업·파이썬 코드 팝업) → 몬테카를로 코드.
  */
 import { useMemo, useState } from "react";
-import { Code2, Info, LineChart, Play, Table2 } from "lucide-react";
+import { Activity, Code2, Info, LineChart, Play, Table2 } from "lucide-react";
 import {
   empiricalFromGroups,
   empiricalFromValues,
@@ -40,6 +40,7 @@ import {
 } from "@/components/feature/datalab/DistChart";
 import { DataSheetDialog } from "@/components/feature/datalab/DataSheetDialog";
 import { QqDialog } from "@/components/feature/datalab/QqDialog";
+import { TailDiagnosticsDialog } from "@/components/feature/datalab/TailDiagnosticsDialog";
 import {
   DistCodeDialog,
   type CodeTab,
@@ -60,12 +61,15 @@ const SEV_DISTS: { id: string; name: string }[] = [
   { id: "beta", name: "베타" },
   { id: "pareto2", name: "파레토(2모수)" },
   { id: "pareto1", name: "파레토(1모수)" },
+  { id: "genpareto", name: "일반화 파레토(GPD)" },
 ];
 
 const FREQ_DISTS: { id: string; name: string }[] = [
   { id: "poisson", name: "포아송" },
   { id: "negbinom", name: "음이항" },
   { id: "binomial", name: "이항" },
+  { id: "zip", name: "제로팽창 포아송(ZIP)" },
+  { id: "zinb", name: "제로팽창 음이항(ZINB)" },
 ];
 
 const nameOf = (list: { id: string; name: string }[], id: string) =>
@@ -494,6 +498,7 @@ export function FitLab() {
   const [overlaySev, setOverlaySev] = useState<string | null>(null);
   const [overlayFreq, setOverlayFreq] = useState<string | null>(null);
 
+  const [tailOpen, setTailOpen] = useState(false);
   const [qqTarget, setQqTarget] = useState<{
     row: FitResultRow;
     group: "sev" | "freq";
@@ -859,6 +864,16 @@ export function FitLab() {
               : ""}
           </span>
         )}
+        {data && data.kind !== "grouped" && data.values.length >= 8 ? (
+          <button
+            type="button"
+            onClick={() => setTailOpen(true)}
+            title="적합 전에 데이터의 꼬리 두께(대형 손해 위험)를 그림으로 진단"
+            className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-2 text-[12.5px] text-tertiary hover:text-foreground"
+          >
+            <Activity size={14} /> 꼬리 진단
+          </button>
+        ) : null}
       </div>
 
       {!data || !emp ? (
@@ -1099,6 +1114,13 @@ export function FitLab() {
           }
           onConfirm={confirmData}
           onClose={() => setSheetOpen(false)}
+        />
+      ) : null}
+      {tailOpen && data && data.kind !== "grouped" ? (
+        <TailDiagnosticsDialog
+          values={data.values}
+          valueLabel={data.valueLabel}
+          onClose={() => setTailOpen(false)}
         />
       ) : null}
       {qqTarget?.row.qq ? (

@@ -128,6 +128,11 @@ def fit_sev_individual(did, x):
         th = float(np.min(x))
         b, _, _ = stats.pareto.fit(x, floc=0, fscale=th)
         return stats.pareto(b, 0, th), [("alpha", b), ("theta_min", th)], 1
+    if did == "genpareto":
+        # 일반화 파레토(GPD) — POT(임계값 초과) 이론의 표준 꼬리 분포.
+        # xi=형상(>0 두꺼운 꼬리·발산 가능, <0 유한 상한), sigma=척도. loc=0 고정.
+        c, _, sc = stats.genpareto.fit(x, floc=0)
+        return stats.genpareto(c, 0, sc), [("xi", c), ("sigma", sc)], 2
     raise ValueError("unknown dist: " + did)
 
 def gof_individual(fr, k, x):
@@ -188,6 +193,11 @@ def grouped_specs(A, B, N):
             make=lambda t: stats.lomax(math.exp(t[0]), 0, math.exp(t[1])),
             t0=[math.log(2.5), math.log(m * 1.5)],
             disp=lambda t: [("alpha", math.exp(t[0])), ("theta", math.exp(t[1]))], k=2)
+        # GPD — xi(형상)는 음수도 가능하므로 log 변환 없이 그대로(t[0]), sigma만 exp
+        sp["genpareto"] = dict(
+            make=lambda t: stats.genpareto(t[0], 0, math.exp(t[1])),
+            t0=[0.1, math.log(m)],
+            disp=lambda t: [("xi", t[0]), ("sigma", math.exp(t[1]))], k=2)
     if 0 <= float(np.min(A)) and float(np.max(B)) <= 1:
         c0 = max(m * (1 - m) / v - 1, 0.2)
         sp["beta"] = dict(
@@ -308,6 +318,38 @@ def curves_truncated(fr, d, u):
         cy = np.where(GRID >= u, 1.0, cy)
     return _arr(py), _arr(cy)
 
+# ───── 제로팽창(ZIP/ZINB) 헬퍼 — scipy에 없어 직접 정의 ─────
+# 확률 pi로 '구조적 0', (1-pi)로 기저 이산분포(poisson/nbinom)를 섞은 혼합분포.
+class ZeroInflated:
+    def __init__(self, pi, base):
+        self.pi = pi; self.base = base
+    def pmf(self, k):
+        k = np.asarray(k, float)
+        base0 = self.pi + (1 - self.pi) * self.base.pmf(0)
+        return np.where(k == 0, base0, (1 - self.pi) * self.base.pmf(k))
+    def logpmf(self, k):
+        return np.log(np.clip(self.pmf(k), 1e-300, None))
+    def cdf(self, k):
+        return self.pi + (1 - self.pi) * self.base.cdf(np.asarray(k, float))
+    def sf(self, k):
+        return 1.0 - self.cdf(k)
+    def mean(self):
+        return (1 - self.pi) * self.base.mean()
+    def var(self):
+        mm, vv = self.base.mean(), self.base.var()
+        return (1 - self.pi) * (vv + mm * mm) - ((1 - self.pi) * mm) ** 2
+    def ppf(self, q):
+        q = np.atleast_1d(np.asarray(q, float)); out = np.empty(q.shape)
+        for i, qq in enumerate(q):
+            k = 0
+            while k < 200000 and float(self.cdf(k)) < qq - 1e-12:
+                k += 1
+            out[i] = k
+        return out
+
+def _sig(z):
+    return 1.0 / (1.0 + math.exp(-z))
+
 # ───── 빈도(연도별 건수) MLE ─────
 def fit_freq(fid, c):
     n = len(c)
@@ -340,6 +382,42 @@ def fit_freq(fid, c):
             raise ValueError("binomial_fit_failed")
         fr = stats.binom(best[1], best[2])
         params = [("n", best[1]), ("p", best[2])]; k = 2
+    elif fid == "zip":
+        cf = np.asarray(c, float)
+        p0hat = float(np.mean(cf == 0))
+        lam0 = max(mean, 0.5)
+        pi0 = min(max((p0hat - math.exp(-lam0)) / (1 - math.exp(-lam0) + 1e-9), 0.02), 0.9)
+        nz = float(np.sum(cf == 0)); pos = cf[cf > 0]
+        def nll(t):
+            pi = _sig(t[0]); lam = math.exp(t[1])
+            p0 = pi + (1 - pi) * math.exp(-lam)
+            if not (0 < p0 < 1):
+                return 1e12
+            ll = nz * math.log(p0) + float(np.sum(math.log(1 - pi) + stats.poisson.logpmf(pos, lam)))
+            return -ll if math.isfinite(ll) else 1e12
+        res = minimize(nll, [math.log(pi0 / (1 - pi0)), math.log(lam0)], method="Nelder-Mead",
+                       options={"maxiter": 4000, "xatol": 1e-9, "fatol": 1e-10})
+        pi = _sig(res.x[0]); lam = math.exp(res.x[1])
+        fr = ZeroInflated(pi, stats.poisson(lam))
+        params = [("pi", pi), ("lambda", lam)]; k = 2
+    elif fid == "zinb":
+        cf = np.asarray(c, float)
+        p0hat = float(np.mean(cf == 0))
+        mu0 = max(mean, 0.5); pi0 = min(max(p0hat - math.exp(-mu0), 0.02), 0.9)
+        nz = float(np.sum(cf == 0)); pos = cf[cf > 0]
+        def nll(t):
+            pi = _sig(t[0]); r = math.exp(t[1]); mu = math.exp(t[2])
+            p = r / (r + mu); base0 = float(stats.nbinom.pmf(0, r, p))
+            p0 = pi + (1 - pi) * base0
+            if not (0 < p0 < 1):
+                return 1e12
+            ll = nz * math.log(p0) + float(np.sum(math.log(1 - pi) + stats.nbinom.logpmf(pos, r, p)))
+            return -ll if math.isfinite(ll) else 1e12
+        res = minimize(nll, [math.log(pi0 / (1 - pi0)), math.log(5.0), math.log(mu0)],
+                       method="Nelder-Mead", options={"maxiter": 6000, "xatol": 1e-9, "fatol": 1e-10})
+        pi = _sig(res.x[0]); r = math.exp(res.x[1]); mu = math.exp(res.x[2]); p = r / (r + mu)
+        fr = ZeroInflated(pi, stats.nbinom(r, p))
+        params = [("pi", pi), ("r", r), ("mu", mu)]; k = 3
     else:
         raise ValueError("unknown freq dist: " + fid)
     logL = float(np.sum(fr.logpmf(c)))

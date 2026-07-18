@@ -66,6 +66,7 @@ interface DistBase {
   color: ChipColor;
   params: DistParam[];
   blurb: string; // 한 줄 설명
+  usage?: string; // 보험 용례 배지 (심도·빈도·손해율 등) — 짧게
   cdfTex: string; // CDF 수식
   stats: (p: Params) => StatValue[];
   pySpec: (p: Params, sfx: string) => PySpec;
@@ -136,7 +137,33 @@ mean, var, skew, kurt = dist.stats(moments="mvsk")
 print(f"평균={float(mean):.4f}  분산={float(var):.4f}  표준편차={float(var)**0.5:.4f}")
 print(f"왜도={float(skew):.4f}  초과첨도={float(kurt):.4f}")`;
 
-function pyContinuous(spec: PySpec): string {
+/** 위험측도(VaR·TVaR) 계산 줄 — 연속형은 화면 그래프와 같은 y-치환 적분으로. */
+function pyRiskContinuous(q: number): string {
+  return `# 위험측도 VaR·TVaR — 꼬리 신뢰수준 q (계리·리스크관리 지표)
+q = ${fmtParam(q)}
+VaR = dist.ppf(q)                                  # q 확률로 손해가 이 값 이하
+# TVaR = E[X | X>VaR] = (1/(1-q))∫_q^1 ppf(u)du (=CTE, 최악 (1-q) 구간 평균 손해).
+# u=1-(1-q)e^{-y} 로 치환하면 u→1 특이점이 y→∞ 지수감쇠로 바뀌어, 파레토처럼
+# 두꺼운 꼬리도 안정적으로 적분됩니다 (dist.expect의 quad는 이때 과소적분/경고).
+N = 800; Ymax = 50.0; h = Ymax / N                 # N은 짝수 (심프슨 규칙)
+y = np.linspace(0, Ymax, N + 1)
+u = np.minimum(1 - (1 - q) * np.exp(-y), 1 - 1e-15)
+w = np.ones(N + 1); w[1:-1:2] = 4; w[2:-1:2] = 2   # 심프슨 가중치 (양끝1·홀4·짝2)
+TVaR = float(np.sum(w * dist.ppf(u) * np.exp(-y)) * h / 3)
+print(f"VaR({q})={float(VaR):.4f}  TVaR({q})={float(TVaR):.4f}")`;
+}
+
+/** 위험측도(VaR·TVaR) 계산 줄 — 이산형은 E[X | X>=VaR] 를 pmf 합으로. */
+function pyRiskDiscrete(q: number): string {
+  return `# 위험측도 VaR·TVaR — 꼬리 신뢰수준 q (계리·리스크관리 지표)
+q = ${fmtParam(q)}
+VaR = int(dist.ppf(q))                             # q 확률로 건수가 이 값 이하
+ks = np.arange(VaR, int(dist.ppf(0.999999)) + 1)   # VaR 이상 꼬리 구간
+TVaR = float(np.sum(ks * dist.pmf(ks)) / np.sum(dist.pmf(ks)))  # E[X | X>=VaR]
+print(f"VaR={VaR}  TVaR={TVaR:.4f}")`;
+}
+
+function pyContinuous(spec: PySpec, q: number): string {
   return `import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -157,10 +184,12 @@ ax[1].plot(x, dist.cdf(x)); ax[1].set_title("CDF")
 ${PY_MARKERS}
 plt.tight_layout(); plt.show()
 
-${PY_STATS}`;
+${PY_STATS}
+
+${pyRiskContinuous(q)}`;
 }
 
-function pyDiscrete(spec: PySpec): string {
+function pyDiscrete(spec: PySpec, q: number): string {
   return `import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -180,7 +209,9 @@ ax[1].step(k, dist.cdf(k), where="post"); ax[1].set_title("CDF")
 ${PY_MARKERS}
 plt.tight_layout(); plt.show()
 
-${PY_STATS}`;
+${PY_STATS}
+
+${pyRiskDiscrete(q)}`;
 }
 
 /* 1모수 파레토의 고정 하한(θ) — 파라미터가 아닌 상수 */
@@ -195,6 +226,7 @@ const NORMAL: ContinuousDist = {
   en: "Normal",
   color: "blue",
   blurb: "종형 대칭 분포 — 오차·평균의 극한(중심극한정리).",
+  usage: "합계·평균 (중심극한)",
   params: [
     { key: "mu", label: "μ (평균)", tex: "\\mu", def: 0, min: -5, max: 5, step: 0.1 },
     { key: "sigma", label: "σ (표준편차)", tex: "\\sigma", def: 1, min: 0.2, max: 4, step: 0.1 },
@@ -226,6 +258,7 @@ const LOGNORMAL: ContinuousDist = {
   en: "Lognormal",
   color: "blue",
   blurb: "로그를 취하면 정규 — 오른쪽 꼬리, 손해심도 모형화에 자주 쓰임.",
+  usage: "심도 — 1건 손해액",
   params: [
     { key: "mu", label: "μ (로그평균)", tex: "\\mu", def: 0, min: -2, max: 3, step: 0.1 },
     { key: "sigma", label: "σ (로그표준편차)", tex: "\\sigma", def: 0.5, min: 0.1, max: 2, step: 0.05 },
@@ -272,6 +305,7 @@ const EXPONENTIAL: ContinuousDist = {
   en: "Exponential",
   color: "blue",
   blurb: "무기억성 — 사건 간 대기시간. rate λ(=1/평균).",
+  usage: "대기시간 (무기억)",
   params: [
     { key: "lam", label: "λ (rate)", tex: "\\lambda", def: 1, min: 0.1, max: 3, step: 0.05 },
   ],
@@ -310,6 +344,7 @@ const WEIBULL: ContinuousDist = {
   en: "Weibull",
   color: "blue",
   blurb: "형상 k로 고장률이 감소·일정·증가 — 신뢰성·수명 분석.",
+  usage: "수명·지속기간",
   params: [
     { key: "k", label: "k (형상)", tex: "k", def: 1.5, min: 0.3, max: 5, step: 0.1 },
     { key: "lam", label: "λ (척도)", tex: "\\lambda", def: 1, min: 0.2, max: 5, step: 0.1 },
@@ -363,6 +398,7 @@ const GAMMA: ContinuousDist = {
   en: "Gamma",
   color: "blue",
   blurb: "지수분포 합의 일반화 — 양의 연속량(손해심도) 모형.",
+  usage: "심도 — 1건 손해액",
   params: [
     { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 2, min: 0.3, max: 10, step: 0.1 },
     { key: "theta", label: "θ (척도)", tex: "\\theta", def: 1, min: 0.2, max: 5, step: 0.1 },
@@ -415,6 +451,7 @@ const BETA: ContinuousDist = {
   en: "Beta",
   color: "blue",
   blurb: "[0,1] 구간 비율·확률 모형 — 베이지안 사전분포로도 쓰임.",
+  usage: "손해율 (0~1)",
   params: [
     { key: "alpha", label: "α", tex: "\\alpha", def: 2, min: 0.3, max: 8, step: 0.1 },
     { key: "beta", label: "β", tex: "\\beta", def: 2, min: 0.3, max: 8, step: 0.1 },
@@ -473,6 +510,7 @@ const PARETO2: ContinuousDist = {
   en: "Pareto (two-parameter, Lomax)",
   color: "blue",
   blurb: "두꺼운 꼬리 손해분포 — Loss Models 관례(θ 이동). 적률은 α 조건부 존재.",
+  usage: "심도 꼬리 — 대형손해",
   params: [
     { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 3, min: 0.5, max: 8, step: 0.1 },
     { key: "theta", label: "θ (척도)", tex: "\\theta", def: 1000, min: 100, max: 5000, step: 100 },
@@ -506,6 +544,7 @@ const PARETO1: ContinuousDist = {
   en: "Single-parameter Pareto",
   color: "blue",
   blurb: `하한 θ=${PARETO1_THETA} 고정, 형상 α만 추정 — 초과손해(θ 이상) 모형.`,
+  usage: "심도 꼬리 — 초과손해",
   params: [
     { key: "alpha", label: "α (형상)", tex: "\\alpha", def: 3, min: 0.5, max: 8, step: 0.1 },
   ],
@@ -593,6 +632,7 @@ const BINOMIAL: DiscreteDist = {
   en: "Binomial",
   color: "violet",
   blurb: "성공확률 p인 독립시행 n회 중 성공 횟수.",
+  usage: "사고 여부 (0/1 합)",
   params: [
     { key: "n", label: "n (시행수)", tex: "n", def: 20, min: 1, max: 50, step: 1, integer: true },
     { key: "p", label: "p (성공확률)", tex: "p", def: 0.5, min: 0.01, max: 0.99, step: 0.01 },
@@ -643,6 +683,7 @@ const POISSON: DiscreteDist = {
   en: "Poisson",
   color: "violet",
   blurb: "단위구간당 평균 λ회 발생하는 희귀사건 건수 — 사고건수 모형.",
+  usage: "빈도 — 연간 건수",
   params: [
     { key: "lam", label: "λ (평균)", tex: "\\lambda", def: 3, min: 0.1, max: 20, step: 0.1 },
   ],
@@ -684,6 +725,7 @@ const NEGBINOM: DiscreteDist = {
   en: "Negative Binomial",
   color: "violet",
   blurb: "r번째 성공까지의 실패 횟수 — 과산포(분산>평균) 건수 모형.",
+  usage: "빈도 — 과산포 건수",
   params: [
     { key: "r", label: "r (성공 목표수)", tex: "r", def: 5, min: 1, max: 20, step: 1 },
     { key: "p", label: "p (성공확률)", tex: "p", def: 0.5, min: 0.05, max: 0.95, step: 0.05 },
@@ -814,12 +856,92 @@ export function medianOf(d: Distribution, p: Params): number | null {
   return quantileOf(d, p, 0.5);
 }
 
+/* ═══════════════════════ 위험측도 (VaR·TVaR) ═══════════════════════ */
+
+/**
+ * VaR_q (Value at Risk) — q 분위수. "q 확률로 손해가 이 값 이하"라는 의미.
+ * quantileOf 재사용(연속=CDF 이분법, 이산=누적 첫 도달 k).
+ */
+export function valueAtRisk(
+  d: Distribution,
+  p: Params,
+  q: number
+): number | null {
+  return quantileOf(d, p, q);
+}
+
+/**
+ * TVaR_q (=CTE, Conditional Tail Expectation) = E[X | X > VaR_q] —
+ * 최악 (1−q) 구간의 평균 손해. VaR보다 꼬리 위험을 더 잘 반영한다.
+ *
+ * 연속형: TVaR_q = (1/(1−q))∫_q^1 ppf(u)du 를 u=1−(1−q)e^{−y} 치환으로
+ *   ∫_0^∞ ppf(1−(1−q)e^{−y})·e^{−y} dy 로 바꿔 심프슨 적분한다. 이 치환은
+ *   u→1의 적분 특이점을 y→∞의 지수감쇠로 바꿔 두꺼운 꼬리도 안정적으로 적분한다
+ *   (scipy .expect의 quad가 발산 경고를 내는 파레토 α≲2에서도 수렴).
+ *   ppf는 CDF 이분법(quantileBisection). 평균이 유한할 때만 정의(파레토 α≤1 등은 null).
+ * 이산형: E[X | X≥VaR] = Σ_{k≥V} k·pmf(k) / Σ_{k≥V} pmf(k).
+ *
+ * 로컬 scipy 대조: 정규·로그정규·감마·파레토2 등 상대오차 ~3e−8
+ * (_workspace/phase3/py/riskmeasure_check.py).
+ */
+export function tailValueAtRisk(
+  d: Distribution,
+  p: Params,
+  q: number
+): number | null {
+  if (!(q > 0 && q < 1)) return null;
+
+  if (d.kind === "continuous") {
+    // 평균이 발산하면(파레토 α≤1) TVaR도 발산 → 정의 안 됨
+    if (meanOf(d, p) === null) return null;
+    const [lo, hi0] = d.domain(p);
+    const cdf = (x: number) => d.cdf(x, p);
+    const oneMinusQ = 1 - q;
+    // TVaR = (1/(1-q))∫_q^1 VaR_u du 를 u=1-(1-q)e^{-y} 치환으로 계산(y→∞ 지수 감쇠).
+    // 한계: 극단적 두꺼운 꼬리(파레토 α가 1에 근접, 대략 α<1.4)에서는 u가 1-1e-15 클램프에
+    // 걸려(≈y=30) 그보다 안쪽 꼬리를 double로 표현 못 해 값이 수 % 과소된다. Ymax를 키워도
+    // 해소되지 않는다(원인은 절단이 아니라 u→1 배정밀도 saturation) — 근본 해결은 각 분포에
+    // 생존함수(isf)를 두어 s=1-u 공간에서 적분해야 하며, 그러면 코드생성(scipy .ppf)과의
+    // 일치가 깨진다. α≈1은 TVaR 자체가 거의 발산하는 영역이라 현 근사를 유지한다.
+    const N = 800; // 짝수 (심프슨)
+    const Ymax = 50;
+    const h = Ymax / N;
+    let total = 0;
+    for (let i = 0; i <= N; i++) {
+      const y = i * h;
+      let u = 1 - oneMinusQ * Math.exp(-y);
+      if (u >= 1) u = 1 - 1e-15;
+      const x = quantileBisection(cdf, u, lo, hi0);
+      const term = x * Math.exp(-y);
+      const w = i === 0 || i === N ? 1 : i % 2 === 1 ? 4 : 2;
+      total += w * term;
+    }
+    const tvar = (total * h) / 3;
+    return Number.isFinite(tvar) ? tvar : null;
+  }
+
+  // 이산형 — E[X | X≥VaR]
+  const V = quantileOf(d, p, q);
+  if (V === null) return null;
+  const kMax = Math.max(V, d.kMax(p));
+  let num = 0;
+  let den = 0;
+  for (let k = V; k <= kMax; k++) {
+    const pk = d.pmf(k, p);
+    num += k * pk;
+    den += pk;
+  }
+  return den > 0 ? num / den : null;
+}
+
 /* ═══════════════════════ 파이썬 코드 생성 ═══════════════════════ */
 
-/** 단일 분포 코드 — 변수 접미사 없음. */
-export function singlePython(d: Distribution, p: Params): string {
+/** 단일 분포 코드 — 변수 접미사 없음. q는 위험측도(VaR·TVaR) 신뢰수준. */
+export function singlePython(d: Distribution, p: Params, q = 0.99): string {
   const spec = d.pySpec(p, "");
-  return d.kind === "continuous" ? pyContinuous(spec) : pyDiscrete(spec);
+  return d.kind === "continuous"
+    ? pyContinuous(spec, q)
+    : pyDiscrete(spec, q);
 }
 
 /**
@@ -830,10 +952,33 @@ export function comparePython(
   a: Distribution,
   pa: Params,
   b: Distribution,
-  pb: Params
+  pb: Params,
+  q = 0.99
 ): string {
   const sa = a.pySpec(pa, "_a");
   const sb = b.pySpec(pb, "_b");
+
+  const bothContinuous = a.kind === "continuous" && b.kind === "continuous";
+  const risk = bothContinuous
+    ? `# 위험측도 VaR·TVaR — 꼬리 신뢰수준 q (=CTE, 최악 (1-q) 구간 평균)
+# TVaR=E[X|X>VaR]=(1/(1-q))∫_q^1 ppf(u)du. u=1-(1-q)e^{-y} 치환으로 u→1 특이점을
+# y→∞ 지수감쇠로 바꿔 두꺼운 꼬리(파레토 등)도 안정 적분 (dist.expect의 quad는 과소적분)
+q = ${fmtParam(q)}
+_N = 800; _Ymax = 50.0; _h = _Ymax / _N            # _N은 짝수 (심프슨 규칙)
+_y = np.linspace(0, _Ymax, _N + 1)
+_u = np.minimum(1 - (1 - q) * np.exp(-_y), 1 - 1e-15)
+_w = np.ones(_N + 1); _w[1:-1:2] = 4; _w[2:-1:2] = 2
+for _name, _d in [("A", dist_a), ("B", dist_b)]:
+    VaR = _d.ppf(q)
+    TVaR = float(np.sum(_w * _d.ppf(_u) * np.exp(-_y)) * _h / 3)
+    print(f"[{_name}] VaR({q})={float(VaR):.4f}  TVaR({q})={float(TVaR):.4f}")`
+    : `# 위험측도 VaR·TVaR — 꼬리 신뢰수준 q (이산형은 E[X | X>=VaR])
+q = ${fmtParam(q)}
+for _name, _d in [("A", dist_a), ("B", dist_b)]:
+    VaR = int(_d.ppf(q))
+    ks = np.arange(VaR, int(_d.ppf(0.999999)) + 1)
+    TVaR = float(np.sum(ks * _d.pmf(ks)) / np.sum(_d.pmf(ks)))
+    print(f"[{_name}] VaR={VaR}  TVaR={TVaR:.4f}")`;
 
   const head = `import numpy as np
 from scipy import stats
@@ -876,7 +1021,9 @@ ax[1].set_title("CDF"); ax[1].legend()
 
 ${markers}
 
-${tail}`;
+${tail}
+
+${risk}`;
   }
 
   const kmaxA = sa.kmax ?? "int(dist_a.ppf(0.999))";
@@ -895,5 +1042,7 @@ ax[1].set_title("CDF"); ax[1].legend()
 
 ${markers}
 
-${tail}`;
+${tail}
+
+${risk}`;
 }

@@ -412,6 +412,84 @@ export function frequencyFromYears(yearRows: number[]): FreqEmpirical {
   return { years, counts, pmf, cdf, kMax, mean, variance, zeroFilled };
 }
 
+/* ─────────────────────────── 꼬리 진단(JS 계산) ─────────────────────────── */
+
+export interface TailDiagnostics {
+  /** 유효(양수 아닐 수 있음) 표본 수 */
+  n: number;
+  /** 평균초과 e(u)=E[X−u | X>u] — x=임계값 u, y=e(u). 우상향 직선=파레토성 */
+  meanExcess: XY[];
+  /** log-log 생존함수 — x=log(값), y=−log S(=log 1/S). 직선=멱법칙(두꺼운 꼬리) */
+  logLogSurvival: XY[];
+  /** Hill plot — x=상위 순서통계 개수 k, y=꼬리지수 α̂=1/H_k. 안정 구간이 α 추정 */
+  hill: XY[];
+  /** log 기반 그림(log-log·Hill)을 위해 필요한 양수 조건 충족 여부 */
+  positiveOnly: boolean;
+}
+
+/** 배열을 최대 cap개로 균등 서브샘플(양 끝 보존). */
+function subsample<T>(arr: T[], cap: number): T[] {
+  if (arr.length <= cap) return arr;
+  const step = (arr.length - 1) / (cap - 1);
+  const out: T[] = [];
+  for (let i = 0; i < cap; i++) out.push(arr[Math.round(i * step)]);
+  return out;
+}
+
+/**
+ * 심도(개별·연도+값) 데이터의 꼬리 두께 진단 3종을 JS로 계산(Pyodide 불필요).
+ * 정렬된 표본만으로 평균초과·log-log 생존함수·Hill plot을 산출한다.
+ * n<8이면 진단이 불안정하므로 null.
+ */
+export function tailDiagnostics(values: number[]): TailDiagnostics | null {
+  const xs = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  const n = xs.length;
+  if (n < 8) return null;
+  const positiveOnly = xs[0] > 0;
+
+  // ── 평균초과 e(u) — u=xs[i](i=0..n−2), 뒤 누적합으로 O(n) ──
+  // e(xs[i]) = mean(xs[i+1..n−1]) − xs[i]. 표본이 5개 미만 남는 극단 우측은
+  // 분산이 커 노이즈가 심하므로(cnt<5) 제외한다.
+  const meAll: XY[] = [];
+  let tailSum = 0;
+  for (let i = n - 2; i >= 0; i--) {
+    tailSum += xs[i + 1];
+    const cnt = n - 1 - i; // xs[i] 초과(뒤쪽) 개수
+    if (cnt >= 5) meAll[i] = { x: xs[i], y: tailSum / cnt - xs[i] };
+  }
+  const meanExcess = subsample(
+    meAll.filter((p): p is XY => p !== undefined),
+    60
+  );
+
+  // ── log-log 생존함수 & Hill (양수 데이터에서만 정의) ──
+  let logLogSurvival: XY[] = [];
+  let hill: XY[] = [];
+  if (positiveOnly) {
+    // 생존함수: i번째 오름차순 순서통계(1-index)의 S_i = 1 − i/(n+1)
+    const llAll: XY[] = [];
+    for (let i = 1; i <= n; i++) {
+      const s = 1 - i / (n + 1);
+      if (s > 0) llAll.push({ x: Math.log(xs[i - 1]), y: -Math.log(s) });
+    }
+    logLogSurvival = subsample(llAll, 60);
+
+    // Hill: 내림차순 순서통계 lnDesc[0]=max. H_k=(1/k)Σ_{i<k}(lnDesc[i]−lnDesc[k])
+    const lnDesc = new Array<number>(n);
+    for (let i = 0; i < n; i++) lnDesc[i] = Math.log(xs[n - 1 - i]);
+    let acc = 0; // Σ_{i=0..k−1} lnDesc[i]
+    const hAll: XY[] = [];
+    for (let k = 1; k <= n - 1; k++) {
+      acc += lnDesc[k - 1];
+      const H = acc / k - lnDesc[k];
+      if (H > 0) hAll.push({ x: k, y: 1 / H });
+    }
+    hill = subsample(hAll, 60);
+  }
+
+  return { n, meanExcess, logLogSurvival, hill, positiveOnly };
+}
+
 /* ───────────────── 면책·한도(좌측 절단·우측 검열) 검증 ───────────────── */
 
 export interface TruncationCheck {
@@ -505,6 +583,7 @@ export function severityEligibility(
       case "exponential":
       case "weibull":
       case "pareto2":
+      case "genpareto":
         return loMin >= 0
           ? { ok: true }
           : { ok: false, reason: "음수 구간 포함 — 0 이상 데이터 필요" };
@@ -531,6 +610,7 @@ export function severityEligibility(
     case "exponential":
     case "weibull":
     case "pareto2":
+    case "genpareto":
       return min >= 0
         ? { ok: true }
         : { ok: false, reason: "음수 값 포함 — 0 이상 데이터 필요" };

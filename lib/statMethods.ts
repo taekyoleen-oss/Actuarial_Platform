@@ -3036,6 +3036,729 @@ print(f"관례적 0.5 임계값  → 예상 비용 {total_cost(0.5):,}원")
       },
     ],
   },
+  {
+    id: "imbalanced",
+    name: "불균형 데이터 처리",
+    en: "Imbalanced Data",
+    category: "ml",
+    weight: 3,
+    difficulty: 3,
+    params: [
+      { name: 'class_weight="balanced"', desc: "로지스틱·트리 계열에서 각 클래스의 손실을 빈도의 역수로 가중 — 드문 양성을 더 크게 신경 쓰게 합니다. RandomForest는 'balanced_subsample'도 가능." },
+      { name: "resample(replace, n_samples, random_state)", desc: "sklearn.utils.resample — 복원추출(오버샘플)·비복원추출(언더샘플)로 재표집. 별도 패키지 없이 리샘플링을 처리하며 훈련셋에만 적용합니다." },
+      { name: "sample_weight (fit 인자)", desc: "데이터를 복제하지 않고 표본별 손실 가중만으로 오버샘플과 같은 효과 — 메모리·학습이 가볍습니다." },
+      { name: "predict_proba 임계값", desc: "predict()의 0.5는 관례일 뿐. 임계값을 낮추면 재현율↑·정밀도↓로 움직이므로 업무 비용으로 직접 고릅니다." },
+      { name: "average_precision_score (PR-AUC)", desc: "심한 불균형에서 accuracy·ROC-AUC보다 민감한 평가 지표 — 찍기 수준 기준선(=양성 비율)과 비교해야 의미가 있습니다." },
+      { name: "stratify=y (train_test_split)", desc: "훈련·평가 양쪽에 드문 양성을 같은 비율로 분배 — 리샘플링·가중 이전에 반드시 해두는 기본 전제." },
+    ],
+    summary: "드문 양성(사기·희귀사고·조기해지)을 놓치지 않게 — 가중·임계값·리샘플링",
+    intro:
+      "사기 적발, 희귀 사고, 조기 해지처럼 정작 잡아야 할 대상(양성)이 전체의 몇 %에 불과한 문제를 불균형 데이터라고 합니다. 이때 '정확도(accuracy)'는 착시를 만듭니다 — 양성이 5%면 무조건 '음성'이라고만 답해도 정확도 95%가 나오지만, 정작 관심 사건은 하나도 잡지 못합니다.\n\n해결의 세 축은 ① 학습 단계에서 소수 클래스에 가중을 주기(class_weight·sample_weight), ② 예측 단계에서 임계값을 옮겨 재현율·정밀도를 업무 비용에 맞추기, ③ 데이터 단계에서 리샘플링으로 균형을 맞추기입니다. 평가는 accuracy 대신 재현율·PR-AUC로 합니다. 별도 패키지 없이 scikit-learn 도구만으로 충분히 다룰 수 있습니다.",
+    tips: "리샘플링·가중은 순위 능력(PR-AUC)을 크게 바꾸기보다 0.5 임계값에서의 재현율을 끌어올리는 효과라, 임계값·비용 조정을 먼저 검토하는 것이 안전합니다. 리샘플링은 반드시 훈련셋에만 적용하고 평가셋은 원래 불균형 그대로 두세요.",
+    sections: [
+      {
+        title: "문제 진단·기본 대응 — accuracy의 함정과 class_weight",
+        desc: "합성 보험사기 데이터(양성 5%)로 불균형 비율을 확인하고, '전부 정상' 예측의 정확도 착시를 보인 뒤 class_weight='balanced'로 재현율을 끌어올립니다.",
+        level: "basic",
+        code: `# 사기·희귀사고·조기해지처럼 '양성(1)'이 드문 문제를 다룹니다.
+# 합성 보험사기 데이터: 청구 10,000건 중 사기는 약 5%.
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (classification_report, confusion_matrix,
+                             recall_score, precision_score,
+                             average_precision_score, roc_auc_score)
+
+rng = np.random.default_rng(42)   # seed 42 — 결과 재현
+N = 10_000
+
+# 특성: 청구금액(로그정규)·가입후경과월·과거청구횟수·야간사고여부
+claim_amt = rng.lognormal(mean=6.0, sigma=1.0, size=N)      # 건당 청구금액
+tenure    = rng.integers(1, 120, size=N)                    # 가입 후 경과월
+past_cnt  = rng.poisson(0.8, size=N)                        # 과거 청구 횟수
+night     = rng.integers(0, 2, size=N)                      # 야간 사고(1)
+
+# 사기 성향 점수 — 금액↑·경과월↓·과거청구↑·야간이면 사기 확률↑
+z = (0.0009 * claim_amt + 0.9 * past_cnt + 0.6 * night
+     - 0.015 * tenure - 4.4)
+p_fraud = 1 / (1 + np.exp(-z))
+fraud = rng.binomial(1, p_fraud)                            # 실제 사기 여부(양성=1)
+
+df = pd.DataFrame({
+    "claim_amt": claim_amt, "tenure": tenure,
+    "past_cnt": past_cnt, "night": night, "fraud": fraud,
+})
+
+# 1) 불균형 비율부터 확인 — 얼마나 드문가?
+n_pos = int(df["fraud"].sum())
+rate = df["fraud"].mean()
+print(f"전체 {N:,}건 중 사기 {n_pos}건 (양성 비율 {rate:.1%})")
+print(f"불균형 비율(음성:양성) = {(N - n_pos) / n_pos:.1f} : 1")
+print()
+
+X = df[["claim_amt", "tenure", "past_cnt", "night"]]
+y = df["fraud"]
+# stratify=y — 훈련/평가 양쪽에 드문 양성이 같은 비율로 들어가게 유지
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.3, stratify=y, random_state=42)
+
+# 2) accuracy의 함정 — '전부 정상'이라고만 찍어도 정확도는 높다
+dummy_pred = np.zeros(len(y_te), dtype=int)       # 무조건 음성(정상) 예측
+acc_dummy = (dummy_pred == y_te).mean()
+print(f"[함정] 모두 '정상'으로 예측 → 정확도 {acc_dummy:.1%} … 하지만 사기는 한 건도 못 잡음")
+print(f"        재현율(잡아낸 사기 비율) = {recall_score(y_te, dummy_pred, zero_division=0):.3f}")
+print()
+
+# 3) 기본 대응 — class_weight='balanced'로 드문 클래스에 가중
+#    (양성을 틀리는 손실을 자동으로 크게 잡아, 소수 클래스를 더 신경 쓰게 함)
+base = LogisticRegression(max_iter=2000).fit(X_tr, y_tr)                      # 가중 없음
+bal  = LogisticRegression(max_iter=2000, class_weight="balanced").fit(X_tr, y_tr)
+
+for name, mdl in [("가중 없음", base), ("class_weight=balanced", bal)]:
+    pred = mdl.predict(X_te)
+    proba = mdl.predict_proba(X_te)[:, 1]
+    print(f"── {name} ──")
+    print(f"  정확도 {(pred == y_te).mean():.3f} · "
+          f"재현율 {recall_score(y_te, pred, zero_division=0):.3f} · "
+          f"정밀도 {precision_score(y_te, pred, zero_division=0):.3f}")
+    # PR-AUC(=Average Precision): 불균형에서 accuracy·ROC-AUC보다 민감한 핵심 지표
+    print(f"  PR-AUC {average_precision_score(y_te, proba):.3f} "
+          f"(찍기 기준선 {y_te.mean():.3f}) · ROC-AUC {roc_auc_score(y_te, proba):.3f}")
+print()
+
+# 4) 혼동행렬·리포트로 마무리 확인 — 어디를 놓치고 어디를 헛짚나
+pred_bal = bal.predict(X_te)
+print("혼동행렬 [행=실제, 열=예측]  (0=정상, 1=사기)")
+print(confusion_matrix(y_te, pred_bal))
+print(classification_report(y_te, pred_bal, target_names=["정상", "사기"], zero_division=0))
+
+# 해석: 불균형에서는 accuracy가 높아도 무의미할 수 있습니다.
+# 드문 사기를 '얼마나 잡아내는가(재현율)'와 PR-AUC로 평가하는 것이 출발점입니다.`,
+      },
+      {
+        title: "임계값 이동 + 비용곡선 — 총비용 최소 컷오프",
+        desc: "predict_proba 임계값을 옮겨 재현율↔정밀도를 조정하고, 미탐(FN)·오탐(FP) 비용을 반영해 총비용이 가장 작은 임계값을 직접 고릅니다.",
+        level: "advanced",
+        code: `# predict_proba의 0.5는 관례일 뿐. 재현율↔정밀도를 업무 목적에 맞게 옮기고,
+# 미탐(FN)·오탐(FP) 비용을 반영해 '총비용 최소' 임계값을 직접 고릅니다.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (precision_recall_curve, recall_score,
+                             precision_score, confusion_matrix)
+
+rng = np.random.default_rng(42)   # seed 42 — 재현
+N = 10_000
+claim_amt = rng.lognormal(6.0, 1.0, N)
+tenure    = rng.integers(1, 120, N)
+past_cnt  = rng.poisson(0.8, N)
+night     = rng.integers(0, 2, N)
+z = 0.0009 * claim_amt + 0.9 * past_cnt + 0.6 * night - 0.015 * tenure - 4.4
+fraud = rng.binomial(1, 1 / (1 + np.exp(-z)))     # 양성(사기) 약 5%
+
+df = pd.DataFrame({"claim_amt": claim_amt, "tenure": tenure,
+                   "past_cnt": past_cnt, "night": night, "fraud": fraud})
+X = df[["claim_amt", "tenure", "past_cnt", "night"]]
+y = df["fraud"]
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.3, stratify=y, random_state=42)
+
+model = LogisticRegression(max_iter=2000).fit(X_tr, y_tr)
+proba = model.predict_proba(X_te)[:, 1]           # 양성일 추정확률
+
+# 1) 임계값 이동 — 낮출수록 사기를 더 많이 잡지만(재현율↑) 헛짚음도 늘어남(정밀도↓)
+print("임계값별 재현율·정밀도 (사기 탐지)")
+print(f"{'임계값':>6} {'재현율':>8} {'정밀도':>8} {'적발수':>8}")
+for t in [0.5, 0.3, 0.2, 0.1, 0.05]:
+    pred_t = (proba >= t).astype(int)
+    rec = recall_score(y_te, pred_t, zero_division=0)
+    prec = precision_score(y_te, pred_t, zero_division=0)
+    print(f"{t:>6.2f} {rec:>8.3f} {prec:>8.3f} {int(pred_t.sum()):>8}")
+print("→ 임계값을 낮추면 재현율↑·정밀도↓ (상충 관계)")
+print()
+
+# 2) 비용곡선 — 미탐·오탐 비용을 넣어 '총비용 최소' 임계값 찾기
+#    사기를 놓치면(FN) 지급 손실 300만원, 정상 청구를 사기로 의심(FP)하면
+#    조사·고객불만 비용 50만원이라고 가정합니다(값은 실무 데이터로 대체).
+COST_FN, COST_FP = 3_000_000, 500_000
+
+def total_cost(t):
+    pred_t = (proba >= t).astype(int)
+    fn = int(((y_te == 1) & (pred_t == 0)).sum())   # 놓친 사기
+    fp = int(((y_te == 0) & (pred_t == 1)).sum())   # 헛조사
+    return fn * COST_FN + fp * COST_FP
+
+grid = np.linspace(0.01, 0.99, 99)
+costs = np.array([total_cost(t) for t in grid])
+best_t = grid[int(np.argmin(costs))]
+
+print(f"비용 최소 임계값 = {best_t:.2f} → 총비용 {total_cost(best_t):,.0f}원")
+print(f"관례적 0.50 임계값 → 총비용 {total_cost(0.5):,.0f}원")
+print(f"절감액 = {total_cost(0.5) - total_cost(best_t):,.0f}원")
+# 놓치는 비용(FN)이 헛짚는 비용(FP)보다 크므로 최적 임계값은 0.5보다 낮아집니다.
+print()
+print("최적 임계값에서의 혼동행렬 [행=실제, 열=예측]")
+print(confusion_matrix(y_te, (proba >= best_t).astype(int)))
+
+# 3) 시각화 — 비용곡선과 최적점
+plt.figure(figsize=(7, 4))
+plt.plot(grid, costs / 1e6, color="#3E6AE1", label="총비용")
+plt.axvline(best_t, color="#B45309", linestyle="--",
+            label=f"최소 임계값 {best_t:.2f}")
+plt.axvline(0.5, color="#94A3B8", linestyle=":", label="관례 0.5")
+plt.xlabel("임계값(threshold)"); plt.ylabel("총비용 (백만원)")
+plt.title("미탐·오탐 비용 반영 총비용 곡선")
+plt.legend(); plt.tight_layout()
+plt.show()
+
+# 해석: 임계값은 통계가 아니라 '비용'이 정합니다. FN이 비싸면 임계값을 낮춰
+# 재현율을 확보하고, FP가 비싸면 높여 정밀도를 지키는 것이 원칙입니다.`,
+      },
+      {
+        title: "리샘플링 — 오버·언더샘플 vs sample_weight (sklearn만)",
+        desc: "sklearn.utils.resample로 소수 오버샘플·다수 언더샘플을 비교하고, 데이터 복제 없는 sample_weight까지 대조합니다. SMOTE는 개념만 주석으로 둡니다(웹 미설치).",
+        level: "advanced",
+        code: `# 드문 양성 클래스를 늘리거나(오버샘플) 다수 음성을 줄여(언더샘플) 균형을 맞춥니다.
+# 별도 패키지(imbalanced-learn/SMOTE) 없이 sklearn.utils.resample 로만 처리합니다.
+import numpy as np
+import pandas as pd
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import recall_score, precision_score, average_precision_score
+
+rng = np.random.default_rng(42)   # seed 42
+N = 10_000
+claim_amt = rng.lognormal(6.0, 1.0, N)
+tenure    = rng.integers(1, 120, N)
+past_cnt  = rng.poisson(0.8, N)
+night     = rng.integers(0, 2, N)
+z = 0.0009 * claim_amt + 0.9 * past_cnt + 0.6 * night - 0.015 * tenure - 4.4
+fraud = rng.binomial(1, 1 / (1 + np.exp(-z)))     # 양성(사기) 약 5%
+
+df = pd.DataFrame({"claim_amt": claim_amt, "tenure": tenure,
+                   "past_cnt": past_cnt, "night": night, "fraud": fraud})
+feat = ["claim_amt", "tenure", "past_cnt", "night"]
+
+# 중요: 리샘플링은 '훈련셋에만' 적용합니다. 평가셋은 원래 불균형 그대로 두어야
+#       실제 운영 성능을 정직하게 측정할 수 있습니다.
+train, test = train_test_split(df, test_size=0.3, stratify=df["fraud"],
+                               random_state=42)
+X_te, y_te = test[feat], test["fraud"]
+
+def evaluate(train_df, tag):
+    mdl = LogisticRegression(max_iter=2000).fit(train_df[feat], train_df["fraud"])
+    proba = mdl.predict_proba(X_te)[:, 1]
+    pred = (proba >= 0.5).astype(int)
+    print(f"{tag:<22} 훈련 양성비 {train_df['fraud'].mean():.2%} · "
+          f"재현율 {recall_score(y_te, pred, zero_division=0):.3f} · "
+          f"정밀도 {precision_score(y_te, pred, zero_division=0):.3f} · "
+          f"PR-AUC {average_precision_score(y_te, proba):.3f}")
+
+pos = train[train["fraud"] == 1]      # 소수(사기)
+neg = train[train["fraud"] == 0]      # 다수(정상)
+print(f"훈련셋 원본 — 정상 {len(neg)} · 사기 {len(pos)}")
+print()
+
+# 0) 기준선 — 원본 불균형 그대로
+evaluate(train, "① 원본(불균형)")
+
+# 1) 오버샘플링 — 소수(사기)를 복원추출로 다수 크기까지 늘림
+pos_over = resample(pos, replace=True, n_samples=len(neg), random_state=42)
+train_over = pd.concat([neg, pos_over])
+evaluate(train_over, "② 소수 오버샘플")
+
+# 2) 언더샘플링 — 다수(정상)를 비복원추출로 소수 크기까지 줄임
+neg_under = resample(neg, replace=False, n_samples=len(pos), random_state=42)
+train_under = pd.concat([neg_under, pos])
+evaluate(train_under, "③ 다수 언더샘플")
+
+# 3) 리샘플링 없이 sample_weight — 데이터 복제 대신 손실 가중으로 같은 효과
+#    (오버샘플과 개념이 같지만 데이터를 늘리지 않아 메모리·학습이 가볍습니다)
+w = np.where(train["fraud"] == 1, len(neg) / len(pos), 1.0)   # 소수에 큰 가중
+mdl_w = LogisticRegression(max_iter=2000).fit(
+    train[feat], train["fraud"], sample_weight=w)
+proba_w = mdl_w.predict_proba(X_te)[:, 1]
+pred_w = (proba_w >= 0.5).astype(int)
+print(f"{'④ sample_weight':<22} 훈련 양성비 {train['fraud'].mean():.2%}(원본) · "
+      f"재현율 {recall_score(y_te, pred_w, zero_division=0):.3f} · "
+      f"정밀도 {precision_score(y_te, pred_w, zero_division=0):.3f} · "
+      f"PR-AUC {average_precision_score(y_te, proba_w):.3f}")
+
+# ─ SMOTE는 개념만(웹 실행기에 미설치) ─
+# SMOTE(Synthetic Minority Over-sampling): 단순 복제 대신 소수 샘플과 그 이웃 사이를
+# 선형 보간해 '새로운' 합성 양성을 만듭니다(과적합 완화). imbalanced-learn 패키지가
+# 필요하므로 여기서는 사용하지 않고, sklearn.utils.resample 오버샘플로 대체했습니다.
+
+# 해석: 리샘플링은 PR-AUC(순위 능력)를 크게 바꾸지 않지만, 0.5 임계값에서의
+# 재현율을 끌어올립니다 — 사실상 '임계값 이동'과 비슷한 효과입니다. 언더샘플은
+# 데이터 손실로 분산이 커질 수 있고, 오버샘플/가중은 소수 패턴을 과신할 위험이
+# 있으니, 리샘플링보다 임계값·비용 조정을 먼저 검토하는 것이 안전합니다.`,
+      },
+    ],
+  },
+  {
+    id: "calibration",
+    name: "확률 캘리브레이션",
+    en: "Probability Calibration",
+    category: "ml",
+    weight: 2,
+    difficulty: 3,
+    params: [
+      { name: "calibration_curve(n_bins, strategy)", desc: "예측확률을 몇 구간으로 묶을지(n_bins)와 분할 방식 — 'uniform'(등폭)·'quantile'(구간당 표본 수 균등, 확률 분포가 치우쳤을 때 안정)." },
+      { name: "CalibratedClassifierCV(method)", desc: "'isotonic'(비모수 단조 계단, 데이터 넉넉할 때 유연)·'sigmoid'(Platt 로지스틱, 데이터 적을 때 안정적으로 S자 한 개로 교정)." },
+      { name: "CalibratedClassifierCV(cv)", desc: "교차검증 fold 수 — 교정 함수를 학습 데이터 누수 없이 적합. 'prefit'이면 이미 학습된 모델에 별도 보정셋으로만 교정." },
+      { name: "CalibratedClassifierCV(ensemble)", desc: "True(기본)면 fold별 보정기를 앙상블 평균, False면 하나의 보정기만 적합 — 대용량에서 가볍게." },
+      { name: "brier_score_loss(pos_label)", desc: "양성 클래스 라벨 지정 — 예측확률과 0/1 실제값의 평균제곱오차(낮을수록 확률이 정확)." },
+    ],
+    summary: "예측 확률 자체가 실제 빈도와 맞는가 — 순위(AUC) 너머 요율의 전제",
+    intro:
+      "분류 모델을 평가할 때 AUC는 '누가 더 위험한지' 순위만 봅니다. 하지만 해지율·사고율을 요율에 쓰려면 순위가 아니라 예측 확률 값 자체가 맞아야 합니다. 캘리브레이션(보정)은 '모델이 확률 0.3이라고 말한 계약들이 실제로 약 30% 비율로 사고를 내는가'를 묻습니다 — AUC가 높아도 확률이 0/1로 과장(과신)돼 있으면 요율은 틀립니다.\n\n순수보험료(기대손해)는 사고확률 × 심도로 계산되므로, 확률이 부정확하면 보험료가 통째로 어긋나고 고위험군 과다·저위험군 과소 책정이 동시에 생겨 역선택을 부릅니다. 그래서 ML 확률을 요율에 쓰기 전 캘리브레이션 곡선과 Brier 점수로 진단하고, 필요하면 isotonic·sigmoid로 재보정하는 절차가 필수입니다.",
+    tips: "캘리브레이션은 AUC와 무관하게 따로 확인하세요 — 순위가 완벽해도 확률은 과신일 수 있습니다. 곡선이 45°선 아래로 처지면 과신(예측>실제)입니다. 교정 방식은 데이터가 적으면 sigmoid, 넉넉하면 isotonic이 안전합니다.",
+    sections: [
+      {
+        title: "캘리브레이션 곡선·Brier — 확률이 실제 빈도와 맞는지 검진",
+        desc: "예측확률을 구간으로 묶어 '평균 예측확률 vs 실제 빈도'를 그리고, Brier 점수로 확률 정확도를 한 숫자로 요약합니다. 일부러 과신하는 모델(나이브 베이즈)로 시연합니다.",
+        level: "basic",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.calibration import calibration_curve
+from sklearn.metrics import brier_score_loss, roc_auc_score
+
+rng = np.random.default_rng(42)
+n = 4000
+
+# 합성 계약 데이터 — 해지 여부(1=해지)를 예측한다고 가정
+# 진짜 신호(signal)로 해지 확률을 만들고, 라벨은 그 확률로 베르누이 추출
+age = rng.normal(45, 12, n)
+tenure = rng.uniform(1, 120, n)          # 유지 개월
+signal = 0.05 * (age - 45) - 0.015 * (tenure - 60)
+p_true = 1 / (1 + np.exp(-signal))
+y = rng.binomial(1, p_true)
+
+# 일부러 과신하는 모델: 같은 신호의 상관 높은 '복사본' 6개를 독립 변수인 척 투입
+# 나이브 베이즈는 변수 독립을 가정 → 중복 증거를 곱해 확률을 0/1 극단으로 밀어붙임
+X = np.column_stack([signal + rng.normal(0, 0.6, n) for _ in range(6)])
+
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3,
+                                          stratify=y, random_state=42)
+model = GaussianNB().fit(X_tr, y_tr)
+proba = model.predict_proba(X_te)[:, 1]   # 해지 예측 확률
+
+# 순위 성능(AUC)은 멀쩡할 수 있다 — 그래도 확률 값은 틀릴 수 있음
+print(f"AUC(순위 성능)      = {roc_auc_score(y_te, proba):.3f}")
+print(f"Brier score(확률 정확도) = {brier_score_loss(y_te, proba):.4f}  (낮을수록 좋음)")
+print(f"실제 평균 해지율    = {y_te.mean():.3f}")
+print(f"예측 평균 해지율    = {proba.mean():.3f}  (실제와 벌어지면 편향 신호)")
+
+# 캘리브레이션 곡선: 예측확률을 10구간으로 묶어 '평균 예측확률' vs '실제 빈도' 비교
+frac_pos, mean_pred = calibration_curve(y_te, proba, n_bins=10, strategy="quantile")
+print("\\n예측확률 구간별  [평균예측 → 실제빈도]")
+for mp, fp in zip(mean_pred, frac_pos):
+    flag = "과신(예측>실제)" if mp > fp + 0.03 else ("과소" if mp < fp - 0.03 else "양호")
+    print(f"  {mp:5.3f} → {fp:5.3f}   {flag}")
+
+plt.figure(figsize=(5.5, 5.5))
+plt.plot([0, 1], [0, 1], "k--", label="완벽한 보정(45°)")
+plt.plot(mean_pred, frac_pos, "o-", color="#3E6AE1", label="이 모델")
+plt.xlabel("평균 예측 확률")
+plt.ylabel("실제 해지 빈도")
+plt.title("Calibration curve — 곡선이 45°선 아래면 과신")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# 해석: 45°선 '아래'에 있는 점 = 그 구간에서 모델이 말한 확률보다 실제 빈도가 낮음 → 과신.
+# 요율·기대손해에 확률을 그대로 쓰려면 이 곡선이 45°선에 붙어 있어야 안전합니다.`,
+      },
+      {
+        title: "재보정 — CalibratedClassifierCV로 과신 확률 바로잡기",
+        desc: "isotonic(비모수 단조)·sigmoid(Platt) 두 방식으로 교정 함수를 학습해 재보정 전후 곡선과 Brier를 비교합니다.",
+        level: "advanced",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.calibration import CalibratedClassifierCV, calibration_curve
+from sklearn.metrics import brier_score_loss
+
+rng = np.random.default_rng(42)
+n = 4000
+age = rng.normal(45, 12, n)
+tenure = rng.uniform(1, 120, n)
+signal = 0.05 * (age - 45) - 0.015 * (tenure - 60)
+p_true = 1 / (1 + np.exp(-signal))
+y = rng.binomial(1, p_true)
+# 상관 높은 복사본 6개 → 나이브 베이즈가 과신
+X = np.column_stack([signal + rng.normal(0, 0.6, n) for _ in range(6)])
+
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3,
+                                          stratify=y, random_state=42)
+
+# 원본(과신) 모델
+base = GaussianNB().fit(X_tr, y_tr)
+proba_raw = base.predict_proba(X_te)[:, 1]
+
+# 재보정 두 방식 — 학습 데이터에서 교차검증으로 교정 함수를 학습
+#  isotonic: 단조 계단 함수(비모수) — 데이터가 넉넉할 때 유연
+#  sigmoid : 로지스틱(Platt) — 데이터가 적을 때 안정적, S자 한 개로 교정
+iso = CalibratedClassifierCV(GaussianNB(), method="isotonic", cv=5).fit(X_tr, y_tr)
+sig = CalibratedClassifierCV(GaussianNB(), method="sigmoid", cv=5).fit(X_tr, y_tr)
+proba_iso = iso.predict_proba(X_te)[:, 1]
+proba_sig = sig.predict_proba(X_te)[:, 1]
+
+# Brier 점수 비교(낮을수록 확률이 정확) — 순위(AUC)는 재보정해도 거의 안 변함
+print("Brier score (낮을수록 좋음)")
+for name, p in [("원본(과신)", proba_raw), ("isotonic", proba_iso), ("sigmoid", proba_sig)]:
+    print(f"  {name:10s} = {brier_score_loss(y_te, p):.4f}")
+print(f"\\n실제 평균 해지율 = {y_te.mean():.3f}")
+print(f"예측 평균  원본 {proba_raw.mean():.3f} · isotonic {proba_iso.mean():.3f} · sigmoid {proba_sig.mean():.3f}")
+
+# 재보정 전후 캘리브레이션 곡선 겹쳐 그리기
+plt.figure(figsize=(6, 6))
+plt.plot([0, 1], [0, 1], "k--", label="완벽한 보정")
+for name, p, c in [("원본(과신)", proba_raw, "#C0392B"),
+                   ("isotonic", proba_iso, "#3E6AE1"),
+                   ("sigmoid", proba_sig, "#27AE60")]:
+    fp, mp = calibration_curve(y_te, p, n_bins=10, strategy="quantile")
+    plt.plot(mp, fp, "o-", color=c, label=name)
+plt.xlabel("평균 예측 확률")
+plt.ylabel("실제 해지 빈도")
+plt.title("재보정 전후 Calibration curve")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# 해석: 재보정 후 곡선이 45°선에 더 붙고 Brier가 내려가면 확률이 개선된 것.
+# 원본의 극단 확률(0.99 등)이 실제 빈도 쪽으로 당겨져 요율 산정에 쓸 수 있게 됩니다.`,
+      },
+      {
+        title: "왜 요율에 중요한가 — 보정 안 된 확률로 기대손해를 쓸 때의 위험",
+        desc: "기대손해 = 사고확률 × 심도. 과신 확률을 그대로 순수보험료에 넣으면 포트폴리오 총손해 예측과 세분 요율이 어긋납니다. 재보정 전후를 대조합니다.",
+        level: "advanced",
+        code: `import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import brier_score_loss
+
+rng = np.random.default_rng(42)
+n = 4000
+age = rng.normal(45, 12, n)
+tenure = rng.uniform(1, 120, n)
+signal = 0.05 * (age - 45) - 0.015 * (tenure - 60)
+p_true = 1 / (1 + np.exp(-signal))
+y = rng.binomial(1, p_true)                 # 1 = 사고 발생
+X = np.column_stack([signal + rng.normal(0, 0.6, n) for _ in range(6)])
+
+X_tr, X_te, y_tr, y_te, sig_tr, sig_te = train_test_split(
+    X, y, signal, test_size=0.3, stratify=y, random_state=42)
+
+# 계약별 사고 심도(사고 시 지급액) — 여기서는 단순화해 300만원 고정으로 가정
+severity = 3_000_000.0
+
+# 과신 모델 vs 재보정(isotonic) 모델의 사고확률
+base = GaussianNB().fit(X_tr, y_tr)
+cal = CalibratedClassifierCV(GaussianNB(), method="isotonic", cv=5).fit(X_tr, y_tr)
+p_raw = base.predict_proba(X_te)[:, 1]
+p_cal = cal.predict_proba(X_te)[:, 1]
+
+# 순수보험료(기대손해) = 사고확률 × 심도 → 포트폴리오 합계
+expected_raw = (p_raw * severity).sum()
+expected_cal = (p_cal * severity).sum()
+actual_loss = (y_te * severity).sum()       # 실제 발생한 총손해
+
+print(f"평가 계약 수            = {len(y_te):,}건")
+print(f"실제 총손해            = {actual_loss:15,.0f} 원")
+print(f"과신 모델 예측 총손해   = {expected_raw:15,.0f} 원  "
+      f"(오차 {expected_raw/actual_loss - 1:+.1%})")
+print(f"재보정 예측 총손해      = {expected_cal:15,.0f} 원  "
+      f"(오차 {expected_cal/actual_loss - 1:+.1%})")
+print(f"\\nBrier  원본 {brier_score_loss(y_te, p_raw):.4f} → 재보정 {brier_score_loss(y_te, p_cal):.4f}")
+
+# 세분 요율의 위험: 위험군(사고확률 상위)에서 과신이 특히 커진다
+order = np.argsort(-p_raw)
+top = order[:len(order) // 5]               # 예측 위험 상위 20%
+print("\\n[예측 위험 상위 20% 구간]")
+print(f"  실제 사고율         = {y_te[top].mean():.3f}")
+print(f"  과신 모델 평균 확률 = {p_raw[top].mean():.3f}  → 보험료 과다 청구 위험")
+print(f"  재보정 평균 확률    = {p_cal[top].mean():.3f}")
+
+labels = ["실제\\n총손해", "과신 모델\\n예측", "재보정\\n예측"]
+vals = [actual_loss, expected_raw, expected_cal]
+plt.figure(figsize=(6, 4.5))
+plt.bar(labels, vals, color=["#555555", "#C0392B", "#3E6AE1"])
+plt.axhline(actual_loss, color="#555555", ls="--", lw=1)
+plt.ylabel("포트폴리오 총손해 (원)")
+plt.title("보정 안 된 확률 → 예측 총손해 편향")
+plt.tight_layout()
+plt.show()
+
+# 해석: 과신 확률을 그대로 순수보험료에 넣으면 포트폴리오 합계가 실제 총손해와 어긋나
+# 요율이 전반적으로 높거나 낮게 책정됩니다. 특히 고위험군의 과다 청구·저위험군의
+# 과소 책정이 동시에 생겨 역선택을 부릅니다 — 요율 산정 전 재보정이 필요한 이유입니다.`,
+      },
+    ],
+  },
+  {
+    id: "anomaly",
+    name: "이상치 탐지",
+    en: "Anomaly Detection",
+    category: "ml",
+    weight: 2,
+    difficulty: 3,
+    params: [
+      { name: "contamination", desc: "데이터에 섞인 이상치 비율의 사전 추정치 — 표시 건수를 좌우합니다. 크게 잡으면 많이 표시(재현율↑·오탐↑), 작게 잡으면 확실한 것만. 'auto'도 가능." },
+      { name: "n_estimators (IsolationForest)", desc: "격리 트리 개수 — 많을수록 점수가 안정적입니다(기본 100, 200 권장). 값을 늘려도 과적합 위험은 없습니다." },
+      { name: "n_neighbors (LOF)", desc: "국소 밀도를 계산할 이웃 수 — 결과에 가장 민감한 값입니다. 작으면 아주 국소적인 이상, 크면 넓은 범위의 이상을 봅니다(기본 20)." },
+      { name: "novelty (LOF)", desc: "False(기본)면 학습 데이터 자체를 채점, True면 정상만 학습한 뒤 새 관측을 predict로 판정 — 실시간 감시 시스템에 씁니다." },
+      { name: "decision_function / score_samples", desc: "이상 점수 산출 — decision_function은 0 미만이면 이상, score_samples는 클수록 정상. 임계값을 직접 정할 때 사용." },
+    ],
+    summary: "라벨 없이 비정상 청구를 찾는 IsolationForest·LOF·EllipticEnvelope",
+    intro:
+      "이상치 탐지는 '정답(사기 여부)' 라벨 없이 다수와 동떨어진 관측을 자동으로 골라내는 비지도 학습입니다. 보험 실무에서는 비정상 청구·사기 심사의 1차 스크리닝에 쓰여, 심사 예산이 유한할 때 '먼저 들여다볼 건'의 우선순위를 매기는 역할을 합니다.\n\n대표 방법 셋은 '이상'을 서로 다르게 정의합니다. IsolationForest는 무작위 분할로 홀로 빨리 격리되는 점(전역 이상), LOF는 이웃보다 밀도가 성긴 점(국소 이상), EllipticEnvelope는 데이터를 하나의 정규 타원으로 보고 중심에서 먼 점을 이상으로 봅니다. 방법마다 강약이 다르므로 여러 결과를 비교해 합의되는 건을 신뢰하는 것이 안전합니다.",
+    tips: "이상 탐지의 '이상'은 통계적 이례일 뿐 곧 '사기'는 아닙니다 — 최종 판단은 반드시 심사·조사 등 도메인 검토를 거쳐야 합니다. 세 방법이 모두 이상으로 표시한 합의 건은 신뢰도가 높아 우선 검토 대상으로 좋습니다.",
+    sections: [
+      {
+        title: "IsolationForest 기본 — 학습·이상 점수·상위 이상치·산점도",
+        desc: "contamination(이상치 비율)을 지정해 학습한 뒤 이상 점수·라벨을 얻고, 상위 이상치 표와 2변수 산점도로 확인합니다. 합성 청구 데이터로 그대로 실행됩니다.",
+        level: "basic",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+
+# 합성 청구 데이터 — 정상 청구 + 비정상(과다/이례) 청구 5%
+rng = np.random.default_rng(42)
+n_normal = 570
+n_anom = 30  # 전체의 5%
+
+# 정상: 건당 손해액(만원)과 처리일수가 서로 붙어 다니는 정상 군집
+amt_n = rng.lognormal(mean=5.0, sigma=0.35, size=n_normal)      # 대략 100~250만원대
+days_n = 0.02 * amt_n + rng.normal(7, 1.5, size=n_normal)       # 금액에 비례한 처리일수
+# 비정상: 손해액이 비정상적으로 크거나 처리일수 패턴이 어긋난 청구
+amt_a = rng.lognormal(mean=6.4, sigma=0.5, size=n_anom)         # 훨씬 큰 금액
+days_a = rng.normal(4, 3, size=n_anom)                          # 큰 금액인데 처리일수는 짧음(이상)
+
+df = pd.DataFrame({
+    "claim_amt": np.concatenate([amt_n, amt_a]),
+    "process_days": np.concatenate([days_n, days_a]),
+    "is_fraud": np.concatenate([np.zeros(n_normal), np.ones(n_anom)]).astype(int),  # 참고용(모델은 안 씀)
+})
+df = df.sample(frac=1, random_state=42).reset_index(drop=True)  # 뒤섞기
+X = df[["claim_amt", "process_days"]]
+print("데이터 크기:", X.shape, "| 실제 비정상 건수(참고):", int(df["is_fraud"].sum()))
+
+# IsolationForest: 무작위로 특성을 쪼개 관측을 격리할 때, 이상치는 몇 번 안 쪼개도 홀로 분리됩니다.
+# contamination = 데이터에 섞인 이상치 비율의 사전 추정치(여기서는 5%로 지정).
+iso = IsolationForest(contamination=0.05, n_estimators=200, random_state=42)
+iso.fit(X)
+
+# 이상 점수: score_samples는 클수록 정상. decision_function은 0 미만이면 이상으로 판정됩니다.
+df["anomaly_score"] = iso.decision_function(X)   # 음수일수록 더 이상함
+df["pred"] = iso.predict(X)                       # 1=정상, -1=이상
+df["is_outlier"] = (df["pred"] == -1).astype(int)
+
+n_flag = int(df["is_outlier"].sum())
+print(f"모델이 이상으로 표시한 건수: {n_flag}건 (지정 비율 5% ~ {0.05*len(df):.0f}건)")
+
+# 상위 이상치 표 — 점수가 가장 낮은(가장 이상한) 순으로
+top = df.sort_values("anomaly_score").head(10)
+print("\\n[상위 이상치 10건] anomaly_score가 낮을수록 이상")
+print(top[["claim_amt", "process_days", "anomaly_score", "is_outlier"]]
+      .round(2).to_string(index=False))
+
+# 참고: 실제 사기 라벨과 얼마나 겹치는지(라벨은 학습에 안 썼음)
+hit = int(((df["is_outlier"] == 1) & (df["is_fraud"] == 1)).sum())
+print(f"\\n표시된 이상치 중 실제 비정상과 겹친 건수: {hit}/{n_flag} "
+      f"(실무에서는 이 목록을 심사자에게 우선 검토 대상으로 넘깁니다)")
+
+# 2변수 산점도 — 이상치를 빨간 X로 강조
+plt.figure(figsize=(7, 5))
+normal = df[df["is_outlier"] == 0]
+outlier = df[df["is_outlier"] == 1]
+plt.scatter(normal["claim_amt"], normal["process_days"],
+            s=18, alpha=0.5, label="정상")
+plt.scatter(outlier["claim_amt"], outlier["process_days"],
+            s=90, marker="x", linewidths=2, color="crimson", label="이상치")
+plt.xlabel("건당 손해액(만원)")
+plt.ylabel("처리일수")
+plt.title("IsolationForest 이상치 탐지")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+print("\\n해석: 손해액이 크면서도 처리일수 패턴이 정상 군집에서 벗어난 점들이 이상치로 잡힙니다.")
+print("contamination을 크게 잡으면 더 많이 표시(재현율↑·오탐↑), 작게 잡으면 확실한 것만 표시됩니다.")`,
+      },
+      {
+        title: "LOF·EllipticEnvelope 비교 — 방법별 강약",
+        desc: "같은 데이터에 IsolationForest(전역)·LOF(국소 밀도)·EllipticEnvelope(타원 가정)를 적용해 결과를 비교합니다. novelty=True(정상만 학습) 모드도 함께 보여줍니다.",
+        level: "advanced",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.covariance import EllipticEnvelope
+
+# 합성 데이터 — 정상 군집 + 비정상 5%
+rng = np.random.default_rng(42)
+n_normal, n_anom = 570, 30
+amt_n = rng.lognormal(mean=5.0, sigma=0.35, size=n_normal)
+days_n = 0.02 * amt_n + rng.normal(7, 1.5, size=n_normal)
+amt_a = rng.lognormal(mean=6.4, sigma=0.5, size=n_anom)
+days_a = rng.normal(4, 3, size=n_anom)
+
+df = pd.DataFrame({
+    "claim_amt": np.concatenate([amt_n, amt_a]),
+    "process_days": np.concatenate([days_n, days_a]),
+    "is_fraud": np.concatenate([np.zeros(n_normal), np.ones(n_anom)]).astype(int),
+})
+df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+X = df[["claim_amt", "process_days"]].values
+CONT = 0.05  # 세 방법 공통 오염 비율
+
+# 1) IsolationForest — 전역(global): 트리 격리 깊이. 전체에서 동떨어진 값에 강함.
+iso = IsolationForest(contamination=CONT, n_estimators=200, random_state=42)
+df["iso"] = (iso.fit_predict(X) == -1).astype(int)
+
+# 2) LOF — 국소(local): 이웃 대비 밀도 비교. 주변보다 성긴 곳의 점을 잡음.
+#    fit_predict는 학습 데이터 자체를 채점(비지도).
+lof = LocalOutlierFactor(n_neighbors=20, contamination=CONT)
+df["lof"] = (lof.fit_predict(X) == -1).astype(int)
+
+# 참고: novelty=True는 '정상만으로 학습 후 새 관측을 판정'하는 모드(감시 시스템에 유용)
+lof_nov = LocalOutlierFactor(n_neighbors=20, novelty=True)
+lof_nov.fit(X[df["is_fraud"].values == 0])  # 정상만 학습
+df["lof_novelty"] = (lof_nov.predict(X) == -1).astype(int)
+
+# 3) EllipticEnvelope — 타원 가정: 데이터가 하나의 정규 덩어리라 보고 마할라노비스 거리로 판정.
+ell = EllipticEnvelope(contamination=CONT, random_state=42)
+df["ell"] = (ell.fit_predict(X) == -1).astype(int)
+
+# 방법별 표시 건수와 실제 비정상 적중 비교(라벨은 참고용)
+print("방법별 이상치 표시 건수 및 실제 비정상 적중")
+for col, name in [("iso", "IsolationForest(전역)"),
+                  ("lof", "LOF(국소)"),
+                  ("lof_novelty", "LOF novelty(정상학습)"),
+                  ("ell", "EllipticEnvelope(타원가정)")]:
+    flagged = int(df[col].sum())
+    hit = int(((df[col] == 1) & (df["is_fraud"] == 1)).sum())
+    print(f"  {name:26s}: 표시 {flagged:2d}건 · 실제 적중 {hit:2d}/{int(df['is_fraud'].sum())}")
+
+# 세 방법이 모두 이상으로 본 '합의' 건은 신뢰도가 높습니다.
+df["votes"] = df[["iso", "lof", "ell"]].sum(axis=1)
+consensus = int((df["votes"] == 3).sum())
+print(f"\\n세 방법 모두 일치(합의) 이상치: {consensus}건 (우선 심사 1순위 후보)")
+
+# 시각화 — 각 방법이 잡은 이상치를 나란히
+methods = [("iso", "IsolationForest (전역)"),
+           ("lof", "LOF (국소 밀도)"),
+           ("ell", "EllipticEnvelope (타원 가정)")]
+fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), sharex=True, sharey=True)
+for ax, (col, title) in zip(axes, methods):
+    normal = df[df[col] == 0]
+    out = df[df[col] == 1]
+    ax.scatter(normal["claim_amt"], normal["process_days"], s=14, alpha=0.4, label="정상")
+    ax.scatter(out["claim_amt"], out["process_days"], s=70, marker="x",
+               linewidths=1.8, color="crimson", label="이상치")
+    ax.set_title(title)
+    ax.set_xlabel("건당 손해액(만원)")
+    ax.legend(loc="upper left", fontsize=8)
+axes[0].set_ylabel("처리일수")
+plt.tight_layout()
+plt.show()
+
+print("\\n[방법별 강약 정리]")
+print(" - IsolationForest: 전역 이상에 강하고 빠름·고차원에 견고. 국소 밀도 차이는 놓칠 수 있음.")
+print(" - LOF: 이웃 대비 밀도로 국소 이상을 포착. n_neighbors에 민감하고 새 데이터엔 novelty 필요.")
+print(" - EllipticEnvelope: 데이터가 하나의 정규 덩어리일 때 정확. 다봉·비대칭이면 가정이 깨져 부정확.")`,
+      },
+      {
+        title: "지도학습 부재 시 평가 — 라벨 유무로 갈리는 검증",
+        desc: "이상 탐지는 보통 정답이 없습니다. 라벨이 일부라도 있으면 이상 점수의 ROC-AUC·PR-AUC로 순위 성능을 검증하고, 없으면 도메인 검토가 유일한 길임을 다룹니다.",
+        level: "advanced",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+from sklearn.metrics import roc_auc_score, average_precision_score, precision_recall_curve
+
+# 합성 데이터 — 사후에 조사로 확인된 사기 라벨이 일부 존재한다고 가정
+rng = np.random.default_rng(42)
+n_normal, n_anom = 570, 30
+amt_n = rng.lognormal(mean=5.0, sigma=0.35, size=n_normal)
+days_n = 0.02 * amt_n + rng.normal(7, 1.5, size=n_normal)
+amt_a = rng.lognormal(mean=6.4, sigma=0.5, size=n_anom)
+days_a = rng.normal(4, 3, size=n_anom)
+
+df = pd.DataFrame({
+    "claim_amt": np.concatenate([amt_n, amt_a]),
+    "process_days": np.concatenate([days_n, days_a]),
+    "is_fraud": np.concatenate([np.zeros(n_normal), np.ones(n_anom)]).astype(int),
+})
+df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+X = df[["claim_amt", "process_days"]].values
+y = df["is_fraud"].values  # 조사로 확인된 실제 사기 라벨
+
+iso = IsolationForest(contamination=0.05, n_estimators=200, random_state=42)
+iso.fit(X)
+
+# 핵심: 라벨 유무로 검증 방식이 갈립니다.
+# decision_function은 클수록 정상이므로, '이상 점수'는 부호를 뒤집어 클수록 이상하게 만듭니다.
+anomaly_score = -iso.decision_function(X)
+
+# (A) 라벨이 있을 때 — 점수의 '순위' 성능을 ROC-AUC / PR-AUC로 검증
+# 임계값을 정하지 않고, 이상할수록 점수가 높은지(순위)만 봅니다.
+auc = roc_auc_score(y, anomaly_score)          # 무작위=0.5, 완벽=1.0
+ap = average_precision_score(y, anomaly_score)  # PR-AUC — 불균형에서 ROC보다 민감
+base = y.mean()  # 찍기 수준(양성 비율)
+print("[라벨이 있을 때 - 이상 점수 검증]")
+print(f"  ROC-AUC = {auc:.3f}  (0.5=무작위, 1.0=완벽)")
+print(f"  PR-AUC  = {ap:.3f}  (찍기 기준선 = 양성비율 {base:.3f})")
+print(f"  -> PR-AUC가 기준선({base:.3f})보다 충분히 높으면 점수가 사기를 잘 골라낸다는 뜻입니다.")
+
+# 상위 k건만 심사한다면? — 실무 예산은 유한하므로 상위 정밀도(precision@k)가 중요합니다.
+order = np.argsort(-anomaly_score)  # 이상 점수 높은 순
+for k in (20, 50):
+    topk = order[:k]
+    prec_k = y[topk].mean()
+    recall_k = y[topk].sum() / y.sum()
+    print(f"  상위 {k}건 심사 시: 정밀도(precision@{k})={prec_k:.2f} · "
+          f"실제 사기 {int(y[topk].sum())}건 포착(재현율 {recall_k:.2f})")
+
+# PR 곡선 시각화
+prec, rec, _ = precision_recall_curve(y, anomaly_score)
+plt.figure(figsize=(7, 5))
+plt.plot(rec, prec, lw=2, label=f"PR 곡선 (AP={ap:.3f})")
+plt.axhline(base, ls="--", color="gray", label=f"찍기 기준선 {base:.3f}")
+plt.xlabel("재현율 (실제 사기 중 잡아낸 비율)")
+plt.ylabel("정밀도 (표시 중 실제 사기 비율)")
+plt.title("이상 점수의 PR 곡선 - 라벨로 검증")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# (B) 라벨이 없을 때 — 도메인 검토가 유일한 검증
+print("\\n[라벨이 없을 때 - 도메인 검토 필요]")
+print("  ROC-AUC 같은 지표는 정답이 있어야 계산됩니다. 라벨이 전혀 없다면:")
+print("  1) 이상 점수 상위 건을 심사자가 직접 열어 '왜 이상한지' 설명이 되는지 확인")
+top = df.assign(anomaly_score=anomaly_score).sort_values("anomaly_score", ascending=False).head(5)
+print(top[["claim_amt", "process_days", "anomaly_score"]].round(2).to_string(index=False))
+print("  2) contamination을 바꿔 표시 건수가 심사 가능 범위인지, 결과가 안정적인지 점검")
+print("  3) 일부라도 라벨을 확보(과거 적발 사례 등)해 (A)의 순위 검증으로 넘어가는 것이 목표")
+print("\\n주의: 이상 탐지의 '이상'은 통계적 이례일 뿐, 곧 '사기'는 아닙니다.")
+print("      최종 판단은 반드시 도메인 전문가(심사·조사) 검토를 거쳐야 합니다.")`,
+      },
+    ],
+  },
   /* ───────────────────────── 보험·계리 (actuarial) ───────────────────────── */
   ...ACTUARIAL_METHODS,
   /* ─────────────────────── 데이터 핸들링 (wrangle) ─────────────────────── */
