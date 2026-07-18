@@ -14,3 +14,13 @@ content/domestic/*
 !content/**/.gitkeep
 !content/README.md
 .gstack/
+
+# Claude Code / 테스트 작업용 임시 산출물
+.claude/worktrees/
+.playwright-mcp/
+
+# 스테이징·변환 원본 (네이티브 컴포넌트/DB로 이미 반영됨)
+published/
+/보험상품_심사사례.html
+/생명보험의_동향_2025_한국어.html
+japan_FSA/보험상품_심사사례-1.html
