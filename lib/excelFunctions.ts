@@ -5,10 +5,23 @@
 
 export type ExcelVersion = "all" | "2019" | "2021" | "365";
 
-export type ExcelCategoryId = "stat" | "lookup" | "shape" | "logic" | "lambda";
+export type ExcelCategoryId =
+  | "stat"
+  | "lookup"
+  | "shape"
+  | "logic"
+  | "lambda"
+  | "dataref";
 
 /** 칩 뮤트 팔레트(--chip-*) 한정 스코프 — 카테고리 고정색 */
-export type ExcelChipColor = "blue" | "violet" | "teal" | "amber" | "rose";
+export type ExcelChipColor =
+  | "blue"
+  | "violet"
+  | "teal"
+  | "amber"
+  | "rose"
+  | "cyan"
+  | "slate";
 
 export interface ExcelCategory {
   id: ExcelCategoryId;
@@ -78,9 +91,18 @@ export const EXCEL_LAMBDA_CATEGORY: ExcelCategory = {
   hint: "이름 붙이기 · 나만의 함수 · 재귀 해찾기",
 };
 
+/** 데이터 참조·연산자 — 사분면 아래 별도 섹션(트림 . · 스필 # · 구조적 참조) */
+export const EXCEL_DATAREF_CATEGORY: ExcelCategory = {
+  id: "dataref",
+  label: "데이터 참조·연산자",
+  color: "cyan",
+  hint: "범위 자동 확장(.) · 배열 참조(#) · 표(구조적 참조)",
+};
+
 export const EXCEL_CATEGORIES: ExcelCategory[] = [
   ...EXCEL_QUADRANTS,
   EXCEL_LAMBDA_CATEGORY,
+  EXCEL_DATAREF_CATEGORY,
 ];
 
 export function excelCategory(id: ExcelCategoryId): ExcelCategory {

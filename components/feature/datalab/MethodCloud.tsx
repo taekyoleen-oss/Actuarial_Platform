@@ -192,7 +192,7 @@ function ExcelCodePanel({
                   className="inline-flex items-center whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-[10.5px] font-medium text-tertiary"
                   title={
                     s.sameAsOriginal
-                      ? "데이터 로드 줄 정도만 다르고 로직은 '코드 적용' 탭과 사실상 동일"
+                      ? "데이터 로드 줄 정도만 다르고 로직은 '파이썬 코드 적용' 탭과 사실상 동일"
                       : "Python in Excel 환경에 맞게 로직·API가 바뀜"
                   }
                 >
@@ -210,7 +210,7 @@ function ExcelCodePanel({
         >
           이 방법의 <strong>Python in Excel</strong> 적용 코드는 준비 중입니다. 위
           공통 차이점(데이터는 <code>xl()</code> · print는 진단창 · Anaconda
-          패키지)을 <strong>코드 적용</strong> 탭의 코드에 적용해 사용하세요.
+          패키지)을 <strong>파이썬 코드 적용</strong> 탭의 코드에 적용해 사용하세요.
         </p>
       )}
     </div>
@@ -259,7 +259,7 @@ function TheoryPanel({
         ) : null}
         <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12)}>
           이 방법의 산출식·활용 해설은 준비 중입니다. 실행 가능한 코드는{" "}
-          <strong>코드 적용</strong> 탭에서 확인하세요.
+          <strong>파이썬 코드 적용</strong> 탭에서 확인하세요.
         </p>
       </div>
     );
@@ -487,8 +487,8 @@ function MethodDialog({
           {(
             [
               { key: "theory", label: "정의 및 방법" },
-              { key: "code", label: "코드 적용" },
-              { key: "excel", label: "엑셀 적용 코드" },
+              { key: "code", label: "파이썬 코드 적용" },
+              { key: "excel", label: "엑셀 코드 적용" },
             ] as { key: DialogTab; label: string }[]
           ).map((t) => (
             <button
@@ -641,7 +641,7 @@ function MethodDialog({
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
           {tab === "theory"
-            ? "정의·산출식·활용을 먼저 확인한 뒤 '코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
+            ? "정의·산출식·활용을 먼저 확인한 뒤 '파이썬 코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
             : tab === "excel"
             ? "엑셀 셀에 =PY( 를 입력해 파이썬 편집 모드로 들어간 뒤, 블록의 ‘복사’로 코드를 붙여 넣으세요. 데이터는 xl()로 시트·표를 참조합니다."
             : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
@@ -1183,7 +1183,7 @@ export function MethodCloud() {
           분석 방법 사전 — 파이썬 코드
         </h2>
         <p className="text-[12.5px] text-tertiary">
-          클릭하면 [정의 및 방법 · 코드 적용] 팝업이 열립니다
+          클릭하면 [정의 및 방법 · 파이썬 코드 적용 · 엑셀 코드 적용] 팝업이 열립니다
         </p>
       </div>
 

@@ -19,6 +19,8 @@ import { X } from "lucide-react";
 import {
   EXCEL_QUADRANTS,
   EXCEL_LAMBDA_CATEGORY,
+  EXCEL_DATAREF_CATEGORY,
+  EXCEL_CATEGORIES,
   EXCEL_FUNCTIONS,
   VERSION_SUP,
   VERSION_FULL,
@@ -650,16 +652,21 @@ function ClusterCloud({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
-/* ─────────────────── LET · LAMBDA 별도 섹션 ─────────────────── */
+/* ─── 사분면 아래 별도 섹션 (LET·LAMBDA / 데이터 참조·연산자) — 카드 그리드 ─── */
 
-function LambdaSection({ onOpen }: { onOpen: (id: string) => void }) {
-  const cat = EXCEL_LAMBDA_CATEGORY;
+function ExtraSection({
+  cat,
+  onOpen,
+}: {
+  cat: ExcelCategory;
+  onOpen: (id: string) => void;
+}) {
   const fns = useMemo(
     () =>
-      EXCEL_FUNCTIONS.filter((f) => f.category === "lambda").sort(
+      EXCEL_FUNCTIONS.filter((f) => f.category === cat.id).sort(
         (a, b) => b.weight - a.weight || a.difficulty - b.difficulty || a.id.localeCompare(b.id)
       ),
-    []
+    [cat.id]
   );
   if (fns.length === 0) return null;
 
@@ -716,7 +723,7 @@ export function ExcelFunctionCloud() {
 
   const open = openId ? byId(openId) : undefined;
   const openCat = open
-    ? [...EXCEL_QUADRANTS, EXCEL_LAMBDA_CATEGORY].find((c) => c.id === open.category)
+    ? EXCEL_CATEGORIES.find((c) => c.id === open.category)
     : undefined;
 
   useHistoryDismiss(!!(open && openCat), () => setOpenId(null));
@@ -743,7 +750,8 @@ export function ExcelFunctionCloud() {
         <>
           <QuadrantChart onOpen={setOpenId} />
           <ClusterCloud onOpen={setOpenId} />
-          <LambdaSection onOpen={setOpenId} />
+          <ExtraSection cat={EXCEL_LAMBDA_CATEGORY} onOpen={setOpenId} />
+          <ExtraSection cat={EXCEL_DATAREF_CATEGORY} onOpen={setOpenId} />
         </>
       )}
 

@@ -48,7 +48,7 @@ export function DistCodeDialog({
       ...baseTabs,
       {
         key: "__excel",
-        label: "엑셀 적용 코드",
+        label: "엑셀 코드 적용",
         code: toExcelPython(baseTabs[0].code),
         note: PIE_CODE_NOTE,
       },
