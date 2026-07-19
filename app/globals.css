@@ -243,6 +243,29 @@ mark.key-phrase {
   }
 }
 
+/* 파이썬 코드 경량 하이라이트 (datalab code-popup) — 칩 뮤트 팔레트 한정 스코프.
+   사용자 요청(2026-07-19): 메서드/함수 호출·파라미터(키워드 인자)를 별도 색으로 구분. */
+.py-tok-comment {
+  color: color-mix(in srgb, var(--chip-slate-fg) 72%, white);
+}
+.py-tok-str {
+  color: var(--chip-teal-fg);
+}
+.py-tok-num {
+  color: var(--chip-rose-fg);
+}
+.py-tok-kw {
+  color: var(--chip-violet-fg);
+  font-weight: 600;
+}
+.py-tok-fn {
+  color: var(--primary);
+  font-weight: 600;
+}
+.py-tok-kwarg {
+  color: var(--chip-amber-fg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-fade {
     opacity: 1 !important;

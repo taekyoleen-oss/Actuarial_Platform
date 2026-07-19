@@ -9,9 +9,12 @@
  * 각 섹션은 한 번만 렌더하고 display만 토글(실행기·Pyodide 상태 유지).
  * 탭바는 좁은 화면(모바일)에서 가로 스크롤 대신 여러 줄로 줄바꿈해 모든 탭을 노출한다(md+는 한 줄 알약).
  */
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { RunnerContext } from "@/components/feature/datalab/RunnerContext";
 import type { RunnerLoadRequest } from "@/components/feature/datalab/PyRunner";
+
+/** 마지막 사용 탭 저장 키 — localStorage(기기·브라우저별, 서버 전송 없음) */
+const TAB_STORE_KEY = "datalab:lastTab:v1";
 
 type TabKey =
   | "excel"
@@ -46,12 +49,36 @@ export function DataLabTabs({
   fitting: ReactNode;
 }) {
   const [tab, setTab] = useState<TabKey>("excel");
+
+  // 마지막 사용 탭 복원 — SSR 마크업 불일치를 피하려 effect에서 하이드레이션(기기별 적용)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(TAB_STORE_KEY) as TabKey | null;
+      if (saved && TABS.some((t) => t.key === saved)) setTab(saved);
+    } catch {
+      /* 프라이빗 모드 등 저장 불가 시 기본 탭 유지 */
+    }
+  }, []);
+
+  // 탭 선택 = 즉시 저장 — 다음 방문 시 이 탭이 먼저 보인다
+  const selectTab = useCallback((k: TabKey) => {
+    setTab(k);
+    try {
+      localStorage.setItem(TAB_STORE_KEY, k);
+    } catch {
+      /* 저장 실패는 무시 */
+    }
+  }, []);
+
   // 실행기 로드 요청 — analysis 탭의 '실행기로 보내기'로 주입되어 pyrun 탭 실행기에 반영
   const [load, setLoad] = useState<RunnerLoadRequest | null>(null);
-  const sendToRunner = useCallback((code: string, label: string) => {
-    setLoad((prev) => ({ code, label, seq: (prev?.seq ?? 0) + 1 }));
-    setTab("pyrun");
-  }, []);
+  const sendToRunner = useCallback(
+    (code: string, label: string) => {
+      setLoad((prev) => ({ code, label, seq: (prev?.seq ?? 0) + 1 }));
+      selectTab("pyrun");
+    },
+    [selectTab]
+  );
 
   const panel = (key: TabKey, node: ReactNode) => (
     <div className={tab === key ? "block" : "hidden"}>{node}</div>
@@ -71,7 +98,7 @@ export function DataLabTabs({
               type="button"
               role="tab"
               aria-selected={tab === t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => selectTab(t.key)}
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors md:px-4 md:text-sm ${
                 tab === t.key
                   ? "bg-foreground text-white"

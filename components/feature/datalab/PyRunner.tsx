@@ -1854,6 +1854,12 @@ function RunnerWorkspace({
                   </button>
                 </span>
               </div>
+              {/* 입력(코드) — 다크 에디터 + '입력' 라벨로 출력과 시각 구분 */}
+              <div className="flex items-center bg-[#2f3540] px-3 pt-2">
+                <span className="inline-flex items-center rounded-full bg-[#3d4654] px-2 py-px text-[10.5px] font-semibold tracking-wide text-[#8ab4ff]">
+                  입력
+                </span>
+              </div>
               <textarea
                 value={c.code}
                 onChange={(e) => {
@@ -1909,12 +1915,42 @@ function RunnerWorkspace({
                     : undefined
                 }
                 aria-label={`파이썬 코드 셀 ${i + 1}`}
-                className="block min-h-[76px] w-full resize-none border-0 bg-[#2f3540] p-3 font-mono text-[12.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
+                className="block min-h-[76px] w-full resize-none border-0 bg-[#2f3540] px-3 pb-3 pt-1.5 font-mono text-[13.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
               />
               {c.output || c.images.length > 0 ? (
-                <div className="border-t border-border">
+                // 출력 — 성공은 틸 틴트, 오류는 로즈 틴트 배경으로 입력과 구분
+                <div
+                  className="border-t border-border"
+                  style={{
+                    background:
+                      c.status === "error"
+                        ? "color-mix(in srgb, var(--chip-rose-bg) 45%, white)"
+                        : "color-mix(in srgb, var(--chip-teal-bg) 35%, white)",
+                  }}
+                >
+                  <div className="flex items-center px-3 pt-2">
+                    <span
+                      className="inline-flex items-center rounded-full px-2 py-px text-[10.5px] font-semibold tracking-wide"
+                      style={{
+                        background:
+                          c.status === "error"
+                            ? "var(--chip-rose-bg)"
+                            : "var(--chip-teal-bg)",
+                        color:
+                          c.status === "error"
+                            ? "var(--chip-rose-fg)"
+                            : "var(--chip-teal-fg)",
+                      }}
+                    >
+                      {c.status === "error"
+                        ? "출력 · 오류"
+                        : c.execOrder
+                          ? `출력 Out [${c.execOrder}]`
+                          : "출력"}
+                    </span>
+                  </div>
                   {c.output ? (
-                    <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap bg-surface px-3 py-3 font-mono text-[12px] leading-[1.65] text-foreground">
+                    <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap px-3 py-2.5 font-mono text-[13px] leading-[1.65] text-foreground">
                       {c.output}
                     </pre>
                   ) : null}
@@ -1973,7 +2009,7 @@ function RunnerWorkspace({
                       {c.proposal.explanation}
                     </p>
                   ) : null}
-                  <pre className="mt-2 max-h-[300px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[12px] leading-[1.65] text-[#e9ecf1]">
+                  <pre className="mt-2 max-h-[300px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[13px] leading-[1.65] text-[#e9ecf1]">
                     {c.proposal.code}
                   </pre>
                 </div>
@@ -2045,10 +2081,12 @@ function RunnerWorkspace({
               <strong>분석 코드 불러오기 → 샘플 보험 데이터 생성</strong>도 있습니다.
             </li>
             <li>
-              각 셀의 <strong>데이터 핸들링 ▾</strong> 콤보박스에서 Join(left/right
-              등)·합치기·Split·Groupby·필터 같은 pandas 조각을 골라 그 셀에 바로
-              삽입할 수 있습니다 — 삽입 코드 <strong>상단에 무슨 코드인지 설명
-              주석(#)</strong>이 붙고, 중간에도 단계별 설명이 들어갑니다. 옆의{" "}
+              각 셀의 <strong>데이터 핸들링 ▾</strong> 콤보박스에서 데이터
+              입력(CSV 옵션·엑셀 시트·여러 시트·JSON·날짜 파싱·직접 입력)·
+              Join(left/right 등)·합치기·Split·Groupby·필터 같은 pandas 조각을
+              골라 그 셀에 바로 삽입할 수 있습니다 — 삽입 코드 <strong>상단에
+              무슨 코드인지 설명 주석(#)</strong>이 붙고, 중간에도 단계별 설명이
+              들어갑니다. 옆의{" "}
               <strong>↶ 취소</strong> 버튼이나 <strong>Ctrl+Z</strong>로 방금
               삽입·입력을 되돌릴 수 있습니다. 셀은 <strong>▲/▼</strong>로 순서를
               바꿀 수 있고, 왼쪽 번호는 위치, <strong>In [n]</strong>은 실행
@@ -2151,7 +2189,7 @@ function ErrorFixModal({
             기존 셀은 위에 그대로 두고, 아래 수정된 코드를 바로 다음 새 셀로
             추가합니다.
           </p>
-          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[12px] leading-[1.65] text-[#e9ecf1]">
+          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[13px] leading-[1.65] text-[#e9ecf1]">
             {state.fixedCode.trim()}
           </pre>
         </div>

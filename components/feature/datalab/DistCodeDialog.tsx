@@ -11,6 +11,10 @@ import { X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import { toExcelPython, PIE_CODE_NOTE } from "@/lib/methodExcelCode";
+import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
+
+const FONT_SCALE_MIN = 0.8;
+const FONT_SCALE_MAX = 1.6;
 
 export interface CodeTab {
   key: string;
@@ -63,10 +67,19 @@ export function DistCodeDialog({
   );
   const [tabKey, setTabKey] = useState<string>(baseTabs[0].key);
   const active = allTabs.find((t) => t.key === tabKey) ?? allTabs[0];
+  // 글자 확대/축소 — 코드·안내에 적용(창 크기와 독립)
+  const [fontScale, setFontScale] = useState(1);
+  const step = (d: number) =>
+    setFontScale((cur) =>
+      Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Math.round((cur + d) * 10) / 10))
+    );
+  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
+  const pin = usePinnableDialog();
 
   useHistoryDismiss(true, onClose);
 
   useEffect(() => {
+    if (pin.pinned) return; // 고정 중엔 배경 상호작용 유지
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -76,21 +89,26 @@ export function DistCodeDialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, pin.pinned]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
+      className={pin.overlayClass}
       role="dialog"
-      aria-modal="true"
+      aria-modal={!pin.pinned}
       aria-label={`${name} 파이썬 코드`}
-      onClick={onClose}
+      onClick={pin.pinned ? undefined : onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        className="pointer-events-auto flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        style={pin.panelStyle}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6">
+        {pin.ResizeHandles()}
+        <header
+          className="flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6"
+          {...pin.dragHandleProps}
+        >
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-2xl" aria-hidden>
@@ -107,6 +125,37 @@ export function DistCodeDialog({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            {pin.PinButton()}
+            {/* 글자 확대/축소 — 창 크기 조절과 별개로 폰트만 변경 */}
+            <div className="flex items-center rounded border border-border">
+              <button
+                type="button"
+                onClick={() => step(-0.1)}
+                disabled={fontScale <= FONT_SCALE_MIN}
+                aria-label="글자 작게"
+                className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+              >
+                가−
+              </button>
+              <button
+                type="button"
+                onClick={() => setFontScale(1)}
+                aria-label="글자 크기 원래대로"
+                title="원래 크기로"
+                className="min-w-[42px] border-x border-border px-1 py-1 text-center text-[11px] tabular-nums text-tertiary hover:text-foreground"
+              >
+                {Math.round(fontScale * 100)}%
+              </button>
+              <button
+                type="button"
+                onClick={() => step(0.1)}
+                disabled={fontScale >= FONT_SCALE_MAX}
+                aria-label="글자 크게"
+                className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+              >
+                가+
+              </button>
+            </div>
             <CopyButton text={active.code} label="전체 복사" />
             <button
               type="button"
@@ -150,7 +199,7 @@ export function DistCodeDialog({
             <div
               className="mb-4 rounded px-4 py-3 text-body"
               style={{
-                fontSize: 12.5,
+                fontSize: Math.round(13 * fontScale * 10) / 10,
                 background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
               }}
             >
@@ -166,7 +215,7 @@ export function DistCodeDialog({
               </ul>
             </div>
           ) : null}
-          <CodeBlock code={active.code} codeFz={12.5} />
+          <CodeBlock code={active.code} codeFz={13.5 * fontScale} />
         </div>
 
         {hideFooter ? null : (

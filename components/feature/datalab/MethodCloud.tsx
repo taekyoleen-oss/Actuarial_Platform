@@ -30,6 +30,7 @@ import {
   type StatMethod,
 } from "@/lib/statMethods";
 import { METHOD_THEORY } from "@/lib/methodTheory";
+import { METHOD_OPTION_DOCS } from "@/lib/methodOptionDocs";
 import {
   METHOD_EXCEL_CODE,
   PIE_GENERAL_NOTE,
@@ -41,6 +42,7 @@ import { useRunner } from "@/components/feature/datalab/RunnerContext";
 import {
   CodeBlock,
   CopyButton,
+  Prose,
 } from "@/components/feature/datalab/code-popup";
 import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
 import {
@@ -52,8 +54,21 @@ import {
   snippetInsertCode,
   type WrangleSnippet,
 } from "@/lib/wrangleSnippets";
+import {
+  PLOT_SNIPPET_GROUPS,
+  plotInsertCode,
+  type PlotSnippet,
+} from "@/lib/plotSnippets";
 import { Tex } from "@/components/feature/datalab/Tex";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
+import {
+  useDatalabOverrides,
+  mergeMethod,
+  mergeTheory,
+  type OverrideData,
+} from "@/lib/datalabOverrides";
+import { OverrideEditPanel, type OvEditField } from "@/components/feature/datalab/OverrideEditPanel";
 
 /** 사분면에 배치되는 카테고리 — wrangle은 아래 칩 스트립으로 분리 */
 const QUAD_CATEGORIES: MethodCategory[] = STAT_CATEGORIES.filter(
@@ -97,7 +112,7 @@ function hashOf(s: string): number {
 const FONT_SCALE_MIN = 0.8;
 const FONT_SCALE_MAX = 1.6;
 
-type DialogTab = "theory" | "code" | "excel";
+type DialogTab = "theory" | "code" | "excel" | "options";
 type LevelFilter = "all" | "basic" | "advanced";
 type SectionLevel = "basic" | "advanced";
 
@@ -154,7 +169,7 @@ function ExcelCodePanel({
       <div
         className="rounded px-4 py-3 text-body"
         style={{
-          ...fz(12.5),
+          ...fz(13),
           background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
         }}
       >
@@ -183,7 +198,7 @@ function ExcelCodePanel({
             </span>
             <ul
               className="min-w-[12rem] flex-1 list-disc space-y-1 pl-4 leading-[1.7] text-body marker:text-tertiary"
-              style={fz(13)}
+              style={fz(13.5)}
             >
               {noteToBullets(data.note).map((b, i) => (
                 <li key={i}>{b}</li>
@@ -195,7 +210,7 @@ function ExcelCodePanel({
           {data.sections.map((s, i) => (
             <div key={`${s.title}-${i}`} className="mt-6">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+                <h3 className="font-semibold text-foreground" style={fz(15)}>
                   {data.sections.length > 1 ? `${i + 1}. ` : ""}
                   {s.title}
                 </h3>
@@ -216,7 +231,7 @@ function ExcelCodePanel({
               </div>
               <CodeBlock
                 code={toExcelPython(s.code).trim()}
-                codeFz={12.5 * fontScale}
+                codeFz={13.5 * fontScale}
               />
             </div>
           ))}
@@ -235,6 +250,107 @@ function ExcelCodePanel({
   );
 }
 
+/**
+ * [파라미터·옵션] 탭 — 파이썬·엑셀(=PY()) 공통의 함수 인자 심화 해설(사용자 요청 2026-07-19).
+ * 기존 '주요 파라미터 요약'(method.params)을 이 탭으로 옮기고,
+ * METHOD_OPTION_DOCS(fit_intercept·solver·거리 metric 등 값 후보·선택 기준)를 더한다.
+ */
+function OptionsPanel({
+  method,
+  color,
+  fz,
+}: {
+  method: StatMethod;
+  color: MethodChipColor;
+  fz: (px: number) => { fontSize: number };
+}) {
+  const groups = METHOD_OPTION_DOCS[method.id] ?? [];
+  return (
+    <div>
+      <p
+        className="rounded px-4 py-2.5 text-body"
+        style={{
+          ...fz(13),
+          background: "color-mix(in srgb, var(--chip-cyan-bg) 55%, white)",
+        }}
+      >
+        여기 설명은 <strong>파이썬 코드 적용</strong>과{" "}
+        <strong>엑셀 코드 적용</strong>(=PY()) 어느 쪽에든 공통으로 적용됩니다.
+      </p>
+
+      {method.params.length > 0 ? (
+        <div className="mt-5">
+          <h3 className="font-semibold text-foreground" style={fz(15)}>
+            주요 파라미터 요약
+          </h3>
+          <dl className="mt-2 divide-y divide-border rounded border border-border">
+            {method.params.map((p) => (
+              <div key={p.name} className="px-3.5 py-2.5">
+                <dt>
+                  <code
+                    className="font-mono font-medium"
+                    style={{ ...fz(13), color: `var(--chip-${color}-fg)` }}
+                  >
+                    {p.name}
+                  </code>
+                </dt>
+                <dd className="mt-0.5 leading-[1.75] text-body" style={fz(13.5)}>
+                  {p.desc}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ) : null}
+
+      {groups.map((g) => (
+        <div key={g.func} className="mt-6">
+          <h3 className="font-semibold text-foreground" style={fz(15)}>
+            {g.func}
+          </h3>
+          {g.intro ? (
+            <p className="mt-1 leading-[1.8] text-tertiary" style={fz(13.5)}>
+              {g.intro}
+            </p>
+          ) : null}
+          <dl className="mt-2 divide-y divide-border rounded border border-border">
+            {g.options.map((o) => (
+              <div key={o.name} className="px-3.5 py-2.5">
+                <dt className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <code
+                    className="font-mono font-semibold"
+                    style={{ ...fz(13), color: `var(--chip-${color}-fg)` }}
+                  >
+                    {o.name}
+                  </code>
+                  {o.values ? (
+                    <span className="text-tertiary" style={fz(12.5)}>
+                      {o.values}
+                    </span>
+                  ) : null}
+                </dt>
+                <dd className="mt-0.5 leading-[1.75] text-body" style={fz(13.5)}>
+                  {o.desc}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+
+      {groups.length === 0 ? (
+        <p
+          className="mt-5 rounded bg-surface px-4 py-3 leading-relaxed text-tertiary"
+          style={fz(13)}
+        >
+          이 방법의 심화 옵션 해설은 준비 중입니다. 위{" "}
+          <strong>주요 파라미터 요약</strong>과 코드 탭의 주석을 참고하세요.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 /** [정의 및 방법] 탭 — 이론 레지스트리(METHOD_THEORY)가 있으면 구조화, 없으면 intro+tips 폴백 */
 function TheoryPanel({
   method,
@@ -245,12 +361,16 @@ function TheoryPanel({
   fz: (px: number) => { fontSize: number };
   fontScale: number;
 }) {
-  const theory = METHOD_THEORY[method.id];
-  const paras = (text: string) => text.split("\n\n").filter(Boolean);
+  // 이론 텍스트도 관리자 오버라이드를 덮어 표시(수식·formulas는 원본 고정)
+  const { overrides } = useDatalabOverrides();
+  const theoryBase = METHOD_THEORY[method.id];
+  const theory = theoryBase
+    ? mergeTheory(theoryBase, overrides[`theory:${method.id}`])
+    : theoryBase;
 
   const Block = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mt-6 first:mt-0">
-      <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+      <h3 className="font-semibold text-foreground" style={fz(15)}>
         {title}
       </h3>
       {children}
@@ -262,20 +382,14 @@ function TheoryPanel({
     return (
       <div>
         <Block title="정의 및 개념">
-          {paras(method.intro).map((p, i) => (
-            <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(14)}>
-              {p}
-            </p>
-          ))}
+          <Prose text={method.intro} fz={fz(14.5).fontSize} className="mt-2 text-body" />
         </Block>
         {method.tips ? (
           <Block title="해석·의미">
-            <p className="mt-2 leading-[1.8] text-body" style={fz(13.5)}>
-              {method.tips}
-            </p>
+            <Prose text={method.tips} fz={fz(14).fontSize} className="mt-2 text-body" />
           </Block>
         ) : null}
-        <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12)}>
+        <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12.5)}>
           이 방법의 산출식·활용 해설은 준비 중입니다. 실행 가능한 코드는{" "}
           <strong>파이썬 코드 적용</strong> 탭에서 확인하세요.
         </p>
@@ -286,11 +400,7 @@ function TheoryPanel({
   return (
     <div>
       <Block title="정의 및 개념">
-        {paras(theory.definition).map((p, i) => (
-          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(14)}>
-            {p}
-          </p>
-        ))}
+        <Prose text={theory.definition} fz={fz(14.5).fontSize} className="mt-2 text-body" />
       </Block>
 
       {theory.formulas.length > 0 ? (
@@ -298,7 +408,7 @@ function TheoryPanel({
           <div className="mt-2 divide-y divide-border rounded border border-border">
             {theory.formulas.map((f) => (
               <div key={f.label} className="px-3.5 py-3">
-                <p className="font-medium text-foreground" style={fz(12.5)}>
+                <p className="font-medium text-foreground" style={fz(13)}>
                   {f.label}
                 </p>
                 <div
@@ -308,7 +418,7 @@ function TheoryPanel({
                   <Tex expr={f.tex} block />
                 </div>
                 {f.note ? (
-                  <p className="mt-1 leading-[1.75] text-tertiary" style={fz(12.5)}>
+                  <p className="mt-1 leading-[1.75] text-tertiary" style={fz(13)}>
                     {f.note}
                   </p>
                 ) : null}
@@ -319,26 +429,18 @@ function TheoryPanel({
       ) : null}
 
       <Block title="활용 방법">
-        {paras(theory.usage).map((p, i) => (
-          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(13.5)}>
-            {p}
-          </p>
-        ))}
+        <Prose text={theory.usage} fz={fz(14).fontSize} className="mt-2 text-body" />
       </Block>
 
       <Block title="해석·의미">
-        {paras(theory.interpretation).map((p, i) => (
-          <p key={i} className="mt-2 leading-[1.85] text-body" style={fz(13.5)}>
-            {p}
-          </p>
-        ))}
+        <Prose text={theory.interpretation} fz={fz(14).fontSize} className="mt-2 text-body" />
       </Block>
     </div>
   );
 }
 
 function MethodDialog({
-  method,
+  method: methodBase,
   color,
   categoryLabel,
   fontScale,
@@ -358,8 +460,20 @@ function MethodDialog({
   // 기본 탭 = 정의 및 방법(개념을 먼저 이해하고 코드로)
   const [tab, setTab] = useState<DialogTab>("theory");
   const [level, setLevel] = useState<LevelFilter>("all");
+  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
+  const pin = usePinnableDialog();
+  // 관리자 오버라이드 — 표시할 설명은 DB 오버라이드 병합본(코드·수식은 원본 고정)
+  const ov = useDatalabOverrides();
+  const methodKey = `method:${methodBase.id}`;
+  const theoryKey = `theory:${methodBase.id}`;
+  const method = useMemo(
+    () => mergeMethod(methodBase, ov.overrides[methodKey]),
+    [methodBase, ov.overrides, methodKey]
+  );
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
+    if (pin.pinned) return; // 고정 중엔 배경 상호작용 유지(Esc·스크롤락 해제)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -369,7 +483,7 @@ function MethodDialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, pin.pinned]);
 
   // 글자 확대/축소 — 본문·코드·파라미터에 적용
   const fz = (px: number) => ({ fontSize: Math.round(px * fontScale * 10) / 10 });
@@ -398,19 +512,134 @@ function MethodDialog({
   // 수준 필터 UI는 [코드 적용] 탭에만 보이므로, 헤더의 복사·전송 버튼에 현재 범위를 표기
   const scopeSuffix = level === "all" ? "" : ` (${LEVEL_META[level].label})`;
 
+  // ── 관리자 편집 — 원본(코드) 값과의 diff만 오버라이드로 저장 ──
+  const theoryBaseForEdit = METHOD_THEORY[methodBase.id];
+  const theoryMergedForEdit = theoryBaseForEdit
+    ? mergeTheory(theoryBaseForEdit, ov.overrides[theoryKey])
+    : undefined;
+
+  const editFields: OvEditField[] = useMemo(() => {
+    const f: OvEditField[] = [
+      {
+        id: "summary",
+        label: "한 줄 요약",
+        value: method.summary,
+        original: methodBase.summary,
+        rows: 2,
+      },
+      {
+        id: "intro",
+        label: "개념·용도 (코드 탭 상단)",
+        value: method.intro,
+        original: methodBase.intro,
+        rows: 6,
+      },
+      {
+        id: "tips",
+        label: "해석·주의 포인트",
+        value: method.tips ?? "",
+        original: methodBase.tips ?? "",
+        rows: 4,
+      },
+    ];
+    if (theoryBaseForEdit && theoryMergedForEdit) {
+      f.push(
+        {
+          id: "definition",
+          label: "[정의 및 방법] 정의 및 개념",
+          value: theoryMergedForEdit.definition,
+          original: theoryBaseForEdit.definition,
+          rows: 5,
+        },
+        {
+          id: "usage",
+          label: "[정의 및 방법] 활용 방법",
+          value: theoryMergedForEdit.usage,
+          original: theoryBaseForEdit.usage,
+          rows: 4,
+        },
+        {
+          id: "interpretation",
+          label: "[정의 및 방법] 해석·의미",
+          value: theoryMergedForEdit.interpretation,
+          original: theoryBaseForEdit.interpretation,
+          rows: 4,
+        }
+      );
+    }
+    methodBase.sections.forEach((s, i) => {
+      f.push({
+        id: `sec:${i}`,
+        label: `섹션 ${i + 1} 설명 — ${s.title}`,
+        value: method.sections[i]?.desc ?? "",
+        original: s.desc ?? "",
+        rows: 2,
+      });
+    });
+    return f;
+  }, [method, methodBase, theoryBaseForEdit, theoryMergedForEdit]);
+
+  const saveEdits = async (values: Record<string, string>) => {
+    const md: OverrideData = {};
+    if (values.summary?.trim() && values.summary !== methodBase.summary)
+      md.summary = values.summary;
+    if (values.intro?.trim() && values.intro !== methodBase.intro)
+      md.intro = values.intro;
+    if (values.tips?.trim() && values.tips !== (methodBase.tips ?? ""))
+      md.tips = values.tips;
+    const secArr: (string | null)[] = methodBase.sections.map((s, i) => {
+      const v = values[`sec:${i}`] ?? "";
+      return v.trim() && v !== (s.desc ?? "") ? v : null;
+    });
+    if (secArr.some(Boolean)) md.sectionDescs = secArr;
+
+    const td: OverrideData = {};
+    if (theoryBaseForEdit) {
+      if (
+        values.definition?.trim() &&
+        values.definition !== theoryBaseForEdit.definition
+      )
+        td.definition = values.definition;
+      if (values.usage?.trim() && values.usage !== theoryBaseForEdit.usage)
+        td.usage = values.usage;
+      if (
+        values.interpretation?.trim() &&
+        values.interpretation !== theoryBaseForEdit.interpretation
+      )
+        td.interpretation = values.interpretation;
+    }
+
+    if (Object.keys(md).length > 0) await ov.save(methodKey, md);
+    else if (ov.overrides[methodKey]) await ov.remove(methodKey);
+    if (Object.keys(td).length > 0) await ov.save(theoryKey, td);
+    else if (ov.overrides[theoryKey]) await ov.remove(theoryKey);
+    setEditing(false);
+  };
+
+  const resetEdits = async () => {
+    if (ov.overrides[methodKey]) await ov.remove(methodKey);
+    if (ov.overrides[theoryKey]) await ov.remove(theoryKey);
+    setEditing(false);
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
+      className={pin.overlayClass}
       role="dialog"
-      aria-modal="true"
+      aria-modal={!pin.pinned}
       aria-label={`${method.name} 파이썬 코드와 설명`}
-      onClick={onClose}
+      onClick={pin.pinned ? undefined : onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        className="pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        style={pin.panelStyle}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="border-b border-border px-5 py-4 sm:px-6">
+        {pin.ResizeHandles()}
+        <header
+          className="border-b border-border px-5 py-4 sm:px-6"
+          {...pin.dragHandleProps}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -423,16 +652,32 @@ function MethodDialog({
                 >
                   {categoryLabel}
                 </span>
-                <h2 className="text-[18px] font-semibold text-foreground">
+                <h2 className="text-[19px] font-semibold text-foreground">
                   {method.name}
                 </h2>
-                <span className="text-[13px] text-tertiary">{method.en}</span>
+                <span className="text-[13.5px] text-tertiary">{method.en}</span>
               </div>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-tertiary">
                 {method.summary}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
+              {ov.isAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => setEditing((e) => !e)}
+                  aria-pressed={editing}
+                  title="관리자: 이 팝업의 설명 텍스트를 수정합니다(코드·수식 제외)"
+                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[11.5px] font-medium ${
+                    editing
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-white text-tertiary hover:text-foreground"
+                  }`}
+                >
+                  ✎ 편집
+                </button>
+              ) : null}
+              {pin.PinButton()}
               {/* 글자 확대/축소 */}
               <div className="flex items-center rounded border border-border">
                 <button
@@ -507,6 +752,7 @@ function MethodDialog({
               { key: "theory", label: "정의 및 방법" },
               { key: "code", label: "파이썬 코드 적용" },
               { key: "excel", label: "엑셀 코드 적용" },
+              { key: "options", label: "파라미터·옵션" },
             ] as { key: DialogTab; label: string }[]
           ).map((t) => (
             <button
@@ -527,21 +773,26 @@ function MethodDialog({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          {tab === "theory" ? (
+          {editing ? (
+            <OverrideEditPanel
+              key={methodBase.id}
+              fields={editFields}
+              hasOverride={
+                !!(ov.overrides[methodKey] || ov.overrides[theoryKey])
+              }
+              onSave={saveEdits}
+              onReset={resetEdits}
+              onCancel={() => setEditing(false)}
+            />
+          ) : tab === "theory" ? (
             <TheoryPanel method={method} fz={fz} fontScale={fontScale} />
           ) : tab === "excel" ? (
             <ExcelCodePanel method={method} fz={fz} fontScale={fontScale} />
+          ) : tab === "options" ? (
+            <OptionsPanel method={method} color={color} fz={fz} />
           ) : (
             <>
-          {method.intro.split("\n\n").map((p, i) => (
-            <p
-              key={i}
-              className="mt-3 leading-[1.85] text-body first:mt-0"
-              style={fz(14)}
-            >
-              {p}
-            </p>
-          ))}
+          <Prose text={method.intro} fz={fz(14.5).fontSize} className="text-body" />
 
           {method.category === "wrangle" ? (
             <div
@@ -594,7 +845,7 @@ function MethodDialog({
           {visibleSections.map((s, i) => (
             <div key={s.title} className="mt-6">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+                <h3 className="font-semibold text-foreground" style={fz(15)}>
                   {visibleSections.length > 1 ? `${i + 1}. ` : ""}
                   {s.title}
                 </h3>
@@ -604,53 +855,37 @@ function MethodDialog({
                 />
               </div>
               {s.desc ? (
-                <p className="mt-1 leading-[1.8] text-tertiary" style={fz(13)}>
+                <p className="mt-1 leading-[1.8] text-tertiary" style={fz(13.5)}>
                   {s.desc}
                 </p>
               ) : null}
-              <CodeBlock code={s.code.trim()} codeFz={12.5 * fontScale} />
+              <CodeBlock code={s.code.trim()} codeFz={13.5 * fontScale} />
             </div>
           ))}
 
           {method.params.length > 0 ? (
-            <div className="mt-6">
-              <h3 className="font-semibold text-foreground" style={fz(14.5)}>
-                주요 파라미터·옵션
-              </h3>
-              <dl className="mt-2 divide-y divide-border rounded border border-border">
-                {method.params.map((p) => (
-                  <div key={p.name} className="px-3.5 py-2.5">
-                    <dt>
-                      <code
-                        className="font-mono font-medium"
-                        style={{
-                          ...fz(12.5),
-                          color: `var(--chip-${color}-fg)`,
-                        }}
-                      >
-                        {p.name}
-                      </code>
-                    </dt>
-                    <dd
-                      className="mt-0.5 leading-[1.75] text-body"
-                      style={fz(13)}
-                    >
-                      {p.desc}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            <p
+              className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary"
+              style={fz(12.5)}
+            >
+              파라미터·옵션 해설(fit_intercept·solver·거리 metric 등)은{" "}
+              <button
+                type="button"
+                onClick={() => setTab("options")}
+                className="font-medium text-primary hover:underline"
+              >
+                파라미터·옵션
+              </button>{" "}
+              탭으로 옮겼습니다 — 파이썬·엑셀 공통.
+            </p>
           ) : null}
 
           {method.tips ? (
             <div className="mt-6 rounded bg-surface px-4 py-3">
-              <p className="font-semibold text-foreground" style={fz(12.5)}>
+              <p className="font-semibold text-foreground" style={fz(13)}>
                 해석·주의 포인트
               </p>
-              <p className="mt-1 leading-[1.8] text-body" style={fz(13)}>
-                {method.tips}
-              </p>
+              <Prose text={method.tips} fz={fz(13.5).fontSize} className="mt-1 text-body" />
             </div>
           ) : null}
             </>
@@ -662,6 +897,8 @@ function MethodDialog({
             ? "정의·산출식·활용을 먼저 확인한 뒤 '파이썬 코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
             : tab === "excel"
             ? "엑셀 셀에 =PY( 를 입력해 파이썬 편집 모드로 들어간 뒤, 블록의 ‘복사’로 코드를 붙여 넣으세요. 데이터는 xl()로 시트·표를 참조합니다."
+            : tab === "options"
+            ? "값 후보·기본값·선택 기준 중심의 해설입니다 — 파이썬·엑셀(=PY()) 어느 코드에든 그대로 적용됩니다."
             : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
         </footer>
       </div>
@@ -974,9 +1211,9 @@ function QuadrantChart({
 /** 데이터 핸들링 3면 구분(작업 흐름순) — 클릭 → 사분면과 동일한 팝업 */
 const WRANGLE_PANES: { label: string; color: string; ids: string[] }[] = [
   {
-    label: "선택·필터",
+    label: "입력·선택·필터",
     color: "amber",
-    ids: ["select-rows-cols", "filter-condition", "isin", "conditional"],
+    ids: ["data-loading", "select-rows-cols", "filter-condition", "isin", "conditional"],
   },
   { label: "결합·집계", color: "cyan", ids: ["join-merge", "groupby", "pivot"] },
   { label: "정제·변형", color: "slate", ids: ["missing", "sort-dedup", "apply"] },
@@ -992,6 +1229,7 @@ const groupSnippetIds = (gid: string) =>
     (s) => s.id
   );
 const METHOD_SNIPPET_IDS: Record<string, string[]> = {
+  "data-loading": groupSnippetIds("load"),
   "select-rows-cols": groupSnippetIds("select"),
   "filter-condition": groupSnippetIds("filter").filter(
     (id) => !id.includes("isin")
@@ -1060,7 +1298,7 @@ function WranglePanel({
           {total}
         </span>
         <span className="hidden text-[11.5px] text-tertiary sm:inline">
-          선택·필터 · 결합·집계 · 정제·변형
+          입력 · 선택·필터 · 결합·집계 · 정제·변형
         </span>
         <span className="ml-auto text-[12px] font-medium text-tertiary">
           {open ? "접기" : "펼치기"}
@@ -1132,6 +1370,117 @@ function WranglePanel({
             클릭하면 정의·코드 팝업이 열립니다. 실제 삽입은 &lsquo;파이썬 코드 실행&rsquo;
             탭 실행기 각 셀의 &lsquo;데이터 핸들링 ▾&rsquo; 콤보박스에서 세부 항목으로
             바로 할 수 있습니다.
+          </p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+/* ──────────── 그래프·시각화 접이식 패널 (사분면 아래, 데이터 핸들링과 동형) ──────────── */
+
+/** 그래프 그룹 → 패널 색 — 칩 뮤트 팔레트 한정 스코프 */
+const PLOT_PANE_COLOR: Record<string, string> = {
+  eda: "blue",
+  diag: "violet",
+  interpret: "teal",
+};
+
+/**
+ * 전처리(탐색)·후처리(진단·해석) 그래프를 한곳에 모은 별도 카테고리(사용자 요청).
+ * 분석과 직접 연관된 그래프는 각 방법의 코드 섹션에 포함되고, 일반 그래프는
+ * 여기서 열람한다. 클릭 → 간단 코드 팝업, 삽입은 실행기 셀 '그래프 ▾' 콤보박스.
+ */
+function PlotPanel({
+  onOpenSnippet,
+}: {
+  onOpenSnippet: (s: PlotSnippet) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const total = useMemo(
+    () => PLOT_SNIPPET_GROUPS.reduce((n, g) => n + g.snippets.length, 0),
+    []
+  );
+
+  return (
+    <div className="mt-4">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 rounded-cover border border-border bg-surface/60 px-4 py-2.5 text-left transition-colors hover:bg-surface"
+      >
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-tertiary transition-transform ${
+            open ? "" : "-rotate-90"
+          }`}
+          aria-hidden
+        />
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: "var(--primary)" }}
+          aria-hidden
+        />
+        <span className="text-[13.5px] font-semibold text-foreground">
+          그래프·시각화
+        </span>
+        <span className="rounded-full bg-white px-1.5 py-px text-[11px] font-medium text-tertiary">
+          {total}
+        </span>
+        <span className="hidden text-[11.5px] text-tertiary sm:inline">
+          탐색(EDA) · 모델 진단 · 해석 — 데이터를 그림으로 이해
+        </span>
+        <span className="ml-auto text-[12px] font-medium text-tertiary">
+          {open ? "접기" : "펼치기"}
+        </span>
+      </button>
+
+      {open ? (
+        <>
+          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {PLOT_SNIPPET_GROUPS.map((g) => {
+              const color = PLOT_PANE_COLOR[g.id] ?? "blue";
+              return (
+                <div
+                  key={g.id}
+                  className="rounded-cover px-4 py-3.5"
+                  style={{
+                    background: `color-mix(in srgb, var(--chip-${color}-bg) 55%, white)`,
+                  }}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: `var(--chip-${color}-fg)` }}
+                      aria-hidden
+                    />
+                    <span className="text-[13px] font-semibold text-foreground">
+                      {g.label}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {g.snippets.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => onOpenSnippet(s)}
+                        title={`${s.desc} — 클릭하면 간단 코드(파이썬·엑셀) 팝업`}
+                        className="rounded border border-border bg-white/70 px-2 py-1 text-[12px] leading-tight text-body transition-colors hover:bg-white hover:text-foreground"
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 px-1 text-[11.5px] leading-relaxed text-tertiary">
+            탐색은 df(로드한 데이터) 기준, 진단·해석은 자체 완결(인라인 빠른 적합
+            포함) 조각입니다. 클릭하면 코드 팝업이 열리고, 삽입은 &lsquo;파이썬
+            코드 실행&rsquo; 탭 실행기 각 셀의 &lsquo;그래프 ▾&rsquo;
+            콤보박스에서 바로 할 수 있습니다.
           </p>
         </>
       ) : null}
@@ -1216,6 +1565,8 @@ export function MethodCloud() {
   const [fontScale, setFontScale] = useState(1);
   // 데이터 핸들링 세부 스니펫 — 간단 코드(파이썬·엑셀) 팝업
   const [snippet, setSnippet] = useState<WrangleSnippet | null>(null);
+  // 그래프·시각화 스니펫 — 간단 코드 팝업(그래프 패널)
+  const [plotSnip, setPlotSnip] = useState<PlotSnippet | null>(null);
   // 실행기는 '파이썬 코드 실행' 탭으로 분리 — 공유 컨텍스트로 코드 전송·탭 전환
   const runner = useRunner();
   // 실행기가 별도 탭이라 클라우드 강조 트리거는 없음(항상 null)
@@ -1282,6 +1633,8 @@ export function MethodCloud() {
       />
       {/* 모바일은 데이터 핸들링을 포함한 5개 카테고리를 클러스터로 */}
       <ClusterCloud onOpen={setOpenId} highlightId={highlightId} />
+      {/* 그래프·시각화 — 전처리(탐색)·후처리(진단·해석) 그래프 별도 카테고리 */}
+      <PlotPanel onOpenSnippet={setPlotSnip} />
 
       {/* 웹 실행기 제한 안내 — 회색(실행 불가)·점선(일부만) 표시 설명 */}
       {WEB_LIMITED.length > 0 ? (
@@ -1350,6 +1703,23 @@ export function MethodCloud() {
             },
           ]}
           onClose={() => setSnippet(null)}
+        />
+      ) : null}
+
+      {plotSnip ? (
+        <DistCodeDialog
+          name={plotSnip.label}
+          en="그래프·시각화"
+          hideFooter
+          subtitle="선택한 그래프 조각의 코드입니다. 열 이름만 바꾸면 실제 데이터에 바로 쓸 수 있고, 실행기 각 셀의 ‘그래프 ▾’ 콤보박스로도 삽입됩니다."
+          tabs={[
+            {
+              key: "py",
+              label: "파이썬 코드 적용",
+              code: plotInsertCode(plotSnip),
+            },
+          ]}
+          onClose={() => setPlotSnip(null)}
         />
       ) : null}
     </section>

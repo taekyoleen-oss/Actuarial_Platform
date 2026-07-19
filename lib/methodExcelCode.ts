@@ -27,7 +27,7 @@ export interface MethodExcelCode {
 /** 모든 방법 공통 — Python in Excel과 브라우저 실행기의 차이(탭 상단 고정 안내·글머리) */
 export const PIE_GENERAL_NOTE: string[] = [
   "데이터는 파일 읽기 대신 xl(\"범위 또는 표\", headers=True)로 시트를 참조합니다.",
-  "결과는 print가 아니라 코드 마지막 줄에 둡니다 — 셀에는 마지막 식의 값이 반환되고, print는 진단(Diagnostics) 창으로 갑니다.",
+  "print는 셀이 아닌 진단(Diagnostics) 창으로 가서 불필요 — 아래 코드는 print를 벗겨 식만 남겼습니다(셀에는 마지막 식의 값이 반환).",
   "np·pd·plt·sns·statsmodels(sm)·warnings는 기본 로드되어 다시 import할 필요가 없습니다(아래 코드에서 해당 줄은 주석 처리). scipy·scikit-learn 등은 import가 필요합니다.",
   "Anaconda 큐레이션 패키지만 됩니다(pip 불가) — scipy·scikit-learn 등은 되지만 lifelines·xgboost·lightgbm 등은 안 됩니다.",
 ];
@@ -78,14 +78,99 @@ function commentPreloadedImports(code: string): string {
 }
 
 /**
+ * print(...) 래퍼를 벗겨 '식'만 남긴다 — Python in Excel은 print가 진단창으로 가고
+ * 셀에는 마지막 식 값이 반환되므로 print가 불필요(사용자 요청 2026-07-19).
+ *  · 단일/다중 인자 모두 내용만 남긴다(다중 인자는 튜플 식으로 유효).
+ *  · 여러 줄에 걸친 print(...)도 괄호 균형(문자열 내부 무시)으로 처리.
+ *  · sep=/end= 키워드가 있으면 튜플로 바꿀 수 없어 원문 유지. 빈 print()도 유지.
+ */
+export function stripPrintWrappers(code: string): string {
+  const lines = code.split("\n");
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^(\s*)print\(/);
+    if (!m) {
+      out.push(line);
+      continue;
+    }
+    const indent = m[1];
+    // 'print(' 다음부터 닫는 괄호까지 스캔 — 문자열 리터럴 안의 괄호는 무시
+    let depth = 1;
+    let inStr: string | null = null;
+    let esc = false;
+    let inner = "";
+    let tail = "";
+    let closed = false;
+    let j = i;
+    let pos = m[0].length;
+    for (; j < lines.length && !closed; j++) {
+      const s = j === i ? line : lines[j];
+      for (; pos < s.length; pos++) {
+        const ch = s[pos];
+        if (inStr) {
+          if (esc) esc = false;
+          else if (ch === "\\") esc = true;
+          else if (ch === inStr) inStr = null;
+          inner += ch;
+          continue;
+        }
+        if (ch === '"' || ch === "'") {
+          inStr = ch;
+          inner += ch;
+        } else if (ch === "(") {
+          depth++;
+          inner += ch;
+        } else if (ch === ")") {
+          depth--;
+          if (depth === 0) {
+            closed = true;
+            tail = s.slice(pos + 1); // 닫는 괄호 뒤(주석 등)
+            break;
+          }
+          inner += ch;
+        } else {
+          inner += ch;
+        }
+      }
+      if (!closed) {
+        inner += "\n";
+        pos = 0;
+      }
+    }
+    const innerTrim = inner.trim();
+    // 변환 불가/무의미 — 원문 유지: 빈 print(), sep=/end= 키워드, 미닫힘
+    if (
+      !closed ||
+      innerTrim.length === 0 ||
+      /(^|,)\s*(sep|end|file|flush)\s*=/.test(inner.replace(/"[^"]*"|'[^']*'/g, ""))
+    ) {
+      for (let k = i; k < j; k++) out.push(lines[k]);
+      i = j - 1;
+      continue;
+    }
+    // print(x) → x  (여러 줄이면 원래 줄바꿈·들여쓰기 유지)
+    const bare = inner
+      .split("\n")
+      .map((s, idx) => (idx === 0 ? indent + s.trimStart() : s))
+      .join("\n");
+    out.push(bare + tail);
+    i = j - 1;
+  }
+  return out.join("\n");
+}
+
+/**
  * 파이썬 코드를 Python in Excel용으로 변환.
  *  · plt.show()는 불필요(셀이 마지막 그림을 반환) → 제거
+ *  · print(...) 래퍼 제거 — 내용(식)만 남긴다(마지막 식이 셀에 반환, 사용자 요청)
  *  · 엑셀 기본 로드 패키지(np·pd·plt·sns·sm·warnings)의 import 줄 → 주석 처리
  *  · 모델 적합의 임베드 데이터 옆에 xl() 대안 주석을 덧붙인다(있을 때만)
- * 나머지 차이(print→진단창, 셀당 그림 1개)는 코드 위 안내(PIE_CODE_NOTE)로 설명한다.
+ * 나머지 차이(셀당 그림 1개 등)는 코드 위 안내(PIE_CODE_NOTE)로 설명한다.
  */
 export function toExcelPython(code: string): string {
   let out = code.replace(/;?[ \t]*plt\.show\(\)/g, "");
+  out = stripPrintWrappers(out);
   out = commentPreloadedImports(out);
   out = out.replace(
     /(#\s*1\)\s*데이터 입력[^\n]*\n)/,
@@ -98,7 +183,7 @@ export function toExcelPython(code: string): string {
 export const PIE_CODE_NOTE: string[] = [
   "scipy·numpy·matplotlib만 써서 =PY()에서 대부분 그대로 실행됩니다.",
   "데이터가 코드에 임베드돼 있습니다 — 시트를 쓰려면 xl(\"범위/표\")로 바꾸세요(주석에 예시).",
-  "결과는 마지막 줄에 둡니다 — 셀에는 마지막 식 값이 반환되고 print는 진단(Diagnostics) 창으로 갑니다.",
+  "print는 셀이 아닌 진단 창으로 가서 불필요 — 코드에서 print를 벗겨 식만 남겼습니다(셀에는 마지막 식 값이 반환).",
   "np·pd·plt 등 기본 로드 패키지의 import 줄은 주석 처리했습니다(scipy 등은 import 필요).",
   "그림은 셀당 1개만 반환 — 여러 그래프는 셀을 나눠 마지막 줄에 plt.gcf()를 두세요(불필요한 plt.show()는 제거).",
 ];

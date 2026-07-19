@@ -29,12 +29,27 @@ import {
   type ExcelChipColor,
   type ExcelFunction,
 } from "@/lib/excelFunctions";
-import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
+import {
+  CodeBlock,
+  CopyButton,
+  Prose,
+  highlightExcel,
+} from "@/components/feature/datalab/code-popup";
 import {
   FunctionSearch,
   type SearchItem,
 } from "@/components/feature/datalab/FunctionSearch";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
+import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
+import {
+  useDatalabOverrides,
+  mergeExcelFn,
+  type OverrideData,
+} from "@/lib/datalabOverrides";
+import {
+  OverrideEditPanel,
+  type OvEditField,
+} from "@/components/feature/datalab/OverrideEditPanel";
 
 /* 빈도(1~5) → 글자 크기·굵기 — 클수록 실무에서 자주 쓰는 함수 */
 const SIZE: Record<number, { fs: number; fw: number }> = {
@@ -93,7 +108,7 @@ const FONT_SCALE_MAX = 1.6;
 type LevelFilter = "all" | "basic" | "advanced";
 
 function FunctionDialog({
-  fn,
+  fn: fnBase,
   color,
   categoryLabel,
   fontScale,
@@ -110,8 +125,79 @@ function FunctionDialog({
   onClose: () => void;
 }) {
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
+  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
+  const pin = usePinnableDialog();
+  // 관리자 오버라이드 — 설명 텍스트는 DB 병합본으로 표시(수식·구문은 원본 고정)
+  const ov = useDatalabOverrides();
+  const fnKey = `excel:${fnBase.id}`;
+  const fn = useMemo(
+    () => mergeExcelFn(fnBase, ov.overrides[fnKey]),
+    [fnBase, ov.overrides, fnKey]
+  );
+  const [editing, setEditing] = useState(false);
+
+  const editFields: OvEditField[] = useMemo(() => {
+    const f: OvEditField[] = [
+      {
+        id: "summary",
+        label: "한 줄 요약",
+        value: fn.summary,
+        original: fnBase.summary,
+        rows: 2,
+      },
+      {
+        id: "intro",
+        label: "개념·용도",
+        value: fn.intro,
+        original: fnBase.intro,
+        rows: 6,
+      },
+      {
+        id: "tips",
+        label: "주의·흔한 오해",
+        value: fn.tips ?? "",
+        original: fnBase.tips ?? "",
+        rows: 4,
+      },
+    ];
+    fnBase.examples.forEach((e, i) => {
+      f.push({
+        id: `ex:${i}`,
+        label: `예제 ${i + 1} 설명 — ${e.title}`,
+        value: fn.examples[i]?.explain ?? "",
+        original: e.explain,
+        rows: 2,
+      });
+    });
+    return f;
+  }, [fn, fnBase]);
+
+  const saveEdits = async (values: Record<string, string>) => {
+    const data: OverrideData = {};
+    if (values.summary?.trim() && values.summary !== fnBase.summary)
+      data.summary = values.summary;
+    if (values.intro?.trim() && values.intro !== fnBase.intro)
+      data.intro = values.intro;
+    if (values.tips?.trim() && values.tips !== (fnBase.tips ?? ""))
+      data.tips = values.tips;
+    const exArr: (string | null)[] = fnBase.examples.map((e, i) => {
+      const v = values[`ex:${i}`] ?? "";
+      return v.trim() && v !== e.explain ? v : null;
+    });
+    if (exArr.some(Boolean)) data.exampleExplains = exArr;
+
+    if (Object.keys(data).length > 0) await ov.save(fnKey, data);
+    else if (ov.overrides[fnKey]) await ov.remove(fnKey);
+    setEditing(false);
+  };
+
+  const resetEdits = async () => {
+    if (ov.overrides[fnKey]) await ov.remove(fnKey);
+    setEditing(false);
+  };
 
   useEffect(() => {
+    if (pin.pinned) return; // 고정 중엔 배경 상호작용 유지
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -121,7 +207,7 @@ function FunctionDialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, pin.pinned]);
 
   const fz = (px: number) => ({ fontSize: Math.round(px * fontScale * 10) / 10 });
   const step = (d: number) =>
@@ -156,17 +242,22 @@ function FunctionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
+      className={pin.overlayClass}
       role="dialog"
-      aria-modal="true"
+      aria-modal={!pin.pinned}
       aria-label={`${fn.name} 사용법`}
-      onClick={onClose}
+      onClick={pin.pinned ? undefined : onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        className="pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
+        style={pin.panelStyle}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="border-b border-border px-5 py-4 sm:px-6">
+        {pin.ResizeHandles()}
+        <header
+          className="border-b border-border px-5 py-4 sm:px-6"
+          {...pin.dragHandleProps}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -194,6 +285,22 @@ function FunctionDialog({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
+              {ov.isAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => setEditing((e) => !e)}
+                  aria-pressed={editing}
+                  title="관리자: 이 팝업의 설명 텍스트를 수정합니다(수식·구문 제외)"
+                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[11.5px] font-medium ${
+                    editing
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-white text-tertiary hover:text-foreground"
+                  }`}
+                >
+                  ✎ 편집
+                </button>
+              ) : null}
+              {pin.PinButton()}
               <div className="flex items-center rounded border border-border">
                 <button
                   type="button"
@@ -236,6 +343,17 @@ function FunctionDialog({
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          {editing ? (
+            <OverrideEditPanel
+              key={fnBase.id}
+              fields={editFields}
+              hasOverride={!!ov.overrides[fnKey]}
+              onSave={saveEdits}
+              onReset={resetEdits}
+              onCancel={() => setEditing(false)}
+            />
+          ) : (
+            <>
           {/* 사용 가능 버전 */}
           <p
             className="mb-3 rounded bg-surface px-3 py-1.5 text-tertiary"
@@ -245,24 +363,20 @@ function FunctionDialog({
           </p>
 
           {/* 개념 */}
-          {fn.intro.split("\n\n").map((p, i) => (
-            <p key={i} className="mt-3 leading-[1.85] text-body first:mt-0" style={fz(14)}>
-              {p}
-            </p>
-          ))}
+          <Prose text={fn.intro} fz={fz(14.5).fontSize} className="text-body" />
 
           {/* 구문 */}
           <div className="mt-6">
-            <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+            <h3 className="font-semibold text-foreground" style={fz(15)}>
               구문
             </h3>
-            <CodeBlock code={fn.syntax.trim()} codeFz={12.5 * fontScale} />
+            <CodeBlock code={fn.syntax.trim()} codeFz={13.5 * fontScale} lang="excel" />
           </div>
 
           {/* 인수 */}
           {fn.params.length > 0 ? (
             <div className="mt-6">
-              <h3 className="font-semibold text-foreground" style={fz(14.5)}>
+              <h3 className="font-semibold text-foreground" style={fz(15)}>
                 인수
               </h3>
               <dl className="mt-2 divide-y divide-border rounded border border-border">
@@ -271,7 +385,7 @@ function FunctionDialog({
                     <dt className="flex items-center gap-2">
                       <code
                         className="font-mono font-medium"
-                        style={{ ...fz(12.5), color: `var(--chip-${color}-fg)` }}
+                        style={{ ...fz(13), color: `var(--chip-${color}-fg)` }}
                       >
                         {p.name}
                       </code>
@@ -285,7 +399,7 @@ function FunctionDialog({
                         {p.required ? "필수" : "선택"}
                       </span>
                     </dt>
-                    <dd className="mt-0.5 leading-[1.75] text-body" style={fz(13)}>
+                    <dd className="mt-0.5 leading-[1.75] text-body" style={fz(13.5)}>
                       {p.desc}
                     </dd>
                   </div>
@@ -329,16 +443,61 @@ function FunctionDialog({
             <div className="mt-3 space-y-5">
               {examples.map((ex, i) => (
                 <div key={i}>
-                  <div className="flex items-center" style={fz(13.5)}>
+                  <div className="flex items-center" style={fz(14)}>
                     <span className="font-semibold text-foreground">{ex.title}</span>
                     {levelChip(ex.level)}
                   </div>
-                  <CodeBlock code={ex.formula.trim()} codeFz={12.5 * fontScale} />
-                  <p className="mt-1.5 leading-[1.7] text-tertiary" style={fz(12.5)}>
-                    <span className="font-medium text-body">결과 </span>
-                    {ex.result}
-                  </p>
-                  <p className="mt-1 leading-[1.75] text-body" style={fz(13)}>
+                  {/* 입력(수식) — 블루 틴트, 출력(결과) — 틸 틴트로 시각 구분 */}
+                  <div className="relative mt-2 overflow-hidden rounded border border-border">
+                    <CopyButton
+                      text={ex.formula.trim()}
+                      className="absolute right-2 top-2 z-10"
+                    />
+                    <div
+                      className="flex items-start gap-2 px-3.5 py-3"
+                      style={{
+                        background:
+                          "color-mix(in srgb, var(--chip-blue-bg) 45%, white)",
+                      }}
+                    >
+                      <span
+                        className="mt-0.5 inline-flex shrink-0 items-center rounded-full px-1.5 py-px text-[10.5px] font-semibold"
+                        style={{
+                          background: "var(--chip-blue-bg)",
+                          color: "var(--chip-blue-fg)",
+                        }}
+                      >
+                        입력
+                      </span>
+                      <pre
+                        className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-all pr-14 font-mono leading-[1.7] text-foreground"
+                        style={{ fontSize: 13.5 * fontScale }}
+                      >
+                        <code>{highlightExcel(ex.formula.trim())}</code>
+                      </pre>
+                    </div>
+                    <div
+                      className="flex items-start gap-2 border-t border-border px-3.5 py-2.5"
+                      style={{
+                        background:
+                          "color-mix(in srgb, var(--chip-teal-bg) 40%, white)",
+                      }}
+                    >
+                      <span
+                        className="mt-0.5 inline-flex shrink-0 items-center rounded-full px-1.5 py-px text-[10.5px] font-semibold"
+                        style={{
+                          background: "var(--chip-teal-bg)",
+                          color: "var(--chip-teal-fg)",
+                        }}
+                      >
+                        출력
+                      </span>
+                      <p className="min-w-0 flex-1 leading-[1.7] text-body" style={fz(13.5)}>
+                        {ex.result}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-1.5 leading-[1.75] text-body" style={fz(13.5)}>
                     {ex.explain}
                   </p>
                 </div>
@@ -349,12 +508,10 @@ function FunctionDialog({
           {/* 주의 */}
           {fn.tips ? (
             <div className="mt-6 rounded bg-surface px-4 py-3">
-              <p className="font-semibold text-foreground" style={fz(12.5)}>
+              <p className="font-semibold text-foreground" style={fz(13)}>
                 주의·흔한 오해
               </p>
-              <p className="mt-1 leading-[1.8] text-body" style={fz(13)}>
-                {fn.tips}
-              </p>
+              <Prose text={fn.tips} fz={fz(13.5).fontSize} className="mt-1 text-body" />
             </div>
           ) : null}
 
@@ -390,6 +547,8 @@ function FunctionDialog({
               </div>
             </div>
           ) : null}
+            </>
+          )}
         </div>
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">

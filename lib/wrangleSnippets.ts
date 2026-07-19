@@ -34,6 +34,155 @@ export function snippetInsertCode(s: WrangleSnippet): string {
 
 export const WRANGLE_SNIPPET_GROUPS: WrangleSnippetGroup[] = [
   {
+    id: "load",
+    label: "데이터 입력 (읽기·생성)",
+    snippets: [
+      {
+        id: "load-csv",
+        label: "CSV 읽기 — 구분자·인코딩·헤더",
+        desc: "CSV의 흔한 변형(탭 구분·한글 인코딩·헤더 없음·일부 열만)을 옵션으로 처리합니다.",
+        code: `import pandas as pd
+
+# 기본 — 첫 행이 헤더, 쉼표 구분
+df = pd.read_csv("data.csv")
+
+# 자주 쓰는 옵션 — 필요한 것만 남기고 지우세요
+df = pd.read_csv(
+    "data.csv",
+    sep=",",              # 탭이면 "\\t", 세미콜론이면 ";"
+    encoding="utf-8",     # 한글 깨지면 "cp949" (엑셀 저장 CSV)
+    header=0,             # 헤더 없으면 header=None, names=["a", "b"]
+    usecols=["policy_id", "premium"],   # 일부 열만 (메모리 절약)
+    skiprows=2,           # 위 설명 줄 건너뛰기
+    na_values=["-", "없음"],            # 결측으로 취급할 표기
+    dtype={"policy_id": str},           # 앞자리 0 보존 등 형 고정
+)
+
+# 결과 보기 (콘솔은 필요하면 print(df.head()))
+df.head()`,
+      },
+      {
+        id: "load-excel",
+        label: "엑셀 읽기 — 시트·범위 지정",
+        desc: "시트 이름·시작 행·열 범위를 지정해 원하는 표만 읽습니다.",
+        code: `import pandas as pd
+
+# 기본 — 첫 시트
+df = pd.read_excel("policy.xlsx")
+
+# 시트·범위 지정 — 필요한 것만 남기세요
+df = pd.read_excel(
+    "policy.xlsx",
+    sheet_name=0,         # 시트 이름("계약") 또는 순번(0부터)
+    skiprows=0,           # 제목 줄이 있으면 그 수만큼
+    usecols="A:F",        # 엑셀 열 문자 범위(또는 열 이름 리스트)
+    header=0,             # 표 머리글 행 위치
+)
+
+df.head()`,
+      },
+      {
+        id: "load-sheets",
+        label: "여러 시트·여러 파일 합치기",
+        desc: "sheet_name=None으로 전 시트를 읽어 세로로 합치거나, 여러 파일을 반복문으로 쌓습니다.",
+        code: `import pandas as pd
+
+# ① 한 파일의 모든 시트 → {시트명: DataFrame} 딕셔너리
+sheets = pd.read_excel("policy.xlsx", sheet_name=None)
+all_df = pd.concat(sheets, names=["sheet"]).reset_index(level=0)
+
+# ② 여러 파일 쌓기 — 파일명을 열로 남겨 출처 추적
+files = ["claims.xlsx", "policy.xlsx"]     # 실제 파일 목록으로
+parts = [pd.read_excel(f).assign(source=f) for f in files]
+stacked = pd.concat(parts, ignore_index=True)
+
+all_df.head()`,
+      },
+      {
+        id: "load-json",
+        label: "JSON·중첩 구조 읽기",
+        desc: "JSON 파일·API 응답을 읽고, 중첩(리스트 속 딕셔너리)은 json_normalize로 평탄화합니다.",
+        code: `import pandas as pd
+
+# ① 단순 JSON(레코드 배열) 파일
+# df = pd.read_json("data.json")
+
+# ② 중첩 구조 — json_normalize로 평탄화
+raw = [
+    {"policy_id": "P1", "insured": {"age": 45, "sex": "M"},
+     "riders": [{"code": "R1"}, {"code": "R2"}]},
+    {"policy_id": "P2", "insured": {"age": 38, "sex": "F"}, "riders": []},
+]
+flat = pd.json_normalize(raw, sep="_")            # insured.age → insured_age
+riders = pd.json_normalize(raw, record_path="riders", meta="policy_id")
+
+flat`,
+      },
+      {
+        id: "load-dates",
+        label: "날짜 파싱·자료형 정리",
+        desc: "문자로 읽힌 날짜·숫자를 to_datetime·to_numeric으로 정리합니다(불량 값은 NaT/NaN).",
+        code: `import pandas as pd
+
+# 문자로 읽힌 날짜·숫자 예시(실제로는 read_csv 결과의 열을 그대로 쓰세요)
+raw = pd.DataFrame({
+    "issue_date": ["2025-01-03", "2025/02/10", "잘못됨", "2025-03-22"],
+    "premium":    ["120,000", "98,500", "150000", "-"],
+})
+
+# ① 날짜 — 형식이 섞여 있으면 errors="coerce"로 불량은 NaT
+raw["issue_date"] = pd.to_datetime(raw["issue_date"], errors="coerce")
+
+# ② 숫자 — 쉼표 제거 후 변환, 불량은 NaN
+raw["premium"] = pd.to_numeric(
+    raw["premium"].str.replace(",", ""), errors="coerce")
+
+# ③ 날짜에서 연·월 파생
+raw["year"] = raw["issue_date"].dt.year
+raw["month"] = raw["issue_date"].dt.to_period("M").astype(str)
+
+# 읽을 때 바로 인식시키려면: pd.read_csv("f.csv", parse_dates=["issue_date"])
+raw`,
+      },
+      {
+        id: "load-manual",
+        label: "직접 입력 — 소형 표 만들기",
+        desc: "코드에 값을 직접 적어 소형 DataFrame을 만듭니다(요율표·매핑표·검증용 예제).",
+        code: `import pandas as pd
+
+# ① 열 단위(dict) — 가장 흔한 방법
+rate_table = pd.DataFrame({
+    "age_band": ["20-29", "30-39", "40-49", "50-59"],
+    "rate":     [0.0012, 0.0018, 0.0031, 0.0056],
+})
+
+# ② 행 단위(리스트 of 리스트) + 열 이름
+mapping = pd.DataFrame(
+    [["A", "종신"], ["B", "정기"], ["C", "연금"]],
+    columns=["code", "product_name"],
+)
+
+rate_table`,
+      },
+      {
+        id: "load-url",
+        label: "URL에서 바로 읽기",
+        desc: "웹 주소의 CSV·엑셀을 바로 읽습니다. 브라우저 실행기에서는 상단 '데이터 소스 > URL'을 쓰세요(CORS 제약).",
+        code: `import pandas as pd
+
+# 로컬 파이썬 기준 — 공개 URL의 CSV/엑셀을 경로처럼 그대로
+url = "https://example.com/data.csv"   # 실제 주소로 바꾸세요
+try:
+    df = pd.read_csv(url)              # 엑셀이면 pd.read_excel(url)
+    print(df.shape)
+except Exception as e:
+    print("읽기 실패:", e)
+    print("브라우저 실행기(Pyodide)는 CORS로 막힐 수 있음 →")
+    print("실행기 상단 '데이터 소스 > URL'로 올리면 가상 파일로 저장됩니다")`,
+      },
+    ],
+  },
+  {
     id: "select",
     label: "선택 (loc·iloc·열)",
     snippets: [
