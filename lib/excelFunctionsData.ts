@@ -1746,7 +1746,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
     "difficulty": 3,
     "syntax": "=FIND(찾을텍스트, 대상텍스트, [시작위치])  ·  =SEARCH(찾을텍스트, 대상텍스트, [시작위치])",
     "summary": "텍스트 안에서 특정 글자·단어가 몇 번째에 있는지 위치(숫자)를 찾습니다. FIND는 대소문자 구분, SEARCH는 무시+와일드카드.",
-    "intro": "FIND와 SEARCH는 '이 글자가 텍스트에서 몇 번째에 있나?'를 알려주는 함수예요. 예를 들어 이메일 \"hong@abc.com\"에서 @가 몇 번째 글자인지 숫자(5)로 돌려줍니다.\n\n왜 필요할까요? 위치 번호를 알면 LEFT·MID·RIGHT와 짝지어 '구분자 앞/뒤만 잘라내기'를 할 수 있어요. @ 앞의 아이디, 하이픈 뒤의 코드처럼요. 그래서 데이터 정리 작업에서 아주 자주 등장합니다.\n\n둘은 거의 같지만 두 가지가 다릅니다. FIND는 대소문자를 구분하고 와일드카드를 못 씁니다. SEARCH는 대소문자를 무시하고 와일드카드(?, *)를 쓸 수 있어요. 찾는 글자가 없으면 둘 다 #VALUE! 오류를 냅니다.",
+    "intro": "특정 글자·단어가 텍스트에서 몇 번째에 있는지 위치 숫자를 돌려줍니다.\n\n- FIND: 대소문자 구분·와일드카드 불가 / SEARCH: 대소문자 무시·와일드카드(?, *) 가능\n- LEFT·MID·RIGHT와 조합해 구분자 앞/뒤 잘라내기(@ 앞 아이디 등)\n- 못 찾으면 둘 다 #VALUE! 오류",
     "params": [
       {
         "name": "찾을텍스트",
@@ -1770,45 +1770,45 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
         "title": "이메일에서 @ 위치 찾기",
         "formula": "=FIND(\"@\",\"hong@abc.com\")",
         "result": "5 (@가 왼쪽에서 5번째 글자)",
-        "explain": "대상 텍스트를 왼쪽부터 세어 \"@\"가 처음 나오는 자리 번호를 돌려줘요. 여기서는 5번째라 5입니다."
+        "explain": "왼쪽부터 세어 \"@\"가 처음 나오는 자리 번호(5)를 돌려줍니다."
       },
       {
         "level": "basic",
         "title": "대소문자 구분 없이 찾기 (SEARCH)",
         "formula": "=SEARCH(\"plan\",\"AutoPlan2024\")",
         "result": "5 (\"Plan\"의 P 위치, 대소문자 무시)",
-        "explain": "SEARCH는 대소문자를 가리지 않아요. 소문자 \"plan\"으로 찾아도 대문자 \"Plan\"을 찾아 5를 돌려줍니다. 같은 걸 FIND로 하면 대소문자가 달라 못 찾고 #VALUE! 오류가 나요."
+        "explain": "SEARCH는 대소문자를 무시해 소문자 \"plan\"으로도 \"Plan\"을 찾습니다(FIND는 #VALUE! 오류)."
       },
       {
         "level": "advanced",
         "title": "@ 앞의 아이디만 추출 (FIND+LEFT)",
         "formula": "=LEFT(A2, FIND(\"@\",A2)-1)",
         "result": "\"hong\"  (A2가 \"hong@abc.com\"일 때)",
-        "explain": "FIND로 @ 위치(5)를 구하고, 그보다 1 적은 4글자를 LEFT로 왼쪽에서 잘라 아이디만 남겨요. 이메일·코드에서 구분자 앞부분을 뽑아내는 대표 패턴입니다."
+        "explain": "FIND로 구한 @ 위치(5)보다 1 적은 4글자를 LEFT로 잘라 구분자 앞부분만 남깁니다."
       },
       {
         "level": "advanced",
         "title": "상품명에 특정 단어가 들어있는지로 분류",
         "formula": "=IF(ISNUMBER(SEARCH(\"암\",[@상품명])),\"암보험\",\"기타\")",
         "result": "\"암보험\" 또는 \"기타\"",
-        "explain": "SEARCH가 단어를 찾으면 숫자(위치)를, 못 찾으면 #VALUE! 오류를 줍니다. ISNUMBER로 '숫자가 나왔나=찾았나'를 참·거짓으로 바꿔 IF로 분류해요. 포함 여부만 판정할 때 자주 쓰는 방법입니다."
+        "explain": "SEARCH 결과가 숫자인지(ISNUMBER)로 포함 여부를 참·거짓으로 바꿔 IF로 분류합니다."
       },
       {
         "level": "advanced",
         "title": "두 번째 하이픈 위치 찾기 (시작위치 활용)",
         "formula": "=FIND(\"-\", A2, FIND(\"-\",A2)+1)",
         "result": "두 번째 \"-\"의 자리 번호  (A2가 \"2024-05-18\"이면 8)",
-        "explain": "안쪽 FIND로 첫 하이픈 위치(5)를 구하고, 그 다음 칸(6)부터 다시 찾게 해서 두 번째 하이픈(8)을 찾아요. 세 번째 인수 '시작위치'로 같은 글자의 n번째를 짚는 기법입니다."
+        "explain": "안쪽 FIND가 찾은 첫 하이픈(5) 다음 칸부터 다시 찾아 두 번째 하이픈(8)을 짚습니다."
       },
       {
         "level": "advanced",
         "title": "와일드카드로 유연하게 찾기 (SEARCH 전용)",
         "formula": "=SEARCH(\"실손?세대\",A2)",
         "result": "\"실손\"과 \"세대\" 사이에 글자 1개가 낀 위치.  \"실손4세대보장\"이면 1",
-        "explain": "SEARCH는 ?(글자 1개)·*(여러 글자) 와일드카드를 지원해요(FIND는 불가). 실제 \"?\"·\"*\" 글자 자체를 찾으려면 앞에 물결(~)을 붙여 \"~?\"처럼 씁니다."
+        "explain": "SEARCH만 ?·* 와일드카드를 지원하며, 실제 \"?\" 글자는 \"~?\"처럼 물결을 붙여 찾습니다."
       }
     ],
-    "tips": "FIND는 대소문자를 구분하고 와일드카드를 못 쓰며, SEARCH는 대소문자를 무시하고 와일드카드(?, *)를 씁니다. 찾는 글자가 없으면 둘 다 #VALUE! 오류 → ISNUMBER()나 IFERROR()로 감싸 처리하세요. 한글도 한 글자를 1로 세지만, 바이트 기준(한글 2)이 필요하면 FINDB·SEARCHB를 씁니다. 최신 365라면 위치 계산 없이 TEXTBEFORE·TEXTAFTER로 훨씬 쉽게 자를 수 있어요.",
+    "tips": "- 못 찾으면 #VALUE! 오류 → ISNUMBER()·IFERROR()로 감싸 처리\n- 바이트 기준(한글 2)이 필요하면 FINDB·SEARCHB\n- 최신 365는 TEXTBEFORE·TEXTAFTER로 위치 계산 없이 자르기 가능",
     "related": [
       "LEFT",
       "RIGHT",
@@ -1830,7 +1830,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
     "difficulty": 2,
     "syntax": "=LEFT(문자열, [개수])  /  =RIGHT(문자열, [개수])",
     "summary": "문자열의 왼쪽(LEFT)·오른쪽(RIGHT) 끝에서 지정한 개수만큼 글자를 잘라 온다.",
-    "intro": "LEFT와 RIGHT는 글자를 '끝에서부터 몇 글자'만 잘라 오는 짝꿍 함수예요. LEFT는 왼쪽(앞)에서, RIGHT는 오른쪽(뒤)에서 가져옵니다. 예를 들어 \"보험료\"에서 왼쪽 2글자를 뽑으면 \"보험\"이 됩니다.\n\n코드나 번호처럼 자리마다 의미가 정해진 데이터를 나눌 때 특히 유용해요. 계약번호 앞자리로 상품 구분을, 뒷자리로 일련번호를 뽑아내는 식이죠.\n\n개수를 생략하면 1글자만 가져옵니다. 그리고 이 함수들은 결과를 '글자(텍스트)'로 돌려주기 때문에, 숫자로 계산하려면 VALUE로 다시 숫자로 바꿔 줘야 한다는 점을 기억하세요.",
+    "intro": "문자열의 왼쪽(LEFT)·오른쪽(RIGHT) 끝에서 지정한 개수만큼 글자를 잘라 옵니다.\n\n- 계약번호 앞자리(상품 구분)·뒷자리(일련번호)처럼 자리 규칙 있는 데이터 분리\n- 개수 생략 시 1글자\n- 결과는 텍스트 — 숫자 계산 전 VALUE로 변환",
     "params": [
       {
         "name": "문자열",
@@ -1849,35 +1849,35 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
         "title": "왼쪽에서 두 글자 가져오기",
         "formula": "=LEFT(\"보험료\", 2)",
         "result": "\"보험\"",
-        "explain": "\"보험료\"의 왼쪽 끝에서 2글자를 잘라 \"보험\"을 돌려줍니다. 앞부분 몇 글자를 떼어 낼 때 쓰는 가장 단순한 사용법이에요."
+        "explain": "왼쪽 끝에서 2글자를 잘라 앞부분만 떼어 내는 기본 사용법입니다."
       },
       {
         "level": "basic",
         "title": "오른쪽에서 일련번호 뽑기",
         "formula": "=RIGHT(\"2024-001\", 3)",
         "result": "\"001\"",
-        "explain": "오른쪽 끝에서 3글자를 가져와 계약번호의 뒤 일련번호 \"001\"만 남깁니다. 뒤에서부터 정해진 자릿수를 뽑을 때 RIGHT를 씁니다."
+        "explain": "오른쪽 끝에서 정해진 자릿수(3글자)를 가져와 뒤 일련번호만 남깁니다."
       },
       {
         "level": "advanced",
         "title": "구분 기호 앞의 상품 코드 뽑기",
         "formula": "=LEFT(A2, FIND(\"-\", A2)-1)",
         "result": "\"LIFE-2024\" → \"LIFE\"",
-        "explain": "FIND로 하이픈(-)의 위치를 찾고, 그 바로 앞까지(-1)를 LEFT로 잘라 냅니다. 코드 길이가 제각각이어도 '하이픈 앞부분'을 정확히 뽑을 수 있어, product 구분처럼 앞자리 길이가 일정치 않은 데이터에 강해요."
+        "explain": "FIND로 찾은 하이픈 위치 바로 앞까지 잘라, 앞자리 길이가 제각각이어도 정확히 뽑습니다."
       },
       {
         "level": "advanced",
         "title": "구분 기호 뒤의 내용 뽑기",
         "formula": "=RIGHT(A2, LEN(A2)-FIND(\"-\", A2))",
         "result": "\"LIFE-2024\" → \"2024\"",
-        "explain": "전체 길이 LEN에서 하이픈 위치를 빼면 '하이픈 뒤에 남은 글자 수'가 됩니다. 그만큼을 RIGHT로 뒤에서 가져와 하이픈 다음 부분만 얻어요. 앞 예제와 짝을 이뤄 한 칸의 코드를 앞뒤로 분리합니다."
+        "explain": "전체 길이(LEN)에서 하이픈 위치를 뺀 '뒤에 남은 글자 수'만큼 RIGHT로 가져옵니다."
       },
       {
         "level": "advanced",
         "title": "잘라 온 연도를 숫자로 바꿔 계산",
         "formula": "=VALUE(LEFT(A2, 4))",
         "result": "\"2024-001\" → 숫자 2024",
-        "explain": "LEFT는 글자 \"2024\"를 돌려주므로 그대로는 계산이 안 됩니다. VALUE로 감싸 진짜 숫자 2024로 바꾸면, 이후 연도 차이 계산이나 조건 비교에 바로 쓸 수 있어요. 텍스트 함수 결과는 숫자로 변환한다는 실무 습관을 보여 줍니다."
+        "explain": "LEFT가 돌려준 글자 \"2024\"를 VALUE로 진짜 숫자로 바꿔 계산에 바로 씁니다."
       }
     ],
     "related": [
@@ -1888,7 +1888,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
       "VALUE",
       "TEXTBEFORE"
     ],
-    "tips": "LEFT/RIGHT는 항상 '글자'를 반환하므로 숫자 계산 전에는 VALUE로 바꿔야 해요. 개수에 음수를 넣으면 #VALUE! 오류가 납니다. 위치를 정확히 세기 어렵다면 FIND(대소문자·정확 일치)나 SEARCH(대소문자 무시·와일드카드)로 구분자 위치를 찾아 조합하세요. 최신 365에서는 TEXTBEFORE/TEXTAFTER가 같은 일을 더 간단히 처리합니다."
+    "tips": "- 결과는 항상 글자 — 숫자 계산 전 VALUE로 변환\n- 개수에 음수를 넣으면 #VALUE! 오류\n- 구분자 위치가 매번 다르면 FIND·SEARCH와 조합, 최신 365는 TEXTBEFORE·TEXTAFTER가 더 간단"
   },
   {
     "id": "choose",
@@ -1899,7 +1899,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
     "difficulty": 2,
     "syntax": "=CHOOSE(인덱스번호, 값1, [값2], …)",
     "summary": "번호를 주면 여러 값 중 그 번호에 해당하는 값을 꺼낸다.",
-    "intro": "CHOOSE는 번호를 주면 여러 값 중 그 번호에 해당하는 값을 꺼내는 함수입니다. 사물함에서 '2번 칸'을 열면 그 안의 물건이 나오는 것과 같습니다. 예를 들어 CHOOSE(2, \"생명\", \"손해\", \"재보험\")는 두 번째인 \"손해\"를 돌려줍니다.\n\n1, 2, 3 같은 코드 번호를 실제 이름·등급으로 바꿀 때 쉽고 직관적입니다. 값 자리에는 범위(예: 합계 낼 열)도 넣을 수 있어, 조건에 따라 다른 범위를 골라 계산하는 고급 기법에도 씁니다.",
+    "intro": "번호를 주면 나열한 값 중 그 번째 값을 꺼냅니다.\n\n- 1·2·3 같은 코드 번호를 이름·등급으로 바꿀 때 직관적\n- 값 자리에 범위도 가능 — 번호에 따라 합계 범위를 바꾸는 고급 기법",
     "params": [
       {
         "name": "인덱스번호",
@@ -1923,7 +1923,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
         "title": "번호로 이름 꺼내기",
         "formula": "=CHOOSE(2, \"생명\", \"손해\", \"재보험\")",
         "result": "두 번째 값인 \"손해\"",
-        "explain": "첫 인수 번호에 해당하는 값을 목록에서 고릅니다. 2를 주면 두 번째인 \"손해\"가 나옵니다."
+        "explain": "첫 인수 번호 2에 해당하는 두 번째 값 \"손해\"를 목록에서 고릅니다."
       },
       {
         "level": "basic",
@@ -1944,14 +1944,14 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
         "title": "월을 분기로 변환",
         "formula": "=CHOOSE(MONTH(A2), 1,1,1,2,2,2,3,3,3,4,4,4)",
         "result": "날짜의 월에 맞는 분기 번호(1~4)",
-        "explain": "MONTH가 돌려준 1~12를 12개 값에 하나씩 대응시켜 분기로 접습니다. 매핑 규칙을 값 목록으로 직접 적어 두는 방식입니다."
+        "explain": "MONTH가 돌려준 1~12를 값 목록 12개에 하나씩 대응시켜 분기로 접습니다."
       },
       {
         "level": "advanced",
         "title": "조건에 따라 합계 범위 고르기",
         "formula": "=SUM(CHOOSE(분기, D2:D13, E2:E13, F2:F13, G2:G13))",
         "result": "선택한 분기 열의 합계",
-        "explain": "CHOOSE의 값 자리에는 범위도 넣을 수 있어, 번호에 따라 다른 열을 골라 SUM에 넘길 수 있습니다. 분기 값을 바꾸면 합산 대상 열이 자동으로 바뀝니다."
+        "explain": "값 자리에 범위를 넣어 분기 번호에 따라 다른 열을 골라 SUM에 넘깁니다."
       }
     ],
     "related": [
@@ -1960,7 +1960,7 @@ export const EXCEL_FUNCTIONS: ExcelFunction[] = [
       "INDEX",
       "VLOOKUP"
     ],
-    "tips": "선택지가 연속된 코드(1,2,3…)일 때 간단합니다. 다만 조건이 '이상/이하' 같은 범위이거나 항목이 많으면 CHOOSE보다 SWITCH·IFS나 VLOOKUP/XLOOKUP이 더 관리하기 쉽습니다. 인덱스번호가 0이거나 값 개수를 넘으면 #VALUE! 오류가 납니다."
+    "tips": "- 인덱스번호가 0이거나 값 개수를 넘으면 #VALUE! 오류\n- 연속 코드(1,2,3…)에 적합 — 범위 조건·항목 많으면 SWITCH·IFS·VLOOKUP/XLOOKUP이 관리 용이"
   },
   {
     "id": "indirect",
