@@ -125,8 +125,14 @@ function FunctionDialog({
   onClose: () => void;
 }) {
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
-  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
-  const pin = usePinnableDialog();
+  // 고정(pin) — 크롬·엣지: 별도 창(다른 앱 위), 그 외: 뷰포트 내 축소창
+  const pin = usePinnableDialog({
+    onClose,
+    ariaLabel: `${fnBase.name} 사용법`,
+    panelClassName:
+      "pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover",
+    pipTitle: fnBase.name,
+  });
   // 관리자 오버라이드 — 설명 텍스트는 DB 병합본으로 표시(수식·구문은 원본 고정)
   const ov = useDatalabOverrides();
   const fnKey = `excel:${fnBase.id}`;
@@ -240,20 +246,8 @@ function FunctionDialog({
     </span>
   );
 
-  return (
-    <div
-      className={pin.overlayClass}
-      role="dialog"
-      aria-modal={!pin.pinned}
-      aria-label={`${fn.name} 사용법`}
-      onClick={pin.pinned ? undefined : onClose}
-    >
-      <div
-        className="pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
-        style={pin.panelStyle}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {pin.ResizeHandles()}
+  return pin.render(
+    <>
         <header
           className="border-b border-border px-5 py-4 sm:px-6"
           {...pin.dragHandleProps}
@@ -300,6 +294,7 @@ function FunctionDialog({
                   ✎ 편집
                 </button>
               ) : null}
+              {pin.CollapseButton()}
               {pin.PinButton()}
               <div className="flex items-center rounded border border-border">
                 <button
@@ -555,8 +550,7 @@ function FunctionDialog({
           위첨자는 함수가 처음 도입된 엑셀 버전입니다(¹⁹=2019, ²¹=2021, ³⁶⁵=365 전용).
           예제 수식은 코드 블록의 &lsquo;복사&rsquo;로 엑셀에 붙여 쓸 수 있습니다.
         </footer>
-      </div>
-    </div>
+    </>
   );
 }
 

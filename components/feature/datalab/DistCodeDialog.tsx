@@ -73,8 +73,14 @@ export function DistCodeDialog({
     setFontScale((cur) =>
       Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Math.round((cur + d) * 10) / 10))
     );
-  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
-  const pin = usePinnableDialog();
+  // 고정(pin) — 크롬·엣지: 별도 창(다른 앱 위), 그 외: 뷰포트 내 축소창
+  const pin = usePinnableDialog({
+    onClose,
+    ariaLabel: `${name} 파이썬 코드`,
+    panelClassName:
+      "pointer-events-auto flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover",
+    pipTitle: name,
+  });
 
   useHistoryDismiss(true, onClose);
 
@@ -91,20 +97,8 @@ export function DistCodeDialog({
     };
   }, [onClose, pin.pinned]);
 
-  return (
-    <div
-      className={pin.overlayClass}
-      role="dialog"
-      aria-modal={!pin.pinned}
-      aria-label={`${name} 파이썬 코드`}
-      onClick={pin.pinned ? undefined : onClose}
-    >
-      <div
-        className="pointer-events-auto flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
-        style={pin.panelStyle}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {pin.ResizeHandles()}
+  return pin.render(
+    <>
         <header
           className="flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6"
           {...pin.dragHandleProps}
@@ -125,6 +119,7 @@ export function DistCodeDialog({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            {pin.CollapseButton()}
             {pin.PinButton()}
             {/* 글자 확대/축소 — 창 크기 조절과 별개로 폰트만 변경 */}
             <div className="flex items-center rounded border border-border">
@@ -225,7 +220,6 @@ export function DistCodeDialog({
             로 평균·분산·왜도·첨도를 한 번에 얻습니다.
           </footer>
         )}
-      </div>
-    </div>
+    </>
   );
 }

@@ -460,8 +460,14 @@ function MethodDialog({
   // 기본 탭 = 정의 및 방법(개념을 먼저 이해하고 코드로)
   const [tab, setTab] = useState<DialogTab>("theory");
   const [level, setLevel] = useState<LevelFilter>("all");
-  // 앞면 고정(pin) — 축소 창으로 화면 앞에 두고 이동·모퉁이 크기조절
-  const pin = usePinnableDialog();
+  // 고정(pin) — 크롬·엣지: 별도 창(다른 앱 위), 그 외: 뷰포트 내 축소창
+  const pin = usePinnableDialog({
+    onClose,
+    ariaLabel: `${methodBase.name} 파이썬 코드와 설명`,
+    panelClassName:
+      "pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover",
+    pipTitle: methodBase.name,
+  });
   // 관리자 오버라이드 — 표시할 설명은 DB 오버라이드 병합본(코드·수식은 원본 고정)
   const ov = useDatalabOverrides();
   const methodKey = `method:${methodBase.id}`;
@@ -622,20 +628,8 @@ function MethodDialog({
     setEditing(false);
   };
 
-  return (
-    <div
-      className={pin.overlayClass}
-      role="dialog"
-      aria-modal={!pin.pinned}
-      aria-label={`${method.name} 파이썬 코드와 설명`}
-      onClick={pin.pinned ? undefined : onClose}
-    >
-      <div
-        className="pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:max-h-[84vh] sm:rounded-cover"
-        style={pin.panelStyle}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {pin.ResizeHandles()}
+  return pin.render(
+    <>
         <header
           className="border-b border-border px-5 py-4 sm:px-6"
           {...pin.dragHandleProps}
@@ -677,6 +671,7 @@ function MethodDialog({
                   ✎ 편집
                 </button>
               ) : null}
+              {pin.CollapseButton()}
               {pin.PinButton()}
               {/* 글자 확대/축소 */}
               <div className="flex items-center rounded border border-border">
@@ -901,8 +896,7 @@ function MethodDialog({
             ? "값 후보·기본값·선택 기준 중심의 해설입니다 — 파이썬·엑셀(=PY()) 어느 코드에든 그대로 적용됩니다."
             : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
         </footer>
-      </div>
-    </div>
+    </>
   );
 }
 
