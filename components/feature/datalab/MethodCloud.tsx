@@ -1717,7 +1717,6 @@ export function MethodCloud() {
           en="그래프·시각화"
           hideFooter
           intro={<PlotSnippetPreview snippet={plotSnip} />}
-          subtitle="선택한 그래프 조각의 코드입니다. 열 이름만 바꾸면 실제 데이터에 바로 쓸 수 있고, 실행기 각 셀의 ‘그래프 ▾’ 콤보박스로도 삽입됩니다."
           tabs={[
             {
               key: "py",

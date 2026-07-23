@@ -167,7 +167,7 @@ export function PlotSampleSvg({ shape }: { shape: PlotShape }) {
       width="100%"
       role="img"
       aria-label="그래프 형태 예시"
-      style={{ maxWidth: 200, height: "auto" }}
+      style={{ maxWidth: 150, height: "auto" }}
     >
       <rect x={1} y={1} width={126} height={78} rx={6} fill="white" stroke={AX} />
       <Axes />

@@ -118,7 +118,7 @@ export function DistCodeDialog({
               </h2>
               <span className="text-[13px] text-tertiary">{en}</span>
             </div>
-            {pin.pinned ? null : (
+            {pin.pinned || intro ? null : (
               <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
                 {subtitle ??
                   "현재 파라미터 값이 반영된 scipy.stats 코드입니다. 복사해 데이터 분석 탭의 파이썬 실행기나 로컬에서 활용하세요."}
@@ -174,6 +174,9 @@ export function DistCodeDialog({
           </div>
         </header>
 
+        {/* 프리뷰(그림+설명)를 탭 위 공용 영역으로 — 탭마다 중복되지 않게 한 번만 */}
+        {intro ? <div className="px-5 pt-3 sm:px-6">{intro}</div> : null}
+
         <div
           role="tablist"
           aria-label="코드 종류"
@@ -201,7 +204,6 @@ export function DistCodeDialog({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          {intro ? <div className="mb-4">{intro}</div> : null}
           {active.note ? (
             <div
               className="mb-4 rounded px-4 py-3 text-body"
