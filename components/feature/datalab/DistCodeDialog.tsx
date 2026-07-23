@@ -175,7 +175,7 @@ export function DistCodeDialog({
         </header>
 
         {/* 프리뷰(그림+설명)를 탭 위 공용 영역으로 — 탭마다 중복되지 않게 한 번만 */}
-        {intro ? <div className="px-5 pt-3 sm:px-6">{intro}</div> : null}
+        {intro ? <div className="px-5 pt-2 sm:px-6">{intro}</div> : null}
 
         <div
           role="tablist"

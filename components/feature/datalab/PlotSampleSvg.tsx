@@ -167,7 +167,7 @@ export function PlotSampleSvg({ shape }: { shape: PlotShape }) {
       width="100%"
       role="img"
       aria-label="그래프 형태 예시"
-      style={{ maxWidth: 150, height: "auto" }}
+      style={{ maxWidth: 90, height: "auto" }}
     >
       <rect x={1} y={1} width={126} height={78} rx={6} fill="white" stroke={AX} />
       <Axes />
@@ -458,12 +458,12 @@ export function PlotSnippetPreview({ snippet }: { snippet: PlotSnippet }) {
   const meta = PLOT_META[snippet.id];
   if (!meta) return null;
   return (
-    <div className="flex flex-col gap-3 rounded-cover border border-border bg-surface/50 p-3 sm:flex-row sm:items-center sm:gap-4">
+    <div className="flex flex-col gap-2 rounded-cover border border-border bg-surface/50 px-2.5 py-2 sm:flex-row sm:items-center sm:gap-3">
       <div className="shrink-0 self-center">
         <PlotSampleSvg shape={meta.shape} />
-        <p className="mt-0.5 text-center text-[10.5px] text-tertiary">산출 그래프 형태(예시)</p>
+        <p className="mt-0.5 text-center text-[10px] text-tertiary">산출 그래프 형태(예시)</p>
       </div>
-      <dl className="min-w-0 flex-1 space-y-1.5 text-[12.5px] leading-relaxed">
+      <dl className="min-w-0 flex-1 space-y-1 text-[12.5px] leading-relaxed">
         <div className="flex gap-2">
           <dt className="shrink-0 font-semibold text-foreground">대표 모델·분석</dt>
           <dd className="min-w-0 text-body">{meta.models}</dd>
