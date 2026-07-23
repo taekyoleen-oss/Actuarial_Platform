@@ -96,12 +96,64 @@ export function stepifyCode(code: string): string {
   return out.join("\n");
 }
 
-/** 단계별 셀로 분리 — "# %%" 기준(계리 코드처럼 단계 표식이 있는 경우). */
-export function splitStepCells(code: string): string[] {
-  return stepifyCode(code)
-    .split(/^# ?%%.*$/m)
-    .map((s) => s.trim())
-    .filter(Boolean);
+/**
+ * 최상위(들여쓰기 0) 블록 경계에서 셀 분리 — 빈 줄 다음이 최상위 줄이면 자른다.
+ * try/except·for·def 등 들여쓴 블록은 통째로 유지(중간에서 안 잘림 → 실행 안전).
+ * 단계 표식(# ①)이 없는 방법의 코드를 데이터 로드·적합·평가 등으로 자연스레 나눈다.
+ */
+function splitByTopLevelBlanks(code: string): string[] {
+  const lines = code.split("\n");
+  const cells: string[] = [];
+  let cur: string[] = [];
+  const flush = () => {
+    const t = cur.join("\n").trim();
+    if (t) cells.push(t);
+    cur = [];
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim() === "" && cur.length > 0) {
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim() === "") j++;
+      // 다음 비어있지 않은 줄이 최상위(들여쓰기 없음)면 셀 경계
+      if (j < lines.length && !/^\s/.test(lines[j])) {
+        flush();
+        continue; // 셀 사이 빈 줄은 버린다
+      }
+    }
+    cur.push(line);
+  }
+  flush();
+  return cells;
+}
+
+/**
+ * 코드를 단계별 셀 목록으로 분리. 우선순위:
+ * ① "# %%" 명시 구분자 → ② "# ①" 단계 표식(2개+) → ③ 최상위 빈 줄 경계.
+ * 어느 경우든 셀들을 순서대로 실행하면 원본과 동일(변수 공유). 단일 블록이면 [코드] 하나.
+ */
+export function splitCodeCells(code: string): string[] {
+  const text = code.replace(/\r\n/g, "\n").trim();
+  if (!text) return [];
+  if (/^# ?%%/m.test(text)) {
+    return text
+      .split(/^# ?%%.*$/m)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  const marks = (text.match(new RegExp(STEP_MARK.source, "gm")) || []).length;
+  if (marks >= 2) {
+    return stepifyCode(text)
+      .split(/^# ?%%.*$/m)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return splitByTopLevelBlanks(text);
+}
+
+/** 셀 목록 → "# %%" 구분 스크립트(실행기가 동일하게 셀로 분리). */
+export function cellsToScript(cells: string[]): string {
+  return cells.join("\n\n# %%\n");
 }
 
 export const STAT_CATEGORIES: MethodCategory[] = [

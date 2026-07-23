@@ -17,15 +17,15 @@ import {
   useRef,
   useState,
   type Dispatch,
+  type ReactNode,
   type SetStateAction,
 } from "react";
 import { X, ChevronDown } from "lucide-react";
 import {
   STAT_CATEGORIES,
   STAT_METHODS,
-  methodFullCode,
-  stepifyCode,
-  splitStepCells,
+  splitCodeCells,
+  cellsToScript,
   type MethodCategory,
   type MethodChipColor,
   type MethodCodeSection,
@@ -259,35 +259,38 @@ function DataLayoutPanel({
 }
 
 /**
- * 엑셀(=PY()) 코드를 단계(# ①,# ②,…)마다 별도 블록으로 — 엑셀은 셀마다 =PY() 하나라
- * 단계별로 나눠 각각 다른 셀에 넣는 것이 유리하다(사용자 요청 2026-07-23).
- * 단계 표식이 없으면 한 블록 그대로.
+ * 코드를 단계별 셀 블록으로 — 데이터 로드·적합·평가 등을 나눠 각각 복사·실행·수정·건너뛰기
+ * 하기 좋게 한다(사용자 요청 2026-07-23). 파이썬 탭·엑셀 탭 공용.
+ * 단일 블록이면 한 덩어리 그대로.
  */
-function ExcelStepBlocks({
+function StepBlocks({
   code,
   fontScale,
+  cellWord,
+  note,
 }: {
   code: string;
   fontScale: number;
+  /** 셀 라벨 단어 — 파이썬="셀", 엑셀="엑셀 셀" */
+  cellWord: string;
+  note?: ReactNode;
 }) {
-  const steps = splitStepCells(code);
+  const steps = splitCodeCells(code);
   if (steps.length <= 1) {
-    return <CodeBlock code={code} codeFz={13.5 * fontScale} />;
+    return <CodeBlock code={code.trim()} codeFz={13.5 * fontScale} />;
   }
   return (
     <div className="mt-2 space-y-2.5">
-      <p className="text-[11.5px] leading-relaxed text-tertiary">
-        단계마다 엑셀의 <strong>다른 셀</strong>에{" "}
-        <code className="font-mono">=PY(</code>로 나눠 넣으세요. Python in Excel은
-        셀을 <strong>행 우선 순서</strong>로 실행하며 <strong>변수가 유지</strong>되어,
-        앞 단계에서 만든 변수를 다음 셀에서 그대로 이어 쓸 수 있습니다(시트 값은{" "}
-        <code className="font-mono">xl()</code>로 참조).
-      </p>
+      {note ? (
+        <p className="text-[11.5px] leading-relaxed text-tertiary">{note}</p>
+      ) : null}
       {steps.map((st, k) => (
         <div key={k}>
           <div className="mb-1 flex items-center gap-2 text-[11.5px] font-medium text-tertiary">
             <span className="rounded-full bg-surface px-2 py-0.5">{k + 1}단계</span>
-            <span>엑셀 셀 {k + 1}</span>
+            <span>
+              {cellWord} {k + 1}
+            </span>
           </div>
           <CodeBlock code={st} codeFz={13.5 * fontScale} />
         </div>
@@ -295,6 +298,22 @@ function ExcelStepBlocks({
     </div>
   );
 }
+
+const PY_STEP_NOTE = (
+  <>
+    단계(셀)마다 나눠 <strong>‘파이썬 코드 실행’ 탭 실행기</strong>에서 셀 단위로 실행·수정·
+    건너뛰기 할 수 있습니다(변수는 셀 간 유지 — 앞 셀 결과를 다음 셀에서 이어 씀).
+  </>
+);
+
+const EXCEL_STEP_NOTE = (
+  <>
+    단계마다 엑셀의 <strong>다른 셀</strong>에 <code className="font-mono">=PY(</code>로 나눠
+    넣으세요. Python in Excel은 셀을 <strong>행 우선 순서</strong>로 실행하며{" "}
+    <strong>변수가 유지</strong>되어, 앞 단계 변수를 다음 셀에서 그대로 이어 쓸 수 있습니다(시트
+    값은 <code className="font-mono">xl()</code>로 참조).
+  </>
+);
 
 function ExcelCodePanel({
   method,
@@ -372,9 +391,11 @@ function ExcelCodePanel({
                   {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
                 </span>
               </div>
-              <ExcelStepBlocks
+              <StepBlocks
                 code={toExcelPython(s.code).trim()}
                 fontScale={fontScale}
+                cellWord="엑셀 셀"
+                note={i === 0 ? EXCEL_STEP_NOTE : undefined}
               />
             </div>
           ))}
@@ -648,21 +669,17 @@ function MethodDialog({
       method.sections.filter((s) => level === "all" || levelOf(s) === level),
     [method, level]
   );
-  // 보험·계리 코드는 한 섹션이 길어 단계(# ①,# ②,…)마다 "# %%" 셀 구분 삽입 —
-  // 실행기로 보내기·복사 시 단계별 셀로 나뉜다(섹션 사이도 # %%).
-  const isActuarial = method.category === "actuarial";
-  const allCode = useMemo(() => {
-    if (isActuarial) {
-      return visibleSections
-        .map((s) => `# ── ${s.title} ──\n${stepifyCode(s.code.trim())}`)
-        .join("\n\n# %%\n");
-    }
-    return level === "all"
-      ? methodFullCode(method)
-      : visibleSections
-          .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
-          .join("\n\n\n");
-  }, [method, level, visibleSections, isActuarial]);
+  // 모든 방법의 코드를 단계별 셀(# %%)로 — 실행기로 보내기·복사 시 셀 단위로 나뉜다
+  // (섹션 사이·섹션 내부 단계 모두 # %%). 실행기가 셀을 순서대로 실행하면 원본과 동일.
+  const allCode = useMemo(
+    () =>
+      visibleSections
+        .map(
+          (s) => `# ── ${s.title} ──\n${cellsToScript(splitCodeCells(s.code.trim()))}`
+        )
+        .join("\n\n# %%\n"),
+    [visibleSections]
+  );
   const hasAdvanced = method.sections.some((s) => levelOf(s) === "advanced");
   // 수준 필터 UI는 [코드 적용] 탭에만 보이므로, 헤더의 복사·전송 버튼에 현재 범위를 표기
   const scopeSuffix = level === "all" ? "" : ` (${LEVEL_META[level].label})`;
@@ -1022,9 +1039,11 @@ function MethodDialog({
                   {s.desc}
                 </p>
               ) : null}
-              <CodeBlock
-                code={isActuarial ? stepifyCode(s.code.trim()) : s.code.trim()}
-                codeFz={13.5 * fontScale}
+              <StepBlocks
+                code={s.code.trim()}
+                fontScale={fontScale}
+                cellWord="셀"
+                note={i === 0 ? PY_STEP_NOTE : undefined}
               />
             </div>
           ))}

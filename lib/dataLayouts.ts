@@ -226,9 +226,74 @@ export const DATA_LAYOUTS: Record<string, DataLayout> = {
     ],
     notes: "가상 위험률·확정이율만 있으면 tpx→A_x·ä_x→수지상등으로 보험료가 나옵니다(코드 탭 참고).",
   },
+  "kaplan-meier": {
+    intro:
+      "생존분석(웹 실행) — 관찰기간(duration)+사건 지표(event) 두 열이 핵심입니다.\n- event: 1=사건 발생(해지·사망), 0=중도절단(관찰 종료) · 절단을 1로 잘못 코딩하면 왜곡\n- 그룹(group) 열이 있으면 KM 곡선 비교·log-rank 검정(lifelines 없이 numpy로 계산)",
+    columns: [
+      { name: "duration", role: "duration", type: "숫자(기간)", example: "18", desc: "가입~사건/관찰종료 기간(월 등)" },
+      { name: "event", role: "event", type: "0 / 1", example: "1", desc: "1=사건 발생, 0=중도절단" },
+      { name: "group", role: "group", type: "범주", example: "대면 / 비대면", desc: "(선택) KM 곡선 비교·log-rank 검정용" },
+    ],
+    notes: "중도절단(event=0)도 '관찰기간까지 사건이 없었다'는 정보로 활용 — 버리지 않습니다.",
+  },
+  graduation: {
+    intro:
+      "위험률 보정 — 연령별 조(粗)위험률(들쭉날쭉)을 매끈한 곡선으로 다듬습니다.\n- 연령 + 관측 위험률(또는 노출·사건수)이 필요 · Whittaker-Henderson·스플라인",
+    columns: [
+      { name: "age", role: "id", type: "정수", example: "40", desc: "연령(행)" },
+      { name: "raw_qx", role: "value", type: "숫자(0~1)", example: "0.0021", desc: "조위험률(사건수/노출) — 다듬을 대상" },
+      { name: "exposure", role: "weight", type: "숫자", example: "1523", desc: "(선택) 노출 — 신뢰 가중(많을수록 원자료 존중)" },
+    ],
+  },
+  reinsurance: {
+    intro:
+      "재보험 분석 — 개별 손해액(claim) 목록이 기본입니다.\n- 손해액으로 XL 레이어(초과분)·비례(QS) 출재액 계산 · 집합손해 시뮬레이션",
+    columns: [
+      { name: "claim", role: "value", type: "숫자", example: "85,000,000", desc: "개별 손해액 — 출재/보유 분리 대상" },
+      { name: "line", role: "group", type: "범주", example: "화재", desc: "(선택) 종목·계약 구분" },
+    ],
+  },
+  regularized: {
+    intro:
+      "Ridge·Lasso — 수치형 독립변수 여러 열 + 연속 숫자 종속변수입니다.\n- 규제는 스케일에 민감 → 표준화(StandardScaler) 권장 · 명목형은 원-핫",
+    columns: [
+      { name: "x1 … xp", role: "feature", type: "숫자(여러 열)", example: "…", desc: "독립변수들(표준화 권장)" },
+      { name: "y", role: "label", type: "숫자(연속)", example: "1240", desc: "예측 대상 — 연속 숫자" },
+    ],
+    notes: "변수(feature)가 많고 상관 높을 때 규제로 과적합·불안정 계수를 억제합니다.",
+  },
+  "loss-functions": SUPERVISED_CLF,
+  "cross-validation": SUPERVISED_CLF,
+  "model-eval": SUPERVISED_CLF,
+  imbalanced: {
+    intro:
+      "불균형 분류 — 독립변수 + 이진 라벨(양성이 드묾, 예: 사기·해지 5%).\n- 라벨 0/1 · 명목형 원-핫 · class_weight·임계값 이동·PR-AUC로 평가",
+    columns: SUPERVISED_CLF.columns,
+    notes: "양성 비율이 매우 낮으면 accuracy는 무의미 — 재현율·PR-AUC를 봅니다.",
+  },
+  calibration: SUPERVISED_CLF,
+  anomaly: {
+    intro:
+      "이상치 탐지 — 정답 라벨 없이 독립변수(feature)만으로 비정상을 찾습니다.\n- 스케일 차이 크면 표준화 · 명목형 원-핫 (IsolationForest·LOF 등)",
+    columns: UNSUPERVISED.columns,
+  },
+  normality: {
+    intro: "정규성 검정 — 검정할 수치형 열 1개(또는 모형 잔차)입니다.",
+    columns: [
+      { name: "value", role: "value", type: "숫자", example: "3.2", desc: "정규성을 볼 연속 수치(또는 잔차)" },
+    ],
+  },
+  nonparametric: GROUP_VALUE,
+  distributions: {
+    intro:
+      "분포 적합 — 적합할 수치형 열 1개(손해액·대기시간 등).\n- 연속형은 그 열, 빈도(건수)는 정수 열",
+    columns: [
+      { name: "claim_amt", role: "value", type: "숫자", example: "2,900,000", desc: "분포를 적합할 연속 수치(또는 건수 정수)" },
+    ],
+  },
 };
 
-/** 카테고리 기반 일반 안내(개별 레이아웃이 없을 때) */
+/** 카테고리 기반 일반 안내(개별 레이아웃이 없을 때) — 표가 비지 않도록 예시 열 포함 */
 export function genericLayout(category: string): DataLayout {
   if (category === "ml" || category === "model")
     return {
@@ -236,15 +301,23 @@ export function genericLayout(category: string): DataLayout {
         "대개 독립변수(feature) 여러 열 + 종속변수(label) 한 열 구조입니다.\n- 명목형은 원-핫/더미 · 거리·스케일 민감 모델은 표준화\n- 자세한 열 구성은 '파이썬 코드 적용' 탭의 예제 열 이름을 참고하세요.",
       columns: SUPERVISED_CLF.columns,
     };
-  if (category === "actuarial")
+  if (category === "wrangle")
     return {
       intro:
-        "계리 분석은 방법마다 입력 형태가 다릅니다(위험률 표·손해 삼각형·경험데이터 등).\n- 구체적 열 구성은 '파이썬 코드 적용' 탭의 합성데이터 생성부를 참고하세요.",
-      columns: [],
+        "데이터 핸들링은 어떤 표(DataFrame)에도 적용됩니다 — 열 구성 제약이 적습니다.\n- 대개 식별자·범주 열 + 수치 열의 일반 표",
+      columns: [
+        { name: "id", role: "id", type: "정수/문자", example: "1001", desc: "행 식별자(선택)" },
+        { name: "category", role: "group", type: "범주", example: "종신", desc: "범주형 열" },
+        { name: "value", role: "value", type: "숫자", example: "1240", desc: "수치 열" },
+      ],
     };
+  // actuarial / 기타 — 일반 안내 + 작은 예시 표(빈 표 방지)
   return {
     intro:
-      "이 방법의 표준 데이터 형태는 '파이썬 코드 적용' 탭 예제의 열 이름을 참고하세요. 대개 수치형 열(+ 필요 시 그룹/범주 열)로 구성됩니다.",
-    columns: [],
+      "방법마다 입력 형태가 다릅니다 — '파이썬 코드 적용' 탭 예제의 열 이름(또는 합성데이터 생성부)을 참고하세요. 대개 아래 형태의 표입니다.",
+    columns: [
+      { name: "category", role: "group", type: "범주", example: "그룹", desc: "구분·등급 열" },
+      { name: "value", role: "value", type: "숫자", example: "123", desc: "측정·집계 대상 수치" },
+    ],
   };
 }
