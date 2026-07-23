@@ -41,6 +41,7 @@ import {
 } from "@/components/feature/datalab/FunctionSearch";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
+import { ExcelDataFlow } from "@/components/feature/datalab/ExcelDataFlowSvg";
 import {
   useDatalabOverrides,
   mergeExcelFn,
@@ -366,6 +367,9 @@ function FunctionDialog({
           >
             사용 가능: <span className="font-medium text-body">{VERSION_FULL[fn.version]}</span>
           </p>
+
+          {/* 데이터 변화 도식 — 데이터가공·동적배열 등 데이터 함수만(입력→출력) */}
+          <ExcelDataFlow fn={fn} />
 
           {/* 개념 */}
           <Prose text={fn.intro} fz={fz(14.5).fontSize} className="text-body" />

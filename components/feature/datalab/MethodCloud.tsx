@@ -34,6 +34,12 @@ import {
 import { METHOD_THEORY } from "@/lib/methodTheory";
 import { METHOD_OPTION_DOCS } from "@/lib/methodOptionDocs";
 import {
+  DATA_LAYOUTS,
+  genericLayout,
+  ROLE_META,
+  type DataLayout,
+} from "@/lib/dataLayouts";
+import {
   METHOD_EXCEL_CODE,
   PIE_GENERAL_NOTE,
   PACKAGE_STATUS_META,
@@ -115,7 +121,7 @@ function hashOf(s: string): number {
 const FONT_SCALE_MIN = 0.8;
 const FONT_SCALE_MAX = 1.6;
 
-type DialogTab = "theory" | "code" | "excel" | "options";
+type DialogTab = "theory" | "code" | "excel" | "options" | "layout";
 type LevelFilter = "all" | "basic" | "advanced";
 type SectionLevel = "basic" | "advanced";
 
@@ -156,6 +162,102 @@ function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number 
 }
 
 /** [엑셀 적용 코드] 탭 — Python in Excel(=PY()) 적용 코드. 없으면 공통 안내 + 폴백 */
+/**
+ * [데이터 레이아웃] 탭 — 실제 적용에 필요한 열 구성을 표로 안내(사용자 요청 2026-07-23).
+ * 회귀·로지스틱은 다수 독립변수(feature)+명목형 처리+종속변수(label) 형태, 생존분석은
+ * 관찰기간·사건 지표가 핵심. 개별 레이아웃이 없으면 카테고리 일반 안내로 폴백.
+ */
+function DataLayoutPanel({
+  method,
+  fz,
+}: {
+  method: StatMethod;
+  fz: (px: number) => { fontSize: number };
+}) {
+  const layout: DataLayout =
+    DATA_LAYOUTS[method.id] ?? genericLayout(method.category);
+  return (
+    <div>
+      <div
+        className="rounded px-4 py-3 text-body"
+        style={{
+          ...fz(13.5),
+          background: "color-mix(in srgb, var(--chip-blue-bg) 45%, white)",
+        }}
+      >
+        <p className="mb-1 font-semibold text-foreground" style={fz(13.5)}>
+          실제 적용에 필요한 데이터 형태
+        </p>
+        <Prose text={layout.intro} fz={fz(13.5).fontSize} className="text-body" />
+      </div>
+
+      {layout.columns.length > 0 ? (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-border text-tertiary" style={fz(12)}>
+                <th className="py-2 pr-3 font-medium">열 이름</th>
+                <th className="py-2 pr-3 font-medium">역할</th>
+                <th className="py-2 pr-3 font-medium">자료형</th>
+                <th className="py-2 pr-3 font-medium">예시</th>
+                <th className="py-2 font-medium">설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              {layout.columns.map((c) => {
+                const rm = ROLE_META[c.role];
+                return (
+                  <tr key={c.name} className="border-b border-border align-top">
+                    <td className="py-2 pr-3">
+                      <code
+                        className="font-mono font-medium text-foreground"
+                        style={fz(12.5)}
+                      >
+                        {c.name}
+                      </code>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <span
+                        className="inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium"
+                        style={{
+                          background: `var(--chip-${rm.color}-bg)`,
+                          color: `var(--chip-${rm.color}-fg)`,
+                        }}
+                      >
+                        {rm.label}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-3 text-body" style={fz(12.5)}>
+                      {c.type}
+                    </td>
+                    <td className="py-2 pr-3" style={fz(12.5)}>
+                      <code className="font-mono text-tertiary">{c.example}</code>
+                    </td>
+                    <td className="py-2 leading-relaxed text-body" style={fz(12.5)}>
+                      {c.desc}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {layout.notes ? (
+        <div className="mt-4 rounded bg-surface px-4 py-3">
+          <Prose text={layout.notes} fz={fz(13).fontSize} className="text-body" />
+        </div>
+      ) : null}
+
+      <p className="mt-4 text-[12px] leading-relaxed text-tertiary">
+        열 이름은 예시입니다 — 실제 데이터의 열 이름에 맞춰 &lsquo;파이썬 코드 적용&rsquo;
+        탭 코드의 열 이름을 바꿔 쓰세요.
+      </p>
+    </div>
+  );
+}
+
 /**
  * 엑셀(=PY()) 코드를 단계(# ①,# ②,…)마다 별도 블록으로 — 엑셀은 셀마다 =PY() 하나라
  * 단계별로 나눠 각각 다른 셀에 넣는 것이 유리하다(사용자 요청 2026-07-23).
@@ -811,6 +913,7 @@ function MethodDialog({
               { key: "code", label: "파이썬 코드 적용" },
               { key: "excel", label: "엑셀 코드 적용" },
               { key: "options", label: "파라미터·옵션" },
+              { key: "layout", label: "데이터 레이아웃" },
             ] as { key: DialogTab; label: string }[]
           ).map((t) => (
             <button
@@ -848,6 +951,8 @@ function MethodDialog({
             <ExcelCodePanel method={method} fz={fz} fontScale={fontScale} />
           ) : tab === "options" ? (
             <OptionsPanel method={method} color={color} fz={fz} />
+          ) : tab === "layout" ? (
+            <DataLayoutPanel method={method} fz={fz} />
           ) : (
             <>
           <Prose text={method.intro} fz={fz(14.5).fontSize} className="text-body" />
@@ -958,6 +1063,8 @@ function MethodDialog({
             ? "정의·산출식·활용을 먼저 확인한 뒤 '파이썬 코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
             : tab === "excel"
             ? "엑셀 셀에 =PY( 를 입력해 파이썬 편집 모드로 들어간 뒤, 블록의 ‘복사’로 코드를 붙여 넣으세요. 데이터는 xl()로 시트·표를 참조합니다."
+            : tab === "layout"
+            ? "실제 적용에 필요한 열 구성(독립변수·명목형 처리·종속변수 형태)입니다 — 데이터 준비의 출발점."
             : tab === "options"
             ? "값 후보·기본값·선택 기준 중심의 해설입니다 — 파이썬·엑셀(=PY()) 어느 코드에든 그대로 적용됩니다."
             : "블록의 ‘복사’는 해당 코드만, ‘전체 코드 복사’는 현재 수준 필터에 보이는 블록을 이어붙여 복사합니다."}
