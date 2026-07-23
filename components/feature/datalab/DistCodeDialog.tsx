@@ -7,7 +7,7 @@
  * 관례(Escape·오버레이·스크롤락·뒤로가기 닫힘)를 따른다.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import { toExcelPython, PIE_CODE_NOTE } from "@/lib/methodExcelCode";
@@ -72,6 +72,8 @@ export function DistCodeDialog({
   const active = allTabs.find((t) => t.key === tabKey) ?? allTabs[0];
   // 글자 확대/축소 — 코드·안내에 적용(창 크기와 독립)
   const [fontScale, setFontScale] = useState(1);
+  // 탭 위 프리뷰(그림+설명) 펼침 — 고정(창으로 고정) 시 기본 감춤, '보이기'로 펼침
+  const [introOpen, setIntroOpen] = useState(false);
   const step = (d: number) =>
     setFontScale((cur) =>
       Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Math.round((cur + d) * 10) / 10))
@@ -86,6 +88,11 @@ export function DistCodeDialog({
   });
 
   useHistoryDismiss(true, onClose);
+
+  // 고정 시엔 탭 위 프리뷰를 기본 감춤(실제 작업은 탭 아래 코드) — 고정될 때마다 접는다
+  useEffect(() => {
+    if (pin.pinned) setIntroOpen(false);
+  }, [pin.pinned]);
 
   useEffect(() => {
     if (pin.pinned) return; // 고정 중엔 배경 상호작용 유지
@@ -174,8 +181,30 @@ export function DistCodeDialog({
           </div>
         </header>
 
-        {/* 프리뷰(그림+설명)를 탭 위 공용 영역으로 — 탭마다 중복되지 않게 한 번만 */}
-        {intro ? <div className="px-5 pt-2 sm:px-6">{intro}</div> : null}
+        {/* 프리뷰(그림+설명)를 탭 위 공용 영역으로 — 탭마다 중복 없이 한 번만.
+            고정(창으로 고정) 시엔 기본 감춤 + '보이기' 토글(실제 작업은 탭 아래 코드) */}
+        {intro ? (
+          pin.pinned ? (
+            <div className="px-5 pt-2 sm:px-6">
+              <button
+                type="button"
+                onClick={() => setIntroOpen((o) => !o)}
+                aria-expanded={introOpen}
+                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+              >
+                <ChevronDown
+                  size={13}
+                  className={introOpen ? "" : "-rotate-90"}
+                  aria-hidden
+                />
+                그래프 예시 {introOpen ? "감추기" : "보이기"}
+              </button>
+              {introOpen ? <div className="mt-2">{intro}</div> : null}
+            </div>
+          ) : (
+            <div className="px-5 pt-2 sm:px-6">{intro}</div>
+          )
+        ) : null}
 
         <div
           role="tablist"
