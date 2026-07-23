@@ -6,7 +6,7 @@
  * 팝업이 되고, 복사는 현재 탭의 코드를 복사한다. MethodDialog와 같은 모달
  * 관례(Escape·오버레이·스크롤락·뒤로가기 닫힘)를 따른다.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
@@ -31,6 +31,7 @@ export function DistCodeDialog({
   tabs,
   subtitle,
   hideFooter,
+  intro,
   onClose,
 }: {
   name: string;
@@ -43,6 +44,8 @@ export function DistCodeDialog({
   subtitle?: string;
   /** 확률분포용 하단 안내(matplotlib·dist.stats) 숨김 — 데이터 핸들링 스니펫 등 */
   hideFooter?: boolean;
+  /** 코드 위(탭 공통)에 표시할 프리뷰 블록 — 그래프 샘플·대표 모델·입력 형태 등 */
+  intro?: ReactNode;
   onClose: () => void;
 }) {
   const baseTabs: CodeTab[] = useMemo(
@@ -113,10 +116,12 @@ export function DistCodeDialog({
               </h2>
               <span className="text-[13px] text-tertiary">{en}</span>
             </div>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
-              {subtitle ??
-                "현재 파라미터 값이 반영된 scipy.stats 코드입니다. 복사해 데이터 분석 탭의 파이썬 실행기나 로컬에서 활용하세요."}
-            </p>
+            {pin.pinned ? null : (
+              <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
+                {subtitle ??
+                  "현재 파라미터 값이 반영된 scipy.stats 코드입니다. 복사해 데이터 분석 탭의 파이썬 실행기나 로컬에서 활용하세요."}
+              </p>
+            )}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             {pin.CollapseButton()}
@@ -190,6 +195,7 @@ export function DistCodeDialog({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          {intro ? <div className="mb-4">{intro}</div> : null}
           {active.note ? (
             <div
               className="mb-4 rounded px-4 py-3 text-body"

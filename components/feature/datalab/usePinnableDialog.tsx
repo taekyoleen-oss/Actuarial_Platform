@@ -57,15 +57,43 @@ interface UsePinnableDialogOptions {
   pipTitle?: string;
 }
 
-/** 메인 문서의 스타일(Tailwind·globals.css 토큰·KaTeX 등)을 PiP 창으로 복제 */
+/**
+ * 메인 문서의 스타일(Tailwind·globals.css 토큰·KaTeX 등)을 PiP 창으로 복제.
+ *
+ * <link>를 cloneNode로 옮기면 개발 모드(<style> 인라인)에선 즉시 적용되지만,
+ * 프로덕션(CSS가 <link href=/_next/...>)에선 PiP 문서가 스타일시트를 비동기로
+ * 다시 받아 첫 렌더가 무스타일 → flex/justify-between이 안 먹어 헤더·탭이 왼쪽으로
+ * 뭉쳐 보였다(사용자 보고). 그래서 MDN 권장대로 same-origin 시트는 cssRules 텍스트를
+ * 그대로 인라인 <style>로 복제(동기·무플래시)하고, 못 읽는(cross-origin) 시트만
+ * 절대 URL <link>로 폴백한다.
+ */
 function injectPipStyles(pip: Window) {
   const head = pip.document.head;
-  document
-    .querySelectorAll('style, link[rel="stylesheet"]')
-    .forEach((node) => {
-      // <link>는 href·media 보존(폰트 URL base 안전), <style>은 textContent 복제(무플래시)
-      head.appendChild(node.cloneNode(true));
-    });
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rulesText: string | null = null;
+    try {
+      rulesText = Array.from(sheet.cssRules)
+        .map((r) => r.cssText)
+        .join("\n");
+    } catch {
+      rulesText = null; // cross-origin — 규칙 접근 불가
+    }
+    if (rulesText !== null) {
+      const style = pip.document.createElement("style");
+      style.textContent = rulesText;
+      if (sheet.media?.mediaText) style.media = sheet.media.mediaText;
+      head.appendChild(style);
+    } else if (sheet.href) {
+      const link = pip.document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = sheet.href; // styleSheet.href는 절대 URL
+      if (sheet.media?.mediaText) link.media = sheet.media.mediaText;
+      const owner = sheet.ownerNode as HTMLElement | null;
+      const co = owner?.getAttribute?.("crossorigin");
+      if (co !== null && co !== undefined) link.setAttribute("crossorigin", co);
+      head.appendChild(link);
+    }
+  }
 }
 
 /** PiP document의 html/body를 메인과 정렬(폰트·토큰 상속)하고 레이아웃 설정 */

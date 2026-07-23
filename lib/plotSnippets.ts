@@ -139,6 +139,36 @@ for ax in axes.ravel():
     ax.xaxis.label.set_size(8); ax.yaxis.label.set_size(8)
 plt.tight_layout(); plt.show()`,
       },
+      {
+        id: "scatter-groups",
+        label: "scatter — x·y·구분 색상",
+        desc: "x·y 두 축에 '구분'(군집·클래스 등 범주) 열로 색을 나눠 그리는 산점도 — K-평균 군집·분류 결과 확인에 씁니다.",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# x·y 두 축 + '구분'(군집·클래스 등 범주) 한 열로 색을 나눠 그리는 산점도.
+# 실제 열 이름으로 바꾸세요. 열 위치로 잡으려면 아래 iloc 주석을 쓰세요.
+xcol, ycol, gcol = "age", "premium", "cluster"
+d = df[[xcol, ycol, gcol]].dropna()
+# x, y, g = df.iloc[:, 0], df.iloc[:, 1], df.iloc[:, 2]   # ← 열 위치로 잡기(대안)
+x = d[xcol].to_numpy(); y = d[ycol].to_numpy()
+
+# 구분 값이 문자/범주여도 색이 나오도록 코드(0,1,2…)로 변환
+cat = pd.Categorical(d[gcol])
+codes = cat.codes
+
+fig, ax = plt.subplots(figsize=(7, 5))
+# 그룹마다 따로 그려 '어떤 색=어떤 그룹'을 범례로 표시(범주형엔 colorbar보다 명확)
+cmap = plt.get_cmap("viridis", max(1, len(cat.categories)))
+for i, name in enumerate(cat.categories):
+    mask = codes == i
+    ax.scatter(x[mask], y[mask], s=40, alpha=0.75, color=cmap(i), label=str(name))
+ax.set_xlabel(xcol); ax.set_ylabel(ycol); ax.legend(title=gcol)
+ax.set_title(f"{xcol} vs {ycol} — colored by {gcol}")
+ax.grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()`,
+      },
     ],
   },
   {

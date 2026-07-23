@@ -274,9 +274,11 @@ function FunctionDialog({
                   {fn.version === "all" ? "전 버전" : `Excel ${fn.version === "365" ? "365" : fn.version}`}
                 </span>
               </div>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
-                {fn.summary}
-              </p>
+              {pin.pinned ? null : (
+                <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
+                  {fn.summary}
+                </p>
+              )}
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
               {ov.isAdmin ? (
