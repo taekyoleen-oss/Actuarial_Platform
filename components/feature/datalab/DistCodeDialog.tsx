@@ -103,7 +103,9 @@ export function DistCodeDialog({
   return pin.render(
     <>
         <header
-          className="flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6"
+          className={`flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6 ${
+            pin.pinned ? "flex-col" : ""
+          }`}
           {...pin.dragHandleProps}
         >
           <div className="min-w-0">
@@ -123,7 +125,11 @@ export function DistCodeDialog({
               </p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div
+            className={`flex shrink-0 items-center gap-1.5 ${
+              pin.pinned ? "w-full flex-wrap justify-end" : ""
+            }`}
+          >
             {pin.CollapseButton()}
             {pin.PinButton()}
             {/* 글자 확대/축소 — 창 크기 조절과 별개로 폰트만 변경 */}

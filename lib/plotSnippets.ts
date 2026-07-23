@@ -140,8 +140,24 @@ for ax in axes.ravel():
 plt.tight_layout(); plt.show()`,
       },
       {
+        id: "select-columns",
+        label: "특정 열 선택·읽기",
+        desc: "데이터셋에서 분석·플롯에 쓸 특정 열만 이름(또는 위치)으로 골라 읽고, 자료형·미리보기·결측을 확인합니다.",
+        code: `import pandas as pd
+
+# 하나의 데이터셋(df)에서 분석·그래프에 쓸 특정 열만 골라 읽어옵니다.
+cols = ["age", "premium", "product"]      # 쓸 열 이름(실제 열로 바꾸세요)
+sub = df[cols].copy()                      # 이름으로 선택(원본 보존 위해 copy)
+# sub = df.iloc[:, [0, 1, 4]].copy()       # ← 열 위치(정수)로 고르는 대안
+
+print("선택한 열:", list(sub.columns))
+print(sub.dtypes)                          # 열별 자료형
+print(sub.head())                          # 상위 5행 미리보기
+print("결측 수:", sub.isna().sum().to_dict())`,
+      },
+      {
         id: "scatter-groups",
-        label: "scatter — x·y·구분 색상",
+        label: "scatter 2D — x·y·구분 색상",
         desc: "x·y 두 축에 '구분'(군집·클래스 등 범주) 열로 색을 나눠 그리는 산점도 — K-평균 군집·분류 결과 확인에 씁니다.",
         code: `import numpy as np
 import pandas as pd
@@ -167,6 +183,54 @@ for i, name in enumerate(cat.categories):
 ax.set_xlabel(xcol); ax.set_ylabel(ycol); ax.legend(title=gcol)
 ax.set_title(f"{xcol} vs {ycol} — colored by {gcol}")
 ax.grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "scatter-3d",
+        label: "scatter 3D — x·y·z·구분",
+        desc: "x·y·z 세 축을 3차원 산점도로 — 구분(범주)은 색으로. 2D로 겹쳐 안 보이는 3변수 관계·군집을 봅니다.",
+        code: `import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (3D 투영 등록)
+
+# x·y·z 세 축 + '구분'(범주) 색상 — 3변수 관계를 입체로 확인
+xcol, ycol, zcol, gcol = "age", "premium", "bmi", "product"
+d = df[[xcol, ycol, zcol, gcol]].dropna()
+codes = pd.Categorical(d[gcol]).codes      # 범주 → 색 코드(0,1,2…)
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(projection="3d")      # 3D 축
+p = ax.scatter(d[xcol], d[ycol], d[zcol], c=codes, cmap="viridis", s=30, alpha=0.8)
+ax.set_xlabel(xcol); ax.set_ylabel(ycol); ax.set_zlabel(zcol)
+ax.set_title(f"3D scatter — {xcol}·{ycol}·{zcol}")
+fig.colorbar(p, ax=ax, label=gcol, shrink=0.6)
+# ax.view_init(elev=20, azim=45)           # 보는 각도 조정(선택)
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "scatter-shape-color",
+        label: "산점도 — 그룹 모양+색 구분",
+        desc: "여러 그룹을 '색 + 마커 모양' 두 가지로 동시에 구분 — 그룹이 많거나 흑백 인쇄 시 색만으론 헷갈릴 때.",
+        code: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 여러 그룹을 색과 마커 모양 두 가지로 구분(색만으론 헷갈리거나 흑백 출력 대비)
+xcol, ycol, gcol = "age", "premium", "product"
+d = df[[xcol, ycol, gcol]].dropna()
+cats = pd.Categorical(d[gcol]); codes = cats.codes
+x = d[xcol].to_numpy(); y = d[ycol].to_numpy()
+
+markers = ["o", "s", "^", "D", "v", "P", "X", "*"]   # 그룹별 마커 모양
+cmap = plt.get_cmap("tab10")
+fig, ax = plt.subplots(figsize=(7, 5))
+for i, name in enumerate(cats.categories):
+    m = codes == i
+    ax.scatter(x[m], y[m], label=str(name),
+               marker=markers[i % len(markers)], color=cmap(i % 10),
+               s=45, alpha=0.8, edgecolor="white", linewidth=0.4)
+ax.set_xlabel(xcol); ax.set_ylabel(ycol); ax.legend(title=gcol)
+ax.set_title(f"{xcol} vs {ycol} — 그룹: 모양+색")
 plt.tight_layout(); plt.show()`,
       },
     ],

@@ -635,7 +635,11 @@ function MethodDialog({
           className="border-b border-border px-5 py-4 sm:px-6"
           {...pin.dragHandleProps}
         >
-          <div className="flex items-start justify-between gap-3">
+          <div
+            className={`flex items-start justify-between gap-3 ${
+              pin.pinned ? "flex-col" : ""
+            }`}
+          >
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -658,7 +662,11 @@ function MethodDialog({
                 </p>
               )}
             </div>
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div
+              className={`flex shrink-0 items-center gap-1.5 ${
+                pin.pinned ? "w-full flex-wrap justify-end" : ""
+              }`}
+            >
               {ov.isAdmin ? (
                 <button
                   type="button"

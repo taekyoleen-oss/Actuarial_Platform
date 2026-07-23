@@ -13,6 +13,9 @@ type PlotShape =
   | "heatmap"
   | "matrix"
   | "scatterGroups"
+  | "scatter3d"
+  | "scatterShapes"
+  | "columns"
   | "residual"
   | "twoLines"
   | "roc"
@@ -59,10 +62,25 @@ export const PLOT_META: Record<string, PlotMeta> = {
     models: "탐색적 분석(EDA) — 여러 변수 쌍 관계 일괄 확인",
     inputShape: "수치형 여러 열 (2~5개 권장)",
   },
+  "select-columns": {
+    shape: "columns",
+    models: "플롯·분석 전 데이터 준비 — x·y·구분 열 고르기",
+    inputShape: "데이터셋 df + 쓸 열 이름(또는 위치) 목록",
+  },
   "scatter-groups": {
     shape: "scatterGroups",
-    models: "K-평균·군집·분류 결과 — 두 축 + 범주(군집·클래스) 색 구분",
+    models: "K-평균·군집·분류 결과(2D) — 두 축 + 범주 색 구분",
     inputShape: "x 1열 + y 1열 + 구분(범주·군집) 1열",
+  },
+  "scatter-3d": {
+    shape: "scatter3d",
+    models: "3변수 관계·군집(3D) — 2D로 겹쳐 안 보일 때",
+    inputShape: "x·y·z 3열 + 구분(범주) 1열",
+  },
+  "scatter-shape-color": {
+    shape: "scatterShapes",
+    models: "군집·분류·범주 비교 — 그룹이 많거나 흑백 출력 대비",
+    inputShape: "x 1열 + y 1열 + 구분(범주) 1열",
   },
   // ── 모델 진단 ──
   "residual-plot": {
@@ -285,6 +303,70 @@ export function PlotSampleSvg({ shape }: { shape: PlotShape }) {
               <circle key={`${gi}-${i}`} cx={x} cy={y} r={2.6} fill={grp.col} opacity={0.8} />
             ))
           )}
+        </>
+      ) : shape === "scatter3d" ? (
+        <>
+          {/* pseudo-3D 축(원점에서 x·y·z) + 입체 산점 */}
+          <line x1={34} y1={58} x2={104} y2={58} stroke={AX} strokeWidth={1} />
+          <line x1={34} y1={58} x2={34} y2={16} stroke={AX} strokeWidth={1} />
+          <line x1={34} y1={58} x2={64} y2={38} stroke={AX} strokeWidth={1} />
+          {[
+            { col: P, pts: [[48, 44], [56, 48], [52, 38]] },
+            { col: A, pts: [[70, 34], [78, 40], [74, 28]] },
+            { col: T, pts: [[86, 50], [92, 44], [88, 52]] },
+          ].map((grp, gi) =>
+            grp.pts.map(([x, y], i) => (
+              <circle key={`${gi}-${i}`} cx={x} cy={y} r={2.5} fill={grp.col} opacity={0.82} />
+            ))
+          )}
+          <text x={106} y={60} fontSize={7} fill={G}>x</text>
+          <text x={30} y={14} fontSize={7} fill={G}>z</text>
+          <text x={66} y={36} fontSize={7} fill={G}>y</text>
+        </>
+      ) : shape === "scatterShapes" ? (
+        <>
+          {/* 그룹1: 원(P) */}
+          {[[30, 46], [38, 40], [34, 52]].map(([x, y], i) => (
+            <circle key={`c${i}`} cx={x} cy={y} r={3} fill={P} opacity={0.85} />
+          ))}
+          {/* 그룹2: 사각(A) */}
+          {[[64, 30], [72, 36], [68, 24]].map(([x, y], i) => (
+            <rect key={`r${i}`} x={x - 3} y={y - 3} width={6} height={6} fill={A} opacity={0.85} />
+          ))}
+          {/* 그룹3: 삼각(T) */}
+          {[[92, 52], [100, 46], [96, 56]].map(([x, y], i) => (
+            <polygon
+              key={`t${i}`}
+              points={`${x},${y - 3.5} ${x - 3.5},${y + 3} ${x + 3.5},${y + 3}`}
+              fill={T}
+              opacity={0.85}
+            />
+          ))}
+        </>
+      ) : shape === "columns" ? (
+        <>
+          {/* 표에서 특정 열 선택 — 선택된 열은 primary로 강조 */}
+          <rect x={26} y={14} width={76} height={50} rx={2} fill="none" stroke={AX} />
+          <rect x={26} y={14} width={76} height={11} fill={G} opacity={0.18} />
+          {[0, 1, 2, 3].map((c) => {
+            const selected = c === 0 || c === 1 || c === 3;
+            return (
+              <rect
+                key={c}
+                x={26 + c * 19}
+                y={25}
+                width={19}
+                height={39}
+                fill={selected ? P : "white"}
+                opacity={selected ? 0.28 : 1}
+                stroke={AX}
+                strokeWidth={0.5}
+              />
+            );
+          })}
+          {[1, 2, 3].map((c) => (
+            <line key={c} x1={26 + c * 19} y1={14} x2={26 + c * 19} y2={64} stroke={AX} strokeWidth={0.5} />
+          ))}
         </>
       ) : shape === "residual" ? (
         <>
