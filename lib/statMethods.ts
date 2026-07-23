@@ -74,6 +74,36 @@ export function methodFullCode(m: StatMethod): string {
     .join("\n\n\n");
 }
 
+// 단계 표식(# ①,# ②,…)으로 시작하는 줄 — 계리 코드의 논리 단계 경계
+const STEP_MARK = /^#\s*[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]/;
+
+/**
+ * 한 코드 블록을 단계(# ①,# ②,…) 앞에 "# %%" 셀 구분자를 넣어 단계별로 나눈다.
+ * 파이썬 실행기·주피터·엑셀(=PY())에서 셀/단계 단위로 분리 실행하기 좋게 한다.
+ * (첫 단계 앞에는 넣지 않음 — 임포트·준비 줄이 첫 셀에 남도록)
+ */
+export function stepifyCode(code: string): string {
+  const lines = code.split("\n");
+  const out: string[] = [];
+  let seen = false;
+  for (const line of lines) {
+    if (STEP_MARK.test(line)) {
+      if (seen) out.push("# %%");
+      seen = true;
+    }
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
+/** 단계별 셀로 분리 — "# %%" 기준(계리 코드처럼 단계 표식이 있는 경우). */
+export function splitStepCells(code: string): string[] {
+  return stepifyCode(code)
+    .split(/^# ?%%.*$/m)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export const STAT_CATEGORIES: MethodCategory[] = [
   {
     id: "basic",

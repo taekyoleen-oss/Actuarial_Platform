@@ -24,6 +24,8 @@ import {
   STAT_CATEGORIES,
   STAT_METHODS,
   methodFullCode,
+  stepifyCode,
+  splitStepCells,
   type MethodCategory,
   type MethodChipColor,
   type MethodCodeSection,
@@ -154,6 +156,44 @@ function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number 
 }
 
 /** [엑셀 적용 코드] 탭 — Python in Excel(=PY()) 적용 코드. 없으면 공통 안내 + 폴백 */
+/**
+ * 엑셀(=PY()) 코드를 단계(# ①,# ②,…)마다 별도 블록으로 — 엑셀은 셀마다 =PY() 하나라
+ * 단계별로 나눠 각각 다른 셀에 넣는 것이 유리하다(사용자 요청 2026-07-23).
+ * 단계 표식이 없으면 한 블록 그대로.
+ */
+function ExcelStepBlocks({
+  code,
+  fontScale,
+}: {
+  code: string;
+  fontScale: number;
+}) {
+  const steps = splitStepCells(code);
+  if (steps.length <= 1) {
+    return <CodeBlock code={code} codeFz={13.5 * fontScale} />;
+  }
+  return (
+    <div className="mt-2 space-y-2.5">
+      <p className="text-[11.5px] leading-relaxed text-tertiary">
+        단계마다 엑셀의 <strong>다른 셀</strong>에{" "}
+        <code className="font-mono">=PY(</code>로 나눠 넣으세요. Python in Excel은
+        셀을 <strong>행 우선 순서</strong>로 실행하며 <strong>변수가 유지</strong>되어,
+        앞 단계에서 만든 변수를 다음 셀에서 그대로 이어 쓸 수 있습니다(시트 값은{" "}
+        <code className="font-mono">xl()</code>로 참조).
+      </p>
+      {steps.map((st, k) => (
+        <div key={k}>
+          <div className="mb-1 flex items-center gap-2 text-[11.5px] font-medium text-tertiary">
+            <span className="rounded-full bg-surface px-2 py-0.5">{k + 1}단계</span>
+            <span>엑셀 셀 {k + 1}</span>
+          </div>
+          <CodeBlock code={st} codeFz={13.5 * fontScale} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ExcelCodePanel({
   method,
   fz,
@@ -230,9 +270,9 @@ function ExcelCodePanel({
                   {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
                 </span>
               </div>
-              <CodeBlock
+              <ExcelStepBlocks
                 code={toExcelPython(s.code).trim()}
-                codeFz={13.5 * fontScale}
+                fontScale={fontScale}
               />
             </div>
           ))}
@@ -506,15 +546,21 @@ function MethodDialog({
       method.sections.filter((s) => level === "all" || levelOf(s) === level),
     [method, level]
   );
-  const allCode = useMemo(
-    () =>
-      level === "all"
-        ? methodFullCode(method)
-        : visibleSections
-            .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
-            .join("\n\n\n"),
-    [method, level, visibleSections]
-  );
+  // 보험·계리 코드는 한 섹션이 길어 단계(# ①,# ②,…)마다 "# %%" 셀 구분 삽입 —
+  // 실행기로 보내기·복사 시 단계별 셀로 나뉜다(섹션 사이도 # %%).
+  const isActuarial = method.category === "actuarial";
+  const allCode = useMemo(() => {
+    if (isActuarial) {
+      return visibleSections
+        .map((s) => `# ── ${s.title} ──\n${stepifyCode(s.code.trim())}`)
+        .join("\n\n# %%\n");
+    }
+    return level === "all"
+      ? methodFullCode(method)
+      : visibleSections
+          .map((s) => `# ── ${s.title} ──\n${s.code.trim()}`)
+          .join("\n\n\n");
+  }, [method, level, visibleSections, isActuarial]);
   const hasAdvanced = method.sections.some((s) => levelOf(s) === "advanced");
   // 수준 필터 UI는 [코드 적용] 탭에만 보이므로, 헤더의 복사·전송 버튼에 현재 범위를 표기
   const scopeSuffix = level === "all" ? "" : ` (${LEVEL_META[level].label})`;
@@ -656,11 +702,6 @@ function MethodDialog({
                 </h2>
                 <span className="text-[13.5px] text-tertiary">{method.en}</span>
               </div>
-              {pin.pinned ? null : (
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-tertiary">
-                  {method.summary}
-                </p>
-              )}
             </div>
             <div
               className={`flex shrink-0 items-center gap-1.5 ${
@@ -717,20 +758,25 @@ function MethodDialog({
               {/* 코드 복사·실행기 전송은 [코드 적용] 탭 전용 액션 — 이론 탭에선 숨김 */}
               {tab === "code" ? (
                 <>
-                  <CopyButton text={allCode} label={`전체 코드 복사${scopeSuffix}`} />
+                  <CopyButton
+                    text={allCode}
+                    label={pin.pinned ? "복사" : `전체 코드 복사${scopeSuffix}`}
+                  />
                   {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
                   {method.category !== "wrangle" ? (
                     <button
                       type="button"
                       onClick={() => onSendToRunner(method, allCode, level)}
-                      className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+                      aria-label="실행기로 보내기"
+                      className="inline-flex items-center gap-1 whitespace-nowrap rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
                       title={
                         level === "all"
                           ? "‘파이썬 코드 실행’ 탭 실행기에 이 코드를 담고 그 탭으로 이동합니다"
                           : `‘파이썬 코드 실행’ 탭 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 그 탭으로 이동합니다`
                       }
                     >
-                      ▶ 실행기로 보내기{scopeSuffix}
+                      {/* 고정 시엔 기호(▶)만 — 상단 메뉴가 한 줄에 들어오도록 */}
+                      {pin.pinned ? "▶" : `▶ 실행기로 보내기${scopeSuffix}`}
                     </button>
                   ) : null}
                 </>
@@ -745,6 +791,12 @@ function MethodDialog({
               </button>
             </div>
           </div>
+          {/* 요약은 제목/버튼 행 아래 전체 폭으로 — 코드 탭의 넓은 버튼에도 왼쪽 쏠림 없이 */}
+          {pin.pinned ? null : (
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-tertiary">
+              {method.summary}
+            </p>
+          )}
         </header>
 
         {/* 탭 — [정의 및 방법 | 코드 적용] */}
@@ -865,7 +917,10 @@ function MethodDialog({
                   {s.desc}
                 </p>
               ) : null}
-              <CodeBlock code={s.code.trim()} codeFz={13.5 * fontScale} />
+              <CodeBlock
+                code={isActuarial ? stepifyCode(s.code.trim()) : s.code.trim()}
+                codeFz={13.5 * fontScale}
+              />
             </div>
           ))}
 
