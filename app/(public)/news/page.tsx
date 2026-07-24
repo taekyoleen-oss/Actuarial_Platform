@@ -1,3 +1,5 @@
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
+
 // 기존 배포된 보험 뉴스 대시보드(insurance-article)를 이 앱 프레임 안에 그대로 임베드.
 // 새로 설계하지 않고 운영 중인 사이트를 가져온다. URL은 env로 교체 가능.
 const NEWS_URL =
@@ -13,7 +15,9 @@ export default function NewsPage() {
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 3.5rem)" }}>
       <div className="flex items-center justify-between border-b border-border px-6 py-2">
-        <span className="text-sm font-medium text-foreground">보험 뉴스</span>
+        <span className="text-sm font-medium text-foreground">
+          <RandomLetterSwap label="보험 뉴스" />
+        </span>
         <a
           href={NEWS_URL}
           target="_blank"

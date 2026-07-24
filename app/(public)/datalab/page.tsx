@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 import { DataPostCard } from "@/components/feature/datalab/DataPostCard";
 import { DataLabTabs } from "@/components/feature/datalab/DataLabTabs";
 import { ExcelFunctionCloud } from "@/components/feature/datalab/ExcelFunctionCloud";
@@ -49,7 +50,7 @@ export default async function DataLabPage({
     <div className="mx-auto max-w-container px-6 py-12">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-foreground sm:text-[28px]">
-          데이터 예제/분석
+          <RandomLetterSwap label="데이터 예제/분석" />
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-tertiary">
           산재된 데이터를 엑셀 함수·VBA·Python으로 정리·분석해 보관하고

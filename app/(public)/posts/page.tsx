@@ -5,6 +5,7 @@ import { PostCard } from "@/components/feature/PostCard";
 import { PostFilters } from "@/components/feature/PostFilters";
 import { PostGrid } from "@/components/feature/PostGrid";
 import { ResourceCard } from "@/components/feature/ResourceCard";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 import { listDomesticProducts } from "@/lib/domesticProducts";
 import { nativePathFromContent } from "@/lib/global";
 import { groupPosts } from "@/lib/postSections";
@@ -87,7 +88,7 @@ export default async function PostsPage({
       {isExclusive ? <BrandBackdrop /> : null}
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-foreground sm:text-[28px]">
-          {heading}
+          <RandomLetterSwap label={heading} />
         </h1>
         {subtitle ? (
           <p className="mt-2 text-[15px] leading-relaxed text-tertiary">

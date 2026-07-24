@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Collapsible } from "@/components/feature/Collapsible";
 import { PoolIdent } from "@/components/feature/PoolIdent";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { ViewSwitch } from "@/components/feature/ViewSwitch";
 import { bluePastelFor, cn } from "@/lib/utils";
@@ -114,7 +115,7 @@ export default async function TheoryTopicPage({
       <div className="flex items-center justify-between gap-8">
         <div>
           <h1 className="text-2xl font-medium text-foreground">
-            보험이론 사전
+            <RandomLetterSwap label="보험이론 사전" />
           </h1>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-tertiary">
             보험 이론·실무 기초 자료를 주제별로 정리했습니다. 제목이나 그림을

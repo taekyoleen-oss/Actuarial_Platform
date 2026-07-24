@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Database, ArrowRight } from "lucide-react";
 import { Collapsible } from "@/components/feature/Collapsible";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 import { ViewSwitch } from "@/components/feature/ViewSwitch";
 import { BrochureButton } from "@/components/feature/BrochureButton";
 import { listDbs } from "@/lib/publicDb";
@@ -339,7 +340,7 @@ export default function AppsPage() {
   return (
     <div className="mx-auto max-w-container px-6 py-12">
       <h1 className="text-2xl font-medium text-foreground">
-        모델분석 · 업무지원 앱
+        <RandomLetterSwap label="모델분석 · 업무지원 앱" />
       </h1>
       <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-tertiary">
         보험 실무에 바로 쓸 수 있는 자체 개발 앱 모음입니다. 카드를 누르면 새

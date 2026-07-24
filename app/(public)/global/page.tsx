@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, History, LineChart, Scale } from "lucide-react";
 import { FSA_STATS } from "@/lib/japanFsa";
 import { FSA_THEMES } from "@/data/japan-fsa/themes";
 import { ThemeChip } from "@/components/feature/fsa/ThemeChip";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 
 export const metadata: Metadata = {
   title: "해외 주요 보험 정보·자료 — Insurance Insights",
@@ -28,7 +29,7 @@ export default function GlobalHubPage() {
             GLOBAL INSURANCE INSIGHTS
           </div>
           <h1 className="mt-2 text-[30px] font-bold leading-tight tracking-tight text-foreground sm:text-[39px]">
-            해외 주요 보험 정보·자료
+            <RandomLetterSwap label="해외 주요 보험 정보·자료" />
           </h1>
           <p className="mt-3 max-w-2xl text-[16px] leading-[1.8] text-tertiary">
             일본 금융청의 상품 심사사례부터 생명보험 시장의 동향·변천까지 —

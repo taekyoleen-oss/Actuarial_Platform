@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { HeroIdent } from "@/components/feature/HeroIdent";
+import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 
 // 상단 카테고리(ib_categories 시드와 일치). 카테고리 관리 UI는 v2.0.
 // 해외 자료는 네이티브 허브(/global)가 진입점 (2026-06-13 전환).
@@ -118,7 +119,7 @@ function NavBar({ activeKey }: { activeKey: string | null }) {
               className={withActive(desktopLink, activeKey === c.slug)}
               aria-current={activeKey === c.slug ? "page" : undefined}
             >
-              {c.name}
+              <RandomLetterSwap label={c.name} />
             </Link>
           ))}
           {EXTRA.map((e) => (
@@ -128,7 +129,7 @@ function NavBar({ activeKey }: { activeKey: string | null }) {
               className={withActive(desktopLink, activeKey === e.href)}
               aria-current={activeKey === e.href ? "page" : undefined}
             >
-              {e.name}
+              <RandomLetterSwap label={e.name} />
             </Link>
           ))}
         </div>
