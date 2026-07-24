@@ -450,7 +450,9 @@ export function usePinnableDialog({
         aria-pressed={isPinned}
         aria-label={label}
         title={title}
-        className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[11.5px] font-medium ${
+        className={`inline-flex items-center gap-1 rounded border px-2 py-1 font-medium ${
+          isPinned ? "text-[10px]" : "text-[11.5px]"
+        } ${
           isPinned
             ? "border-primary bg-primary/10 text-primary"
             : "border-border bg-white text-tertiary hover:text-foreground"
@@ -477,7 +479,7 @@ export function usePinnableDialog({
         onClick={() => setCollapsed(true)}
         aria-label="숨기기"
         title="숨기기 — 제목만 남기고 접습니다('보이기'로 복원)"
-        className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
+        className="inline-flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-[10px] font-medium text-tertiary hover:text-foreground"
       >
         <Minimize2 size={13} /> 숨기기
       </button>
@@ -560,6 +562,8 @@ export function usePinnableDialog({
 
   return {
     pinned,
+    // pip 모드에서는 OS 창 자체가 닫기(X)를 제공하므로, 팝업 자체 X는 중복 — 이 값으로 숨긴다
+    isPip: mode === "pip",
     dragHandleProps,
     PinButton,
     CollapseButton,

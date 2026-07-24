@@ -25,11 +25,11 @@ type TabKey =
   | "examples";
 
 const TABS: { key: TabKey; short: string; long: string }[] = [
-  { key: "excel", short: "엑셀", long: "엑셀 분석함수" },
-  { key: "analysis", short: "분석", long: "파이썬 분석코드" },
+  { key: "excel", short: "엑셀함수", long: "엑셀 분석함수" },
+  { key: "analysis", short: "파이썬코드", long: "파이썬 분석코드" },
   { key: "distributions", short: "분포", long: "확률분포" },
-  { key: "fitting", short: "적합", long: "모델 적합" },
-  { key: "pyrun", short: "실행", long: "파이썬 코드 실행" },
+  { key: "fitting", short: "모델적합", long: "모델 적합" },
+  { key: "pyrun", short: "파이썬실행", long: "파이썬 코드 실행" },
   { key: "examples", short: "예제", long: "예제 데이터 분석" },
 ];
 

@@ -261,7 +261,9 @@ function FunctionDialog({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
+                  className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 font-medium ${
+                    pin.pinned ? "text-[10px]" : "text-[11.5px]"
+                  }`}
                   style={{
                     background: `var(--chip-${color}-bg)`,
                     color: `var(--chip-${color}-fg)`,
@@ -269,11 +271,17 @@ function FunctionDialog({
                 >
                   {categoryLabel}
                 </span>
-                <h2 className="font-mono text-[18px] font-semibold text-foreground">
+                <h2
+                  className={`font-mono font-semibold text-foreground ${
+                    pin.pinned ? "text-[14px]" : "text-[18px]"
+                  }`}
+                >
                   {fn.name}
                 </h2>
                 <span
-                  className="inline-flex items-center whitespace-nowrap rounded border border-border px-1.5 py-0.5 text-[11px] font-medium text-tertiary"
+                  className={`inline-flex items-center whitespace-nowrap rounded border border-border px-1.5 py-0.5 font-medium text-tertiary ${
+                    pin.pinned ? "text-[10px]" : "text-[11px]"
+                  }`}
                   title={VERSION_FULL[fn.version]}
                 >
                   {fn.version === "all" ? "전 버전" : `Excel ${fn.version === "365" ? "365" : fn.version}`}
@@ -296,7 +304,9 @@ function FunctionDialog({
                   onClick={() => setEditing((e) => !e)}
                   aria-pressed={editing}
                   title="관리자: 이 팝업의 설명 텍스트를 수정합니다(수식·구문 제외)"
-                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[11.5px] font-medium ${
+                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 font-medium ${
+                    pin.pinned ? "text-[10px]" : "text-[11.5px]"
+                  } ${
                     editing
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-white text-tertiary hover:text-foreground"
@@ -313,7 +323,9 @@ function FunctionDialog({
                   onClick={() => step(-0.1)}
                   disabled={fontScale <= FONT_SCALE_MIN}
                   aria-label="글자 작게"
-                  className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                  className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                    pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                  }`}
                 >
                   가−
                 </button>
@@ -322,7 +334,9 @@ function FunctionDialog({
                   onClick={() => onFontScale(1)}
                   aria-label="글자 크기 원래대로"
                   title="원래 크기로"
-                  className="min-w-[42px] border-x border-border px-1 py-1 text-center text-[11px] tabular-nums text-tertiary hover:text-foreground"
+                  className={`min-w-[42px] border-x border-border px-1 py-1 text-center tabular-nums text-tertiary hover:text-foreground ${
+                    pin.pinned ? "text-[10px]" : "text-[11px]"
+                  }`}
                 >
                   {Math.round(fontScale * 100)}%
                 </button>
@@ -331,19 +345,23 @@ function FunctionDialog({
                   onClick={() => step(0.1)}
                   disabled={fontScale >= FONT_SCALE_MAX}
                   aria-label="글자 크게"
-                  className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                  className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                    pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                  }`}
                 >
                   가+
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="닫기"
-                className="ml-0.5 text-tertiary hover:text-foreground"
-              >
-                <X size={20} />
-              </button>
+              {pin.isPip ? null : (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="닫기"
+                  className="ml-0.5 text-tertiary hover:text-foreground"
+                >
+                  <X size={20} />
+                </button>
+              )}
             </div>
           </div>
         </header>

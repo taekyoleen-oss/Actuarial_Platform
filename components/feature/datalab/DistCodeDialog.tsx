@@ -117,13 +117,19 @@ export function DistCodeDialog({
         >
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-2xl" aria-hidden>
+              <span className={pin.pinned ? "text-base" : "text-2xl"} aria-hidden>
                 🐍
               </span>
-              <h2 className="text-[18px] font-semibold text-foreground">
+              <h2
+                className={`font-semibold text-foreground ${
+                  pin.pinned ? "text-[14px]" : "text-[18px]"
+                }`}
+              >
                 {name}
               </h2>
-              <span className="text-[13px] text-tertiary">{en}</span>
+              <span className={`text-tertiary ${pin.pinned ? "text-[11px]" : "text-[13px]"}`}>
+                {en}
+              </span>
             </div>
             {pin.pinned || intro ? null : (
               <p className="mt-1.5 text-[13px] leading-relaxed text-tertiary">
@@ -146,7 +152,9 @@ export function DistCodeDialog({
                 onClick={() => step(-0.1)}
                 disabled={fontScale <= FONT_SCALE_MIN}
                 aria-label="글자 작게"
-                className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                  pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                }`}
               >
                 가−
               </button>
@@ -155,7 +163,9 @@ export function DistCodeDialog({
                 onClick={() => setFontScale(1)}
                 aria-label="글자 크기 원래대로"
                 title="원래 크기로"
-                className="min-w-[42px] border-x border-border px-1 py-1 text-center text-[11px] tabular-nums text-tertiary hover:text-foreground"
+                className={`min-w-[42px] border-x border-border px-1 py-1 text-center tabular-nums text-tertiary hover:text-foreground ${
+                  pin.pinned ? "text-[10px]" : "text-[11px]"
+                }`}
               >
                 {Math.round(fontScale * 100)}%
               </button>
@@ -164,20 +174,28 @@ export function DistCodeDialog({
                 onClick={() => step(0.1)}
                 disabled={fontScale >= FONT_SCALE_MAX}
                 aria-label="글자 크게"
-                className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                  pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                }`}
               >
                 가+
               </button>
             </div>
-            <CopyButton text={active.code} label="전체 복사" />
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="닫기"
-              className="ml-0.5 text-tertiary hover:text-foreground"
-            >
-              <X size={20} />
-            </button>
+            <CopyButton
+              text={active.code}
+              label="전체 복사"
+              className={pin.pinned ? "!text-[10.5px]" : ""}
+            />
+            {pin.isPip ? null : (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="닫기"
+                className="ml-0.5 text-tertiary hover:text-foreground"
+              >
+                <X size={20} />
+              </button>
+            )}
           </div>
         </header>
 
@@ -220,7 +238,9 @@ export function DistCodeDialog({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setTabKey(t.key)}
-                className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                className={`rounded-t border-b-2 font-medium transition-colors ${
+                  pin.pinned ? "px-2.5 py-1 text-[11.5px]" : "px-3.5 py-1.5 text-[13px]"
+                } ${
                   isActive
                     ? "border-[var(--primary)] text-foreground"
                     : "border-transparent text-tertiary hover:text-foreground"

@@ -683,6 +683,17 @@ function MethodDialog({
   const hasAdvanced = method.sections.some((s) => levelOf(s) === "advanced");
   // 수준 필터 UI는 [코드 적용] 탭에만 보이므로, 헤더의 복사·전송 버튼에 현재 범위를 표기
   const scopeSuffix = level === "all" ? "" : ` (${LEVEL_META[level].label})`;
+  // [엑셀 코드 적용] 탭 복사 — 데이터 없으면 파이썬 코드를 엑셀용으로 변환해 대체
+  const allExcelCode = useMemo(() => {
+    const data = METHOD_EXCEL_CODE[method.id];
+    if (!data) return toExcelPython(allCode);
+    return data.sections
+      .map(
+        (s) =>
+          `# ── ${s.title} ──\n${cellsToScript(splitCodeCells(toExcelPython(s.code).trim()))}`
+      )
+      .join("\n\n# %%\n");
+  }, [method.id, allCode]);
 
   // ── 관리자 편집 — 원본(코드) 값과의 diff만 오버라이드로 저장 ──
   const theoryBaseForEdit = METHOD_THEORY[methodBase.id];
@@ -808,7 +819,9 @@ function MethodDialog({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
+                  className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 font-medium ${
+                    pin.pinned ? "text-[10px]" : "text-[11.5px]"
+                  }`}
                   style={{
                     background: `var(--chip-${color}-bg)`,
                     color: `var(--chip-${color}-fg)`,
@@ -816,10 +829,16 @@ function MethodDialog({
                 >
                   {categoryLabel}
                 </span>
-                <h2 className="text-[19px] font-semibold text-foreground">
+                <h2
+                  className={`font-semibold text-foreground ${
+                    pin.pinned ? "text-[14px]" : "text-[19px]"
+                  }`}
+                >
                   {method.name}
                 </h2>
-                <span className="text-[13.5px] text-tertiary">{method.en}</span>
+                <span className={`text-tertiary ${pin.pinned ? "text-[11px]" : "text-[13.5px]"}`}>
+                  {method.en}
+                </span>
               </div>
             </div>
             <div
@@ -833,7 +852,9 @@ function MethodDialog({
                   onClick={() => setEditing((e) => !e)}
                   aria-pressed={editing}
                   title="관리자: 이 팝업의 설명 텍스트를 수정합니다(코드·수식 제외)"
-                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[11.5px] font-medium ${
+                  className={`inline-flex items-center gap-1 rounded border px-2 py-1 font-medium ${
+                    pin.pinned ? "text-[10px]" : "text-[11.5px]"
+                  } ${
                     editing
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-white text-tertiary hover:text-foreground"
@@ -851,7 +872,9 @@ function MethodDialog({
                   onClick={() => step(-0.1)}
                   disabled={fontScale <= FONT_SCALE_MIN}
                   aria-label="글자 작게"
-                  className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                  className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                    pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                  }`}
                 >
                   가−
                 </button>
@@ -860,7 +883,9 @@ function MethodDialog({
                   onClick={() => onFontScale(1)}
                   aria-label="글자 크기 원래대로"
                   title="원래 크기로"
-                  className="min-w-[42px] border-x border-border px-1 py-1 text-center text-[11px] tabular-nums text-tertiary hover:text-foreground"
+                  className={`min-w-[42px] border-x border-border px-1 py-1 text-center tabular-nums text-tertiary hover:text-foreground ${
+                    pin.pinned ? "text-[10px]" : "text-[11px]"
+                  }`}
                 >
                   {Math.round(fontScale * 100)}%
                 </button>
@@ -869,45 +894,56 @@ function MethodDialog({
                   onClick={() => step(0.1)}
                   disabled={fontScale >= FONT_SCALE_MAX}
                   aria-label="글자 크게"
-                  className="px-2 py-1 text-[12px] font-medium text-tertiary hover:text-foreground disabled:opacity-40"
+                  className={`px-2 py-1 font-medium text-tertiary hover:text-foreground disabled:opacity-40 ${
+                    pin.pinned ? "text-[10.5px]" : "text-[12px]"
+                  }`}
                 >
                   가+
                 </button>
               </div>
-              {/* 코드 복사·실행기 전송은 [코드 적용] 탭 전용 액션 — 이론 탭에선 숨김 */}
-              {tab === "code" ? (
-                <>
-                  <CopyButton
-                    text={allCode}
-                    label={pin.pinned ? "복사" : `전체 코드 복사${scopeSuffix}`}
-                  />
-                  {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
-                  {method.category !== "wrangle" ? (
-                    <button
-                      type="button"
-                      onClick={() => onSendToRunner(method, allCode, level)}
-                      aria-label="실행기로 보내기"
-                      className="inline-flex items-center gap-1 whitespace-nowrap rounded border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-tertiary hover:text-foreground"
-                      title={
-                        level === "all"
-                          ? "‘파이썬 코드 실행’ 탭 실행기에 이 코드를 담고 그 탭으로 이동합니다"
-                          : `‘파이썬 코드 실행’ 탭 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 그 탭으로 이동합니다`
-                      }
-                    >
-                      {/* 고정 시엔 기호(▶)만 — 상단 메뉴가 한 줄에 들어오도록 */}
-                      {pin.pinned ? "▶" : `▶ 실행기로 보내기${scopeSuffix}`}
-                    </button>
-                  ) : null}
-                </>
+              {/* 코드 복사는 [코드 적용]·[엑셀 코드 적용] 탭 공용, 실행기 전송은 파이썬 탭 전용 */}
+              {tab === "code" || tab === "excel" ? (
+                <CopyButton
+                  text={tab === "excel" ? allExcelCode : allCode}
+                  label={
+                    pin.pinned
+                      ? "복사"
+                      : tab === "excel"
+                        ? "전체 코드 복사"
+                        : `전체 코드 복사${scopeSuffix}`
+                  }
+                  className={pin.pinned ? "!text-[10.5px]" : ""}
+                />
               ) : null}
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="닫기"
-                className="ml-0.5 text-tertiary hover:text-foreground"
-              >
-                <X size={20} />
-              </button>
+              {/* 데이터 핸들링은 통짜 로드 대신 각 셀 콤보박스로 삽입 → 버튼 숨김 */}
+              {tab === "code" && method.category !== "wrangle" ? (
+                <button
+                  type="button"
+                  onClick={() => onSendToRunner(method, allCode, level)}
+                  aria-label="실행기로 보내기"
+                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded border border-border bg-white font-medium text-tertiary hover:text-foreground ${
+                    pin.pinned ? "px-2 py-1 text-[10.5px]" : "px-2 py-1 text-[11.5px]"
+                  }`}
+                  title={
+                    level === "all"
+                      ? "‘파이썬 코드 실행’ 탭 실행기에 이 코드를 담고 그 탭으로 이동합니다"
+                      : `‘파이썬 코드 실행’ 탭 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 그 탭으로 이동합니다`
+                  }
+                >
+                  {/* 고정 시엔 기호(▶)만 — 상단 메뉴가 한 줄에 들어오도록 */}
+                  {pin.pinned ? "▶" : `▶ 실행기로 보내기${scopeSuffix}`}
+                </button>
+              ) : null}
+              {pin.isPip ? null : (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="닫기"
+                  className="ml-0.5 text-tertiary hover:text-foreground"
+                >
+                  <X size={20} />
+                </button>
+              )}
             </div>
           </div>
           {/* 요약은 제목/버튼 행 아래 전체 폭으로 — 코드 탭의 넓은 버튼에도 왼쪽 쏠림 없이 */}
@@ -939,7 +975,9 @@ function MethodDialog({
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={`rounded-t border-b-2 px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+              className={`rounded-t border-b-2 font-medium transition-colors ${
+                pin.pinned ? "px-2.5 py-1 text-[11.5px]" : "px-3.5 py-1.5 text-[13px]"
+              } ${
                 tab === t.key
                   ? "border-[var(--primary)] text-foreground"
                   : "border-transparent text-tertiary hover:text-foreground"
