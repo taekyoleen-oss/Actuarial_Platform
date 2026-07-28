@@ -20,6 +20,8 @@ export interface PersistedTabs {
 
 export interface PersistedCell {
   id: number;
+  /** 셀 종류 — 없으면 코드 셀(이전 버전 저장분 호환) */
+  kind?: "code" | "markdown";
   code: string;
   output: string;
   images: string[];

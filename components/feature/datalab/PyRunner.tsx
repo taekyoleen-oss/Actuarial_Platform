@@ -12,7 +12,7 @@
  *   "# %%" 구분자로 이어붙인 실행 가능한 스크립트) + workspace.json + 데이터
  *   파일을 PC의 지정 폴더에 저장하고, 로드 시 코드와 데이터를 함께 복원한다.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,7 @@ import {
   writeDataFile,
   type RunPhase,
 } from "@/lib/pyRunner";
+import { parseIpynb, toIpynb, type NbCell } from "@/lib/ipynb";
 import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
 import { PLOT_SNIPPET_GROUPS, plotInsertCode } from "@/lib/plotSnippets";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
@@ -215,21 +216,37 @@ function detectDfVars(lines: string[]): string[] {
   return vars;
 }
 
+/** 텍스트 파일 인코딩 감지 — 한글 Windows/Excel CSV(CP949) 대응. null = 기본(utf-8) */
+function detectTextEncoding(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)
+    return "utf-8-sig";
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return null;
+  } catch {
+    return "cp949";
+  }
+}
+
 /** 파일 확장자 → pandas 로드 호출 문자열 */
-function loadCallFor(name: string): string {
+function loadCallFor(name: string, encoding?: string | null): string {
   const l = name.toLowerCase();
+  const enc = encoding ? `, encoding="${encoding}"` : "";
   if (l.endsWith(".xlsx") || l.endsWith(".xls")) return `pd.read_excel("${name}")`;
-  if (l.endsWith(".json")) return `pd.read_json("${name}")`;
-  if (l.endsWith(".txt")) return `pd.read_csv("${name}", sep=None, engine="python")`;
-  return `pd.read_csv("${name}")`;
+  if (l.endsWith(".json")) return `pd.read_json("${name}"${enc})`;
+  if (l.endsWith(".txt")) return `pd.read_csv("${name}", sep=None, engine="python"${enc})`;
+  return `pd.read_csv("${name}"${enc})`;
 }
 
 /** 업로드/신규 데이터용 '로드 · 속성 확인' 셀 자동 생성(실제 파일명 인식) */
-function buildLoadCell(name: string): string {
+function buildLoadCell(name: string, encoding?: string | null): string {
   return [
     "# ── 데이터 로드 · 속성 확인 ──",
     "import pandas as pd",
-    `df = ${loadCallFor(name)}`,
+    ...(encoding === "cp949"
+      ? ["# 한글 Windows(CP949) 인코딩으로 감지되어 encoding을 지정했습니다"]
+      : []),
+    `df = ${loadCallFor(name, encoding)}`,
     "",
     "# 다음 단계로 가기 전에 아래 결과로 열 이름·자료형을 확인하세요",
     'print("행·열:", df.shape)',
@@ -338,6 +355,29 @@ function joinCells(codes: string[]): string {
     .join("\n\n# %%\n");
 }
 
+/** 실행기 셀 → .ipynb 셀(마크다운 셀·저장된 출력·In [n] 그대로) */
+function cellsToNb(cells: Cell[]): NbCell[] {
+  return cells.map((c) => ({
+    kind: c.kind === "markdown" ? "markdown" : "code",
+    source: c.code,
+    output: c.output,
+    images: c.images,
+    execOrder: c.execOrder,
+    error: c.status === "error",
+  }));
+}
+
+/** 파일명으로 쓸 수 없는 문자 제거 */
+function safeFileBase(label: string | null): string {
+  return (
+    (label ?? "analysis")
+      .replace(/\.(ipynb|py)$/i, "")
+      .replace(/[\\/:*?"<>|]+/g, "_")
+      .trim()
+      .slice(0, 60) || "analysis"
+  );
+}
+
 /* ───────────────────────────────── 컴포넌트 ───────────────────────────────── */
 
 export interface RunnerLoadRequest {
@@ -356,6 +396,8 @@ interface AiProposal {
 
 interface Cell {
   id: number;
+  /** 셀 종류(주피터와 동일) — 없으면 코드 셀. 마크다운 셀은 실행하지 않는다 */
+  kind?: "code" | "markdown";
   code: string;
   output: string;
   images: string[];
@@ -631,8 +673,9 @@ function RunnerWorkspace({
   const busyRef = useRef(false);
 
   const newCell = useCallback(
-    (code: string): Cell => ({
+    (code: string, kind: "code" | "markdown" = "code"): Cell => ({
       id: nextId.current++,
+      kind,
       code,
       output: "",
       images: [],
@@ -676,6 +719,7 @@ function RunnerWorkspace({
       setCells(
         p.cells.map((c) => ({
           id: c.id,
+          kind: c.kind ?? "code",
           code: c.code,
           output: c.output ?? "",
           images: c.images ?? [],
@@ -719,6 +763,7 @@ function RunnerWorkspace({
       saveWorkspace(nsKey, {
         cells: cells.map((c) => ({
           id: c.id,
+          kind: c.kind ?? "code",
           code: c.code,
           output: c.output,
           images: c.images,
@@ -813,7 +858,11 @@ function RunnerWorkspace({
           /\.(csv|xlsx|xls|json|txt)$/i.test(it.name)
         );
         if (primary) {
-          const loadCode = buildLoadCell(primary.name);
+          const isTextData = /\.(csv|txt|json)$/i.test(primary.name);
+          const loadCode = buildLoadCell(
+            primary.name,
+            isTextData ? detectTextEncoding(primary.bytes) : null
+          );
           const replacing = cellsRef.current.some((c) => cellHasLoad(c.code));
           setCells((prev) => {
             const idx = prev.findIndex((c) => cellHasLoad(c.code));
@@ -898,6 +947,7 @@ function RunnerWorkspace({
       if (busyRef.current) return false;
       const cell = cellsRef.current.find((c) => c.id === id);
       if (!cell || !cell.code.trim()) return true;
+      if (cell.kind === "markdown") return true; // 텍스트 셀은 실행 대상 아님
       busyRef.current = true;
       setBusy(true);
       patchCell(id, {
@@ -950,7 +1000,7 @@ function RunnerWorkspace({
   const runAll = useCallback(async () => {
     if (busyRef.current) return;
     for (const c of [...cellsRef.current]) {
-      if (!c.code.trim()) continue;
+      if (!c.code.trim() || c.kind === "markdown") continue;
       const ok = await runCell(c.id);
       if (!ok) break;
     }
@@ -974,11 +1024,11 @@ function RunnerWorkspace({
   }, []);
 
   const addCellBelow = useCallback(
-    (id: number) => {
+    (id: number, kind: "code" | "markdown" = "code") => {
       setCells((prev) => {
         const i = prev.findIndex((c) => c.id === id);
         const next = [...prev];
-        next.splice(i + 1, 0, newCell(""));
+        next.splice(i + 1, 0, newCell("", kind));
         return next;
       });
     },
@@ -1291,7 +1341,69 @@ function RunnerWorkspace({
     setNotice("이 작업 탭을 리셋했습니다 — 데이터 파일·런타임은 유지됩니다.");
   }, [nsKey, newCell]);
 
-  /** 폴더에 저장 — analysis.py(# %% 셀 구분) + workspace.json + 데이터 파일 일체 */
+  /** .ipynb 셀 → 실행기 셀(종류·저장된 출력·In [n] 유지) */
+  const applyNbCells = useCallback(
+    (nb: NbCell[], label: string) => {
+      setCells(
+        nb.map((c) => ({
+          ...newCell(c.source, c.kind),
+          output: c.output ?? "",
+          images: c.images ?? [],
+          status: c.error
+            ? "error"
+            : c.output || c.images?.length
+              ? "done"
+              : "idle",
+          execOrder: c.execOrder,
+        }))
+      );
+      execCounter.current = Math.max(
+        execCounter.current,
+        ...nb.map((c) => c.execOrder ?? 0)
+      );
+      setLoadedLabel(label);
+      setSelectedId("");
+    },
+    [newCell]
+  );
+
+  /** .ipynb 열기 — 주피터·코랩 노트북을 셀 구성 그대로(마크다운·저장된 출력 포함) */
+  const importNotebook = useCallback(
+    async (file: File) => {
+      try {
+        const nb = parseIpynb(await file.text());
+        if (nb.length === 0) throw new Error("셀이 없습니다.");
+        applyNbCells(nb, file.name);
+        setNotice(
+          `「${file.name}」 셀 ${nb.length}개를 그대로 불러왔습니다(텍스트 셀·저장된 출력 포함). 파이썬 변수는 셀을 다시 실행해야 만들어집니다.`
+        );
+      } catch (e) {
+        setNotice(
+          `노트북을 읽지 못했습니다(${
+            e instanceof Error ? e.message : String(e)
+          }). .ipynb(주피터 노트북) 파일인지 확인하세요.`
+        );
+      }
+    },
+    [applyNbCells]
+  );
+
+  /** .ipynb로 내려받기 — 주피터·코랩에서 이어서 작업할 수 있는 형태로 저장 */
+  const downloadNotebook = useCallback(() => {
+    const base = safeFileBase(loadedLabel);
+    const blob = new Blob([toIpynb(cellsToNb(cellsRef.current))], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${base}.ipynb`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setNotice(`${base}.ipynb 로 저장했습니다 — 주피터·코랩에서 그대로 열립니다.`);
+  }, [loadedLabel]);
+
+  /** 폴더에 저장 — notebook.ipynb + analysis.py(# %% 셀 구분) + workspace.json + 데이터 */
   const saveToFolder = useCallback(async () => {
     const picker = dirPicker();
     if (!picker) return;
@@ -1302,7 +1414,19 @@ function RunnerWorkspace({
         const py = await getPyodide();
         for (const f of listFsDataFiles(py)) merged.set(f.name, f.bytes);
       }
-      await writeToDir(dir, "analysis.py", joinCells(cellsRef.current.map((c) => c.code)));
+      // 노트북(.ipynb)은 텍스트 셀·출력까지 보존, analysis.py는 그대로 실행 가능한 사본
+      await writeToDir(dir, "notebook.ipynb", toIpynb(cellsToNb(cellsRef.current)));
+      await writeToDir(
+        dir,
+        "analysis.py",
+        joinCells(
+          cellsRef.current.map((c) =>
+            c.kind === "markdown"
+              ? c.code.replace(/^/gm, "# ") // 텍스트 셀은 주석으로
+              : c.code
+          )
+        )
+      );
       await writeToDir(
         dir,
         "workspace.json",
@@ -1321,7 +1445,9 @@ function RunnerWorkspace({
       for (const [name, bytes] of merged) {
         await writeToDir(dir, name, new Blob([bytes as BlobPart]));
       }
-      setNotice(`저장 완료 — ${dir.name}/ (analysis.py + 데이터 ${merged.size}개)`);
+      setNotice(
+        `저장 완료 — ${dir.name}/ (notebook.ipynb + analysis.py + 데이터 ${merged.size}개)`
+      );
     } catch (e) {
       if ((e as { name?: string })?.name === "AbortError") return; // 사용자 취소
       console.error("[datalab] 폴더 저장 실패:", e);
@@ -1336,11 +1462,14 @@ function RunnerWorkspace({
     try {
       const dir = await picker({ mode: "read" });
       let nextCode: string | null = null;
+      let nbText: string | null = null;
       let label: string | null = null;
       const restored: { name: string; bytes: Uint8Array }[] = [];
       for await (const entry of dir.values()) {
         if (entry.kind !== "file") continue;
-        if (entry.name === "analysis.py") {
+        if (entry.name.toLowerCase().endsWith(".ipynb")) {
+          nbText = await (await entry.getFile()).text();
+        } else if (entry.name === "analysis.py") {
           nextCode = await (await entry.getFile()).text();
         } else if (entry.name === "workspace.json") {
           try {
@@ -1358,22 +1487,33 @@ function RunnerWorkspace({
           });
         }
       }
-      if (nextCode !== null) {
+      // 노트북이 있으면 우선 — 텍스트 셀·저장된 출력까지 복원된다
+      let source: string | null = null;
+      if (nbText !== null) {
+        try {
+          applyNbCells(parseIpynb(nbText), label ?? `${dir.name}/notebook.ipynb`);
+          source = "notebook.ipynb";
+        } catch {
+          // 노트북이 손상된 경우 analysis.py로 폴백
+        }
+      }
+      if (source === null && nextCode !== null) {
         setCellsFromCode(nextCode, label ?? `${dir.name}/analysis.py`);
         setSelectedId("");
+        source = "analysis.py";
       }
       if (restored.length > 0) await addDataFiles(restored);
       setNotice(
-        nextCode === null && restored.length === 0
-          ? "폴더에서 analysis.py·데이터 파일을 찾지 못했습니다."
-          : `불러오기 완료 — 코드${nextCode !== null ? " 1개" : " 없음"} · 데이터 ${restored.length}개`
+        source === null && restored.length === 0
+          ? "폴더에서 notebook.ipynb·analysis.py·데이터 파일을 찾지 못했습니다."
+          : `불러오기 완료 — ${source ?? "코드 없음"} · 데이터 ${restored.length}개`
       );
     } catch (e) {
       if ((e as { name?: string })?.name === "AbortError") return;
       console.error("[datalab] 폴더 불러오기 실패:", e);
       setNotice("폴더 불러오기에 실패했습니다.");
     }
-  }, [addDataFiles, setCellsFromCode]);
+  }, [addDataFiles, setCellsFromCode, applyNbCells]);
 
   const cellStatusText = (c: Cell): string | null => {
     if (c.status === "running") return c.phase ? PHASE_LABEL[c.phase] : "실행 중…";
@@ -1407,6 +1547,30 @@ function RunnerWorkspace({
                 </optgroup>
               ))}
             </select>
+
+            {/* 주피터 노트북 열기 — 셀 구성(코드·텍스트·저장된 출력) 그대로 */}
+            <label className="inline-flex h-9 cursor-pointer items-center rounded border border-border bg-white px-3 text-[13px] font-medium text-body hover:text-foreground">
+              노트북 열기 (.ipynb)
+              <input
+                type="file"
+                accept=".ipynb"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void importNotebook(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={downloadNotebook}
+              title="현재 셀 구성을 .ipynb로 내려받습니다 — 주피터·코랩에서 이어서 작업"
+              className="inline-flex h-9 items-center rounded border border-border bg-white px-3 text-[13px] font-medium text-body hover:text-foreground"
+            >
+              .ipynb로 저장
+            </button>
 
             <label className="inline-flex h-9 cursor-pointer items-center rounded border border-border bg-white px-3 text-[13px] font-medium text-body hover:text-foreground">
               데이터 업로드 (CSV·XLSX)
@@ -1596,7 +1760,23 @@ function RunnerWorkspace({
           </div>
 
           {/* 셀 목록 — 코드 입력부는 다크 에디터로 뚜렷이 구분 */}
-          {cells.map((c, i) => (
+          {cells.map((c, i) => {
+            // 텍스트(마크다운) 셀 — 주피터와 동일하게 실행 대상이 아니고 설명만 표시
+            if (c.kind === "markdown")
+              return (
+                <MarkdownCell
+                  key={c.id}
+                  cell={c}
+                  index={i}
+                  total={cells.length}
+                  onChange={(code) => patchCell(c.id, { code })}
+                  onMove={(d) => moveCell(c.id, d)}
+                  onRemove={() => removeCell(c.id)}
+                  onAddBelow={(kind) => addCellBelow(c.id, kind)}
+                  onSetKind={(kind) => patchCell(c.id, { kind })}
+                />
+              );
+            return (
             <div
               key={c.id}
               data-cell-id={c.id}
@@ -1630,6 +1810,21 @@ function RunnerWorkspace({
                       ? `In [${c.execOrder}]`
                       : "In [ ]"}
                 </span>
+                {/* 셀 종류 — 주피터와 동일하게 코드 ↔ 텍스트(마크다운) 전환 */}
+                <select
+                  value="code"
+                  onChange={(e) =>
+                    patchCell(c.id, {
+                      kind: e.target.value as "code" | "markdown",
+                    })
+                  }
+                  aria-label={`셀 ${i + 1} 종류`}
+                  title="셀 종류 — 코드는 실행, 텍스트(마크다운)는 설명용"
+                  className="h-6 rounded border border-border bg-white px-1 text-[11px] text-body"
+                >
+                  <option value="code">코드</option>
+                  <option value="markdown">텍스트</option>
+                </select>
                 <button
                   type="button"
                   onClick={() => void runCell(c.id)}
@@ -1839,9 +2034,17 @@ function RunnerWorkspace({
                     type="button"
                     onClick={() => addCellBelow(c.id)}
                     className={CELL_BTN}
-                    title="현재 셀 바로 아래에 새 셀 추가"
+                    title="현재 셀 바로 아래에 새 코드 셀 추가"
                   >
                     + 셀(아래에)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addCellBelow(c.id, "markdown")}
+                    className={CELL_BTN}
+                    title="현재 셀 바로 아래에 텍스트(마크다운) 셀 추가"
+                  >
+                    + 텍스트
                   </button>
                   <button
                     type="button"
@@ -2015,100 +2218,27 @@ function RunnerWorkspace({
                 </div>
               ) : null}
             </div>
-          ))}
+            );
+          })}
 
-          <button
-            type="button"
-            onClick={() => addCellBelow(cells[cells.length - 1].id)}
-            className="mt-3 w-full rounded border border-dashed border-border py-1.5 text-[12px] text-tertiary hover:text-foreground"
-          >
-            + 셀 추가
-          </button>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => addCellBelow(cells[cells.length - 1].id)}
+              className="flex-1 rounded border border-dashed border-border py-1.5 text-[12px] text-tertiary hover:text-foreground"
+            >
+              + 코드 셀 추가
+            </button>
+            <button
+              type="button"
+              onClick={() => addCellBelow(cells[cells.length - 1].id, "markdown")}
+              className="flex-1 rounded border border-dashed border-border py-1.5 text-[12px] text-tertiary hover:text-foreground"
+            >
+              + 텍스트 셀 추가
+            </button>
+          </div>
 
-          <ul className="mt-4 list-disc space-y-1 pl-5 text-[12px] leading-relaxed text-tertiary">
-            <li>
-              <strong>작업 탭·셀·데이터는 이 브라우저에 자동 저장</strong>되어
-              새로고침·브라우저 종료·PC 재부팅 뒤에도 그대로 복원됩니다. 서버로
-              보내지 않으므로 <strong>기기·브라우저마다 별도</strong>로 유지됩니다
-              (모바일·PC·다른 PC 각각). 단, 실행된 파이썬 변수는 메모리라 복원되지
-              않으니 셀을 다시 실행하세요.
-            </li>
-            <li>
-              실행은 전부 브라우저 안(Pyodide·WebAssembly)에서 이루어집니다 —
-              코드·데이터가 서버로 전송되지 않습니다.
-            </li>
-            <li>
-              첫 실행 시 파이썬 런타임과 패키지(수십 MB)를 내려받아 시간이
-              걸리고, 이후에는 캐시로 빠르게 실행됩니다.
-            </li>
-            <li>
-              변수는 셀 사이에 유지됩니다(주피터와 동일). 처음부터 다시 하려면{" "}
-              <strong>변수 초기화</strong>를 누르세요.
-            </li>
-            <li>
-              코드를 불러오면 <strong>1단계(데이터 로드·describe 등 속성 확인)</strong>가
-              먼저 한 셀로 분리되고, 특정 열 이름을 쓰는 <strong>분석 코드는 다음
-              셀</strong>로 나뉩니다. 로드 셀에는 실제 열 이름이 자동으로 출력되니,
-              그 결과를 보고 이후 셀의 열 이름·조건을 맞춘 뒤 실행하세요. 직접
-              붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를 지정할 수 있습니다.
-            </li>
-            <li>
-              <strong>✦ AI 도움(셀별)</strong> — <strong>변수 반영 ▾</strong>은 앞
-              셀에서 만든 실제 변수 목록을 열어, 고른 변수로 이 셀의 변수를
-              대체합니다(로직·열 이름은 유지). <strong>에러분석</strong>(오류
-              셀에서 활성화)은 에러 내용과 수정안을 <strong>팝업</strong>으로
-              안내하고, <strong>반영</strong>을 누르면 기존 셀은 위에 그대로 두고
-              수정된 코드를 바로 아래 새 셀로 추가합니다.{" "}
-              <strong>✦ AI 제안</strong>을 누르면
-              오른쪽에 입력창이 열려, 이 셀에 대한 수정·추가 요청을 적으면 코드를
-              생성합니다(검토 후 적용). 위의 <strong>AI에게 코드 요청</strong>은
-              새 셀로 코드를 만들어 줍니다. AI에는 코드와 데이터의 열
-              이름·자료형 요약만 전달되며 실제 데이터 값은 전송되지 않습니다.
-            </li>
-            <li>
-              numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib
-              지원. lifelines·xgboost·lightgbm 등 일부 패키지는 브라우저에서
-              실행되지 않습니다.
-            </li>
-            <li>
-              <strong>데이터 불러오기</strong>는 세 가지입니다 —{" "}
-              <strong>샘플 데이터셋</strong>(사이트에 호스팅된 policy·claims와
-              계리용 experience·triangle·mortality_table.xlsx),{" "}
-              <strong>내 파일 업로드</strong>, <strong>URL로 불러오기</strong>(CSV·XLSX
-              링크). 모두 로드·속성 확인 셀(shape·columns·dtypes·head)이 자동으로
-              만들어지니 먼저 실행해 열 이름을 확인하세요. 코드에서는 파일명을
-              그대로 읽습니다. 사전 예제를 코드로 재현하려면{" "}
-              <strong>분석 코드 불러오기 → 샘플 보험 데이터 생성</strong>도 있습니다.
-            </li>
-            <li>
-              각 셀의 <strong>데이터 핸들링 ▾</strong> 콤보박스에서 데이터
-              입력(CSV 옵션·엑셀 시트·여러 시트·JSON·날짜 파싱·직접 입력)·
-              Join(left/right 등)·합치기·Split·Groupby·필터 같은 pandas 조각을
-              골라 그 셀에 바로 삽입할 수 있습니다 — 삽입 코드 <strong>상단에
-              무슨 코드인지 설명 주석(#)</strong>이 붙고, 중간에도 단계별 설명이
-              들어갑니다. 옆의{" "}
-              <strong>↶ 취소</strong> 버튼이나 <strong>Ctrl+Z</strong>로 방금
-              삽입·입력을 되돌릴 수 있습니다. 셀은 <strong>▲/▼</strong>로 순서를
-              바꿀 수 있고, 왼쪽 번호는 위치, <strong>In [n]</strong>은 실행
-              순서(색으로 실행 상태)입니다.
-            </li>
-            <li>
-              각 셀의 <strong>그래프 ▾</strong> 콤보박스에서 matplotlib 그래프
-              조각을 골라 삽입할 수 있습니다 — <strong>탐색(EDA)</strong>(히스토그램
-              +KDE·박스/바이올린·산점도+회귀선·상관 히트맵·산점도 행렬)은 샘플
-              <code>df</code> 기준이고, <strong>모델 진단</strong>(잔차·학습/검증곡선
-              ·ROC·PR·캘리브레이션·리프트/게인)과 <strong>해석</strong>(변수 중요도·
-              순열 중요도·PDP·ICE)은 <strong>자체 완결</strong>이라 조각 안에서 빠른
-              모델까지 함께 적합합니다(이미 적합한 <code>model</code>이 있으면 조각
-              첫 줄 안내대로 준비 블록만 지우세요).
-            </li>
-            <li>
-              <strong>폴더에 저장</strong>은 analysis.py(셀을 # %% 구분자로 이은
-              실행 가능한 스크립트) + workspace.json + 데이터 파일을 PC의 선택한
-              폴더에 저장하고, <strong>폴더에서 불러오기</strong>는 셀 구성과
-              데이터를 함께 복원합니다.
-            </li>
-          </ul>
+          <HelpFaq />
         </div>
 
       {errModal ? (
@@ -2208,5 +2338,497 @@ function ErrorFixModal({
         </footer>
       </div>
     </div>
+  );
+}
+
+/* ───────────── 텍스트(마크다운) 셀 — .ipynb의 markdown 셀과 동일 ───────────── */
+
+/** 마크다운 인라인 — **굵게**, `코드`, [링크](url) */
+function mdInline(s: string, key: string): ReactNode[] {
+  const out: ReactNode[] = [];
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
+  let last = 0;
+  let k = 0;
+  let m = re.exec(s);
+  while (m) {
+    if (m.index > last) out.push(s.slice(last, m.index));
+    const t = m[0];
+    if (t.startsWith("**")) {
+      out.push(<strong key={`${key}-${k++}`}>{t.slice(2, -2)}</strong>);
+    } else if (t.startsWith("`")) {
+      out.push(
+        <code
+          key={`${key}-${k++}`}
+          className="rounded bg-surface px-1 py-px font-mono text-[0.92em]"
+        >
+          {t.slice(1, -1)}
+        </code>
+      );
+    } else {
+      const link = /\[([^\]]+)\]\(([^)\s]+)\)/.exec(t);
+      out.push(
+        <a
+          key={`${key}-${k++}`}
+          href={link?.[2] ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline"
+        >
+          {link?.[1] ?? t}
+        </a>
+      );
+    }
+    last = m.index + t.length;
+    m = re.exec(s);
+  }
+  if (last < s.length) out.push(s.slice(last));
+  return out;
+}
+
+const MD_H_SIZE = ["text-[17px]", "text-[15.5px]", "text-[14px]"];
+
+/** 마크다운 렌더 — 제목·목록·펜스 코드·문단(노트북 설명에 쓰이는 범위) */
+function MdView({ text }: { text: string }) {
+  const blocks: ReactNode[] = [];
+  let bullets: string[] = [];
+  let fence: string[] | null = null;
+  let k = 0;
+
+  const flushBullets = () => {
+    if (bullets.length === 0) return;
+    const items = bullets;
+    blocks.push(
+      <ul key={k++} className="mt-1.5 list-disc space-y-0.5 pl-5 marker:text-tertiary">
+        {items.map((b, i) => (
+          <li key={i}>{mdInline(b, `b${k}-${i}`)}</li>
+        ))}
+      </ul>
+    );
+    bullets = [];
+  };
+
+  const flushFence = () => {
+    if (fence === null) return;
+    const body = fence.join("\n");
+    blocks.push(
+      <pre
+        key={k++}
+        className="mt-2 overflow-auto rounded border border-border bg-[#2f3540] p-2.5 font-mono text-[12.5px] leading-[1.6] text-[#e9ecf1]"
+      >
+        {body}
+      </pre>
+    );
+    fence = null;
+  };
+
+  for (const raw of text.split("\n")) {
+    const line = raw.replace(/\s+$/, "");
+    if (fence !== null) {
+      if (line.trim().startsWith("```")) flushFence();
+      else fence.push(raw);
+      continue;
+    }
+    if (line.trim().startsWith("```")) {
+      flushBullets();
+      fence = [];
+      continue;
+    }
+    const h = /^(#{1,6})\s+(.*)$/.exec(line);
+    if (h) {
+      flushBullets();
+      const lv = Math.min(h[1].length, 3);
+      blocks.push(
+        <p
+          key={k++}
+          className={`mt-2.5 font-semibold text-foreground first:mt-0 ${MD_H_SIZE[lv - 1]}`}
+        >
+          {mdInline(h[2], `h${k}`)}
+        </p>
+      );
+      continue;
+    }
+    if (/^\s*[-*]\s+/.test(line)) {
+      bullets.push(line.replace(/^\s*[-*]\s+/, ""));
+      continue;
+    }
+    flushBullets();
+    if (line.trim())
+      blocks.push(
+        <p key={k++} className="mt-1.5 leading-[1.75] first:mt-0">
+          {mdInline(line, `p${k}`)}
+        </p>
+      );
+  }
+  flushBullets();
+  flushFence();
+  return <div className="text-[13.5px] text-body">{blocks}</div>;
+}
+
+function MarkdownCell({
+  cell,
+  index,
+  total,
+  onChange,
+  onMove,
+  onRemove,
+  onAddBelow,
+  onSetKind,
+}: {
+  cell: Cell;
+  index: number;
+  total: number;
+  onChange: (code: string) => void;
+  onMove: (dir: -1 | 1) => void;
+  onRemove: () => void;
+  onAddBelow: (kind: "code" | "markdown") => void;
+  onSetKind: (kind: "code" | "markdown") => void;
+}) {
+  // 빈 셀은 바로 입력, 내용이 있으면 렌더된 상태로 시작(주피터와 같은 감각)
+  const [editing, setEditing] = useState(!cell.code.trim());
+
+  return (
+    <div
+      data-cell-id={cell.id}
+      className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--chip-amber-fg)] bg-white"
+    >
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
+        <span
+          className="inline-flex h-5 min-w-[24px] items-center justify-center rounded px-1 text-[11px] font-semibold tabular-nums"
+          style={{ background: "var(--chip-amber-bg)", color: "var(--chip-amber-fg)" }}
+          title="텍스트 셀(실행하지 않음)"
+        >
+          {index + 1}
+        </span>
+        <span className="w-[52px] text-[11px] text-tertiary">텍스트</span>
+        <select
+          value="markdown"
+          onChange={(e) => onSetKind(e.target.value as "code" | "markdown")}
+          aria-label={`셀 ${index + 1} 종류`}
+          title="셀 종류 — 코드는 실행, 텍스트(마크다운)는 설명용"
+          className="h-6 rounded border border-border bg-white px-1 text-[11px] text-body"
+        >
+          <option value="code">코드</option>
+          <option value="markdown">텍스트</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => setEditing((v) => !v)}
+          className={`${CELL_BTN} text-primary`}
+        >
+          {editing ? "✓ 미리보기" : "✎ 편집"}
+        </button>
+        <span className="inline-flex">
+          <button
+            type="button"
+            onClick={() => onMove(-1)}
+            disabled={index === 0}
+            title="위로 이동"
+            aria-label="셀 위로 이동"
+            className={`${CELL_BTN} rounded-r-none`}
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            onClick={() => onMove(1)}
+            disabled={index === total - 1}
+            title="아래로 이동"
+            aria-label="셀 아래로 이동"
+            className={`${CELL_BTN} -ml-px rounded-l-none`}
+          >
+            ▼
+          </button>
+        </span>
+        <span className="text-[11.5px] text-tertiary">
+          마크다운으로 쓰는 설명 셀 — 실행 대상이 아닙니다.
+        </span>
+        <span className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onAddBelow("code")}
+            className={CELL_BTN}
+            title="현재 셀 바로 아래에 새 코드 셀 추가"
+          >
+            + 셀(아래에)
+          </button>
+          <button
+            type="button"
+            onClick={() => onAddBelow("markdown")}
+            className={CELL_BTN}
+            title="현재 셀 바로 아래에 텍스트 셀 추가"
+          >
+            + 텍스트
+          </button>
+          <button type="button" onClick={onRemove} className={CELL_BTN} title="이 셀 삭제">
+            ✕
+          </button>
+        </span>
+      </div>
+      {editing ? (
+        <textarea
+          value={cell.code}
+          onChange={(e) => {
+            onChange(e.target.value);
+            autoSize(e.currentTarget);
+          }}
+          onBlur={() => {
+            if (cell.code.trim()) setEditing(false);
+          }}
+          ref={(el) => {
+            if (el) autoSize(el);
+          }}
+          spellCheck={false}
+          placeholder="설명·메모를 마크다운으로 적으세요. 예) ## 분석 개요"
+          aria-label={`텍스트 셀 ${index + 1}`}
+          className="block min-h-[64px] w-full resize-none border-0 bg-[color:var(--chip-amber-bg)] px-3 py-2.5 font-mono text-[13px] leading-[1.7] text-foreground focus-visible:outline-none"
+        />
+      ) : (
+        <div
+          role="button"
+          tabIndex={0}
+          onDoubleClick={() => setEditing(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setEditing(true);
+          }}
+          title="더블클릭하면 편집합니다"
+          className="cursor-text px-3 py-2.5"
+        >
+          <MdView text={cell.code} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────────── 도움말 — 카테고리별 Q/A(전체·항목별 보이기/숨기기) ───────────── */
+
+const HELP_SECTIONS: { title: string; items: { q: string; a: ReactNode }[] }[] = [
+  {
+    title: "실행 환경",
+    items: [
+      {
+        q: "코드와 데이터가 서버로 전송되나요?",
+        a: (
+          <>
+            아니요. 실행은 전부 브라우저 안(Pyodide·WebAssembly)에서 이루어집니다.
+            예외는 AI 기능뿐이며, 그때도 코드와 <strong>열 이름·자료형 요약</strong>만
+            전달되고 실제 데이터 값은 전송되지 않습니다.
+          </>
+        ),
+      },
+      {
+        q: "첫 실행이 오래 걸립니다.",
+        a: (
+          <>
+            처음 한 번은 파이썬 런타임과 패키지(수십 MB)를 내려받습니다. 이후에는
+            브라우저 캐시에서 바로 실행됩니다.
+          </>
+        ),
+      },
+      {
+        q: "어떤 패키지를 쓸 수 있나요?",
+        a: (
+          <>
+            numpy · pandas · scipy · statsmodels · scikit-learn · matplotlib을
+            지원합니다. lifelines·xgboost·lightgbm 등 일부 패키지는 브라우저에서
+            실행되지 않습니다.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: "저장·불러오기",
+    items: [
+      {
+        q: "작업한 내용이 저장되나요?",
+        a: (
+          <>
+            <strong>작업 탭·셀·데이터는 이 브라우저에 자동 저장</strong>되어
+            새로고침·브라우저 종료·PC 재부팅 뒤에도 복원됩니다. 서버로 보내지 않으므로{" "}
+            <strong>기기·브라우저마다 별도</strong>로 유지됩니다(모바일·PC·다른 PC
+            각각). 단, 실행된 파이썬 변수는 메모리라 복원되지 않으니 셀을 다시
+            실행하세요.
+          </>
+        ),
+      },
+      {
+        q: "주피터 노트북(.ipynb)을 열 수 있나요?",
+        a: (
+          <>
+            <strong>노트북 열기 (.ipynb)</strong>로 주피터·코랩에서 만든 노트북을 셀
+            구성 그대로 불러옵니다 — 코드 셀·텍스트(마크다운) 셀, 저장돼 있던
+            출력·그림·In [n] 번호까지 유지됩니다(불러온 출력은 이전 실행 결과이며,
+            변수는 다시 실행해야 만들어집니다). <strong>.ipynb로 저장</strong>을 누르면
+            현재 구성을 노트북 파일로 내려받아 주피터·코랩에서 이어서 작업할 수
+            있습니다.
+          </>
+        ),
+      },
+      {
+        q: "폴더에 저장·불러오기는 무엇인가요?",
+        a: (
+          <>
+            PC의 선택한 폴더에 <strong>notebook.ipynb</strong>(텍스트 셀·출력 포함) +
+            analysis.py(셀을 # %% 로 이은 실행 가능한 스크립트) + workspace.json +
+            데이터 파일을 함께 저장합니다. 불러오기는 노트북을 우선 복원합니다.
+            Chrome·Edge에서 지원됩니다.
+          </>
+        ),
+      },
+      {
+        q: "데이터는 어떻게 불러오나요?",
+        a: (
+          <>
+            <strong>샘플 데이터셋</strong>(policy·claims와 계리용
+            experience·triangle·mortality_table.xlsx), <strong>내 파일 업로드</strong>,{" "}
+            <strong>URL로 불러오기</strong>(CSV·XLSX 링크) 세 가지입니다. 모두
+            로드·속성 확인 셀(shape·columns·dtypes·head)이 자동으로 만들어지니 먼저
+            실행해 열 이름을 확인하세요. 한글 윈도우·엑셀에서 저장한 CSV(CP949)는
+            인코딩을 자동으로 판별해 넣어 줍니다. 사전 예제를 재현하려면{" "}
+            <strong>분석 코드 불러오기 → 샘플 보험 데이터 생성</strong>도 있습니다.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: "셀 다루기",
+    items: [
+      {
+        q: "변수는 셀 사이에 유지되나요?",
+        a: (
+          <>
+            네, 주피터와 동일하게 유지됩니다. 처음부터 다시 하려면{" "}
+            <strong>변수 초기화</strong>를 누르세요.
+          </>
+        ),
+      },
+      {
+        q: "코드를 불러오면 왜 셀이 나뉘나요?",
+        a: (
+          <>
+            <strong>1단계(데이터 로드·속성 확인)</strong>가 먼저 한 셀로 분리되고,
+            특정 열 이름을 쓰는 <strong>분석 코드는 다음 셀</strong>로 나뉩니다. 로드
+            셀이 실제 열 이름을 출력하니, 그 결과를 보고 이후 셀의 열 이름·조건을 맞춘
+            뒤 실행하세요. 직접 붙여넣을 때는 <strong># %%</strong> 줄로 셀 경계를
+            지정할 수 있습니다.
+          </>
+        ),
+      },
+      {
+        q: "코드 셀과 텍스트 셀의 차이는?",
+        a: (
+          <>
+            셀 머리의 <strong>코드/텍스트</strong> 선택으로 바꿉니다. 텍스트 셀은
+            마크다운(# 제목 · - 목록 · 굵게)으로 쓰고 실행하지 않는 설명 셀이며,
+            .ipynb의 markdown 셀로 그대로 저장됩니다. 미리보기 상태에서 더블클릭하면
+            편집됩니다.
+          </>
+        ),
+      },
+      {
+        q: "셀 순서·실행 순서·되돌리기는?",
+        a: (
+          <>
+            <strong>▲/▼</strong>로 순서를 바꿉니다. 왼쪽 번호는 위치,{" "}
+            <strong>In [n]</strong>은 실행 순서(색으로 실행 상태)입니다. 방금
+            삽입·입력은 <strong>↶ 취소</strong> 또는 <strong>Ctrl+Z</strong>로
+            되돌립니다.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: "AI 도움",
+    items: [
+      {
+        q: "셀의 AI 버튼 3개는 각각 무엇인가요?",
+        a: (
+          <>
+            <strong>변수 반영 ▾</strong>은 앞 셀에서 만든 실제 변수 목록을 열어, 고른
+            변수로 이 셀의 변수를 대체합니다(로직·열 이름은 유지).{" "}
+            <strong>에러분석</strong>(오류 셀에서 활성화)은 에러 내용과 수정안을
+            팝업으로 안내하고, <strong>반영</strong>을 누르면 기존 셀은 그대로 두고
+            수정된 코드를 바로 아래 새 셀로 추가합니다. <strong>✦ AI 제안</strong>은
+            오른쪽 입력창에 적은 수정·추가 요청대로 코드를 생성합니다(검토 후 적용).
+            위의 <strong>AI에게 코드 요청</strong>은 새 셀로 코드를 만들어 줍니다.
+          </>
+        ),
+      },
+      {
+        q: "AI에 내 데이터가 전송되나요?",
+        a: (
+          <>
+            코드와 데이터의 <strong>열 이름·자료형 요약</strong>만 전달되며, 실제
+            데이터 값은 전송되지 않습니다.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: "코드 조각 삽입",
+    items: [
+      {
+        q: "데이터 핸들링 ▾ 은 무엇을 넣나요?",
+        a: (
+          <>
+            데이터 입력(CSV 옵션·엑셀 시트·여러 시트·JSON·날짜 파싱·직접 입력)·
+            Join(left/right 등)·합치기·Split·Groupby·필터 같은 pandas 조각을 그 셀에
+            바로 삽입합니다. 삽입 코드 상단에 무슨 코드인지 설명 주석(#)이 붙고,
+            중간에도 단계별 설명이 들어갑니다.
+          </>
+        ),
+      },
+      {
+        q: "그래프 ▾ 는 무엇을 넣나요?",
+        a: (
+          <>
+            matplotlib 그래프 조각입니다. <strong>탐색(EDA)</strong>(히스토그램+KDE·
+            박스/바이올린·산점도+회귀선·상관 히트맵·산점도 행렬)은 <code>df</code>{" "}
+            기준이고, <strong>모델 진단</strong>(잔차·학습/검증곡선·ROC·PR·
+            캘리브레이션·리프트/게인)과 <strong>해석</strong>(변수 중요도·순열
+            중요도·PDP·ICE)은 <strong>자체 완결</strong>이라 조각 안에서 빠른 모델까지
+            함께 적합합니다(이미 적합한 <code>model</code>이 있으면 조각 첫 줄 안내대로
+            준비 블록만 지우세요).
+          </>
+        ),
+      },
+    ],
+  },
+];
+
+/** 도움말 — 전체 보이기/숨기기(바깥) + 항목별 보이기/숨기기(안쪽) */
+function HelpFaq() {
+  return (
+    <details className="mt-4 rounded border border-border bg-white">
+      <summary className="cursor-pointer px-3 py-2 text-[12.5px] font-medium text-body">
+        도움말 · 자주 묻는 질문{" "}
+        <span className="text-tertiary">— 클릭해 전체 보이기/숨기기</span>
+      </summary>
+      <div className="space-y-3 border-t border-border px-3 py-2.5">
+        {HELP_SECTIONS.map((s) => (
+          <section key={s.title}>
+            <h4 className="text-[11.5px] font-semibold tracking-wide text-tertiary">
+              {s.title}
+            </h4>
+            <div className="mt-1 space-y-1">
+              {s.items.map((it) => (
+                <details key={it.q} className="rounded border border-border bg-surface/50">
+                  <summary className="cursor-pointer px-2.5 py-1.5 text-[12px] font-medium text-body">
+                    {it.q}
+                  </summary>
+                  <div className="border-t border-border px-2.5 py-2 text-[12px] leading-relaxed text-tertiary">
+                    {it.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </details>
   );
 }
