@@ -32,6 +32,7 @@ import {
   type RunPhase,
 } from "@/lib/pyRunner";
 import { parseIpynb, toIpynb, type NbCell } from "@/lib/ipynb";
+import { CopyButton } from "@/components/feature/datalab/code-popup";
 import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
 import { PLOT_SNIPPET_GROUPS, plotInsertCode } from "@/lib/plotSnippets";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
@@ -226,6 +227,17 @@ function detectTextEncoding(bytes: Uint8Array): string | null {
   } catch {
     return "cp949";
   }
+}
+
+/**
+ * 텍스트 파일 읽기 — File.text()는 항상 UTF-8이라 CP949로 저장된 .py·.ipynb의
+ * 한글이 U+FFFD로 깨져(코드 속 열 이름이 '���_��'가 되어 KeyError) 들어온다.
+ * 업로드 데이터와 같은 감지기를 써서 CP949면 euc-kr(=windows-949)로 디코드한다.
+ */
+async function readTextSmart(file: Blob): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const enc = detectTextEncoding(bytes) === "cp949" ? "euc-kr" : "utf-8";
+  return new TextDecoder(enc).decode(bytes); // utf-8 디코더는 BOM을 자동 제거
 }
 
 /** 파일 확장자 → pandas 로드 호출 문자열 */
@@ -458,9 +470,10 @@ const CELL_STATUS_STYLE: Record<CellStatus, { background: string; color: string 
   error: { background: "var(--chip-rose-bg)", color: "var(--chip-rose-fg)" },
 };
 
+/** 코드 입력부는 내용 전체가 보이도록 — 셀 안에 스크롤바를 만들지 않는다 */
 function autoSize(el: HTMLTextAreaElement): void {
   el.style.height = "auto";
-  el.style.height = `${Math.min(el.scrollHeight + 2, 460)}px`;
+  el.style.height = `${el.scrollHeight + 2}px`;
 }
 
 /**
@@ -1023,12 +1036,17 @@ function RunnerWorkspace({
     );
   }, []);
 
-  const addCellBelow = useCallback(
-    (id: number, kind: "code" | "markdown" = "code") => {
+  /** 기준 셀의 위/아래에 새 셀 추가 */
+  const addCellNear = useCallback(
+    (
+      id: number,
+      kind: "code" | "markdown" = "code",
+      where: "above" | "below" = "below"
+    ) => {
       setCells((prev) => {
         const i = prev.findIndex((c) => c.id === id);
         const next = [...prev];
-        next.splice(i + 1, 0, newCell("", kind));
+        next.splice(where === "above" ? i : i + 1, 0, newCell("", kind));
         return next;
       });
     },
@@ -1371,7 +1389,7 @@ function RunnerWorkspace({
   const importNotebook = useCallback(
     async (file: File) => {
       try {
-        const nb = parseIpynb(await file.text());
+        const nb = parseIpynb(await readTextSmart(file));
         if (nb.length === 0) throw new Error("셀이 없습니다.");
         applyNbCells(nb, file.name);
         setNotice(
@@ -1468,12 +1486,12 @@ function RunnerWorkspace({
       for await (const entry of dir.values()) {
         if (entry.kind !== "file") continue;
         if (entry.name.toLowerCase().endsWith(".ipynb")) {
-          nbText = await (await entry.getFile()).text();
+          nbText = await readTextSmart(await entry.getFile());
         } else if (entry.name === "analysis.py") {
-          nextCode = await (await entry.getFile()).text();
+          nextCode = await readTextSmart(await entry.getFile());
         } else if (entry.name === "workspace.json") {
           try {
-            const meta = JSON.parse(await (await entry.getFile()).text()) as {
+            const meta = JSON.parse(await readTextSmart(await entry.getFile())) as {
               label?: string | null;
             };
             label = meta.label ?? null;
@@ -1772,7 +1790,7 @@ function RunnerWorkspace({
                   onChange={(code) => patchCell(c.id, { code })}
                   onMove={(d) => moveCell(c.id, d)}
                   onRemove={() => removeCell(c.id)}
-                  onAddBelow={(kind) => addCellBelow(c.id, kind)}
+                  onAdd={(kind, where) => addCellNear(c.id, kind, where)}
                   onSetKind={(kind) => patchCell(c.id, { kind })}
                 />
               );
@@ -1780,9 +1798,10 @@ function RunnerWorkspace({
             <div
               key={c.id}
               data-cell-id={c.id}
-              className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--primary)] bg-white"
+              className="mt-3 rounded border border-border border-l-[3px] border-l-[color:var(--primary)] bg-white [&>*:last-child]:rounded-b"
             >
-              <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
+              {/* 셀 명령 줄 — 셀이 길어도 화면 위(상단 내비 h-14 아래)에 남는다 */}
+              <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-t border-b border-border bg-white px-2.5 py-1.5">
                 {/* 순서(위치) 번호 — 실행 상태를 색으로 구분 */}
                 <span
                   className="inline-flex h-5 min-w-[24px] items-center justify-center rounded px-1 text-[11px] font-semibold tabular-nums"
@@ -2032,7 +2051,15 @@ function RunnerWorkspace({
                 <span className="ml-auto flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => addCellBelow(c.id)}
+                    onClick={() => addCellNear(c.id, "code", "above")}
+                    className={CELL_BTN}
+                    title="현재 셀 바로 위에 새 코드 셀 추가"
+                  >
+                    + 셀(위에)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addCellNear(c.id)}
                     className={CELL_BTN}
                     title="현재 셀 바로 아래에 새 코드 셀 추가"
                   >
@@ -2040,7 +2067,7 @@ function RunnerWorkspace({
                   </button>
                   <button
                     type="button"
-                    onClick={() => addCellBelow(c.id, "markdown")}
+                    onClick={() => addCellNear(c.id, "markdown")}
                     className={CELL_BTN}
                     title="현재 셀 바로 아래에 텍스트(마크다운) 셀 추가"
                   >
@@ -2151,9 +2178,17 @@ function RunnerWorkspace({
                           ? `출력 Out [${c.execOrder}]`
                           : "출력"}
                     </span>
+                    {/* 출력·오류 전문 복사 — 트레이스백을 그대로 붙여넣어 문의·검색에 사용 */}
+                    {c.output ? (
+                      <CopyButton
+                        text={c.output}
+                        label={c.status === "error" ? "오류 복사" : "출력 복사"}
+                        className="ml-auto py-0.5"
+                      />
+                    ) : null}
                   </div>
                   {c.output ? (
-                    <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap px-3 py-2.5 font-mono text-[13px] leading-[1.65] text-foreground">
+                    <pre className="whitespace-pre-wrap break-words px-3 py-2.5 font-mono text-[13px] leading-[1.65] text-foreground">
                       {c.output}
                     </pre>
                   ) : null}
@@ -2212,7 +2247,7 @@ function RunnerWorkspace({
                       {c.proposal.explanation}
                     </p>
                   ) : null}
-                  <pre className="mt-2 max-h-[300px] overflow-auto whitespace-pre-wrap rounded border border-border bg-[#2f3540] p-3 font-mono text-[13px] leading-[1.65] text-[#e9ecf1]">
+                  <pre className="mt-2 whitespace-pre-wrap break-words rounded border border-border bg-[#2f3540] p-3 font-mono text-[13px] leading-[1.65] text-[#e9ecf1]">
                     {c.proposal.code}
                   </pre>
                 </div>
@@ -2224,14 +2259,14 @@ function RunnerWorkspace({
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              onClick={() => addCellBelow(cells[cells.length - 1].id)}
+              onClick={() => addCellNear(cells[cells.length - 1].id)}
               className="flex-1 rounded border border-dashed border-border py-1.5 text-[12px] text-tertiary hover:text-foreground"
             >
               + 코드 셀 추가
             </button>
             <button
               type="button"
-              onClick={() => addCellBelow(cells[cells.length - 1].id, "markdown")}
+              onClick={() => addCellNear(cells[cells.length - 1].id, "markdown")}
               className="flex-1 rounded border border-dashed border-border py-1.5 text-[12px] text-tertiary hover:text-foreground"
             >
               + 텍스트 셀 추가
@@ -2471,7 +2506,7 @@ function MarkdownCell({
   onChange,
   onMove,
   onRemove,
-  onAddBelow,
+  onAdd,
   onSetKind,
 }: {
   cell: Cell;
@@ -2480,7 +2515,7 @@ function MarkdownCell({
   onChange: (code: string) => void;
   onMove: (dir: -1 | 1) => void;
   onRemove: () => void;
-  onAddBelow: (kind: "code" | "markdown") => void;
+  onAdd: (kind: "code" | "markdown", where?: "above" | "below") => void;
   onSetKind: (kind: "code" | "markdown") => void;
 }) {
   // 빈 셀은 바로 입력, 내용이 있으면 렌더된 상태로 시작(주피터와 같은 감각)
@@ -2489,9 +2524,9 @@ function MarkdownCell({
   return (
     <div
       data-cell-id={cell.id}
-      className="mt-3 overflow-hidden rounded border border-border border-l-[3px] border-l-[color:var(--chip-amber-fg)] bg-white"
+      className="mt-3 rounded border border-border border-l-[3px] border-l-[color:var(--chip-amber-fg)] bg-white [&>*:last-child]:rounded-b"
     >
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-2.5 py-1.5">
+      <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-t border-b border-border bg-white px-2.5 py-1.5">
         <span
           className="inline-flex h-5 min-w-[24px] items-center justify-center rounded px-1 text-[11px] font-semibold tabular-nums"
           style={{ background: "var(--chip-amber-bg)", color: "var(--chip-amber-fg)" }}
@@ -2545,7 +2580,15 @@ function MarkdownCell({
         <span className="ml-auto flex items-center gap-1">
           <button
             type="button"
-            onClick={() => onAddBelow("code")}
+            onClick={() => onAdd("code", "above")}
+            className={CELL_BTN}
+            title="현재 셀 바로 위에 새 코드 셀 추가"
+          >
+            + 셀(위에)
+          </button>
+          <button
+            type="button"
+            onClick={() => onAdd("code")}
             className={CELL_BTN}
             title="현재 셀 바로 아래에 새 코드 셀 추가"
           >
@@ -2553,7 +2596,7 @@ function MarkdownCell({
           </button>
           <button
             type="button"
-            onClick={() => onAddBelow("markdown")}
+            onClick={() => onAdd("markdown")}
             className={CELL_BTN}
             title="현재 셀 바로 아래에 텍스트 셀 추가"
           >

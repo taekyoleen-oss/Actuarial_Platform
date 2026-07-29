@@ -490,6 +490,8 @@ mark.key-phrase {
       exclusive-rights) 전용. 흩어짐↔결집 + 드리프트(홈에서 이전, 2026-07-10).
    ③ 초상 모자이크(PortraitBackdrop) — 만든이(/about) 전용. 캐리커처 6장
       모자이크 타일 전환 순환(2026-07-12).
+   ④ 모듈 조립(.apps-backdrop) — 모델분석·업무지원 앱(/apps) 전용. 헤더
+      아이덴트(iframe)를 워터마크로 전환(2026-07-29).
    브랜드 모션이므로 색상 트랜지션 규칙의 예외(셀 transition:none).
    ========================================================= */
 :root {
@@ -571,6 +573,28 @@ mark.key-phrase {
   pointer-events: none;
   opacity: 0.12;
   filter: saturate(0.9);
+}
+
+/* 모듈 조립 워터마크(public/idents/tkleen-modular-build-animation.html) —
+   모델분석·업무지원 앱(/apps) 전용. 헤더 아이덴트를 워터마크로 전환
+   (2026-07-29 사용자 요청). 원본은 iframe 문서라 캔버스 알파 대신 CSS
+   opacity로 강도를 주고, 내부 캔버스가 360px 고정이라 scale로 키운다. */
+.apps-backdrop {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: 400px;
+  height: 400px;
+  border: 0;
+  z-index: -10;
+  pointer-events: none;
+  opacity: 0.22;
+  transform: scale(1.75);
+}
+@media (max-width: 640px) {
+  .apps-backdrop {
+    transform: scale(1.05);
+  }
 }
 
 /* 만든이(/about) 반투명 카드 — 초상 모자이크 워터마크가 카드 뒤로 비치도록

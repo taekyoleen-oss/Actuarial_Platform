@@ -123,8 +123,9 @@ function AppCard({ app, featured = false }: { app: AppItem; featured?: boolean }
       href={app.link}
       target="_blank"
       rel="noopener noreferrer"
-      style={{ backgroundColor: c.bg, borderColor: c.border }}
-      className={`flex h-full flex-col rounded-cover border shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover ${
+      // 배경 워터마크가 비치도록 파스텔에 알파(55%) — 2026-07-29 사용자 요청
+      style={{ backgroundColor: `${c.bg}8C`, borderColor: c.border }}
+      className={`flex h-full flex-col rounded-cover border shadow-card backdrop-blur-[2px] transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover ${
         featured ? "p-7" : "p-6"
       }`}
     >
@@ -209,8 +210,8 @@ function DbCard({ db }: { db: ReturnType<typeof listDbs>[number] }) {
   return (
     <Link
       href={`/apps/db/${db.id}`}
-      style={{ backgroundColor: c.bg, borderColor: c.border }}
-      className="flex flex-col rounded-cover border p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
+      style={{ backgroundColor: `${c.bg}8C`, borderColor: c.border }}
+      className="flex flex-col rounded-cover border p-6 shadow-card backdrop-blur-[2px] transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover"
     >
       <Database size={20} className="text-brand-sky" />
       <h3 className="mt-3 text-[18px] font-semibold text-brand-sky">
@@ -339,6 +340,16 @@ export default function AppsPage() {
 
   return (
     <div className="mx-auto max-w-container px-6 py-12">
+      {/* 모듈 조립 아이덴트 — 헤더 임베드에서 페이지 워터마크로 전환(2026-07-29
+          사용자 요청). 홈 지구본·만든이 초상과 같은 fixed 배경 레이어. */}
+      <iframe
+        src="/idents/tkleen-modular-build-animation.html"
+        title="모듈 조립 워터마크"
+        aria-hidden
+        tabIndex={-1}
+        scrolling="no"
+        className="apps-backdrop"
+      />
       <h1 className="text-2xl font-medium text-foreground">
         <RandomLetterSwap label="모델분석 · 업무지원 앱" />
       </h1>
@@ -347,18 +358,7 @@ export default function AppsPage() {
         탭에서 앱이 열립니다.
       </p>
 
-      {/* 모듈러 빌드 아이덴트 — 대표 아이덴트(모바일 포함 노출, 2026-06-15) */}
-      <div className="mt-10 block">
-        <iframe
-          src="/idents/tkleen-modular-build-animation.html"
-          title="모듈 조립 아이덴트"
-          loading="lazy"
-          scrolling="no"
-          className="mx-auto block h-[420px] w-full max-w-2xl border-0 bg-transparent"
-        />
-      </div>
-
-      <div className="mt-6">
+      <div className="mt-10">
         <ViewSwitch card={cardView} board={boardView} />
       </div>
     </div>
