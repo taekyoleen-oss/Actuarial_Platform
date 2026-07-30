@@ -12,6 +12,8 @@ export type ExcelPackageStatus = "available" | "partial" | "unavailable";
 export interface ExcelCodeSection {
   title: string;
   level: "basic" | "advanced";
+  /** 분석 트랙 — 미지정 시 코드로 자동 판정(lib/methodTracks) */
+  track?: MethodTrack;
   /** 데이터 로드 줄 정도만 바뀌고 로직이 원본과 사실상 동일하면 true */
   sameAsOriginal: boolean;
   code: string;
@@ -217,22 +219,23 @@ export const PACKAGE_STATUS_META: Record<
 };
 
 import { METHOD_EXCEL_CODE as AUTHORED } from "./methodExcelCodeData";
-import { excelResultSection, insertAfterBasic } from "./modelResultSections";
+import { excelResultSections } from "./modelResultSections";
 import { STEPWISE_EXCEL } from "./stepwiseMethods";
+import { orderSections } from "./methodTracks";
+import type { MethodTrack } from "./methodTracks";
 
 /**
  * 저작된 적응 코드 + '결과를 표로' 자동 생성 섹션 병합.
- * 엑셀에서 summary()·print가 셀에 안 보이는 문제를 표(DataFrame) 셀로 해결한 섹션을
- * 각 방법의 기본 섹션 뒤에 끼워 넣는다(파이썬 탭과 같은 위치·같은 제목).
+ * 엑셀에서 summary()·print가 셀에 안 보이는 문제를 표(DataFrame) 셀로 해결한 섹션을 붙이고,
+ * 파이썬 탭과 똑같이 트랙(공통 → 전통적 분석 → 머신러닝)·수준 순으로 재배열한다.
  */
 function mergeResultSections(
   base: Record<string, MethodExcelCode>
 ): Record<string, MethodExcelCode> {
   const out: Record<string, MethodExcelCode> = { ...base, ...STEPWISE_EXCEL };
   for (const id of Object.keys(out)) {
-    const extra = excelResultSection(id);
-    if (!extra) continue;
-    out[id] = { ...out[id], sections: insertAfterBasic(out[id].sections, extra) };
+    const sections = orderSections([...out[id].sections, ...excelResultSections(id)]);
+    out[id] = { ...out[id], sections };
   }
   return out;
 }

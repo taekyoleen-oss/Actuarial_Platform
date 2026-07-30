@@ -6,6 +6,7 @@
 import { ACTUARIAL_METHODS } from "./actuarialMethods";
 import { STEPWISE_METHODS } from "./stepwiseMethods";
 import { withResultSections } from "./modelResultSections";
+import type { MethodTrack } from "./methodTracks";
 
 export type MethodCategoryId = "basic" | "model" | "ml" | "actuarial" | "wrangle";
 
@@ -31,6 +32,8 @@ export interface MethodCodeSection {
    * 섹션 배열은 기본 → 고급 순으로 둔다.
    */
   level?: "basic" | "advanced";
+  /** 분석 트랙(공통/전통적 분석/머신러닝) — 미지정 시 코드로 자동 판정(lib/methodTracks) */
+  track?: MethodTrack;
   code: string;
 }
 

@@ -21,6 +21,9 @@
 
 import type { MethodCodeSection } from "./statMethods";
 import type { ExcelCodeSection } from "./methodExcelCode";
+import type { MethodCodeSection as Sec } from "./statMethods";
+import type { MethodTrack } from "./methodTracks";
+import { orderSections } from "./methodTracks";
 
 type Env = "py" | "xl";
 
@@ -54,6 +57,11 @@ interface ResultSpec {
   imports?: string[];
   /** 군집·이상탐지 등 단일 추정기 */
   est?: string;
+  /**
+   * 같은 방법의 '머신러닝' 대응 사양 — 전통 통계(statsmodels)와 scikit-learn을 모두 쓰는
+   * 방법(선형회귀·로지스틱·GLM)은 트랙을 나눠 각각의 흐름을 따로 만든다(사용자 요청 2026-07-30).
+   */
+  ml?: ResultSpec;
 }
 
 const ID_DROP = ["policy_id", "customer_id"];
@@ -64,9 +72,65 @@ const PREM_DROP = [...ID_DROP, "premium_ratio"];
 export const MODEL_RESULT_SPECS: Record<string, ResultSpec> = {
   /* ── 회귀·통계모형 ── */
   // 전통 회귀 2종(stepwise-*)은 자체 섹션에 열 자동 선택·계수 표·비교 표가 이미 있어 제외
-  "linear-regression": { kind: "ols", file: "policy.xlsx", table: "policy[#All]", target: "premium", drop: PREM_DROP },
-  "logistic-regression": { kind: "logit", file: "policy.xlsx", table: "policy[#All]", target: "lapsed", drop: ID_DROP },
-  glm: { kind: "glm", file: "claims.xlsx", table: "claims[#All]", target: "claim_cnt", drop: ID_DROP },
+  "linear-regression": {
+    kind: "ols",
+    file: "policy.xlsx",
+    table: "policy[#All]",
+    target: "premium",
+    drop: PREM_DROP,
+    ml: {
+      kind: "sk-reg",
+      file: "policy.xlsx",
+      table: "policy[#All]",
+      target: "premium",
+      drop: PREM_DROP,
+      imports: ["from sklearn.linear_model import LinearRegression, Ridge"],
+      models: `"선형회귀": LinearRegression(),
+    "Ridge(alpha=1)": Ridge(alpha=1.0),`,
+    },
+  },
+  "logistic-regression": {
+    kind: "logit",
+    file: "policy.xlsx",
+    table: "policy[#All]",
+    target: "lapsed",
+    drop: ID_DROP,
+    ml: {
+      kind: "sk-clf",
+      file: "policy.xlsx",
+      table: "policy[#All]",
+      target: "lapsed",
+      drop: ID_DROP,
+      imports: [
+        "from sklearn.linear_model import LogisticRegression",
+        "from sklearn.ensemble import RandomForestClassifier",
+        "from sklearn.pipeline import make_pipeline",
+        "from sklearn.preprocessing import StandardScaler",
+      ],
+      models: `"로지스틱(규제 L2)": make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000)),
+    "랜덤포레스트": RandomForestClassifier(n_estimators=300, random_state=42),`,
+    },
+  },
+  glm: {
+    kind: "glm",
+    file: "claims.xlsx",
+    table: "claims[#All]",
+    target: "claim_cnt",
+    drop: ID_DROP,
+    ml: {
+      kind: "sk-reg",
+      file: "claims.xlsx",
+      table: "claims[#All]",
+      target: "claim_cnt",
+      drop: ID_DROP,
+      imports: [
+        "from sklearn.linear_model import PoissonRegressor",
+        "from sklearn.ensemble import HistGradientBoostingRegressor",
+      ],
+      models: `"포아송 회귀": PoissonRegressor(alpha=1e-6, max_iter=500),
+    "포아송 부스팅": HistGradientBoostingRegressor(loss="poisson", random_state=42),`,
+    },
+  },
   regularized: {
     kind: "sk-reg",
     file: "policy.xlsx",
@@ -1304,24 +1368,24 @@ const BUILDERS: Record<ResultKind, (s: ResultSpec, env: Env) => string> = {
 };
 
 const TITLE: Record<ResultKind, string> = {
-  ols: "결과를 표·수식으로 — 열 자동 선택 · 계수 표 · 적합도 지표 · 회귀식",
-  logit: "결과를 표·수식으로 — 열 자동 선택 · 계수·오즈비 표 · 성능 지표 · 로짓식",
-  glm: "결과를 표·수식으로 — 열 자동 선택 · 계수·상대도 표 · 적합도 · GLM식",
-  "sk-reg": "결과를 표·수식으로 — 열 자동 선택 · 계수/중요도 표 · 성능 지표 · 예측식",
-  "sk-clf": "결과를 표로 — 열 자동 선택 · 중요도 표 · 분류 성능 지표 · 혼동행렬",
-  cluster: "결과를 표로 — 열 자동 선택 · 군집 프로파일 표 · 품질 지표",
-  pca: "결과를 표·수식으로 — 열 자동 선택 · 설명분산·로딩 표 · 주성분식",
-  cv: "결과를 표로 — 열 자동 선택 · 폴드별 점수 표 · 요약 통계량",
-  outlier: "결과를 표로 — 열 자동 선택 · 상위 이상치 표 · 임계값별 건수",
-  km: "결과를 표로 — 열 자동 선택 · KM 생존표 · log-rank 검정",
-  arima: "결과를 표·수식으로 — 열 자동 선택 · 계수 표 · 적합도 지표 · 모형식",
-  test: "결과를 표로 — 열 자동 선택 · 기술통계 표 · 검정 결과 한 표",
+  ols: "결과를 표·수식으로 — 계수 표 · 적합도 지표 · 회귀식",
+  logit: "결과를 표·수식으로 — 계수·오즈비 표 · 성능 지표 · 로짓식",
+  glm: "결과를 표·수식으로 — 계수·상대도 표 · 적합도 · GLM식",
+  "sk-reg": "결과를 표·수식으로 — 계수/중요도 표 · 성능 지표 · 예측식",
+  "sk-clf": "결과를 표로 — 중요도 표 · 분류 성능 지표 · 혼동행렬",
+  cluster: "결과를 표로 — 군집 프로파일 표 · 품질 지표",
+  pca: "결과를 표·수식으로 — 설명분산·로딩 표 · 주성분식",
+  cv: "결과를 표로 — 폴드별 점수 표 · 요약 통계량",
+  outlier: "결과를 표로 — 상위 이상치 표 · 임계값별 건수",
+  km: "결과를 표로 — KM 생존표 · log-rank 검정",
+  arima: "결과를 표·수식으로 — 계수 표 · 적합도 지표 · 모형식",
+  test: "결과를 표로 — 기술통계 표 · 검정 결과 한 표",
 };
 
 const DESC =
   "엑셀(=PY())에서는 summary()·print가 셀에 제대로 표시되지 않습니다 — 계수·통계량을 " +
-  "DataFrame 표로 만들어 셀에 그대로 스필시키고, 열 선택·적합·계수 표·적합도 지표를 " +
-  "셀마다 나눠 필요한 것만 골라 실행할 수 있게 했습니다. 열 이름은 데이터에서 자동으로 " +
+  "DataFrame 표로 만들어 셀에 그대로 스필시키고, 적합·계수 표·적합도 지표·수식을 셀마다 " +
+  "나눠 필요한 것만 골라 실행할 수 있게 했습니다. 열 이름은 위 '공통' 셀에서 자동으로 " +
   "고르므로 예제 열 이름(premium·age 등)을 손으로 바꾸지 않아도 됩니다.";
 
 /** 일부 kind에만 붙는 보충 안내 */
@@ -1330,37 +1394,96 @@ const DESC_EXTRA: Partial<Record<ResultKind, string>> = {
   arima: " 시계열 파일이 없으면 합성 월별 시계열로 바로 실행됩니다.",
 };
 
-/** 파이썬 탭용 섹션 — 없으면 null */
-export function resultSection(id: string): MethodCodeSection | null {
-  const spec = MODEL_RESULT_SPECS[id];
-  if (!spec) return null;
+/** kind → 분석 트랙(전통 통계 / 머신러닝) */
+const KIND_TRACK: Record<ResultKind, MethodTrack> = {
+  ols: "classic",
+  logit: "classic",
+  glm: "classic",
+  arima: "classic",
+  km: "classic",
+  test: "classic",
+  "sk-reg": "ml",
+  "sk-clf": "ml",
+  cluster: "ml",
+  pca: "ml",
+  cv: "ml",
+  outlier: "ml",
+};
+
+const COMMON_TITLE = "공통 — 데이터 로드 · 변수 설정(뒤 셀이 모두 이 변수를 씁니다)";
+const COMMON_DESC =
+  "목표변수 하나만 정하면 설명변수·범주형을 자동으로 분류합니다. 아래 '전통적 분석'·'머신러닝' " +
+  "코드가 모두 여기서 만든 df · TARGET · NUMX · CATX 를 쓰므로, 열 구성은 이 셀 한 곳만 고치면 됩니다.";
+
+/** 생성 코드를 '공통 2셀'과 '나머지'로 가른다(첫 두 셀 = 데이터 로드 · 변수 설정) */
+function splitCommon(code: string): { common: string; rest: string } {
+  const parts = code
+    .split(/^# ?%%[^\n]*$/m)
+    .map((c) => c.trim())
+    .filter(Boolean);
   return {
+    common: parts.slice(0, 2).join("\n\n# %%\n"),
+    rest: parts.slice(2).join("\n\n# %%\n"),
+  };
+}
+
+/** 한 사양의 트랙 섹션(공통은 별도로 뽑아 쓴다) */
+function trackPart(spec: ResultSpec, env: Env) {
+  const { common, rest } = splitCommon(BUILDERS[spec.kind](spec, env));
+  return {
+    common,
+    track: KIND_TRACK[spec.kind],
     title: TITLE[spec.kind],
     desc: DESC + (DESC_EXTRA[spec.kind] ?? ""),
-    level: "basic",
-    code: BUILDERS[spec.kind](spec, "py"),
+    code: rest,
   };
 }
 
-/** 엑셀(=PY()) 탭용 섹션 — 없으면 null */
-export function excelResultSection(id: string): ExcelCodeSection | null {
+/** 파이썬 탭용 섹션 목록 — 공통 + 트랙별(전통/머신러닝) */
+export function resultSections(id: string, env: Env = "py"): Sec[] {
   const spec = MODEL_RESULT_SPECS[id];
-  if (!spec) return null;
-  return {
-    title: TITLE[spec.kind],
-    level: "basic",
-    sameAsOriginal: false,
-    code: BUILDERS[spec.kind](spec, "xl"),
-  };
+  if (!spec) return [];
+  const main = trackPart(spec, env);
+  const out: Sec[] = [
+    { title: COMMON_TITLE, desc: COMMON_DESC, level: "basic", track: "common", code: main.common },
+    { title: main.title, desc: main.desc, level: "basic", track: main.track, code: main.code },
+  ];
+  if (spec.ml) {
+    const sub = trackPart(spec.ml, env);
+    out.push({
+      title: sub.title,
+      desc: sub.desc,
+      level: "basic",
+      track: sub.track,
+      code: sub.code,
+    });
+  }
+  return out;
 }
 
-/** 방법 목록에 결과 표 섹션을 붙인 사본 — STAT_METHODS 최종 조립에 사용 */
+/** 엑셀(=PY()) 탭용 섹션 목록 */
+export function excelResultSections(id: string): ExcelCodeSection[] {
+  return resultSections(id, "xl").map((s) => ({
+    title: s.title,
+    level: "basic" as const,
+    track: s.track,
+    sameAsOriginal: false,
+    code: s.code,
+  }));
+}
+
+/**
+ * 방법 목록에 결과 표 섹션을 붙인 사본 — STAT_METHODS 최종 조립에 사용.
+ * 붙인 뒤 트랙(공통 → 전통적 분석 → 머신러닝)·수준(기본 → 고급) 순으로 재배열해
+ * 각 트랙의 분석 흐름이 끊기지 않게 한다(화면·복사·실행기 순서가 모두 같아진다).
+ */
 export function withResultSections<
   T extends { id: string; sections: MethodCodeSection[] }
 >(methods: T[]): T[] {
   return methods.map((m) => {
-    const extra = resultSection(m.id);
-    return extra ? { ...m, sections: insertAfterBasic(m.sections, extra) } : m;
+    const extra = resultSections(m.id);
+    const sections = orderSections([...m.sections, ...extra]);
+    return { ...m, sections };
   });
 }
 

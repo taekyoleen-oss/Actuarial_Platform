@@ -31,6 +31,12 @@ import {
   type MethodCodeSection,
   type StatMethod,
 } from "@/lib/statMethods";
+import {
+  TRACK_META,
+  showTracks,
+  withTracks,
+  type MethodTrack,
+} from "@/lib/methodTracks";
 import { METHOD_THEORY } from "@/lib/methodTheory";
 import { METHOD_OPTION_DOCS } from "@/lib/methodOptionDocs";
 import {
@@ -258,6 +264,80 @@ function DataLayoutPanel({
   );
 }
 
+/** 스티키 머리 높이(px) — 트랙 머리 아래에 섹션 머리가 붙도록 top 값을 맞춘다 */
+const TRACK_H = 34;
+
+/**
+ * 트랙 머리 — '공통 적용 / 전통적 분석 / 머신러닝'. 스크롤해도 상단에 고정된다.
+ * (사용자 요청 2026-07-30: 큰 카테고리와 섹션 제목이 화면 위에 남아 있어야 함)
+ */
+function TrackHeader({
+  track,
+  fontScale,
+}: {
+  track: MethodTrack;
+  fontScale: number;
+}) {
+  const meta = TRACK_META[track];
+  return (
+    <div
+      className="sticky top-0 z-30 -mx-5 mt-7 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-y border-border bg-white px-5 py-1.5 first:mt-0 sm:-mx-6 sm:px-6"
+      style={{ minHeight: TRACK_H }}
+    >
+      <span
+        className="rounded-full px-2 py-0.5 font-semibold"
+        style={{
+          fontSize: Math.round(12 * fontScale * 10) / 10,
+          background: `var(--chip-${meta.color}-bg)`,
+          color: `var(--chip-${meta.color}-fg)`,
+        }}
+      >
+        {meta.label}
+      </span>
+      <span
+        className="text-tertiary"
+        style={{ fontSize: Math.round(11.5 * fontScale * 10) / 10 }}
+      >
+        {meta.hint}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * 트랙별 묶음 — 각 묶음을 자체 컨테이너로 감싸야 스티키 머리가 서로 겹치지 않는다
+ * (같은 부모 안의 sticky 형제는 스크롤해도 계속 상단에 남아 쌓인다).
+ */
+function trackGroups<T extends { code: string; track?: MethodTrack }>(
+  sections: T[]
+): { track: MethodTrack; items: { section: T; index: number }[] }[] {
+  const out: { track: MethodTrack; items: { section: T; index: number }[] }[] = [];
+  withTracks(sections).forEach(({ section, track }, index) => {
+    const last = out[out.length - 1];
+    if (last && last.track === track) last.items.push({ section, index });
+    else out.push({ track, items: [{ section, index }] });
+  });
+  return out;
+}
+
+/** 섹션 제목 줄 — 트랙 머리 바로 아래에 고정 */
+function StickyTitle({
+  children,
+  hasTrack,
+}: {
+  children: ReactNode;
+  hasTrack: boolean;
+}) {
+  return (
+    <div
+      className="sticky z-20 -mx-5 flex flex-wrap items-center gap-2 border-b border-border bg-white px-5 py-1.5 sm:-mx-6 sm:px-6"
+      style={{ top: hasTrack ? TRACK_H : 0 }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /**
  * 코드를 단계별 셀 블록으로 — 데이터 로드·적합·평가 등을 나눠 각각 복사·실행·수정·건너뛰기
  * 하기 좋게 한다(사용자 요청 2026-07-23). 파이썬 탭·엑셀 탭 공용.
@@ -325,6 +405,7 @@ function ExcelCodePanel({
   fontScale: number;
 }) {
   const data = METHOD_EXCEL_CODE[method.id];
+  const tracked = !!data && showTracks(data.sections);
   return (
     <div>
       {/* 공통 차이점 안내 — 코드 위(글머리) */}
@@ -368,35 +449,42 @@ function ExcelCodePanel({
             </ul>
           </div>
 
-          {/* 적응 코드 섹션 */}
-          {data.sections.map((s, i) => (
-            <div key={`${s.title}-${i}`} className="mt-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-foreground" style={fz(15)}>
-                  {data.sections.length > 1 ? `${i + 1}. ` : ""}
-                  {s.title}
-                </h3>
-                <LevelChip
-                  level={s.level}
-                  fontSize={Math.round(11 * fontScale * 10) / 10}
-                />
-                <span
-                  className="inline-flex items-center whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-[10.5px] font-medium text-tertiary"
-                  title={
-                    s.sameAsOriginal
-                      ? "데이터 로드 줄 정도만 다르고 로직은 '파이썬 코드 적용' 탭과 사실상 동일"
-                      : "Python in Excel 환경에 맞게 로직·API가 바뀜"
-                  }
-                >
-                  {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
-                </span>
-              </div>
-              <StepBlocks
-                code={toExcelPython(s.code).trim()}
-                fontScale={fontScale}
-                cellWord="엑셀 셀"
-                note={i === 0 ? EXCEL_STEP_NOTE : undefined}
-              />
+          {/* 적응 코드 섹션 — 트랙(공통/전통/ML)별로 묶고 머리는 상단 고정 */}
+          {trackGroups(data.sections).map((g) => (
+            <div key={g.track}>
+              {tracked ? (
+                <TrackHeader track={g.track} fontScale={fontScale} />
+              ) : null}
+              {g.items.map(({ section: s, index: i }) => (
+                <div key={`${s.title}-${i}`} className="mt-4">
+                  <StickyTitle hasTrack={tracked}>
+                    <h3 className="font-semibold text-foreground" style={fz(15)}>
+                      {data.sections.length > 1 ? `${i + 1}. ` : ""}
+                      {s.title}
+                    </h3>
+                    <LevelChip
+                      level={s.level}
+                      fontSize={Math.round(11 * fontScale * 10) / 10}
+                    />
+                    <span
+                      className="inline-flex items-center whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-[10.5px] font-medium text-tertiary"
+                      title={
+                        s.sameAsOriginal
+                          ? "데이터 로드 줄 정도만 다르고 로직은 '파이썬 코드 적용' 탭과 사실상 동일"
+                          : "Python in Excel 환경에 맞게 로직·API가 바뀜"
+                      }
+                    >
+                      {s.sameAsOriginal ? "원본과 거의 동일" : "변경됨"}
+                    </span>
+                  </StickyTitle>
+                  <StepBlocks
+                    code={toExcelPython(s.code).trim()}
+                    fontScale={fontScale}
+                    cellWord="엑셀 셀"
+                    note={i === 0 ? EXCEL_STEP_NOTE : undefined}
+                  />
+                </div>
+              ))}
             </div>
           ))}
         </>
@@ -669,6 +757,8 @@ function MethodDialog({
       method.sections.filter((s) => level === "all" || levelOf(s) === level),
     [method, level]
   );
+  // 트랙(공통/전통적 분석/머신러닝) 머리 표시 여부 — 전통·ML 코드가 하나라도 있으면 표시
+  const tracked = useMemo(() => showTracks(method.sections), [method]);
   // 모든 방법의 코드를 단계별 셀(# %%)로 — 실행기로 보내기·복사 시 셀 단위로 나뉜다
   // (섹션 사이·섹션 내부 단계 모두 # %%). 실행기가 셀을 순서대로 실행하면 원본과 동일.
   const allCode = useMemo(
@@ -1060,29 +1150,36 @@ function MethodDialog({
             </p>
           ) : null}
 
-          {visibleSections.map((s, i) => (
-            <div key={s.title} className="mt-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-foreground" style={fz(15)}>
-                  {visibleSections.length > 1 ? `${i + 1}. ` : ""}
-                  {s.title}
-                </h3>
-                <LevelChip
-                  level={levelOf(s)}
-                  fontSize={Math.round(11 * fontScale * 10) / 10}
-                />
-              </div>
-              {s.desc ? (
-                <p className="mt-1 leading-[1.8] text-tertiary" style={fz(13.5)}>
-                  {s.desc}
-                </p>
+          {trackGroups(visibleSections).map((g) => (
+            <div key={g.track}>
+              {tracked ? (
+                <TrackHeader track={g.track} fontScale={fontScale} />
               ) : null}
-              <StepBlocks
-                code={s.code.trim()}
-                fontScale={fontScale}
-                cellWord="셀"
-                note={i === 0 ? PY_STEP_NOTE : undefined}
-              />
+              {g.items.map(({ section: s, index: i }) => (
+                <div key={s.title} className="mt-4">
+                  <StickyTitle hasTrack={tracked}>
+                    <h3 className="font-semibold text-foreground" style={fz(15)}>
+                      {visibleSections.length > 1 ? `${i + 1}. ` : ""}
+                      {s.title}
+                    </h3>
+                    <LevelChip
+                      level={levelOf(s)}
+                      fontSize={Math.round(11 * fontScale * 10) / 10}
+                    />
+                  </StickyTitle>
+                  {s.desc ? (
+                    <p className="mt-2 leading-[1.8] text-tertiary" style={fz(13.5)}>
+                      {s.desc}
+                    </p>
+                  ) : null}
+                  <StepBlocks
+                    code={s.code.trim()}
+                    fontScale={fontScale}
+                    cellWord="셀"
+                    note={i === 0 ? PY_STEP_NOTE : undefined}
+                  />
+                </div>
+              ))}
             </div>
           ))}
 
