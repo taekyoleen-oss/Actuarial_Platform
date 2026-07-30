@@ -301,6 +301,41 @@ roles = pd.DataFrame({
 roles   # 셀에 '열 역할 표'가 표시됩니다 — 표를 보고 TARGET·DROP·MAX_LEVELS를 조정하세요`;
 }
 
+/**
+ * (연결) 가드 — 앞 셀 변수가 없어도 이 셀만 단독 실행되도록 즉석 재구성한다(사용자 요청 2026-07-30).
+ * 모형을 만드는 '본체' 코드는 셀에 그대로 두고, 부수적인 준비(데이터·열 선택·적합)만 가드로 감싼다.
+ */
+export function guard(probe: string, body: string, errs = "NameError"): string {
+  const ind = body
+    .trim()
+    .split("\n")
+    .map((l) => (l.trim() ? `    ${l}` : ""))
+    .join("\n");
+  const clause = errs.includes(",") ? `(${errs})` : errs;
+  return `# (연결) 이 셀만 단독 실행해도 되도록 — 앞 셀 변수가 없으면 여기서 즉석 재구성합니다
+try:
+    ${probe}
+except ${clause}:
+${ind}
+`;
+}
+
+/** 데이터 로드 + 열 자동 선택의 압축판 — 가드 본문용('열 역할 표'는 생략) */
+function dataPrepBody(s: ResultSpec, env: Env, noTarget = false): string {
+  const dropList = (s.drop ?? []).map((c) => `"${c}"`).join(", ");
+  return `import pandas as pd
+import numpy as np
+${loadLine(s, env).replace(/ {2,}#.*$/, "")}
+TARGET = ${noTarget ? "None" : `"${s.target ?? ""}"`}
+DROP = [${dropList}]
+num_all = [c for c in df.select_dtypes("number").columns if c not in DROP]
+cat_all = [c for c in df.select_dtypes(["object", "category", "bool"]).columns if c not in DROP]
+if TARGET is not None and TARGET not in df.columns:
+    TARGET = num_all[-1]
+NUMX = [c for c in num_all if c != TARGET]
+CATX = [c for c in cat_all if c != TARGET and 2 <= df[c].nunique() <= 10]`;
+}
+
 /** 계수 → 사람이 읽는 수식 문자열(공통 헬퍼 정의 줄) */
 const EQ_HELPER = `def eq_text(names, coefs, intercept, lhs, digits=4):
     """계수를 수식 문자열로 — lhs = b0 + b1·x1 + b2·x2 …"""
@@ -324,11 +359,22 @@ const STAR = `tbl["유의성"] = np.where(tbl["p값"] < 0.001, "***",
 
 /* ────────────────────────── kind별 코드 ────────────────────────── */
 
+const OLS_FIT = `import statsmodels.formula.api as smf
+FORMULA = f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX])
+model = smf.ols(FORMULA, data=df).fit()`;
+
 function olsCode(s: ResultSpec, env: Env): string {
+  // ③ 이후 셀은 model(OLS 적합)이 필요 — 없으면 데이터·열 선택·적합까지 가드에서 재구성
+  const g = guard(
+    "model.rsquared",
+    `${dataPrepBody(s, env)}\n${OLS_FIT}`,
+    "NameError, AttributeError"
+  );
   return `${autoSelectCell(s, env)}
 
 # %%
 # ② 회귀식 자동 구성 · 적합 — 범주형은 C()로 감싸 자동 처리
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 import statsmodels.formula.api as smf
 
 FORMULA = f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX])
@@ -337,6 +383,7 @@ ${summaryTail(env)}
 
 # %%
 # ③ 계수 표 — 변수·계수·표준오차·t값·p값·95% 신뢰구간(셀에 표로 반환)
+${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
     "변수": model.params.index,
@@ -352,6 +399,7 @@ tbl.round(4)   # p값 < 0.05(*)면 해당 변수의 효과가 통계적으로 �
 
 # %%
 # ④ 적합도·검정통계량 표 — R²·F검정·AIC·RMSE를 한 표로(셀에 표로 반환)
+${g}
 resid = model.resid
 mape = (resid.abs() / df[TARGET].replace(0, np.nan)).mean() * 100
 fit_stats = pd.DataFrame({
@@ -366,6 +414,7 @@ fit_stats.round(4)   # R²=설명력, F검정 p<0.05면 모형 전체가 유의,
 
 # %%
 # ⑤ 추정된 회귀식 — 보고서·셀에 그대로 쓰는 수식 문자열
+${g}
 ${EQ_HELPER}
 
 p = model.params
@@ -375,11 +424,29 @@ EQ = eq_text(names, [p[n] for n in names], b0, TARGET)
 EQ   # 예) premium = 12,345.6789 + 1,234.5678·age - 987.6543·bmi`;
 }
 
+const LOGIT_FIT = `import statsmodels.formula.api as smf
+yraw = df[TARGET]
+ybin = (yraw.astype(int) if yraw.dtype != object
+        else (yraw == sorted(yraw.dropna().unique())[-1]).astype(int))
+d = df.assign(**{TARGET: ybin})
+FORMULA = f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX])
+model = smf.logit(FORMULA, data=d).fit(disp=0)`;
+
+/** 적합에 실제 쓰인 행의 실제값·예측확률 — ④⑤ 공통 */
+const LOGIT_PRED = `y = pd.Series(np.asarray(model.model.endog), name=TARGET)
+p_hat = pd.Series(np.asarray(model.predict()), name="예측확률")`;
+
 function logitCode(s: ResultSpec, env: Env): string {
+  const g = guard(
+    "model.prsquared",
+    `${dataPrepBody(s, env)}\n${LOGIT_FIT}`,
+    "NameError, AttributeError"
+  );
   return `${autoSelectCell(s, env)}
 
 # %%
 # ② 로짓식 자동 구성 · 적합 — 목표변수를 0/1로 변환(불리언·문자 라벨 모두 대응)
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 import statsmodels.formula.api as smf
 
 yraw = df[TARGET]
@@ -393,6 +460,7 @@ ${summaryTail(env)}
 
 # %%
 # ③ 계수·오즈비 표 — 계수(log-odds)·표준오차·z값·p값·오즈비와 95% 구간(셀에 표로 반환)
+${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
     "변수": model.params.index,
@@ -409,11 +477,11 @@ tbl.round(4)   # 오즈비 > 1 이면 사건(=1) 발생 위험을 높이는 요�
 
 # %%
 # ④ 적합도·분류 성능 표 — 우도비 검정·pseudo R²·AIC·AUC를 한 표로(셀에 표로 반환)
+${g}
 from sklearn.metrics import roc_auc_score, average_precision_score, accuracy_score, brier_score_loss
 
 # 적합에 실제 사용된 행만(결측이 있던 행은 statsmodels가 자동 제외)
-y = pd.Series(np.asarray(model.model.endog), name=TARGET)
-p_hat = pd.Series(np.asarray(model.predict()), name="예측확률")
+${LOGIT_PRED}
 pred = (p_hat >= 0.5).astype(int)
 perf = pd.DataFrame({
     "지표": ["관측수 n", "사건수", "사건률(%)", "McFadden pseudo R²", "로그우도", "영모형 로그우도",
@@ -428,6 +496,7 @@ perf.round(4)   # LR 검정 p<0.05면 모형이 영모형보다 유의, AUC 0.7�
 
 # %%
 # ⑤ 혼동행렬 표 — 임계값을 바꿔 가며 실제/예측 교차표 확인(셀에 표로 반환)
+${g}${guard("p_hat", LOGIT_PRED)}
 CUTOFF = 0.5   # ← 업무 비용에 맞춰 조정(놓치면 손해가 크면 낮춘다)
 cm = pd.crosstab(y, (p_hat >= CUTOFF).astype(int),
                  rownames=["실제"], colnames=["예측"]).reindex(index=[0, 1], columns=[0, 1], fill_value=0)
@@ -435,6 +504,7 @@ cm
 
 # %%
 # ⑥ 추정된 로짓식 — 확률식까지 함께(보고서·셀에 그대로 사용)
+${g}
 ${EQ_HELPER}
 
 p = model.params
@@ -445,11 +515,25 @@ EQ = Z + "   →   p = 1 / (1 + exp(-z))"
 EQ   # 예) z = -2.1234 + 0.0456·age … → p = 1 / (1 + exp(-z))`;
 }
 
+const GLM_FIT = `import statsmodels.api as sm
+import statsmodels.formula.api as smf
+EXPOSURE = "exposure" if "exposure" in df.columns else None
+offset = np.log(df[EXPOSURE]) if EXPOSURE else None
+FEATS = [c for c in NUMX if c != EXPOSURE]
+FORMULA = f"{TARGET} ~ " + " + ".join(FEATS + [f"C({c})" for c in CATX])
+model = smf.glm(FORMULA, data=df, family=sm.families.Poisson(), offset=offset).fit()`;
+
 function glmCode(s: ResultSpec, env: Env): string {
+  const g = guard(
+    "model.deviance",
+    `${dataPrepBody(s, env)}\n${GLM_FIT}`,
+    "NameError, AttributeError"
+  );
   return `${autoSelectCell(s, env)}
 
 # %%
 # ② GLM 적합 — 건수(포아송) + 노출(exposure) 열이 있으면 offset으로 자동 반영
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
@@ -463,6 +547,7 @@ ${summaryTail(env)}
 
 # %%
 # ③ 계수·요율 상대도 표 — exp(계수)가 기준 대비 배수(relativity)입니다
+${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
     "변수": model.params.index,
@@ -479,6 +564,7 @@ tbl.round(4)   # 상대도 1.20 → 기준 수준보다 20% 높은 빈도
 
 # %%
 # ④ 적합도·과산포 진단 표 — deviance·Pearson χ²·AIC를 한 표로(셀에 표로 반환)
+${g}
 dev_df = model.deviance / model.df_resid
 pear_df = float(model.pearson_chi2) / model.df_resid
 fit_stats = pd.DataFrame({
@@ -493,6 +579,7 @@ fit_stats.round(4)   # Pearson χ²/df 가 1보다 크게 벗어나면 과산포
 
 # %%
 # ⑤ 추정된 GLM 식 — 로그연결함수 기준(선형예측자 → 기대값)
+${g}
 ${EQ_HELPER}
 
 p = model.params
@@ -503,8 +590,8 @@ EQ = EQ + ("   (+ log(exposure))" if EXPOSURE else "") + f"   →   E[{TARGET}] 
 EQ`;
 }
 
-/** sklearn 모델 공통 — X·y 구성(원-핫) + 학습 셀 */
-function skFitCell(s: ResultSpec, kind: "reg" | "clf"): string {
+/** sklearn 모델 공통 — X·y 구성(원-핫)·분할·학습 본문(셀 본문 겸 가드 본문) */
+function skBody(s: ResultSpec, kind: "reg" | "clf"): string {
   const imports = (s.imports ?? []).join("\n");
   const yLine =
     kind === "clf"
@@ -516,9 +603,7 @@ y = (yraw.astype(int) if yraw.dtype != object
     kind === "clf"
       ? `X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)`
       : `X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)`;
-  return `# %%
-# ② 학습 데이터 구성(범주형 자동 원-핫) · 모델 학습
-from sklearn.model_selection import train_test_split
+  return `from sklearn.model_selection import train_test_split
 ${imports}
 
 X = pd.get_dummies(df[NUMX + CATX], columns=CATX, drop_first=True).astype(float)
@@ -530,14 +615,23 @@ ${split}
 MODELS = {
     ${s.models ?? ""}
 }
-fits = {name: est.fit(X_tr, y_tr) for name, est in MODELS.items()}
+fits = {name: est.fit(X_tr, y_tr) for name, est in MODELS.items()}`;
+}
+
+/** ② 학습 셀 = 본문 + 요약 표 */
+function skFitCell(s: ResultSpec, env: Env, kind: "reg" | "clf"): string {
+  return `# %%
+# ② 학습 데이터 구성(범주형 자동 원-핫) · 모델 학습
+${guard("NUMX, CATX", dataPrepBody(s, env))}
+${skBody(s, kind)}
 pd.DataFrame({"학습된 모델": list(fits), "학습 표본": len(X_tr), "검증 표본": len(X_te),
               "설명변수 수": X.shape[1]})`;
 }
 
 /** 계수·중요도 표 — coef_ / feature_importances_ / 순열중요도를 자동 판별 */
-const IMPORTANCE_CELL = `# %%
+const importanceCell = (g: string) => `# %%
 # ③ 변수 영향력 표 — 계수 또는 중요도를 자동으로 골라 표로(셀에 표로 반환)
+${g}
 PICK = list(fits)[0]        # ← 표를 볼 모델 이름(위 표의 이름 중 하나로 바꾸세요)
 m = fits[PICK]
 inner = m[-1] if hasattr(m, "steps") else m       # 파이프라인이면 마지막 추정기
@@ -555,14 +649,18 @@ imp = (imp.assign(_a=imp[lab].abs()).sort_values("_a", ascending=False)
 imp.round(4)   # 계수는 부호(+/-)까지, 중요도는 크기만 의미가 있습니다`;
 
 function skRegCode(s: ResultSpec, env: Env): string {
+  // ③ 이후 셀은 fits(학습된 모델)가 필요 — 없으면 데이터·분할·학습까지 가드에서 재구성
+  const g = guard("fits", `${dataPrepBody(s, env)}
+${skBody(s, "reg")}`);
   return `${autoSelectCell(s, env)}
 
-${skFitCell(s, "reg")}
+${skFitCell(s, env, "reg")}
 
-${IMPORTANCE_CELL}
+${importanceCell(g)}
 
 # %%
 # ④ 검정통계량·성능 표 — 모델×(학습/검증)별 RMSE·MAE·MAPE·R²(셀에 표로 반환)
+${g}
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 rows = []
@@ -581,6 +679,7 @@ metrics   # 학습 대비 검증 RMSE가 크게 나쁘면 과적합 — 규제�
 
 # %%
 # ⑤ 추정된 예측식 — 선형 모델일 때 수식으로(트리·부스팅은 수식이 없어 생략)
+${g}${guard("PICK", "PICK = list(fits)[0]")}
 ${EQ_HELPER}
 
 m = fits[PICK]
@@ -593,14 +692,17 @@ EQ`;
 }
 
 function skClfCode(s: ResultSpec, env: Env): string {
+  const g = guard("fits", `${dataPrepBody(s, env)}
+${skBody(s, "clf")}`);
   return `${autoSelectCell(s, env)}
 
-${skFitCell(s, "clf")}
+${skFitCell(s, env, "clf")}
 
-${IMPORTANCE_CELL}
+${importanceCell(g)}
 
 # %%
 # ④ 검정통계량·분류 성능 표 — 모델별 정확도·정밀도·재현율·F1·AUC(셀에 표로 반환)
+${g}
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
                              roc_auc_score, average_precision_score, brier_score_loss)
 
@@ -624,6 +726,7 @@ metrics   # 사건이 드물면 정확도보다 PR-AUC·재현율을 먼저 보�
 
 # %%
 # ⑤ 혼동행렬 표 — 임계값을 바꿔 실제/예측 교차표 확인(셀에 표로 반환)
+${g}${guard("PICK, CUTOFF", ["PICK = list(fits)[0]", "CUTOFF = 0.5"].join("\n"))}
 m = fits[PICK]
 prob = m.predict_proba(X_te)[:, 1] if hasattr(m, "predict_proba") else m.decision_function(X_te)
 pred = (prob >= CUTOFF).astype(int) if hasattr(m, "predict_proba") else m.predict(X_te)
@@ -634,21 +737,25 @@ cm`;
 
 function clusterCode(s: ResultSpec, env: Env): string {
   const imports = (s.imports ?? []).join("\n");
+  const body = `from sklearn.preprocessing import StandardScaler
+${imports}
+base = df[NUMX].dropna()
+Z = StandardScaler().fit_transform(base)
+model = ${s.est}
+labels = model.fit_predict(Z)`;
+  // ③ 이후 셀은 base·Z·labels가 필요 — 없으면 데이터·표준화·적합까지 가드에서 재구성
+  const g = guard("labels", `${dataPrepBody(s, env, true)}\n${body}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
 # ② 표준화 · 군집 적합 — 수치형 설명변수를 자동으로 사용(척도 차이는 표준화로 제거)
-from sklearn.preprocessing import StandardScaler
-${imports}
-
-base = df[NUMX].dropna()
-Z = StandardScaler().fit_transform(base)
-model = ${s.est}
-labels = model.fit_predict(Z)
+${guard("NUMX", dataPrepBody(s, env, true))}
+${body}
 pd.DataFrame({"사용 변수": NUMX, "관측수": len(base)})
 
 # %%
 # ③ 군집 크기·프로파일 표 — 군집별 평균을 원래 단위로(셀에 표로 반환)
+${g}
 prof = base.assign(군집=labels).groupby("군집").agg(["mean"])
 prof.columns = [c[0] for c in prof.columns]
 size = pd.Series(labels).value_counts().sort_index()
@@ -658,6 +765,7 @@ prof.round(3)   # 군집별로 어떤 변수가 높고 낮은지 = 군집의 성
 
 # %%
 # ④ 군집 품질 지표 표 — 실루엣·CH·DB를 한 표로(셀에 표로 반환)
+${g}
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 quality = pd.DataFrame({
@@ -670,21 +778,28 @@ quality.round(4)   # 실루엣 0.5↑ 양호 · 0.2 미만이면 군집 구조�
 }
 
 function pcaCode(s: ResultSpec, env: Env): string {
+  const body = `from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+base = df[NUMX].dropna()
+Z = StandardScaler().fit_transform(base)
+model = PCA().fit(Z)
+scores = model.transform(Z)`;
+  const g = guard(
+    "model.components_",
+    `${dataPrepBody(s, env, true)}\n${body}`,
+    "NameError, AttributeError"
+  );
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
 # ② 표준화 · 주성분 적합 — 수치형 설명변수를 자동으로 사용
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-
-base = df[NUMX].dropna()
-Z = StandardScaler().fit_transform(base)
-model = PCA().fit(Z)
-scores = model.transform(Z)
+${guard("NUMX", dataPrepBody(s, env, true))}
+${body}
 pd.DataFrame({"사용 변수": NUMX, "관측수": len(base)})
 
 # %%
 # ③ 설명분산 표 — 성분별 고유값·설명비율·누적비율(셀에 표로 반환)
+${g}
 ev = model.explained_variance_
 ratio = model.explained_variance_ratio_
 var_tbl = pd.DataFrame({
@@ -697,6 +812,7 @@ var_tbl.round(4)   # 고유값 1 이상 또는 누적 70~80%까지를 성분 수
 
 # %%
 # ④ 로딩(적재량) 표 — 각 성분이 어떤 변수로 이뤄졌는지(셀에 표로 반환)
+${g}
 K = min(3, model.n_components_)   # ← 볼 성분 수
 load = pd.DataFrame(model.components_[:K].T, index=NUMX,
                     columns=[f"PC{i+1}" for i in range(K)])
@@ -704,6 +820,7 @@ load.round(4)   # 절대값이 큰 변수가 그 성분의 의미를 결정합�
 
 # %%
 # ⑤ 주성분 식 — PC1 = w1·x1 + w2·x2 + … (표준화된 변수 기준)
+${g}
 ${EQ_HELPER}
 
 EQ = eq_text(NUMX, model.components_[0], 0.0, "PC1").replace("= 0.0000 + ", "= ")
@@ -712,10 +829,29 @@ EQ`;
 
 function cvCode(s: ResultSpec, env: Env): string {
   const imports = (s.imports ?? []).join("\n");
+  const body = `from sklearn.model_selection import StratifiedKFold, cross_validate
+${imports}
+X = pd.get_dummies(df[NUMX + CATX], columns=CATX, drop_first=True).astype(float)
+yraw = df[TARGET]
+y = (yraw.astype(int) if yraw.dtype != object
+     else (yraw == sorted(yraw.dropna().unique())[-1]).astype(int))
+keep = X.notna().all(axis=1) & y.notna()
+X, y = X[keep], y[keep]
+est = ${s.est}
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+res = cross_validate(est, X, y, cv=cv, scoring=["accuracy", "roc_auc", "average_precision", "f1"],
+                     return_train_score=True)`;
+  // ③④는 res(교차검증 결과)가 필요 — 없으면 가드에서 교차검증을 다시 수행
+  const g = guard(
+    'res["test_roc_auc"]',
+    `${dataPrepBody(s, env)}\n${body}`,
+    "NameError, KeyError, TypeError"
+  );
   return `${autoSelectCell(s, env)}
 
 # %%
 # ② 교차검증 실행 — 열 자동 선택 결과로 X·y 구성(범주형 원-핫)
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 from sklearn.model_selection import StratifiedKFold, cross_validate
 ${imports}
 
@@ -735,6 +871,7 @@ pd.DataFrame({"설정": ["분할 수", "표본", "설명변수", "지표"],
 
 # %%
 # ③ 폴드별 점수 표 — 각 분할의 검증 점수(셀에 표로 반환)
+${g}
 folds = pd.DataFrame({
     "폴드": [f"{i+1}겹" for i in range(len(res["test_accuracy"]))],
     "정확도": res["test_accuracy"],
@@ -748,6 +885,7 @@ folds.round(4)   # 폴드 간 점수가 크게 흔들리면 표본이 적거나 
 
 # %%
 # ④ 검정통계량 요약 표 — 평균±표준편차와 95% 신뢰구간(셀에 표로 반환)
+${g}
 rows = []
 for key, name in [("test_accuracy", "정확도"), ("test_roc_auc", "ROC-AUC"),
                   ("test_average_precision", "PR-AUC"), ("test_f1", "F1")]:
@@ -762,10 +900,19 @@ summary   # 보고는 '평균 ± 표준편차'로 — 단일 분할 점수보다
 
 function outlierCode(s: ResultSpec, env: Env): string {
   const imports = (s.imports ?? []).join("\n");
+  const body = `from sklearn.preprocessing import StandardScaler
+${imports}
+base = df[NUMX].dropna()
+Z = StandardScaler().fit_transform(base)
+model = ${s.est}
+flag = model.fit_predict(Z)
+score = -model.score_samples(Z)`;
+  const g = guard("flag", `${dataPrepBody(s, env, true)}\n${body}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
 # ② 이상치 점수 산출 — 수치형 설명변수를 자동으로 사용
+${guard("NUMX", dataPrepBody(s, env, true))}
 from sklearn.preprocessing import StandardScaler
 ${imports}
 
@@ -778,6 +925,7 @@ pd.DataFrame({"사용 변수": NUMX, "관측수": len(base), "이상 판정": in
 
 # %%
 # ③ 상위 이상치 표 — 점수가 높은 관측을 원래 값과 함께(셀에 표로 반환)
+${g}
 TOPN = 10   # ← 보고 싶은 건수
 top = (base.assign(이상점수=score, 판정=np.where(flag == -1, "이상", "정상"))
            .sort_values("이상점수", ascending=False).head(TOPN))
@@ -785,6 +933,7 @@ top.round(4)   # 통계적 이례일 뿐 곧 '사기'는 아닙니다 — 심사
 
 # %%
 # ④ 임계값별 건수·검정통계량 표 — 점수 분위수 컷오프별 적출 건수(셀에 표로 반환)
+${g}
 rows = []
 for q in [0.90, 0.95, 0.98, 0.99, 0.995]:
     thr = np.quantile(score, q)
@@ -796,11 +945,36 @@ cut = pd.DataFrame(rows).round(4)
 cut   # 심사 가능 건수(리소스)에 맞는 임계값을 고르는 표입니다`;
 }
 
+const KM_TABLE_DEF = `def km_table(t, e):
+    """중도절단(censoring)을 반영한 KM 추정 — numpy만 사용(브라우저·엑셀 공통 실행)"""
+    t = np.asarray(t, float); e = np.asarray(e, int)
+    times = np.unique(t[e == 1])
+    S, var, out = 1.0, 0.0, []
+    for ti in times:
+        n = int((t >= ti).sum())          # 위험집합
+        d = int(((t == ti) & (e == 1)).sum())
+        S *= 1 - d / n
+        var += d / (n * (n - d)) if n > d else 0.0   # Greenwood
+        se = S * np.sqrt(var)
+        out.append({"시점 t": ti, "위험집합 n": n, "사건 d": d, "S(t)": S,
+                    "표준오차": se, "하한95%": max(0.0, S - 1.96 * se),
+                    "상한95%": min(1.0, S + 1.96 * se)})
+    return pd.DataFrame(out)`;
+
 function kmCode(s: ResultSpec, env: Env): string {
+  // 기간·사건·그룹 열 지정과 KM 함수는 '부수적 준비' — 뒤 셀에서도 가드로 재구성한다
+  const survBody = `DUR = next((c for c in NUMX if c in ("duration_years", "duration", "tenure_months", "time")), NUMX[0])
+EVT = next((c for c in df.columns if c in ("event", "died", "lapsed", "status")), None)
+GRP = CATX[0] if CATX else None
+surv = df[[c for c in [DUR, EVT, GRP] if c]].dropna()
+surv[EVT] = surv[EVT].astype(int)`;
+  const gSurv = guard("surv", `${dataPrepBody(s, env, true)}\n${survBody}`);
+  const gKm = guard("km_table, surv", `${dataPrepBody(s, env, true)}\n${survBody}\n${KM_TABLE_DEF}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
 # ② 생존분석 열 자동 지정 — 기간·사건 열을 이름으로 추정(없으면 직접 지정)
+${guard("NUMX, CATX", dataPrepBody(s, env, true))}
 DUR = next((c for c in NUMX if c in ("duration_years", "duration", "tenure_months", "time")), NUMX[0])
 EVT = next((c for c in df.columns if c in ("event", "died", "lapsed", "status")), None)
 GRP = CATX[0] if CATX else None          # 비교할 그룹(예: 성별) — 없으면 전체 한 곡선
@@ -813,27 +987,15 @@ pd.DataFrame({"역할": ["기간(duration)", "사건(event 1=발생)", "그룹"]
 
 # %%
 # ③ Kaplan-Meier 생존표 — S(t)=Π(1−dᵢ/nᵢ)와 Greenwood 95% CI(셀에 표로 반환)
-def km_table(t, e):
-    """중도절단(censoring)을 반영한 KM 추정 — numpy만 사용(브라우저·엑셀 공통 실행)"""
-    t = np.asarray(t, float); e = np.asarray(e, int)
-    times = np.unique(t[e == 1])
-    n_at, d_at, S, var, out = len(t), 0, 1.0, 0.0, []
-    for ti in times:
-        n = int((t >= ti).sum())          # 위험집합
-        d = int(((t == ti) & (e == 1)).sum())
-        S *= 1 - d / n
-        var += d / (n * (n - d)) if n > d else 0.0   # Greenwood
-        se = S * np.sqrt(var)
-        out.append({"시점 t": ti, "위험집합 n": n, "사건 d": d, "S(t)": S,
-                    "표준오차": se, "하한95%": max(0.0, S - 1.96 * se),
-                    "상한95%": min(1.0, S + 1.96 * se)})
-    return pd.DataFrame(out)
+${gSurv}
+${KM_TABLE_DEF}
 
 km = km_table(surv[DUR], surv[EVT])
 km.round(4)   # S(t)=t시점까지 사건이 없을 확률(중도절단은 위험집합에서 빠짐)
 
 # %%
 # ④ 그룹 비교·log-rank 검정 표 — 중위생존시간과 검정통계량(셀에 표로 반환)
+${gKm}
 rows = []
 if GRP:
     for g, sub in surv.groupby(GRP):
@@ -877,6 +1039,21 @@ except Exception:
                                     + 8 * np.sin(np.arange(60) / 12 * 2 * np.pi)
                                     + rng.normal(0, 3, 60)})`
       : `df = xl("${s.table}", headers=True)   # 날짜 열 + 값 열이 있는 표를 참조`;
+  // 시계열 로드·열 지정은 '부수적 준비' — 뒤 셀에서도 가드로 재구성한다
+  const serBody = `import pandas as pd
+import numpy as np
+${load}
+DATE = next((c for c in df.columns
+             if "date" in str(c).lower() or "month" in str(c).lower()
+             or str(df[c].dtype).startswith("datetime")), None)
+VALUE = df.select_dtypes("number").columns[-1]
+ser = df.set_index(pd.to_datetime(df[DATE])) [VALUE] if DATE else df[VALUE]
+ser = ser.astype(float).dropna()`;
+  const gFit = guard(
+    "model.aic",
+    `${serBody}\nfrom statsmodels.tsa.arima.model import ARIMA\nORDER = (1, 1, 1)\nmodel = ARIMA(ser, order=ORDER).fit()`,
+    "NameError, AttributeError"
+  );
   return `# %%
 # ① 데이터 로드 · 날짜·값 열 자동 선택 — 이름·자료형으로 추정합니다
 import pandas as pd
@@ -897,6 +1074,7 @@ pd.DataFrame({"항목": ["날짜 열", "값 열", "관측수", "시작", "끝"],
 
 # %%
 # ② ARIMA 적합 — 차수(p,d,q)를 지정해 적합
+${guard("ser", serBody)}
 from statsmodels.tsa.arima.model import ARIMA
 
 ORDER = (1, 1, 1)   # ← (p,d,q): p=자기회귀, d=차분, q=이동평균
@@ -910,6 +1088,7 @@ f"ARIMA{ORDER} 적합 완료 — 관측 {len(ser)}개"`
 
 # %%
 # ③ 계수 표 — 항목·계수·표준오차·z값·p값·95% 신뢰구간(셀에 표로 반환)
+${gFit}
 ci = model.conf_int()
 tbl = pd.DataFrame({
     "항목": model.params.index,
@@ -925,6 +1104,7 @@ tbl.round(4)   # ar.L1=자기회귀 계수, ma.L1=이동평균 계수, sigma2=�
 
 # %%
 # ④ 적합도·검정통계량 표 — AIC·BIC·RMSE·Ljung-Box(잔차 백색잡음 검정)
+${gFit}
 import statsmodels.api as sm
 
 resid = model.resid[ORDER[1]:]          # 차분으로 생긴 앞부분 제외
@@ -940,6 +1120,7 @@ fit_stats.round(4)   # Ljung-Box p>0.05면 잔차에 남은 패턴이 없다(적
 
 # %%
 # ⑤ 추정된 모형식 · 예측 표 — 수식과 향후 예측을 함께(셀에 표로 반환)
+${gFit}
 p = model.params
 ar = " ".join([f"{'+' if p[n] >= 0 else '-'} {abs(p[n]):.4f}·y(t-{i+1})"
                for i, n in enumerate([x for x in p.index if x.startswith("ar.")])])
@@ -961,6 +1142,7 @@ function testCode(s: ResultSpec, env: Env): string {
 
 # %%
 # ② 기술통계 표 — 검정 전에 그룹별 n·평균·표준편차·중위수 확인(셀에 표로 반환)
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 GROUP = CATX[0] if CATX else None   # ← 비교할 범주형 열(없으면 전체 요약)
 if GROUP:
     desc = df.groupby(GROUP)[TARGET].agg(건수="count", 평균="mean", 표준편차="std",
@@ -971,6 +1153,7 @@ desc.round(3)   # 평균 차이가 커 보여도 표준편차·건수를 함께 
 
 # %%
 # ③ 검정 결과 표 — 정규성·등분산·평균차·상관·독립성을 한 표로(셀에 표로 반환)
+${guard("NUMX, CATX", dataPrepBody(s, env))}
 from scipy import stats
 
 rows = []

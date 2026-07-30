@@ -9,6 +9,7 @@
 
 import type { MethodCodeSection, StatMethod } from "./statMethods";
 import type { MethodExcelCode } from "./methodExcelCode";
+import { guard } from "./modelResultSections";
 
 type Env = "py" | "xl";
 type Family = "linear" | "logistic";
@@ -20,6 +21,107 @@ const load = (fam: Family, env: Env) =>
   env === "py"
     ? `df = pd.read_excel("${FILE[fam]}")   # 실행기: '샘플 데이터' 또는 내 파일 업로드`
     : `df = xl("policy[#All]", headers=True)   # 시트의 표/범위를 참조`;
+
+/**
+ * 가드 본문 — ①셀을 안 돌렸을 때 이 셀에서 즉석 재구성하는 압축 준비(사용자 요청 2026-07-30).
+ * 모형 선택의 '본체'(전진·후진·단계적 루프)는 셀에 그대로 두고 부수적 준비만 가드로 감싼다.
+ */
+function prepBody(fam: Family, env: Env): string {
+  const drop =
+    fam === "linear"
+      ? '["policy_id", "customer_id", "premium_ratio"]'
+      : '["policy_id", "customer_id"]';
+  const yPrep =
+    fam === "logistic"
+      ? `yraw = df[TARGET]
+df = df.assign(**{TARGET: (yraw.astype(int) if yraw.dtype != object
+                           else (yraw == sorted(yraw.dropna().unique())[-1]).astype(int))})`
+      : "";
+  const fitBody =
+    fam === "linear"
+      ? `    return smf.ols(formula, data=df if data is None else data).fit()`
+      : `    return smf.logit(formula, data=df if data is None else data).fit(disp=0)`;
+  return `import pandas as pd
+import numpy as np
+import statsmodels.formula.api as smf
+${load(fam, env).replace(/ {2,}#.*$/, "")}
+TARGET = "${TARGET[fam]}"
+DROP = ${drop}
+num_all = [c for c in df.select_dtypes("number").columns if c not in DROP]
+cat_all = [c for c in df.select_dtypes(["object", "category", "bool"]).columns if c not in DROP]
+NUMX = [c for c in num_all if c != TARGET]
+CATX = [c for c in cat_all if c != TARGET and 2 <= df[c].nunique() <= 10]
+${yPrep}
+df = df[[TARGET] + NUMX + CATX].dropna().reset_index(drop=True)
+TERMS = NUMX + [f"C({c})" for c in CATX]
+def fit(formula, data=None):
+${fitBody}
+def term_pvalues(res):
+    try:
+        t = res.wald_test_terms(skip_single=False).table
+        col = [c for c in t.columns if str(c).lower().startswith("p>")][0]
+        return {str(i): float(v) for i, v in t[col].items() if str(i) != "Intercept"}
+    except Exception:
+        out = {}
+        for term in TERMS:
+            key = term[2:-1] if term.startswith("C(") else term
+            ps = [q for n, q in res.pvalues.items() if n != "Intercept" and key in n]
+            if ps:
+                out[term] = max(ps)
+        return out`;
+}
+
+/** 선택 기준 함수 — ②에서 정의하지만 ④·⑧도 쓰므로 가드로 보강 */
+const SCORE_DEF = `CRIT = "aic"
+def score(res):
+    return res.aic if CRIT == "aic" else res.bic`;
+
+/** 압축 선택 함수 — ⑤⑥⑧이 앞 셀 결과 없이도 돌아가게(단계 로그는 ②③④가 보여 줌) */
+const SEL_HELPERS = `def sel_forward(crit="aic"):
+    sel, best = [], score(fit(f"{TARGET} ~ 1"))
+    while True:
+        cand = [(score(fit(f"{TARGET} ~ " + " + ".join(sel + [c]))), c)
+                for c in TERMS if c not in sel]
+        if not cand:
+            break
+        v, c = min(cand)
+        if v >= best - 1e-9:
+            break
+        sel.append(c); best = v
+    return sel
+
+def sel_backward(sls=0.05):
+    keep = list(TERMS)
+    r = fit(f"{TARGET} ~ " + " + ".join(keep))
+    while keep:
+        pv = {k: v for k, v in term_pvalues(r).items() if k in keep}
+        if not pv or max(pv.values()) <= sls:
+            break
+        keep.remove(max(pv, key=pv.get))
+        r = fit(f"{TARGET} ~ " + (" + ".join(keep) if keep else "1"))
+    return keep
+
+def sel_stepwise(crit="aic"):
+    sel, best, changed = [], score(fit(f"{TARGET} ~ 1")), True
+    while changed:
+        changed = False
+        cand = [(score(fit(f"{TARGET} ~ " + " + ".join(sel + [c]))), c)
+                for c in TERMS if c not in sel]
+        if cand:
+            v, c = min(cand)
+            if v < best - 1e-9:
+                sel.append(c); best = v; changed = True
+        if len(sel) > 1:
+            cand = [(score(fit(f"{TARGET} ~ " + " + ".join([x for x in sel if x != c]))), c)
+                    for c in sel]
+            v, c = min(cand)
+            if v < best - 1e-9:
+                sel.remove(c); best = v; changed = True
+    return sel
+
+fwd_terms = sel_forward(); fwd = fit(f"{TARGET} ~ " + (" + ".join(fwd_terms) if fwd_terms else "1"))
+bwd_terms = sel_backward(); bwd = fit(f"{TARGET} ~ " + (" + ".join(bwd_terms) if bwd_terms else "1"))
+step_terms = sel_stepwise(); stepm = fit(f"{TARGET} ~ " + (" + ".join(step_terms) if step_terms else "1"))`;
 
 /** 공통 준비 — 데이터 로드·열 자동 선택·적합 함수(fit)·항 목록(TERMS) */
 function prepCell(fam: Family, env: Env): string {
@@ -87,9 +189,10 @@ pd.DataFrame({"항목": ["목표변수", "후보 항 수", "수치형", "범주�
               "값": [TARGET, len(TERMS), len(NUMX), len(CATX), len(df)]})`;
 }
 
-const FORWARD = `# %%
+const forwardCell = (g: string) => `# %%
 # ② 전진선택법(Forward Selection) — 아무 변수도 없는 모형에서 시작해 하나씩 넣습니다
 # 기준: AIC가 가장 많이 줄어드는 항을 투입, 더 줄지 않으면 정지
+${g}
 CRIT = "aic"     # ← "aic"(예측 지향) 또는 "bic"(더 엄격·간결한 모형)
 
 def score(res):
@@ -120,9 +223,10 @@ fwd_terms = list(selected)
 fwd = fit(f"{TARGET} ~ " + (" + ".join(fwd_terms) if fwd_terms else "1"))
 pd.DataFrame(log).round(4)   # 단계별로 어떤 항이 왜 들어갔는지 기록(셀에 표로 반환)`;
 
-const BACKWARD = `# %%
+const backwardCell = (g: string) => `# %%
 # ③ 후진소거법(Backward Elimination) — 전체 모형에서 시작해 유의하지 않은 항을 하나씩 뺍니다
 # 기준: 항 단위 p값이 가장 큰 항을 제거(SLS=0.05), 모두 유의해지면 정지
+${g}
 SLS = 0.05       # ← 제거 유의수준(느슨하게 0.10을 쓰기도 합니다)
 
 keep = list(TERMS)
@@ -151,9 +255,10 @@ bwd_terms = list(keep)
 bwd = res
 pd.DataFrame(log).round(4)   # 제거 순서와 그때의 p값·AIC(셀에 표로 반환)`;
 
-const STEPWISE = `# %%
+const stepwiseCell = (g: string) => `# %%
 # ④ 단계적 선택(Stepwise) — 전진 투입과 후진 제거를 번갈아 반복합니다
 # 한 번 넣은 항도 뒤에 들어온 변수 때문에 불필요해지면 다시 뺍니다(전진·후진의 약점 보완)
+${g}
 selected = []
 best = score(fit(f"{TARGET} ~ 1"))
 log = [{"단계": 0, "동작": "시작(절편만)", "항": "1", "항 수": 0, CRIT.upper(): best}]
@@ -185,7 +290,7 @@ stepm = fit(f"{TARGET} ~ " + (" + ".join(step_terms) if step_terms else "1"))
 pd.DataFrame(log).round(4)   # 투입·제거가 번갈아 나타나는 기록(셀에 표로 반환)`;
 
 /** ⑤ 네 모형 비교 표 + ⑥ 최종 계수 표·수식 */
-function compareCells(fam: Family): string {
+function compareCells(fam: Family, g: string): string {
   const rowStats =
     fam === "linear"
       ? `        "수정 R²": r.rsquared_adj,
@@ -201,6 +306,7 @@ function compareCells(fam: Family): string {
       ? `EQ`
       : `EQ = EQ + "   →   p = 1 / (1 + exp(-z))"
 EQ`;
+  const guardFinal = guard("final", 'final = stepm   # ⑥을 안 돌렸으면 단계적 선택 모형을 사용');
   const coefTbl =
     fam === "linear"
       ? `tbl = pd.DataFrame({
@@ -216,6 +322,7 @@ EQ`;
 })`;
   return `# %%
 # ⑤ 선택법 비교 표 — 전체·전진·후진·단계적 네 모형을 한 표로(셀에 표로 반환)
+${g}
 ${extraImport}rows = []
 for name, r, terms in [("전체 모형", fit(f"{TARGET} ~ " + " + ".join(TERMS)), TERMS),
                        ("전진선택", fwd, fwd_terms),
@@ -232,6 +339,7 @@ compare.round(4)   # AIC·BIC가 가장 작은 모형이 정보기준상 최선(
 
 # %%
 # ⑥ 최종 모형 계수 표 · 추정 수식 — 비교 표에서 고른 모형으로(셀에 표로 반환)
+${g}
 PICK = "단계적 선택"   # ← "전체 모형" · "전진선택" · "후진소거" · "단계적 선택" 중 선택
 final = {"전체 모형": fit(f"{TARGET} ~ " + " + ".join(TERMS)), "전진선택": fwd,
          "후진소거": bwd, "단계적 선택": stepm}[PICK]
@@ -245,6 +353,7 @@ tbl.round(4)   # 선택된 모형의 계수 표(셀에 표로 반환)
 
 # %%
 # ⑦ 최종 모형의 추정 수식 — 보고서·셀에 그대로 사용
+${g}${guardFinal}
 p = final.params
 b0 = float(p.get("Intercept", 0.0))
 names = [n for n in p.index if n != "Intercept"]
@@ -255,8 +364,9 @@ ${eqTail}`;
 }
 
 /** 선택 절차의 주의점 — 두 방법 공통(다중검정·과적합) */
-const CAVEAT = `# %%
+const caveatCell = (g: string) => `# %%
 # ⑧ 선택 절차의 검증 — 변수선택은 '같은 데이터로 여러 번 검정'이라 낙관적으로 치우칩니다
+${g}
 # (a) 표본을 나눠 선택은 학습에서, 성능은 검증에서 — 선택 자체의 과적합을 확인
 from sklearn.model_selection import KFold
 
@@ -305,6 +415,11 @@ stability.sort_values("선택률(%)", ascending=False).reset_index(drop=True)`;
 
 /** 파이썬·엑셀 공통 섹션 생성 */
 export function stepwiseSections(fam: Family, env: Env): MethodCodeSection[] {
+  // ①(준비)을 안 돌렸어도 각 셀이 단독 실행되도록 — 필요한 것만 즉석 재구성
+  const gPrep = guard("TERMS, fit", prepBody(fam, env));
+  const gScore = gPrep + guard("score", SCORE_DEF);
+  const gSel =
+    gPrep + guard("score", SCORE_DEF) + guard("fwd, bwd, stepm", SEL_HELPERS);
   return [
     {
       title: "준비 — 데이터 로드 · 열 자동 선택 · 후보 항 구성",
@@ -315,28 +430,28 @@ export function stepwiseSections(fam: Family, env: Env): MethodCodeSection[] {
     {
       title: "전진선택법 — 하나씩 넣으며 AIC/BIC 개선을 확인",
       level: "basic",
-      code: FORWARD,
+      code: forwardCell(gPrep),
     },
     {
       title: "후진소거법 — 전체 모형에서 유의하지 않은 항을 하나씩 제거",
       level: "basic",
-      code: BACKWARD,
+      code: backwardCell(gPrep),
     },
     {
       title: "단계적 선택(stepwise) — 투입·제거를 번갈아 반복",
       level: "advanced",
-      code: STEPWISE,
+      code: stepwiseCell(gScore),
     },
     {
       title: "선택법 비교 표 · 최종 계수 표 · 추정 수식",
       level: "advanced",
-      code: compareCells(fam),
+      code: compareCells(fam, gSel),
     },
     {
       title: "선택 절차의 검증 — 표본 분할·선택 안정성",
       desc: "변수선택은 같은 데이터로 여러 번 검정하는 절차라 p값·R²가 낙관적으로 치우칩니다. 선택 결과가 표본에 얼마나 민감한지 확인합니다.",
       level: "advanced",
-      code: CAVEAT,
+      code: caveatCell(gSel),
     },
   ];
 }
