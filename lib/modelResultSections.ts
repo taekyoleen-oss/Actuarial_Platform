@@ -6,13 +6,16 @@
  * 계수·통계량을 골라 쓰기 어렵다.
  *
  * 해결: 방법(id)마다 아래를 `# %%` 셀로 나눈 한 섹션을 자동 생성해 파이썬·엑셀 두 탭에 함께 붙인다.
- *   ① 데이터 로드 + **열 자동 선택**(목표변수만 정하면 설명변수·범주형을 자동 분류)
- *   ② 적합 — 파이썬은 `summary()`를 그대로 출력(요약 유지), 엑셀은 식 문자열 반환
- *   ③ 계수·통계량 표(계수·표준오차·t/z·p값·95% CI) → 셀에 표로 스필
- *   ④ 적합도·검정통계량 표(R²·F·AIC·RMSE·AUC 등) → 별도 셀
- *   ⑤ (해당 모형만) 추정된 **수식** 문자열 — y = b0 + b1·x1 + …
+ *   1) **데이터 로드** — 파일(실행기)·시트 범위(엑셀)에서 표만 읽는다
+ *   2) **변수 설정** — 목표변수만 정하면 설명변수·범주형을 자동 분류(+열 역할 표, 직접 지정 예시)
+ *      뒤의 모든 셀이 여기서 만든 TARGET·NUMX·CATX 를 쓴다 — **한 곳만 고치면 전체에 반영**
+ *   3) 적합 — 파이썬은 `summary()`를 그대로 출력(요약 유지), 엑셀은 식 문자열 반환
+ *   4) 계수·통계량 표(계수·표준오차·t/z·p값·95% CI) → 셀에 표로 스필
+ *   5) 적합도·검정통계량 표(R²·F·AIC·RMSE·AUC 등) → 별도 셀
+ *   6) (해당 모형만) 추정된 **수식** 문자열 — y = b0 + b1·x1 + …
  *
- * 셀이 나뉘어 있으므로 사용자가 필요한 것만 선택 실행할 수 있다.
+ * 셀이 나뉘어 있으므로 사용자가 필요한 것만 선택 실행할 수 있다. 3) 이후 셀에는 실행되는
+ * 재구성 코드를 넣지 않고(반복 금지), 앞 셀 의존과 단독 실행 예시를 `#>` 주석 몇 줄로만 남긴다.
  * 코드는 numpy·pandas·scipy·statsmodels·scikit-learn만 사용 → 브라우저(Pyodide)·엑셀 공통 실행.
  */
 
@@ -268,12 +271,16 @@ function autoSelectCell(s: ResultSpec, env: Env, opts?: { noTarget?: boolean }):
     ? `TARGET = None                            # 목표변수 없음(비지도) — 수치형 전체를 설명변수로`
     : `TARGET = "${s.target ?? ""}"${" ".repeat(Math.max(1, 22 - (s.target ?? "").length))}# ← 목표변수(y). 실제 데이터의 열 이름으로 바꾸세요`;
   return `# %%
-# ① 데이터 로드 · 열 자동 선택 — 목표변수만 정하면 설명변수는 자동으로 골라 줍니다
+# 데이터 로드 — 파일(실행기)이나 시트 범위(엑셀)에서 표를 읽습니다
 import pandas as pd
 import numpy as np
 
 ${loadLine(s, env)}
+df.head()   # 열 이름·값을 눈으로 확인(다음 셀에서 목표변수·설명변수를 정합니다)
 
+# %%
+# 변수 설정 — 목표변수만 정하면 설명변수·범주형을 자동으로 분류합니다
+# (뒤의 모든 셀이 여기서 만든 TARGET·NUMX·CATX 를 씁니다 — 한 곳만 고치면 전체에 반영)
 ${targetLine}
 DROP = [${dropList}]${dropList ? "" : "                              "}  # 식별자처럼 모형에서 뺄 열
 MAX_LEVELS = 10                          # 범주형은 고유값이 이 수 이하일 때만 설명변수로 사용
@@ -298,42 +305,66 @@ roles = pd.DataFrame({
     "고유값": df.nunique().values,
     "역할": [role(c) for c in df.columns],
 })
+# 자동 분류가 마음에 안 들면 아래처럼 열 이름을 직접 지정하세요(주석을 풀고 수정):
+# TARGET = "premium"
+# NUMX = ["age", "bmi", "dependents"]      # 쓸 수치형 설명변수만
+# CATX = ["sex", "product"]                 # 쓸 범주형 설명변수만
 roles   # 셀에 '열 역할 표'가 표시됩니다 — 표를 보고 TARGET·DROP·MAX_LEVELS를 조정하세요`;
 }
 
 /**
- * (연결) 가드 — 앞 셀 변수가 없어도 이 셀만 단독 실행되도록 즉석 재구성한다(사용자 요청 2026-07-30).
- * 모형을 만드는 '본체' 코드는 셀에 그대로 두고, 부수적인 준비(데이터·열 선택·적합)만 가드로 감싼다.
+ * 앞 셀 의존 안내 — '데이터 로드'·'변수 설정' 셀에서 만든 변수를 쓴다고 알리고,
+ * 이 셀만 따로 실행할 때 붙여 쓸 최소 설정을 `#>` 주석 몇 줄로만 남긴다(사용자 요청 2026-07-30).
+ * 실행 가능한 재구성 코드를 셀마다 반복해 넣지 않는다 — 반복을 없애는 것이 목적.
  */
-export function guard(probe: string, body: string, errs = "NameError"): string {
-  const ind = body
+export function guard(probe: string, body: string, _errs = "NameError"): string {
+  const lines = body
     .trim()
     .split("\n")
-    .map((l) => (l.trim() ? `    ${l}` : ""))
+    .filter((l) => l.trim())
+    .map((l) => `#> ${l}`)
     .join("\n");
-  const clause = errs.includes(",") ? `(${errs})` : errs;
-  return `# (연결) 이 셀만 단독 실행해도 되도록 — 앞 셀 변수가 없으면 여기서 즉석 재구성합니다
-try:
-    ${probe}
-except ${clause}:
-${ind}
+  // 앞 셀의 '결과'가 꼭 필요한 경우(선택 결과·사용자 정의 함수)는 #> 로 다 만들 수 없음을 명시
+  const partial = /먼저 실행하세요/.test(probe);
+  const second = partial
+    ? "# (아래 #> 는 데이터·변수만 다시 만드는 예시입니다 — 위에 적힌 앞 셀 결과는 그 셀에서만 만들어집니다)"
+    : "# 이 셀만 따로 실행하려면 아래 #> 주석을 풀어 주세요 — 열 이름은 내 데이터에 맞게 고칩니다.";
+  return `# 이 셀은 앞의 '데이터 로드'·'변수 설정' 셀에서 만든 ${probe} 를 그대로 씁니다(변수는 셀 사이에 유지).
+${second}
+${lines}
 `;
 }
 
-/** 데이터 로드 + 열 자동 선택의 압축판 — 가드 본문용('열 역할 표'는 생략) */
+/** 파일별 예시 열 이름 — `#>` 주석에서 '열 이름을 직접 지정하는 예'로 쓴다 */
+const EXAMPLE_COLS: Record<string, { num: string[]; cat: string[] }> = {
+  "policy.xlsx": {
+    num: ["age", "bmi", "dependents", "premium", "income"],
+    cat: ["sex", "product"],
+  },
+  "claims.xlsx": {
+    num: ["age", "claim_amt", "claim_cnt", "prem_before"],
+    cat: ["product", "sex"],
+  },
+  "experience.xlsx": { num: ["entry_age", "duration_years"], cat: ["sex", "product"] },
+};
+
+const pyList = (a: string[]) => "[" + a.map((c) => `"${c}"`).join(", ") + "]";
+
+/** 최소 설정 예시(2~3줄) — 셀마다 반복되던 열 자동 선택 코드를 대체 */
 function dataPrepBody(s: ResultSpec, env: Env, noTarget = false): string {
-  const dropList = (s.drop ?? []).map((c) => `"${c}"`).join(", ");
-  return `import pandas as pd
-import numpy as np
-${loadLine(s, env).replace(/ {2,}#.*$/, "")}
-TARGET = ${noTarget ? "None" : `"${s.target ?? ""}"`}
-DROP = [${dropList}]
-num_all = [c for c in df.select_dtypes("number").columns if c not in DROP]
-cat_all = [c for c in df.select_dtypes(["object", "category", "bool"]).columns if c not in DROP]
-if TARGET is not None and TARGET not in df.columns:
-    TARGET = num_all[-1]
-NUMX = [c for c in num_all if c != TARGET]
-CATX = [c for c in cat_all if c != TARGET and 2 <= df[c].nunique() <= 10]`;
+  const ex = EXAMPLE_COLS[s.file] ?? EXAMPLE_COLS["policy.xlsx"];
+  const num = ex.num.filter((c) => c !== s.target).slice(0, 3);
+  const cat = ex.cat.filter((c) => c !== s.target).slice(0, 2);
+  const load =
+    env === "py"
+      ? `df = pd.read_excel("${s.file}")   # 엑셀에서는 df = xl("${s.table}", headers=True)`
+      : `df = xl("${s.table}", headers=True)   # 실행기에서는 df = pd.read_excel("${s.file}")`;
+  const vars = noTarget
+    ? `NUMX, CATX = ${pyList(num)}, ${pyList(cat)}   # 쓸 수치형·범주형 열`
+    : `TARGET, NUMX, CATX = "${s.target ?? ""}", ${pyList(num)}, ${pyList(cat)}`;
+  return `import pandas as pd, numpy as np
+${load}
+${vars}`;
 }
 
 /** 계수 → 사람이 읽는 수식 문자열(공통 헬퍼 정의 줄) */
@@ -348,8 +379,8 @@ const EQ_HELPER = `def eq_text(names, coefs, intercept, lhs, digits=4):
 const summaryTail = (env: Env) =>
   env === "py"
     ? `print("사용된 식:", FORMULA)
-print(model.summary())   # 파이썬: 요약표를 그대로 확인(엑셀에서는 아래 표 셀로 나눠 봅니다)`
-    : `# summary()는 =PY() 셀에 제대로 표시되지 않으므로 아래 ③·④ 셀의 '표'로 나눠 봅니다
+print(model.summary())   # 파이썬: 요약표를 그대로 확인(엑셀에서는 뒤의 표 셀로 나눠 봅니다)`
+    : `# summary()는 =PY() 셀에 제대로 표시되지 않으므로 아래 '계수 표'·'적합도' 셀로 나눠 봅니다
 FORMULA   # 셀에는 사용된 식 문자열이 표시됩니다`;
 
 /** 유의성 별표 열 — 계수 표 공통 */
@@ -359,22 +390,21 @@ const STAR = `tbl["유의성"] = np.where(tbl["p값"] < 0.001, "***",
 
 /* ────────────────────────── kind별 코드 ────────────────────────── */
 
+const OLS_FIT_HINT = `import statsmodels.formula.api as smf
+model = smf.ols(f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX]), data=df).fit()`;
+
 const OLS_FIT = `import statsmodels.formula.api as smf
 FORMULA = f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX])
 model = smf.ols(FORMULA, data=df).fit()`;
 
 function olsCode(s: ResultSpec, env: Env): string {
   // ③ 이후 셀은 model(OLS 적합)이 필요 — 없으면 데이터·열 선택·적합까지 가드에서 재구성
-  const g = guard(
-    "model.rsquared",
-    `${dataPrepBody(s, env)}\n${OLS_FIT}`,
-    "NameError, AttributeError"
-  );
+  const g = guard("df · TARGET · NUMX · CATX · model", `${dataPrepBody(s, env)}\n${OLS_FIT_HINT}`);
   return `${autoSelectCell(s, env)}
 
 # %%
-# ② 회귀식 자동 구성 · 적합 — 범주형은 C()로 감싸 자동 처리
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 회귀식 자동 구성 · 적합 — 범주형은 C()로 감싸 자동 처리
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 import statsmodels.formula.api as smf
 
 FORMULA = f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX])
@@ -382,7 +412,7 @@ model = smf.ols(FORMULA, data=df).fit()
 ${summaryTail(env)}
 
 # %%
-# ③ 계수 표 — 변수·계수·표준오차·t값·p값·95% 신뢰구간(셀에 표로 반환)
+# 계수 표 — 변수·계수·표준오차·t값·p값·95% 신뢰구간(셀에 표로 반환)
 ${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
@@ -398,7 +428,7 @@ ${STAR}
 tbl.round(4)   # p값 < 0.05(*)면 해당 변수의 효과가 통계적으로 유의
 
 # %%
-# ④ 적합도·검정통계량 표 — R²·F검정·AIC·RMSE를 한 표로(셀에 표로 반환)
+# 적합도·검정통계량 표 — R²·F검정·AIC·RMSE를 한 표로(셀에 표로 반환)
 ${g}
 resid = model.resid
 mape = (resid.abs() / df[TARGET].replace(0, np.nan)).mean() * 100
@@ -413,7 +443,7 @@ fit_stats = pd.DataFrame({
 fit_stats.round(4)   # R²=설명력, F검정 p<0.05면 모형 전체가 유의, RMSE=예측 오차 크기
 
 # %%
-# ⑤ 추정된 회귀식 — 보고서·셀에 그대로 쓰는 수식 문자열
+# 추정된 회귀식 — 보고서·셀에 그대로 쓰는 수식 문자열
 ${g}
 ${EQ_HELPER}
 
@@ -423,6 +453,10 @@ names = [n for n in p.index if n != "Intercept"]
 EQ = eq_text(names, [p[n] for n in names], b0, TARGET)
 EQ   # 예) premium = 12,345.6789 + 1,234.5678·age - 987.6543·bmi`;
 }
+
+const LOGIT_FIT_HINT = `import statsmodels.formula.api as smf
+d = df.assign(**{TARGET: df[TARGET].astype(int)})
+model = smf.logit(f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX]), data=d).fit(disp=0)`;
 
 const LOGIT_FIT = `import statsmodels.formula.api as smf
 yraw = df[TARGET]
@@ -437,16 +471,12 @@ const LOGIT_PRED = `y = pd.Series(np.asarray(model.model.endog), name=TARGET)
 p_hat = pd.Series(np.asarray(model.predict()), name="예측확률")`;
 
 function logitCode(s: ResultSpec, env: Env): string {
-  const g = guard(
-    "model.prsquared",
-    `${dataPrepBody(s, env)}\n${LOGIT_FIT}`,
-    "NameError, AttributeError"
-  );
+  const g = guard("df · TARGET · NUMX · CATX · model", `${dataPrepBody(s, env)}\n${LOGIT_FIT_HINT}`);
   return `${autoSelectCell(s, env)}
 
 # %%
-# ② 로짓식 자동 구성 · 적합 — 목표변수를 0/1로 변환(불리언·문자 라벨 모두 대응)
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 로짓식 자동 구성 · 적합 — 목표변수를 0/1로 변환(불리언·문자 라벨 모두 대응)
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 import statsmodels.formula.api as smf
 
 yraw = df[TARGET]
@@ -459,7 +489,7 @@ model = smf.logit(FORMULA, data=d).fit(disp=0)
 ${summaryTail(env)}
 
 # %%
-# ③ 계수·오즈비 표 — 계수(log-odds)·표준오차·z값·p값·오즈비와 95% 구간(셀에 표로 반환)
+# 계수·오즈비 표 — 계수(log-odds)·표준오차·z값·p값·오즈비와 95% 구간(셀에 표로 반환)
 ${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
@@ -476,7 +506,7 @@ ${STAR}
 tbl.round(4)   # 오즈비 > 1 이면 사건(=1) 발생 위험을 높이는 요인
 
 # %%
-# ④ 적합도·분류 성능 표 — 우도비 검정·pseudo R²·AIC·AUC를 한 표로(셀에 표로 반환)
+# 적합도·분류 성능 표 — 우도비 검정·pseudo R²·AIC·AUC를 한 표로(셀에 표로 반환)
 ${g}
 from sklearn.metrics import roc_auc_score, average_precision_score, accuracy_score, brier_score_loss
 
@@ -495,7 +525,7 @@ perf = pd.DataFrame({
 perf.round(4)   # LR 검정 p<0.05면 모형이 영모형보다 유의, AUC 0.7↑이면 실무적으로 쓸 만함
 
 # %%
-# ⑤ 혼동행렬 표 — 임계값을 바꿔 가며 실제/예측 교차표 확인(셀에 표로 반환)
+# 혼동행렬 표 — 임계값을 바꿔 가며 실제/예측 교차표 확인(셀에 표로 반환)
 ${g}${guard("p_hat", LOGIT_PRED)}
 CUTOFF = 0.5   # ← 업무 비용에 맞춰 조정(놓치면 손해가 크면 낮춘다)
 cm = pd.crosstab(y, (p_hat >= CUTOFF).astype(int),
@@ -503,7 +533,7 @@ cm = pd.crosstab(y, (p_hat >= CUTOFF).astype(int),
 cm
 
 # %%
-# ⑥ 추정된 로짓식 — 확률식까지 함께(보고서·셀에 그대로 사용)
+# 추정된 로짓식 — 확률식까지 함께(보고서·셀에 그대로 사용)
 ${g}
 ${EQ_HELPER}
 
@@ -515,6 +545,12 @@ EQ = Z + "   →   p = 1 / (1 + exp(-z))"
 EQ   # 예) z = -2.1234 + 0.0456·age … → p = 1 / (1 + exp(-z))`;
 }
 
+const GLM_FIT_HINT = `import statsmodels.api as sm
+import statsmodels.formula.api as smf
+EXPOSURE = None   # 노출 열이 있으면 "exposure" 처럼 지정
+model = smf.glm(f"{TARGET} ~ " + " + ".join(NUMX + [f"C({c})" for c in CATX]), data=df,
+                family=sm.families.Poisson()).fit()`;
+
 const GLM_FIT = `import statsmodels.api as sm
 import statsmodels.formula.api as smf
 EXPOSURE = "exposure" if "exposure" in df.columns else None
@@ -524,16 +560,12 @@ FORMULA = f"{TARGET} ~ " + " + ".join(FEATS + [f"C({c})" for c in CATX])
 model = smf.glm(FORMULA, data=df, family=sm.families.Poisson(), offset=offset).fit()`;
 
 function glmCode(s: ResultSpec, env: Env): string {
-  const g = guard(
-    "model.deviance",
-    `${dataPrepBody(s, env)}\n${GLM_FIT}`,
-    "NameError, AttributeError"
-  );
+  const g = guard("df · TARGET · NUMX · CATX · model", `${dataPrepBody(s, env)}\n${GLM_FIT_HINT}`);
   return `${autoSelectCell(s, env)}
 
 # %%
-# ② GLM 적합 — 건수(포아송) + 노출(exposure) 열이 있으면 offset으로 자동 반영
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# GLM 적합 — 건수(포아송) + 노출(exposure) 열이 있으면 offset으로 자동 반영
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
@@ -546,7 +578,7 @@ model = smf.glm(FORMULA, data=df, family=sm.families.Poisson(), offset=offset).f
 ${summaryTail(env)}
 
 # %%
-# ③ 계수·요율 상대도 표 — exp(계수)가 기준 대비 배수(relativity)입니다
+# 계수·요율 상대도 표 — exp(계수)가 기준 대비 배수(relativity)입니다
 ${g}
 ci = model.conf_int()
 tbl = pd.DataFrame({
@@ -563,7 +595,7 @@ ${STAR}
 tbl.round(4)   # 상대도 1.20 → 기준 수준보다 20% 높은 빈도
 
 # %%
-# ④ 적합도·과산포 진단 표 — deviance·Pearson χ²·AIC를 한 표로(셀에 표로 반환)
+# 적합도·과산포 진단 표 — deviance·Pearson χ²·AIC를 한 표로(셀에 표로 반환)
 ${g}
 dev_df = model.deviance / model.df_resid
 pear_df = float(model.pearson_chi2) / model.df_resid
@@ -578,7 +610,7 @@ fit_stats = pd.DataFrame({
 fit_stats.round(4)   # Pearson χ²/df 가 1보다 크게 벗어나면 과산포(→ 음이항·quasi 고려)
 
 # %%
-# ⑤ 추정된 GLM 식 — 로그연결함수 기준(선형예측자 → 기대값)
+# 추정된 GLM 식 — 로그연결함수 기준(선형예측자 → 기대값)
 ${g}
 ${EQ_HELPER}
 
@@ -618,11 +650,35 @@ MODELS = {
 fits = {name: est.fit(X_tr, y_tr) for name, est in MODELS.items()}`;
 }
 
+/** MODELS 첫 항목의 추정기 식 — `#>` 예시에서 한 줄로 학습시킬 때 쓴다 */
+function firstEst(s: ResultSpec): string {
+  const first = (s.models ?? "").split(/,\s*\n/)[0] ?? "";
+  return (
+    first
+      .replace(/^\s*"[^"]*":\s*/, "")
+      .replace(/,\s*$/, "") // 항목이 하나뿐이면 끝의 쉼표가 남는다
+      .trim() || "LinearRegression()"
+  );
+}
+
+/** sklearn 최소 학습 예시(4~5줄) — 셀마다 반복되던 학습 블록을 대체 */
+function skHintBody(s: ResultSpec, kind: "reg" | "clf"): string {
+  const imports = (s.imports ?? []).join("\n");
+  const y = kind === "clf" ? `df[TARGET].astype(int)` : `df[TARGET].astype(float)`;
+  const strat = kind === "clf" ? ", stratify=y" : "";
+  return `from sklearn.model_selection import train_test_split
+${imports}
+X = pd.get_dummies(df[NUMX + CATX], columns=CATX, drop_first=True).astype(float)
+y = ${y}
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2${strat}, random_state=42)
+fits = {"모델": ${firstEst(s)}.fit(X_tr, y_tr)}; PICK = "모델"`;
+}
+
 /** ② 학습 셀 = 본문 + 요약 표 */
 function skFitCell(s: ResultSpec, env: Env, kind: "reg" | "clf"): string {
   return `# %%
-# ② 학습 데이터 구성(범주형 자동 원-핫) · 모델 학습
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 학습 데이터 구성(범주형 자동 원-핫) · 모델 학습
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 ${skBody(s, kind)}
 pd.DataFrame({"학습된 모델": list(fits), "학습 표본": len(X_tr), "검증 표본": len(X_te),
               "설명변수 수": X.shape[1]})`;
@@ -630,7 +686,7 @@ pd.DataFrame({"학습된 모델": list(fits), "학습 표본": len(X_tr), "검�
 
 /** 계수·중요도 표 — coef_ / feature_importances_ / 순열중요도를 자동 판별 */
 const importanceCell = (g: string) => `# %%
-# ③ 변수 영향력 표 — 계수 또는 중요도를 자동으로 골라 표로(셀에 표로 반환)
+# 변수 영향력 표 — 계수 또는 중요도를 자동으로 골라 표로(셀에 표로 반환)
 ${g}
 PICK = list(fits)[0]        # ← 표를 볼 모델 이름(위 표의 이름 중 하나로 바꾸세요)
 m = fits[PICK]
@@ -650,8 +706,7 @@ imp.round(4)   # 계수는 부호(+/-)까지, 중요도는 크기만 의미가 �
 
 function skRegCode(s: ResultSpec, env: Env): string {
   // ③ 이후 셀은 fits(학습된 모델)가 필요 — 없으면 데이터·분할·학습까지 가드에서 재구성
-  const g = guard("fits", `${dataPrepBody(s, env)}
-${skBody(s, "reg")}`);
+  const g = guard("df · TARGET · NUMX · CATX · fits", `${dataPrepBody(s, env)}\n${skHintBody(s, "reg")}`);
   return `${autoSelectCell(s, env)}
 
 ${skFitCell(s, env, "reg")}
@@ -659,7 +714,7 @@ ${skFitCell(s, env, "reg")}
 ${importanceCell(g)}
 
 # %%
-# ④ 검정통계량·성능 표 — 모델×(학습/검증)별 RMSE·MAE·MAPE·R²(셀에 표로 반환)
+# 검정통계량·성능 표 — 모델×(학습/검증)별 RMSE·MAE·MAPE·R²(셀에 표로 반환)
 ${g}
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
@@ -678,7 +733,7 @@ metrics = pd.DataFrame(rows).round(4)
 metrics   # 학습 대비 검증 RMSE가 크게 나쁘면 과적합 — 규제를 키우거나 변수를 줄이세요
 
 # %%
-# ⑤ 추정된 예측식 — 선형 모델일 때 수식으로(트리·부스팅은 수식이 없어 생략)
+# 추정된 예측식 — 선형 모델일 때 수식으로(트리·부스팅은 수식이 없어 생략)
 ${g}${guard("PICK", "PICK = list(fits)[0]")}
 ${EQ_HELPER}
 
@@ -687,13 +742,12 @@ inner = m[-1] if hasattr(m, "steps") else m
 if hasattr(inner, "coef_"):
     EQ = eq_text(X.columns, np.ravel(inner.coef_), float(np.ravel(inner.intercept_)[0]), TARGET)
 else:
-    EQ = f"{PICK}: 트리·부스팅 계열은 계수 수식이 없습니다 — ③의 중요도 표로 해석하세요"
+    EQ = f"{PICK}: 트리·부스팅 계열은 계수 수식이 없습니다 — '변수 영향력 표'로 해석하세요"
 EQ`;
 }
 
 function skClfCode(s: ResultSpec, env: Env): string {
-  const g = guard("fits", `${dataPrepBody(s, env)}
-${skBody(s, "clf")}`);
+  const g = guard("df · TARGET · NUMX · CATX · fits", `${dataPrepBody(s, env)}\n${skHintBody(s, "clf")}`);
   return `${autoSelectCell(s, env)}
 
 ${skFitCell(s, env, "clf")}
@@ -701,7 +755,7 @@ ${skFitCell(s, env, "clf")}
 ${importanceCell(g)}
 
 # %%
-# ④ 검정통계량·분류 성능 표 — 모델별 정확도·정밀도·재현율·F1·AUC(셀에 표로 반환)
+# 검정통계량·분류 성능 표 — 모델별 정확도·정밀도·재현율·F1·AUC(셀에 표로 반환)
 ${g}
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
                              roc_auc_score, average_precision_score, brier_score_loss)
@@ -725,7 +779,7 @@ metrics = pd.DataFrame(rows).round(4)
 metrics   # 사건이 드물면 정확도보다 PR-AUC·재현율을 먼저 보세요
 
 # %%
-# ⑤ 혼동행렬 표 — 임계값을 바꿔 실제/예측 교차표 확인(셀에 표로 반환)
+# 혼동행렬 표 — 임계값을 바꿔 실제/예측 교차표 확인(셀에 표로 반환)
 ${g}${guard("PICK, CUTOFF", ["PICK = list(fits)[0]", "CUTOFF = 0.5"].join("\n"))}
 m = fits[PICK]
 prob = m.predict_proba(X_te)[:, 1] if hasattr(m, "predict_proba") else m.decision_function(X_te)
@@ -744,17 +798,21 @@ Z = StandardScaler().fit_transform(base)
 model = ${s.est}
 labels = model.fit_predict(Z)`;
   // ③ 이후 셀은 base·Z·labels가 필요 — 없으면 데이터·표준화·적합까지 가드에서 재구성
-  const g = guard("labels", `${dataPrepBody(s, env, true)}\n${body}`);
+  const hintBody = `from sklearn.preprocessing import StandardScaler
+${imports}
+base = df[NUMX].dropna(); Z = StandardScaler().fit_transform(base)
+model = ${s.est}; labels = model.fit_predict(Z)`;
+  const g = guard("df · NUMX · base · Z · labels", `${dataPrepBody(s, env, true)}\n${hintBody}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
-# ② 표준화 · 군집 적합 — 수치형 설명변수를 자동으로 사용(척도 차이는 표준화로 제거)
-${guard("NUMX", dataPrepBody(s, env, true))}
+# 표준화 · 군집 적합 — 수치형 설명변수를 자동으로 사용(척도 차이는 표준화로 제거)
+${guard("df · NUMX", dataPrepBody(s, env, true))}
 ${body}
 pd.DataFrame({"사용 변수": NUMX, "관측수": len(base)})
 
 # %%
-# ③ 군집 크기·프로파일 표 — 군집별 평균을 원래 단위로(셀에 표로 반환)
+# 군집 크기·프로파일 표 — 군집별 평균을 원래 단위로(셀에 표로 반환)
 ${g}
 prof = base.assign(군집=labels).groupby("군집").agg(["mean"])
 prof.columns = [c[0] for c in prof.columns]
@@ -764,7 +822,7 @@ prof.insert(1, "비율(%)", (size.values / len(base) * 100))
 prof.round(3)   # 군집별로 어떤 변수가 높고 낮은지 = 군집의 성격
 
 # %%
-# ④ 군집 품질 지표 표 — 실루엣·CH·DB를 한 표로(셀에 표로 반환)
+# 군집 품질 지표 표 — 실루엣·CH·DB를 한 표로(셀에 표로 반환)
 ${g}
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
@@ -784,21 +842,21 @@ base = df[NUMX].dropna()
 Z = StandardScaler().fit_transform(base)
 model = PCA().fit(Z)
 scores = model.transform(Z)`;
-  const g = guard(
-    "model.components_",
-    `${dataPrepBody(s, env, true)}\n${body}`,
-    "NameError, AttributeError"
-  );
+  const hintBody = `from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+base = df[NUMX].dropna(); Z = StandardScaler().fit_transform(base)
+model = PCA().fit(Z); scores = model.transform(Z)`;
+  const g = guard("df · NUMX · base · model(PCA) · scores", `${dataPrepBody(s, env, true)}\n${hintBody}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
-# ② 표준화 · 주성분 적합 — 수치형 설명변수를 자동으로 사용
-${guard("NUMX", dataPrepBody(s, env, true))}
+# 표준화 · 주성분 적합 — 수치형 설명변수를 자동으로 사용
+${guard("df · NUMX", dataPrepBody(s, env, true))}
 ${body}
 pd.DataFrame({"사용 변수": NUMX, "관측수": len(base)})
 
 # %%
-# ③ 설명분산 표 — 성분별 고유값·설명비율·누적비율(셀에 표로 반환)
+# 설명분산 표 — 성분별 고유값·설명비율·누적비율(셀에 표로 반환)
 ${g}
 ev = model.explained_variance_
 ratio = model.explained_variance_ratio_
@@ -811,7 +869,7 @@ var_tbl = pd.DataFrame({
 var_tbl.round(4)   # 고유값 1 이상 또는 누적 70~80%까지를 성분 수로 택하는 것이 관례
 
 # %%
-# ④ 로딩(적재량) 표 — 각 성분이 어떤 변수로 이뤄졌는지(셀에 표로 반환)
+# 로딩(적재량) 표 — 각 성분이 어떤 변수로 이뤄졌는지(셀에 표로 반환)
 ${g}
 K = min(3, model.n_components_)   # ← 볼 성분 수
 load = pd.DataFrame(model.components_[:K].T, index=NUMX,
@@ -819,7 +877,7 @@ load = pd.DataFrame(model.components_[:K].T, index=NUMX,
 load.round(4)   # 절대값이 큰 변수가 그 성분의 의미를 결정합니다
 
 # %%
-# ⑤ 주성분 식 — PC1 = w1·x1 + w2·x2 + … (표준화된 변수 기준)
+# 주성분 식 — PC1 = w1·x1 + w2·x2 + … (표준화된 변수 기준)
 ${g}
 ${EQ_HELPER}
 
@@ -842,16 +900,19 @@ cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 res = cross_validate(est, X, y, cv=cv, scoring=["accuracy", "roc_auc", "average_precision", "f1"],
                      return_train_score=True)`;
   // ③④는 res(교차검증 결과)가 필요 — 없으면 가드에서 교차검증을 다시 수행
-  const g = guard(
-    'res["test_roc_auc"]',
-    `${dataPrepBody(s, env)}\n${body}`,
-    "NameError, KeyError, TypeError"
-  );
+  const hintBody = `from sklearn.model_selection import StratifiedKFold, cross_validate
+${imports}
+X = pd.get_dummies(df[NUMX + CATX], columns=CATX, drop_first=True).astype(float)
+y = df[TARGET].astype(int)
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+res = cross_validate(${s.est}, X, y, cv=cv, return_train_score=True,
+                     scoring=["accuracy", "roc_auc", "average_precision", "f1"])`;
+  const g = guard("X · y · res(교차검증 결과)", `${dataPrepBody(s, env)}\n${hintBody}`);
   return `${autoSelectCell(s, env)}
 
 # %%
-# ② 교차검증 실행 — 열 자동 선택 결과로 X·y 구성(범주형 원-핫)
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 교차검증 실행 — 열 자동 선택 결과로 X·y 구성(범주형 원-핫)
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 from sklearn.model_selection import StratifiedKFold, cross_validate
 ${imports}
 
@@ -870,7 +931,7 @@ pd.DataFrame({"설정": ["분할 수", "표본", "설명변수", "지표"],
               "값": [cv.get_n_splits(), len(X), X.shape[1], "정확도·ROC-AUC·PR-AUC·F1"]})
 
 # %%
-# ③ 폴드별 점수 표 — 각 분할의 검증 점수(셀에 표로 반환)
+# 폴드별 점수 표 — 각 분할의 검증 점수(셀에 표로 반환)
 ${g}
 folds = pd.DataFrame({
     "폴드": [f"{i+1}겹" for i in range(len(res["test_accuracy"]))],
@@ -884,7 +945,7 @@ folds = pd.DataFrame({
 folds.round(4)   # 폴드 간 점수가 크게 흔들리면 표본이 적거나 불안정한 모형입니다
 
 # %%
-# ④ 검정통계량 요약 표 — 평균±표준편차와 95% 신뢰구간(셀에 표로 반환)
+# 검정통계량 요약 표 — 평균±표준편차와 95% 신뢰구간(셀에 표로 반환)
 ${g}
 rows = []
 for key, name in [("test_accuracy", "정확도"), ("test_roc_auc", "ROC-AUC"),
@@ -907,12 +968,16 @@ Z = StandardScaler().fit_transform(base)
 model = ${s.est}
 flag = model.fit_predict(Z)
 score = -model.score_samples(Z)`;
-  const g = guard("flag", `${dataPrepBody(s, env, true)}\n${body}`);
+  const hintBody = `from sklearn.preprocessing import StandardScaler
+${imports}
+base = df[NUMX].dropna(); Z = StandardScaler().fit_transform(base)
+model = ${s.est}; flag = model.fit_predict(Z); score = -model.score_samples(Z)`;
+  const g = guard("df · NUMX · base · flag · score", `${dataPrepBody(s, env, true)}\n${hintBody}`);
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
-# ② 이상치 점수 산출 — 수치형 설명변수를 자동으로 사용
-${guard("NUMX", dataPrepBody(s, env, true))}
+# 이상치 점수 산출 — 수치형 설명변수를 자동으로 사용
+${guard("df · NUMX", dataPrepBody(s, env, true))}
 from sklearn.preprocessing import StandardScaler
 ${imports}
 
@@ -924,7 +989,7 @@ score = -model.score_samples(Z)          # 클수록 이상(부호를 뒤집어 
 pd.DataFrame({"사용 변수": NUMX, "관측수": len(base), "이상 판정": int((flag == -1).sum())})
 
 # %%
-# ③ 상위 이상치 표 — 점수가 높은 관측을 원래 값과 함께(셀에 표로 반환)
+# 상위 이상치 표 — 점수가 높은 관측을 원래 값과 함께(셀에 표로 반환)
 ${g}
 TOPN = 10   # ← 보고 싶은 건수
 top = (base.assign(이상점수=score, 판정=np.where(flag == -1, "이상", "정상"))
@@ -932,7 +997,7 @@ top = (base.assign(이상점수=score, 판정=np.where(flag == -1, "이상", "�
 top.round(4)   # 통계적 이례일 뿐 곧 '사기'는 아닙니다 — 심사 검토가 필요합니다
 
 # %%
-# ④ 임계값별 건수·검정통계량 표 — 점수 분위수 컷오프별 적출 건수(셀에 표로 반환)
+# 임계값별 건수·검정통계량 표 — 점수 분위수 컷오프별 적출 건수(셀에 표로 반환)
 ${g}
 rows = []
 for q in [0.90, 0.95, 0.98, 0.99, 0.995]:
@@ -968,13 +1033,18 @@ EVT = next((c for c in df.columns if c in ("event", "died", "lapsed", "status"))
 GRP = CATX[0] if CATX else None
 surv = df[[c for c in [DUR, EVT, GRP] if c]].dropna()
 surv[EVT] = surv[EVT].astype(int)`;
-  const gSurv = guard("surv", `${dataPrepBody(s, env, true)}\n${survBody}`);
-  const gKm = guard("km_table, surv", `${dataPrepBody(s, env, true)}\n${survBody}\n${KM_TABLE_DEF}`);
+  const survHint = `DUR, EVT, GRP = "duration_years", "event", "sex"   # 기간·사건(1=발생)·그룹 열
+surv = df[[DUR, EVT, GRP]].dropna(); surv[EVT] = surv[EVT].astype(int)`;
+  const gSurv = guard("df · DUR · EVT · GRP · surv", `${dataPrepBody(s, env, true)}\n${survHint}`);
+  const gKm = guard(
+    "surv 와 앞 '생존표' 셀에서 정의한 km_table 함수(그 셀을 먼저 실행하세요)",
+    `${dataPrepBody(s, env, true)}\n${survHint}`
+  );
   return `${autoSelectCell(s, env, { noTarget: true })}
 
 # %%
-# ② 생존분석 열 자동 지정 — 기간·사건 열을 이름으로 추정(없으면 직접 지정)
-${guard("NUMX, CATX", dataPrepBody(s, env, true))}
+# 생존분석 열 자동 지정 — 기간·사건 열을 이름으로 추정(없으면 직접 지정)
+${guard("df · NUMX · CATX", dataPrepBody(s, env, true))}
 DUR = next((c for c in NUMX if c in ("duration_years", "duration", "tenure_months", "time")), NUMX[0])
 EVT = next((c for c in df.columns if c in ("event", "died", "lapsed", "status")), None)
 GRP = CATX[0] if CATX else None          # 비교할 그룹(예: 성별) — 없으면 전체 한 곡선
@@ -986,7 +1056,7 @@ pd.DataFrame({"역할": ["기간(duration)", "사건(event 1=발생)", "그룹"]
               "관측수": [len(surv), int(surv[EVT].sum()), surv[GRP].nunique() if GRP else 1]})
 
 # %%
-# ③ Kaplan-Meier 생존표 — S(t)=Π(1−dᵢ/nᵢ)와 Greenwood 95% CI(셀에 표로 반환)
+# Kaplan-Meier 생존표 — S(t)=Π(1−dᵢ/nᵢ)와 Greenwood 95% CI(셀에 표로 반환)
 ${gSurv}
 ${KM_TABLE_DEF}
 
@@ -994,7 +1064,7 @@ km = km_table(surv[DUR], surv[EVT])
 km.round(4)   # S(t)=t시점까지 사건이 없을 확률(중도절단은 위험집합에서 빠짐)
 
 # %%
-# ④ 그룹 비교·log-rank 검정 표 — 중위생존시간과 검정통계량(셀에 표로 반환)
+# 그룹 비교·log-rank 검정 표 — 중위생존시간과 검정통계량(셀에 표로 반환)
 ${gKm}
 rows = []
 if GRP:
@@ -1049,18 +1119,22 @@ DATE = next((c for c in df.columns
 VALUE = df.select_dtypes("number").columns[-1]
 ser = df.set_index(pd.to_datetime(df[DATE])) [VALUE] if DATE else df[VALUE]
 ser = ser.astype(float).dropna()`;
-  const gFit = guard(
-    "model.aic",
-    `${serBody}\nfrom statsmodels.tsa.arima.model import ARIMA\nORDER = (1, 1, 1)\nmodel = ARIMA(ser, order=ORDER).fit()`,
-    "NameError, AttributeError"
-  );
+  const serHint = `import pandas as pd, numpy as np
+from statsmodels.tsa.arima.model import ARIMA
+idx = pd.date_range("2020-01-01", periods=60, freq="MS")   # 내 시계열로 바꾸세요
+ser = pd.Series(100 + np.arange(60) * 0.8 + np.sin(np.arange(60) / 6) * 5, index=idx)
+ORDER = (1, 1, 1); model = ARIMA(ser, order=ORDER).fit()`;
+  const gFit = guard("ser · ORDER · model(ARIMA 적합)", serHint);
   return `# %%
-# ① 데이터 로드 · 날짜·값 열 자동 선택 — 이름·자료형으로 추정합니다
+# 데이터 로드 — 시계열 표를 읽습니다(파일이 없으면 합성 시계열로 바로 실행)
 import pandas as pd
 import numpy as np
 
 ${load}
+df.head()
 
+# %%
+# 변수 설정 — 날짜 열·값 열을 이름·자료형으로 추정합니다(뒤 셀이 ser 를 씁니다)
 DATE = next((c for c in df.columns
              if "date" in str(c).lower() or "month" in str(c).lower()
              or str(df[c].dtype).startswith("datetime")), None)
@@ -1073,8 +1147,8 @@ pd.DataFrame({"항목": ["날짜 열", "값 열", "관측수", "시작", "끝"],
                      str(ser.index[0]), str(ser.index[-1])]})
 
 # %%
-# ② ARIMA 적합 — 차수(p,d,q)를 지정해 적합
-${guard("ser", serBody)}
+# ARIMA 적합 — 차수(p,d,q)를 지정해 적합
+${guard("ser(시계열) · DATE · VALUE", serHint)}
 from statsmodels.tsa.arima.model import ARIMA
 
 ORDER = (1, 1, 1)   # ← (p,d,q): p=자기회귀, d=차분, q=이동평균
@@ -1087,7 +1161,7 @@ f"ARIMA{ORDER} 적합 완료 — 관측 {len(ser)}개"`
 }
 
 # %%
-# ③ 계수 표 — 항목·계수·표준오차·z값·p값·95% 신뢰구간(셀에 표로 반환)
+# 계수 표 — 항목·계수·표준오차·z값·p값·95% 신뢰구간(셀에 표로 반환)
 ${gFit}
 ci = model.conf_int()
 tbl = pd.DataFrame({
@@ -1103,7 +1177,7 @@ ${STAR}
 tbl.round(4)   # ar.L1=자기회귀 계수, ma.L1=이동평균 계수, sigma2=오차분산
 
 # %%
-# ④ 적합도·검정통계량 표 — AIC·BIC·RMSE·Ljung-Box(잔차 백색잡음 검정)
+# 적합도·검정통계량 표 — AIC·BIC·RMSE·Ljung-Box(잔차 백색잡음 검정)
 ${gFit}
 import statsmodels.api as sm
 
@@ -1119,7 +1193,7 @@ fit_stats = pd.DataFrame({
 fit_stats.round(4)   # Ljung-Box p>0.05면 잔차에 남은 패턴이 없다(적합 양호)
 
 # %%
-# ⑤ 추정된 모형식 · 예측 표 — 수식과 향후 예측을 함께(셀에 표로 반환)
+# 추정된 모형식 · 예측 표 — 수식과 향후 예측을 함께(셀에 표로 반환)
 ${gFit}
 p = model.params
 ar = " ".join([f"{'+' if p[n] >= 0 else '-'} {abs(p[n]):.4f}·y(t-{i+1})"
@@ -1141,8 +1215,8 @@ function testCode(s: ResultSpec, env: Env): string {
   return `${autoSelectCell(s, env)}
 
 # %%
-# ② 기술통계 표 — 검정 전에 그룹별 n·평균·표준편차·중위수 확인(셀에 표로 반환)
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 기술통계 표 — 검정 전에 그룹별 n·평균·표준편차·중위수 확인(셀에 표로 반환)
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 GROUP = CATX[0] if CATX else None   # ← 비교할 범주형 열(없으면 전체 요약)
 if GROUP:
     desc = df.groupby(GROUP)[TARGET].agg(건수="count", 평균="mean", 표준편차="std",
@@ -1152,8 +1226,8 @@ else:
 desc.round(3)   # 평균 차이가 커 보여도 표준편차·건수를 함께 봐야 검정 결과를 해석할 수 있습니다
 
 # %%
-# ③ 검정 결과 표 — 정규성·등분산·평균차·상관·독립성을 한 표로(셀에 표로 반환)
-${guard("NUMX, CATX", dataPrepBody(s, env))}
+# 검정 결과 표 — 정규성·등분산·평균차·상관·독립성을 한 표로(셀에 표로 반환)
+${guard("df · TARGET · NUMX · CATX", dataPrepBody(s, env))}
 from scipy import stats
 
 rows = []
@@ -1162,7 +1236,7 @@ def add(name, target, stat, dof, p, eff=""):
                  "p값": p, "판정": ("유의(p<0.05)" if p < 0.05 else "유의하지 않음"), "효과크기": eff})
 
 y = df[TARGET].dropna()
-# ① 정규성(Shapiro-Wilk) — p<0.05면 정규 아님(→ 비모수 검정 고려)
+# 정규성(Shapiro-Wilk) — p<0.05면 정규 아님(→ 비모수 검정 고려)
 sw = stats.shapiro(y.sample(min(len(y), 5000), random_state=0))
 add("정규성(Shapiro-Wilk)", TARGET, sw.statistic, "", sw.pvalue, f"왜도 {y.skew():.3f}")
 
@@ -1193,7 +1267,7 @@ for g in CATX:
         kw = stats.kruskal(*groups)
         add("중위수차(Kruskal-Wallis)", g, kw.statistic, len(groups)-1, kw.pvalue)
 
-for c in NUMX:                                              # ② 상관 — 목표와 수치형 변수
+for c in NUMX:                                              # 상관 — 목표와 수치형 변수
     d2 = df[[c, TARGET]].dropna()
     if len(d2) < 3:
         continue
@@ -1203,7 +1277,7 @@ for c in NUMX:                                              # ② 상관 — 목
     sr = stats.spearmanr(d2[c], d2[TARGET])
     add("순위상관(Spearman ρ)", f"{c} ~ {TARGET}", sr.statistic, "", sr.pvalue)
 
-if len(CATX) >= 2:                                          # ③ 독립성(카이제곱)
+if len(CATX) >= 2:                                          # 독립성(카이제곱)
     ct = pd.crosstab(df[CATX[0]], df[CATX[1]])
     chi2, p, dof, _ = stats.chi2_contingency(ct)
     n = ct.values.sum()
