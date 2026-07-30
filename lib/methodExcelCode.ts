@@ -30,6 +30,7 @@ export const PIE_GENERAL_NOTE: string[] = [
   "print는 셀이 아닌 진단(Diagnostics) 창으로 가서 불필요 — 아래 코드는 print를 벗겨 식만 남겼습니다(셀에는 마지막 식의 값이 반환).",
   "np·pd·plt·sns·statsmodels(sm)·warnings는 기본 로드되어 다시 import할 필요가 없습니다(아래 코드에서 해당 줄은 주석 처리). scipy·scikit-learn 등은 import가 필요합니다.",
   "Anaconda 큐레이션 패키지만 됩니다(pip 불가) — scipy·scikit-learn 등은 되지만 lifelines·xgboost·lightgbm 등은 안 됩니다.",
+  "표는 to_string() 없이 DataFrame 그대로 반환하도록 바꿨습니다 — 문자열 한 덩어리가 아니라 셀 범위에 표로 펼쳐집니다(계수·통계량을 셀에서 바로 참조 가능).",
 ];
 
 /**
@@ -161,6 +162,23 @@ export function stripPrintWrappers(code: string): string {
 }
 
 /**
+ * 표를 셀에 '스필'시키기 — 최상위 식으로 끝나는 `표.to_string(...)`에서 to_string을 벗긴다.
+ * to_string()은 문자열 한 덩어리라 =PY() 셀에 텍스트로만 들어가고, DataFrame을 그대로
+ * 반환하면 셀 범위에 표로 펼쳐진다(사용자 요청 2026-07-30).
+ *  · 들여쓴 줄(반복문 안 진단 출력)·대입문·f-string은 대상이 아니다.
+ */
+export function unwrapToString(code: string): string {
+  return code
+    .split("\n")
+    .map((line) => {
+      const m = line.match(/^([A-Za-z_][\w.[\]"'()]*?)\.to_string\([^()]*\)[ \t]*(#.*)?$/);
+      if (!m) return line;
+      return m[1] + (m[2] ? `   ${m[2]}` : "");
+    })
+    .join("\n");
+}
+
+/**
  * 파이썬 코드를 Python in Excel용으로 변환.
  *  · plt.show()는 불필요(셀이 마지막 그림을 반환) → 제거
  *  · print(...) 래퍼 제거 — 내용(식)만 남긴다(마지막 식이 셀에 반환, 사용자 요청)
@@ -171,6 +189,7 @@ export function stripPrintWrappers(code: string): string {
 export function toExcelPython(code: string): string {
   let out = code.replace(/;?[ \t]*plt\.show\(\)/g, "");
   out = stripPrintWrappers(out);
+  out = unwrapToString(out);
   out = commentPreloadedImports(out);
   out = out.replace(
     /(#\s*1\)\s*데이터 입력[^\n]*\n)/,
@@ -197,4 +216,26 @@ export const PACKAGE_STATUS_META: Record<
   unavailable: { label: "일부 패키지 미지원", color: "rose" },
 };
 
-export { METHOD_EXCEL_CODE } from "./methodExcelCodeData";
+import { METHOD_EXCEL_CODE as AUTHORED } from "./methodExcelCodeData";
+import { excelResultSection, insertAfterBasic } from "./modelResultSections";
+import { STEPWISE_EXCEL } from "./stepwiseMethods";
+
+/**
+ * 저작된 적응 코드 + '결과를 표로' 자동 생성 섹션 병합.
+ * 엑셀에서 summary()·print가 셀에 안 보이는 문제를 표(DataFrame) 셀로 해결한 섹션을
+ * 각 방법의 기본 섹션 뒤에 끼워 넣는다(파이썬 탭과 같은 위치·같은 제목).
+ */
+function mergeResultSections(
+  base: Record<string, MethodExcelCode>
+): Record<string, MethodExcelCode> {
+  const out: Record<string, MethodExcelCode> = { ...base, ...STEPWISE_EXCEL };
+  for (const id of Object.keys(out)) {
+    const extra = excelResultSection(id);
+    if (!extra) continue;
+    out[id] = { ...out[id], sections: insertAfterBasic(out[id].sections, extra) };
+  }
+  return out;
+}
+
+export const METHOD_EXCEL_CODE: Record<string, MethodExcelCode> =
+  mergeResultSections(AUTHORED);

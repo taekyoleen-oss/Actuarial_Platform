@@ -4,6 +4,8 @@
 // 보험·계리(actuarial) 8종은 파일 비대화를 막기 위해 lib/actuarialMethods.ts로 분리해 스프레드로 합류한다.
 
 import { ACTUARIAL_METHODS } from "./actuarialMethods";
+import { STEPWISE_METHODS } from "./stepwiseMethods";
+import { withResultSections } from "./modelResultSections";
 
 export type MethodCategoryId = "basic" | "model" | "ml" | "actuarial" | "wrangle";
 
@@ -189,7 +191,7 @@ export const STAT_CATEGORIES: MethodCategory[] = [
   },
 ];
 
-export const STAT_METHODS: StatMethod[] = [
+const RAW_METHODS: StatMethod[] = [
   /* ───────────────────────── 기초 통계 (basic) ───────────────────────── */
   {
     id: "desc-stats",
@@ -1199,6 +1201,8 @@ print("age 오즈비 95% CI =", np.round(np.quantile(ors, [0.025, 0.975]), 3))`,
       },
     ],
   },
+  /* 전통적 변수선택(전진·후진·stepwise) 2종 — lib/stepwiseMethods.ts */
+  ...STEPWISE_METHODS,
   {
     id: "glm",
     name: "일반화선형모형(GLM)",
@@ -4905,3 +4909,9 @@ winners = df[df["rank_in_ch"] == 1]`,
     ],
   },
 ];
+
+/**
+ * 최종 목록 — 각 방법에 "결과를 표·수식으로" 섹션(열 자동 선택·계수 표·적합도 지표)을
+ * lib/modelResultSections.ts에서 자동 생성해 기본 섹션 뒤에 붙인다(파이썬·엑셀 두 탭 공통).
+ */
+export const STAT_METHODS: StatMethod[] = withResultSections(RAW_METHODS);
