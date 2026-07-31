@@ -1216,7 +1216,7 @@ function MethodDialog({
           </div>
         </div>
 
-        <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
+        <footer className="border-t border-border px-5 py-2.5 pr-20 text-[12px] text-tertiary sm:px-6 sm:pr-20">
           {tab === "theory"
             ? "정의·산출식·활용을 먼저 확인한 뒤 '파이썬 코드 적용' 탭에서 실행 가능한 파이썬 코드를 복사하거나 실행기로 보내세요."
             : tab === "excel"

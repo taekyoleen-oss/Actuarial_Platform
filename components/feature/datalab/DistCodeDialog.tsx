@@ -277,7 +277,7 @@ export function DistCodeDialog({
         </div>
 
         {hideFooter ? null : (
-          <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
+          <footer className="border-t border-border px-5 py-2.5 pr-20 text-[12px] text-tertiary sm:px-6 sm:pr-20">
             그래프 축 라벨은 matplotlib 한글 폰트 이슈로 영문입니다.
             <code className="mx-1 font-mono">dist.stats(moments=&quot;mvsk&quot;)</code>
             로 평균·분산·왜도·첨도를 한 번에 얻습니다.

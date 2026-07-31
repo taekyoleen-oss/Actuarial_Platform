@@ -11,6 +11,10 @@
  *  - inline : PiP 미지원(Firefox·Safari)/실패 시 폴백. 뷰포트 내 fixed 축소창 +
  *             헤더 드래그 이동 + 4모퉁이 크기조절(기존 동작 보존).
  *
+ * 크기(2026-07-31, 사용자 요청): 오른쪽 아래 ⟷·⇕ 버튼으로 좌우/상하를 화면 끝까지
+ * 넓히고(누르면 >-<·⇕반대 표식으로 바뀌어 원래대로), 4모퉁이·4면을 마우스로 끌어
+ * 크기를 바꾼다 — modal·inline 공용(pip는 OS 창이 담당).
+ *
  * 단일 버튼: modal에서 지원 시 pip, 미지원 시 inline. 고정 상태에서 누르면 modal 복귀.
  * 고정(pip·inline) 상태에서는 '숨기기'로 제목만 남기고 접고('보이기'로 복원) — pip는
  * 창을 제목 높이로 리사이즈, inline은 패널을 제목 높이로 줄인다.
@@ -26,7 +30,18 @@ import {
   type PointerEvent as RPointerEvent,
 } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { Pin, PinOff, ExternalLink, Minimize2, Maximize2, X } from "lucide-react";
+import {
+  Pin,
+  PinOff,
+  ExternalLink,
+  Minimize2,
+  Maximize2,
+  X,
+  ChevronsLeftRight,
+  ChevronsRightLeft,
+  ChevronsUpDown,
+  ChevronsDownUp,
+} from "lucide-react";
 
 interface Rect {
   x: number;
@@ -35,7 +50,8 @@ interface Rect {
   h: number;
 }
 
-type DragMode = "move" | "nw" | "ne" | "sw" | "se";
+/** 이동 · 4모퉁이 · 4면 */
+type DragMode = "move" | "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
 type PinMode = "modal" | "inline" | "pip";
 
 const MIN_W = 300;
@@ -229,6 +245,23 @@ export function usePinnableDialog({
   const [rect, setRect] = useState<Rect | null>(null);
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
   const [pipSupported, setPipSupported] = useState(false);
+  // 좌우/상하 화면 끝까지 넓히기(사용자 요청 2026-07-31)
+  const [wideX, setWideX] = useState(false);
+  const [wideY, setWideY] = useState(false);
+  /** 넓히기 전 크기 — 되돌리기용(hadRect=false면 원래는 기본(클래스) 크기) */
+  const savedRect = useRef<Rect | null>(null);
+  const hadRect = useRef(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * 드래그 핸들러가 state를 참조하면 setRect마다 콜백 신원이 바뀌어 핸들 DOM이
+   * 다시 마운트되고 → 포인터 캡처가 끊겨 드래그가 중간에 멈춘다(실측으로 발견).
+   * 그래서 최신값은 ref로만 읽고 핸들러는 고정(deps []) 유지.
+   */
+  const rectRef = useRef<Rect | null>(null);
+  const wideRef = useRef({ x: false, y: false });
+  useEffect(() => {
+    rectRef.current = rect;
+  }, [rect]);
 
   const drag = useRef<{
     mode: DragMode;
@@ -252,9 +285,15 @@ export function usePinnableDialog({
     );
   }, []);
 
-  // modal로 돌아오면 접힘 상태 해제
+  // modal로 돌아오면 접힘·크기 조정 상태 해제(가운데 기본 크기로)
   useEffect(() => {
-    if (mode === "modal") setCollapsed(false);
+    if (mode !== "modal") return;
+    setCollapsed(false);
+    setRect(null);
+    setWideX(false);
+    setWideY(false);
+    wideRef.current = { x: false, y: false };
+    savedRect.current = null;
   }, [mode]);
 
   // 언마운트 시 열린 PiP 창 정리(전체 닫기 아님)
@@ -332,16 +371,32 @@ export function usePinnableDialog({
     }
   }, [mode, pipSupported, openPip, closePipToModal, computeInlineRect]);
 
-  /* ── 드래그(inline 전용) ── */
+  /** 현재 화면에 그려진 패널 크기 — 모달(클래스 크기)에서 크기조절을 시작할 때의 기준 */
+  const readPanelRect = useCallback((): Rect | null => {
+    const el = panelRef.current;
+    if (!el) return null;
+    const b = el.getBoundingClientRect();
+    return { x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height) };
+  }, []);
+
+  /* ── 드래그(이동은 inline, 크기조절은 modal·inline 공용) ── */
   const onDragStart = useCallback(
     (dm: DragMode) => (e: RPointerEvent<HTMLElement>) => {
-      if (!rect) return;
+      const base = rectRef.current ?? readPanelRect();
+      if (!base) return;
       if (
         dm === "move" &&
         (e.target as HTMLElement).closest("button, input, select, a, textarea")
       )
         return;
-      drag.current = { mode: dm, startX: e.clientX, startY: e.clientY, base: rect };
+      // 손으로 크기를 바꾸면 '화면 끝까지' 상태는 해제(되돌리기 기준도 새로)
+      if (dm !== "move" && (wideRef.current.x || wideRef.current.y)) {
+        wideRef.current = { x: false, y: false };
+        setWideX(false);
+        setWideY(false);
+        savedRect.current = null;
+      }
+      drag.current = { mode: dm, startX: e.clientX, startY: e.clientY, base };
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
       } catch {
@@ -349,7 +404,7 @@ export function usePinnableDialog({
       }
       e.preventDefault();
     },
-    [rect]
+    [readPanelRect]
   );
 
   const onDragMove = useCallback((e: RPointerEvent<HTMLElement>) => {
@@ -364,13 +419,14 @@ export function usePinnableDialog({
       x += dx;
       y += dy;
     } else {
-      if (d.mode === "ne" || d.mode === "se") w += dx;
-      if (d.mode === "nw" || d.mode === "sw") {
+      // 모퉁이·면 공용 — 모드 글자에 든 방향만 반영(e=오른쪽, w=왼쪽, s=아래, n=위)
+      if (d.mode.includes("e")) w += dx;
+      if (d.mode.includes("w")) {
         w -= dx;
         x += dx;
       }
-      if (d.mode === "sw" || d.mode === "se") h += dy;
-      if (d.mode === "nw" || d.mode === "ne") {
+      if (d.mode.includes("s")) h += dy;
+      if (d.mode.includes("n")) {
         h -= dy;
         y += dy;
       }
@@ -402,17 +458,23 @@ export function usePinnableDialog({
         }
       : {};
 
-  /* ── 4모퉁이 리사이즈 핸들(inline 전용) ── */
-  const ResizeHandles = useCallback(() => {
-    const corners: { m: DragMode; cls: string; cursor: string }[] = [
-      { m: "nw", cls: "left-0 top-0", cursor: "nwse-resize" },
-      { m: "ne", cls: "right-0 top-0", cursor: "nesw-resize" },
-      { m: "sw", cls: "left-0 bottom-0", cursor: "nesw-resize" },
-      { m: "se", cls: "right-0 bottom-0", cursor: "nwse-resize" },
+  /* ── 4모퉁이 + 4면 리사이즈 핸들(모달·inline 공용) ── */
+  const resizeHandles = useCallback(() => {
+    const grips: { m: DragMode; cls: string; cursor: string }[] = [
+      // 모퉁이(16×16) — 면보다 위에 와야 대각 조절이 잡힌다
+      { m: "nw", cls: "left-0 top-0 h-4 w-4 z-20", cursor: "nwse-resize" },
+      { m: "ne", cls: "right-0 top-0 h-4 w-4 z-20", cursor: "nesw-resize" },
+      { m: "sw", cls: "left-0 bottom-0 h-4 w-4 z-20", cursor: "nesw-resize" },
+      { m: "se", cls: "right-0 bottom-0 h-4 w-4 z-20", cursor: "nwse-resize" },
+      // 4면(6px 띠) — 모퉁이 자리는 비워 둔다
+      { m: "n", cls: "left-4 right-4 top-0 h-1.5 z-10", cursor: "ns-resize" },
+      { m: "s", cls: "left-4 right-4 bottom-0 h-1.5 z-10", cursor: "ns-resize" },
+      { m: "w", cls: "top-4 bottom-4 left-0 w-1.5 z-10", cursor: "ew-resize" },
+      { m: "e", cls: "top-4 bottom-4 right-0 w-1.5 z-10", cursor: "ew-resize" },
     ];
     return (
       <>
-        {corners.map((c) => (
+        {grips.map((c) => (
           <div
             key={c.m}
             role="presentation"
@@ -420,13 +482,93 @@ export function usePinnableDialog({
             onPointerDown={onDragStart(c.m)}
             onPointerMove={onDragMove}
             onPointerUp={onDragEnd}
-            className={`absolute z-20 h-4 w-4 ${c.cls}`}
+            className={`absolute ${c.cls}`}
             style={{ cursor: c.cursor, touchAction: "none" }}
           />
         ))}
       </>
     );
   }, [onDragStart, onDragMove, onDragEnd]);
+
+  /* ── 좌우·상하 화면 끝까지 넓히기 / 되돌리기 ── */
+  const toggleWide = useCallback(
+    (axis: "x" | "y") => {
+      const { x: wx, y: wy } = wideRef.current;
+      const nx = axis === "x" ? !wx : wx;
+      const ny = axis === "y" ? !wy : wy;
+      if (!wx && !wy) {
+        // 첫 확대 — 되돌릴 크기 기억(rect가 없으면 지금 화면 크기를 재둔다)
+        hadRect.current = rectRef.current !== null;
+        savedRect.current = rectRef.current ?? readPanelRect();
+      }
+      const base = savedRect.current;
+      if (!base) return;
+      if (!nx && !ny) {
+        setRect(hadRect.current ? base : null);
+        savedRect.current = null;
+      } else {
+        setRect({
+          x: nx ? 0 : base.x,
+          y: ny ? 0 : base.y,
+          w: nx ? window.innerWidth : base.w,
+          h: ny ? window.innerHeight : base.h,
+        });
+      }
+      wideRef.current = { x: nx, y: ny };
+      setWideX(nx);
+      setWideY(ny);
+    },
+    [readPanelRect]
+  );
+
+  // 창 크기가 바뀌면 '화면 끝까지'를 다시 맞춘다
+  useEffect(() => {
+    if (!wideX && !wideY) return;
+    const onResize = () =>
+      setRect((r) =>
+        r
+          ? {
+              x: wideX ? 0 : r.x,
+              y: wideY ? 0 : r.y,
+              w: wideX ? window.innerWidth : r.w,
+              h: wideY ? window.innerHeight : r.h,
+            }
+          : r
+      );
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [wideX, wideY]);
+
+  /* ── 오른쪽 아래 크기 버튼(⟷ 좌우 / ⇕ 상하) — 모달·inline 공용 ── */
+  const sizeButtons = useCallback(() => {
+    if (mode === "pip") return null; // PiP는 OS 창이 크기를 담당
+    const cls =
+      "inline-flex h-6 w-6 items-center justify-center rounded text-tertiary hover:bg-surface hover:text-foreground";
+    return (
+      <div className="pointer-events-auto absolute bottom-1 right-5 z-30 flex items-center gap-0.5 rounded border border-border bg-white/95 p-0.5 shadow-card">
+        <button
+          type="button"
+          onClick={() => toggleWide("x")}
+          aria-pressed={wideX}
+          aria-label={wideX ? "좌우 원래대로" : "좌우로 화면 끝까지"}
+          title={wideX ? "좌우 원래 너비로 되돌립니다" : "좌우로 화면 끝까지 넓힙니다"}
+          className={cls}
+        >
+          {wideX ? <ChevronsRightLeft size={14} /> : <ChevronsLeftRight size={14} />}
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleWide("y")}
+          aria-pressed={wideY}
+          aria-label={wideY ? "상하 원래대로" : "상하로 화면 끝까지"}
+          title={wideY ? "상하 원래 높이로 되돌립니다" : "상하로 화면 끝까지 넓힙니다"}
+          className={cls}
+        >
+          {wideY ? <ChevronsDownUp size={14} /> : <ChevronsUpDown size={14} />}
+        </button>
+      </div>
+    );
+  }, [mode, wideX, wideY, toggleWide]);
 
   /* ── 고정/해제 버튼 ── */
   const PinButton = useCallback(() => {
@@ -509,18 +651,18 @@ export function usePinnableDialog({
       const overlayClass = isModal
         ? "fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
         : "fixed inset-0 z-50 pointer-events-none";
-      const panelStyle: CSSProperties | undefined =
-        mode === "inline" && rect
-          ? {
-              position: "fixed",
-              left: rect.x,
-              top: rect.y,
-              width: rect.w,
-              height: collapsed ? COLLAPSED_H : rect.h,
-              maxHeight: "none",
-              maxWidth: "none",
-            }
-          : undefined;
+      // rect가 잡히면(크기조절·넓히기·inline 고정) 모달에서도 그 크기로 고정 배치
+      const panelStyle: CSSProperties | undefined = rect
+        ? {
+            position: "fixed",
+            left: rect.x,
+            top: rect.y,
+            width: rect.w,
+            height: collapsed ? COLLAPSED_H : rect.h,
+            maxHeight: "none",
+            maxWidth: "none",
+          }
+        : undefined;
       return (
         <div
           className={overlayClass}
@@ -530,7 +672,8 @@ export function usePinnableDialog({
           onClick={isModal ? onClose : undefined}
         >
           <div
-            className={panelClassName}
+            ref={panelRef}
+            className={`${panelClassName} relative`}
             style={panelStyle}
             onClick={(e) => e.stopPropagation()}
           >
@@ -538,8 +681,9 @@ export function usePinnableDialog({
               bar
             ) : (
               <>
-                {mode === "inline" ? <ResizeHandles /> : null}
+                {resizeHandles()}
                 {children}
+                {sizeButtons()}
               </>
             )}
           </div>
@@ -556,7 +700,8 @@ export function usePinnableDialog({
       panelClassName,
       onClose,
       dragHandleProps,
-      ResizeHandles,
+      resizeHandles,
+      sizeButtons,
     ]
   );
 

@@ -578,7 +578,7 @@ function FunctionDialog({
           )}
         </div>
 
-        <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
+        <footer className="border-t border-border px-5 py-2.5 pr-20 text-[12px] text-tertiary sm:px-6 sm:pr-20">
           위첨자는 함수가 처음 도입된 엑셀 버전입니다(¹⁹=2019, ²¹=2021, ³⁶⁵=365 전용).
           예제 수식은 코드 블록의 &lsquo;복사&rsquo;로 엑셀에 붙여 쓸 수 있습니다.
         </footer>
