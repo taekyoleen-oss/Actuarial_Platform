@@ -281,7 +281,7 @@ function TrackHeader({
   const meta = TRACK_META[track];
   return (
     <div
-      className="sticky top-0 z-30 -mx-5 mt-7 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-y border-border bg-white px-5 py-1.5 first:mt-0 sm:-mx-6 sm:px-6"
+      className="sticky top-0 z-30 -mx-5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-b border-border bg-white px-5 py-1.5 sm:-mx-6 sm:px-6"
       style={{ minHeight: TRACK_H }}
     >
       <span
@@ -451,7 +451,7 @@ function ExcelCodePanel({
 
           {/* 적응 코드 섹션 — 트랙(공통/전통/ML)별로 묶고 머리는 상단 고정 */}
           {trackGroups(data.sections).map((g) => (
-            <div key={g.track}>
+            <div key={g.track} className="mt-7 first:mt-0">
               {tracked ? (
                 <TrackHeader track={g.track} fontScale={fontScale} />
               ) : null}
@@ -1078,7 +1078,10 @@ function MethodDialog({
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        {/* 세로 여백은 안쪽 래퍼에 — 스크롤 컨테이너에 py를 주면 sticky top-0 이
+            콘텐츠 상자 위(패딩 아래)에 붙어 그 폭만큼 스크롤 내용이 머리 위로 비친다 */}
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6">
+          <div className="py-5">
           {editing ? (
             <OverrideEditPanel
               key={methodBase.id}
@@ -1151,7 +1154,7 @@ function MethodDialog({
           ) : null}
 
           {trackGroups(visibleSections).map((g) => (
-            <div key={g.track}>
+            <div key={g.track} className="mt-7 first:mt-0">
               {tracked ? (
                 <TrackHeader track={g.track} fontScale={fontScale} />
               ) : null}
@@ -1210,6 +1213,7 @@ function MethodDialog({
           ) : null}
             </>
           )}
+          </div>
         </div>
 
         <footer className="border-t border-border px-5 py-2.5 text-[12px] text-tertiary sm:px-6">
