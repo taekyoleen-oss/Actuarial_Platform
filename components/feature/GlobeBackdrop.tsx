@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   geoGraticule,
   geoOrthographic,
@@ -74,13 +74,29 @@ function vec(lat: number, lon: number): Vec3 {
 }
 
 // d3 geoPath 정적 지오메트리 — 경위선(20° 간격, 기존 점묘 버전과 동일 격자)
+// 모바일 기준 — Tailwind md(768px) 미만(2026-08-23 사용자 요청: 모바일 미표시)
+const MOBILE_Q = "(max-width: 767px)";
+
 const SPHERE = { type: "Sphere" } as GeoPermissibleObjects;
 const GRATICULE = geoGraticule().step([20, 20])() as GeoPermissibleObjects;
 
 export function GlobeBackdrop() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // 모바일(<md)에서는 워터마크를 표시하지 않는다(2026-08-23 사용자 요청).
+  // CSS로 숨기면 캔버스는 그대로 남아 rAF·지도 fetch가 계속되므로 렌더 자체를 건너뛴다.
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
+    const mq = window.matchMedia(MOBILE_Q);
+    const sync = () => setMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    // 첫 렌더(상태 반영 전)에도 지도 fetch·rAF가 시작되지 않도록 직접 확인한다.
+    if (mobile || window.matchMedia(MOBILE_Q).matches) return;
     const cv = canvasRef.current;
     if (!cv) return;
     const ctx = cv.getContext("2d");
@@ -435,7 +451,8 @@ export function GlobeBackdrop() {
       abort.abort();
       window.cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [mobile]);
 
+  if (mobile) return null;
   return <canvas ref={canvasRef} className="globe-backdrop" aria-hidden />;
 }
