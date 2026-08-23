@@ -19,7 +19,7 @@ export const POST_SECTIONS: Record<string, SectionDef[]> = {
     { title: "질병 관련", isDefault: true },
     {
       title: "기타 (비용 등)",
-      match: /연금|톤틴|환급|간병|변호사|법률|장기요양|요양/,
+      match: /연금|톤틴|환급|간병|변호사|법률|장기요양|요양|심사|제도/,
     },
   ],
   domestic: [
