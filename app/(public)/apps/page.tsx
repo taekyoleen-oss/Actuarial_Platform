@@ -113,6 +113,18 @@ const WORK_APPS: AppItem[] = [
     ],
     link: "https://mathocr-formula-in-office-converter.vercel.app/",
   },
+  {
+    title: "마크다운·LaTeX 스튜디오",
+    description:
+      "마크다운과 LaTeX 문서를 편집하고 미리보기로 확인할 수 있는 편집기 겸 뷰어 앱입니다.",
+    features: [
+      "마크다운 편집 및 수정",
+      "LaTeX 편집 및 수정",
+      "마크다운·LaTeX 실시간 미리보기",
+      "문서 작성·검토를 한 화면에서",
+    ],
+    link: "https://md-la-te-x-studio.vercel.app/",
+  },
 ];
 
 // featured: 모델분석 카드를 벤토 대형 타일로 (2026-06-13 입체화)
