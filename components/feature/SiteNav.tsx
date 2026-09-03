@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Suspense } from "react";
+import { AppLauncher } from "@/components/feature/AppLauncher";
 import { HeroIdent } from "@/components/feature/HeroIdent";
 import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 
@@ -71,24 +71,22 @@ function NavBarWithRoute() {
 }
 
 function NavBar({ activeKey }: { activeKey: string | null }) {
-  const [open, setOpen] = useState(false);
-
   // 필(pill) 색은 globals.css .nav-pill/.nav-pill-active — hover 연블루 틴트+primary 텍스트,
   // 활성은 저채도 필(--chip-blue-bg). 색 전환은 전역 0.33s 트랜지션 규칙 사용(별도 모션 없음).
   const desktopLink = "nav-pill whitespace-nowrap px-1.5 py-1 2xl:px-2";
-  // 모바일: -mx-3+px-3으로 텍스트 정렬은 유지한 채 필 배경만 좌우로 확장
-  const mobileLink = "nav-pill -mx-3 block px-3 py-2.5 text-sm font-medium";
   const withActive = (base: string, active: boolean) =>
     active ? `${base} nav-pill-active` : base;
+
+  // 앱 런처(우측 상단)에 넘길 사이트 메뉴 — 모바일 팝업 상단(햄버거 대체)에 표시
+  const launcherNav = [
+    ...CATEGORIES.map((c) => ({ key: c.slug, href: c.href, name: c.name })),
+    ...EXTRA.map((e) => ({ key: e.href, href: e.href, name: e.name })),
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-container items-center justify-between px-6">
-        <Link
-          href="/"
-          className="flex items-center gap-2"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/" className="flex items-center gap-2">
           {/* 모바일: 실행 시 결집 애니메이션 마크 / 데스크톱: 정적 마크(히어로에 아이덴트 표시) */}
           <HeroIdent className="h-7 w-7 shrink-0 lg:hidden" />
           <img
@@ -103,7 +101,8 @@ function NavBar({ activeKey }: { activeKey: string | null }) {
           </span>
         </Link>
 
-        {/* 데스크톱 — lg(1024px)부터 풀 메뉴(메뉴 9개), 그 아래는 햄버거.
+        <div className="flex items-center gap-1">
+        {/* 데스크톱 — lg(1024px)부터 풀 메뉴(메뉴 9개), 그 아래는 런처 버튼만.
             필 도입 폭 산술(2026-07-17, Pretendard 실측 — _workspace/navtest.html):
             · lg 1024(내부폭 976): 필 px-1.5(+6px×2×9=108) vs gap-2→0(−8px×8=64) = 순증 +44
               → 내비 총폭 902→946px(여유 30px, 한 줄 유지)
@@ -134,48 +133,10 @@ function NavBar({ activeKey }: { activeKey: string | null }) {
           ))}
         </div>
 
-        {/* 햄버거 (lg 미만) */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="메뉴 열기/닫기"
-          aria-expanded={open}
-          className="text-foreground lg:hidden"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </nav>
-
-      {/* 드롭다운 패널 (lg 미만) — 활성 표시는 데스크톱과 동일한 .nav-pill-active */}
-      {open && (
-        <div className="border-t border-border bg-white lg:hidden">
-          <div className="mx-auto max-w-container px-6 py-2">
-            {CATEGORIES.map((c) => (
-              <Link
-                key={c.slug}
-                href={c.href}
-                className={withActive(mobileLink, activeKey === c.slug)}
-                aria-current={activeKey === c.slug ? "page" : undefined}
-                onClick={() => setOpen(false)}
-              >
-                {c.name}
-              </Link>
-            ))}
-            <div className="my-1 border-t border-border" />
-            {EXTRA.map((e) => (
-              <Link
-                key={e.href}
-                href={e.href}
-                className={withActive(mobileLink, activeKey === e.href)}
-                aria-current={activeKey === e.href ? "page" : undefined}
-                onClick={() => setOpen(false)}
-              >
-                {e.name}
-              </Link>
-            ))}
-          </div>
+        {/* 앱 런처 — PC: 외부 앱 바로가기 그리드 / 모바일: 메뉴+바로가기 결합(햄버거 대체) */}
+        <AppLauncher navItems={launcherNav} activeKey={activeKey} />
         </div>
-      )}
+      </nav>
     </header>
   );
 }

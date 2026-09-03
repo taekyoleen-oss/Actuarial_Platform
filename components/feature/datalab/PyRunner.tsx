@@ -557,6 +557,94 @@ function ToolMenu({
   );
 }
 
+/**
+ * 셀 → 목차 항목 — 왼쪽 목차(TOC)용.
+ * 마크다운 셀: '#'=1 · '##'=2 · '###'+=3, 제목 기호 없는 간단한 첫 줄은 상위(1) 취급.
+ * 코드 셀: '# ═══ 제목 ═══'=1, '# ── 제목 ──'=2, 그 외 첫 주석 줄=3. 없으면 목차 제외.
+ */
+function cellTocEntry(code: string, kind?: "code" | "markdown"): {
+  level: 1 | 2 | 3;
+  text: string;
+} | null {
+  const first = code.split("\n").find((l) => l.trim() !== "")?.trim();
+  if (!first) return null;
+  if (kind === "markdown") {
+    const m = first.match(/^(#{1,6})\s+(.*)/);
+    if (m) return { level: Math.min(m[1].length, 3) as 1 | 2 | 3, text: m[2] || "(제목)" };
+    return { level: 1, text: first }; // 간단 제목 → 상위 목차
+  }
+  let m = first.match(/^#\s*═+\s*(.+?)\s*═+\s*$/);
+  if (m) return { level: 1, text: m[1] };
+  m = first.match(/^#\s*─+\s*(.+?)\s*─+\s*$/);
+  if (m) return { level: 2, text: m[1] };
+  m = first.match(/^#\s*(.+)/);
+  if (m) {
+    const text = m[1].replace(/^[►▸▹•·>\-=\s]+/, "");
+    if (text) return { level: 3, text };
+  }
+  return null;
+}
+
+/** 실행 결과 표시 위치 — 아래(기본)·우측(PC)·팝업 */
+type OutMode = "below" | "right" | "popup";
+const OUTMODE_KEY = "datalab:pyrunner:outmode:v1";
+
+/** 셀 실행 결과(출력 텍스트+그림) — 인라인·우측·팝업이 공유하는 뷰 */
+function OutputView({ c, i }: { c: Cell; i: number }) {
+  return (
+    <div
+      className="min-w-0 border-t border-border"
+      style={{
+        background:
+          c.status === "error"
+            ? "color-mix(in srgb, var(--chip-rose-bg) 45%, white)"
+            : "color-mix(in srgb, var(--chip-teal-bg) 35%, white)",
+      }}
+    >
+      <div className="flex items-center px-3 pt-2">
+        <span
+          className="inline-flex items-center rounded-full px-2 py-px text-[10.5px] font-semibold tracking-wide"
+          style={{
+            background:
+              c.status === "error" ? "var(--chip-rose-bg)" : "var(--chip-teal-bg)",
+            color:
+              c.status === "error" ? "var(--chip-rose-fg)" : "var(--chip-teal-fg)",
+          }}
+        >
+          {c.status === "error"
+            ? "출력 · 오류"
+            : c.execOrder
+              ? `출력 Out [${c.execOrder}]`
+              : "출력"}
+        </span>
+        {/* 출력·오류 전문 복사 — 트레이스백을 그대로 붙여넣어 문의·검색에 사용 */}
+        {c.output ? (
+          <CopyButton
+            text={c.output}
+            label={c.status === "error" ? "오류 복사" : "출력 복사"}
+            className="ml-auto py-0.5"
+          />
+        ) : null}
+      </div>
+      {c.output ? (
+        <pre className="whitespace-pre-wrap break-words px-3 py-2.5 font-mono text-[13px] leading-[1.65] text-foreground">
+          {c.output}
+        </pre>
+      ) : null}
+      {c.images.map((b64, j) => (
+        // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={j}
+          src={`data:image/png;base64,${b64}`}
+          alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
+          className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
+        />
+      ))}
+    </div>
+  );
+}
+
 /** 셀 순서 배지 색 — 실행 상태를 색으로 구분(대기·실행·완료·오류) */
 const CELL_STATUS_STYLE: Record<CellStatus, { background: string; color: string }> = {
   idle: { background: "var(--surface-alt)", color: "var(--text-tertiary)" },
@@ -822,6 +910,43 @@ function RunnerWorkspace({
   const [sheetOpen, setSheetOpen] = useState(false);
   /** 미리보기 팝업 대상(로드된 데이터 파일) */
   const [preview, setPreview] = useState<{ name: string; bytes: Uint8Array } | null>(null);
+  /** 왼쪽 목차(TOC) 표시 — lg+ 전용, 토글로 감추기/보이기 */
+  const [tocOpen, setTocOpen] = useState(true);
+  /** 실행 결과 표시 위치(아래·우측·팝업) — 기기별 localStorage */
+  const [outMode, setOutMode] = useState<OutMode>("below");
+  const outModeRef = useRef<OutMode>("below");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(OUTMODE_KEY);
+      if (v === "right" || v === "popup") setOutMode(v);
+    } catch {
+      // 접근 불가 시 기본(below)
+    }
+  }, []);
+  useEffect(() => {
+    outModeRef.current = outMode;
+  }, [outMode]);
+  const changeOutMode = (v: OutMode) => {
+    setOutMode(v);
+    try {
+      localStorage.setItem(OUTMODE_KEY, v);
+    } catch {
+      // 저장 실패는 무시
+    }
+  };
+  /** 팝업으로 보는 결과의 셀 id */
+  const [popupId, setPopupId] = useState<number | null>(null);
+  /** 전체 실행 중에는 팝업 자동 열기 안 함 */
+  const batchRef = useRef(false);
+  useHistoryDismiss(popupId != null, () => setPopupId(null));
+  useEffect(() => {
+    if (popupId == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPopupId(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [popupId]);
 
   useEffect(() => {
     setFsSupported(dirPicker() !== null);
@@ -1088,6 +1213,11 @@ function RunnerWorkspace({
           nsKey
         );
         patchCell(id, { status: "done", ms: elapsedMs, images, phase: undefined });
+        // 팝업 모드: 단일 셀 실행이 끝나면 결과 팝업 자동 열기(전체 실행 제외)
+        if (outModeRef.current === "popup" && !batchRef.current) {
+          const done = cellsRef.current.find((c) => c.id === id);
+          if (done?.output || images.length > 0) setPopupId(id);
+        }
         return true;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -1103,6 +1233,8 @@ function RunnerWorkspace({
               : c
           )
         );
+        // 팝업 모드: 오류도 팝업으로 바로 확인(전체 실행 제외)
+        if (outModeRef.current === "popup" && !batchRef.current) setPopupId(id);
         return false;
       } finally {
         busyRef.current = false;
@@ -1115,10 +1247,15 @@ function RunnerWorkspace({
   /** 전체 실행 — 위에서부터 순서대로, 오류 셀에서 중단 */
   const runAll = useCallback(async () => {
     if (busyRef.current) return;
-    for (const c of [...cellsRef.current]) {
-      if (!c.code.trim() || c.kind === "markdown") continue;
-      const ok = await runCell(c.id);
-      if (!ok) break;
+    batchRef.current = true;
+    try {
+      for (const c of [...cellsRef.current]) {
+        if (!c.code.trim() || c.kind === "markdown") continue;
+        const ok = await runCell(c.id);
+        if (!ok) break;
+      }
+    } finally {
+      batchRef.current = false;
     }
   }, [runCell]);
 
@@ -1630,6 +1767,14 @@ function RunnerWorkspace({
     [addDataFiles]
   );
 
+  /** 목차 클릭 → 해당 셀로 스크롤(상단 내비+셀 명령 줄 높이만큼 보정) */
+  const scrollToCell = useCallback((id: number) => {
+    const el = rootRef.current?.querySelector(`[data-cell-id="${id}"]`);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }, []);
+
   const cellStatusText = (c: Cell): string | null => {
     if (c.status === "running") return c.phase ? PHASE_LABEL[c.phase] : "실행 중…";
     if (c.status === "done" && c.ms != null)
@@ -1843,6 +1988,35 @@ function RunnerWorkspace({
                 },
               ]}
             />
+            {/* 목차 토글 — 왼쪽 목차(lg+)를 감추거나 보이기 */}
+            <button
+              type="button"
+              onClick={() => setTocOpen((v) => !v)}
+              title="셀 제목으로 만든 왼쪽 목차를 감추거나 보입니다(PC)"
+              aria-pressed={tocOpen}
+              className={`hidden h-8 items-center gap-1 rounded-md border px-3 text-[13px] font-medium lg:inline-flex ${
+                tocOpen
+                  ? "border-primary/40 bg-[var(--chip-blue-bg)] text-primary"
+                  : "border-border bg-white text-body hover:text-foreground"
+              }`}
+            >
+              ☰ 목차
+            </button>
+            {/* 실행 결과 표시 위치 — 아래(기본)·우측(PC)·팝업 */}
+            <label className="flex items-center gap-1.5 text-[12px] text-tertiary">
+              결과 표시
+              <select
+                value={outMode}
+                onChange={(e) => changeOutMode(e.target.value as OutMode)}
+                aria-label="실행 결과 표시 위치"
+                title="셀 실행 결과를 코드 아래·코드 우측(PC)·팝업 중 어디에 보일지 선택"
+                className="h-8 rounded border border-border bg-white px-1.5 text-[12.5px] text-foreground"
+              >
+                <option value="below">아래</option>
+                <option value="right">우측 (PC)</option>
+                <option value="popup">팝업</option>
+              </select>
+            </label>
             {loadedLabel ? (
               <span className="text-[12.5px] text-tertiary">
                 불러온 코드:{" "}
@@ -1891,6 +2065,71 @@ function RunnerWorkspace({
             ) : null}
           </div>
 
+          {/* 셀 영역 — 왼쪽 목차(lg+, 토글) + 셀 목록 */}
+          <div className="lg:flex lg:items-start lg:gap-4">
+          {tocOpen ? (
+            <aside className="hidden w-52 shrink-0 lg:sticky lg:top-16 lg:block lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
+              <div className="mt-3 rounded border border-border bg-white p-2.5">
+                <div className="flex items-center justify-between px-1 pb-1.5">
+                  <span className="text-[12px] font-semibold text-foreground">목차</span>
+                  <button
+                    type="button"
+                    onClick={() => setTocOpen(false)}
+                    aria-label="목차 감추기"
+                    className="text-tertiary hover:text-foreground"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                {(() => {
+                  const entries = cells
+                    .map((c, i) => ({ c, i, e: cellTocEntry(c.code, c.kind ?? "code") }))
+                    .filter((x) => x.e !== null);
+                  if (entries.length === 0)
+                    return (
+                      <p className="px-1 py-1 text-[11.5px] leading-relaxed text-tertiary">
+                        셀 첫 줄에 제목을 적으면 목차가 생깁니다 — 텍스트 셀은{" "}
+                        <code className="font-mono"># 제목</code>(또는 짧은 한 줄=상위
+                        목차), 코드 셀은 <code className="font-mono"># 주석</code> 첫 줄.
+                      </p>
+                    );
+                  return (
+                    <ul>
+                      {entries.map(({ c, i, e }) => (
+                        <li key={c.id}>
+                          <button
+                            type="button"
+                            onClick={() => scrollToCell(c.id)}
+                            title={`셀 ${i + 1}로 이동 — ${e!.text}`}
+                            className={`flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left hover:bg-surface ${
+                              e!.level === 1
+                                ? "text-[12.5px] font-semibold text-foreground"
+                                : e!.level === 2
+                                  ? "pl-4 text-[12px] font-medium text-body"
+                                  : "pl-7 text-[11.5px] text-tertiary"
+                            }`}
+                          >
+                            <span
+                              aria-hidden
+                              className="h-1.5 w-1.5 shrink-0 rounded-full"
+                              style={{
+                                background:
+                                  c.status === "idle"
+                                    ? "var(--border)"
+                                    : CELL_STATUS_STYLE[c.status].color,
+                              }}
+                            />
+                            <span className="min-w-0 truncate">{e!.text}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()}
+              </div>
+            </aside>
+          ) : null}
+          <div className="min-w-0 lg:flex-1">
           {/* 셀 목록 — 코드 입력부는 다크 에디터로 뚜렷이 구분 */}
           {cells.map((c, i) => {
             // 텍스트(마크다운) 셀 — 주피터와 동일하게 실행 대상이 아니고 설명만 표시
@@ -2186,6 +2425,15 @@ function RunnerWorkspace({
                   </button>
                 </span>
               </div>
+              {/* 입력+출력 — 결과 표시 옵션: 아래(기본)·우측(PC 2열)·팝업.
+                  overflow-hidden: 래퍼가 마지막 자식일 때 rounded-b가 내부 배경에도 적용
+                  (셀 명령 줄 sticky의 조상이 아니므로 안전) */}
+              <div
+                className={`overflow-hidden ${
+                  outMode === "right" ? "lg:grid lg:grid-cols-2 lg:items-stretch" : ""
+                }`}
+              >
+              <div className="min-w-0">
               {/* 입력(코드) — 다크 에디터 + '입력' 라벨로 출력과 시각 구분 */}
               <div className="flex items-center bg-[#2f3540] px-3 pt-2">
                 <span className="inline-flex items-center rounded-full bg-[#3d4654] px-2 py-px text-[10.5px] font-semibold tracking-wide text-[#8ab4ff]">
@@ -2249,63 +2497,34 @@ function RunnerWorkspace({
                 aria-label={`파이썬 코드 셀 ${i + 1}`}
                 className="block min-h-[76px] w-full resize-none border-0 bg-[#2f3540] px-3 pb-3 pt-1.5 font-mono text-[13.5px] leading-[1.7] text-[#e9ecf1] caret-[#8ab4ff] placeholder:text-[#8a8f98] focus-visible:outline-none"
               />
+              </div>
               {c.output || c.images.length > 0 ? (
-                // 출력 — 성공은 틸 틴트, 오류는 로즈 틴트 배경으로 입력과 구분
-                <div
-                  className="border-t border-border"
-                  style={{
-                    background:
-                      c.status === "error"
-                        ? "color-mix(in srgb, var(--chip-rose-bg) 45%, white)"
-                        : "color-mix(in srgb, var(--chip-teal-bg) 35%, white)",
-                  }}
-                >
-                  <div className="flex items-center px-3 pt-2">
+                outMode === "popup" ? (
+                  // 팝업 모드: 인라인 대신 결과 보기 버튼만(실행 직후엔 자동으로 열림)
+                  <div className="flex items-center gap-2 border-t border-border px-3 py-1.5 lg:col-span-2">
                     <span
-                      className="inline-flex items-center rounded-full px-2 py-px text-[10.5px] font-semibold tracking-wide"
-                      style={{
-                        background:
-                          c.status === "error"
-                            ? "var(--chip-rose-bg)"
-                            : "var(--chip-teal-bg)",
-                        color:
-                          c.status === "error"
-                            ? "var(--chip-rose-fg)"
-                            : "var(--chip-teal-fg)",
-                      }}
+                      className={`text-[11.5px] ${
+                        c.status === "error" ? "text-[#c4302b]" : "text-tertiary"
+                      }`}
                     >
-                      {c.status === "error"
-                        ? "출력 · 오류"
-                        : c.execOrder
-                          ? `출력 Out [${c.execOrder}]`
-                          : "출력"}
+                      {c.status === "error" ? "오류 출력 있음" : "출력 있음"}
                     </span>
-                    {/* 출력·오류 전문 복사 — 트레이스백을 그대로 붙여넣어 문의·검색에 사용 */}
-                    {c.output ? (
-                      <CopyButton
-                        text={c.output}
-                        label={c.status === "error" ? "오류 복사" : "출력 복사"}
-                        className="ml-auto py-0.5"
-                      />
-                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setPopupId(c.id)}
+                      className={CELL_BTN}
+                    >
+                      결과 보기 (팝업)
+                    </button>
                   </div>
-                  {c.output ? (
-                    <pre className="whitespace-pre-wrap break-words px-3 py-2.5 font-mono text-[13px] leading-[1.65] text-foreground">
-                      {c.output}
-                    </pre>
-                  ) : null}
-                  {c.images.map((b64, j) => (
-                    // 실행 결과 그림 — 데이터 URI라 next/image 대상 아님
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={j}
-                      src={`data:image/png;base64,${b64}`}
-                      alt={`셀 ${i + 1} 그래프 출력 ${j + 1}`}
-                      className="mx-3 my-3 max-w-[calc(100%-24px)] rounded border border-border bg-white"
-                    />
-                  ))}
-                </div>
+                ) : (
+                  // 아래(기본)·우측(PC): 우측 모드는 lg+에서 입력 옆 열에 배치
+                  <div className={outMode === "right" ? "lg:border-l lg:border-border" : undefined}>
+                    <OutputView c={c} i={i} />
+                  </div>
+                )
               ) : null}
+              </div>
 
               {c.aiError ? (
                 <p className="border-t border-border px-3 py-2 text-[12px] text-[#c4302b]">
@@ -2374,6 +2593,8 @@ function RunnerWorkspace({
               + 텍스트 셀 추가
             </button>
           </div>
+          </div>
+          </div>
 
           <HelpFaq />
         </div>
@@ -2395,6 +2616,58 @@ function RunnerWorkspace({
       {preview ? (
         <SheetDialog view={preview} onClose={() => setPreview(null)} />
       ) : null}
+
+      {/* 실행 결과 팝업 — '결과 표시: 팝업' 모드(단일 실행 후 자동)·'결과 보기' 버튼 */}
+      {popupId != null
+        ? (() => {
+            const idx = cells.findIndex((x) => x.id === popupId);
+            const pc = idx >= 0 ? cells[idx] : null;
+            if (!pc) return null;
+            return (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 sm:items-center sm:p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`셀 ${idx + 1} 실행 결과`}
+                onClick={() => setPopupId(null)}
+              >
+                <div
+                  className="flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-cover bg-white shadow-card-hover sm:rounded-cover"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+                    <h2 className="text-[15px] font-semibold text-foreground">
+                      셀 {idx + 1} 실행 결과
+                      {pc.execOrder ? (
+                        <span className="ml-2 text-[12px] font-normal text-tertiary">
+                          In [{pc.execOrder}]
+                          {pc.ms != null ? ` · ${(pc.ms / 1000).toFixed(1)}초` : ""}
+                        </span>
+                      ) : null}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setPopupId(null)}
+                      aria-label="닫기"
+                      className="shrink-0 text-tertiary hover:text-foreground"
+                    >
+                      <X size={20} />
+                    </button>
+                  </header>
+                  <div className="flex-1 overflow-y-auto">
+                    {pc.output || pc.images.length > 0 ? (
+                      <OutputView c={pc} i={idx} />
+                    ) : (
+                      <p className="px-5 py-8 text-center text-[13px] text-tertiary">
+                        출력이 없습니다 — print()나 마지막 줄 식으로 결과를 남겨 보세요.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()
+        : null}
     </div>
   );
 }
@@ -2846,6 +3119,32 @@ const HELP_SECTIONS: { title: string; items: { q: string; a: ReactNode }[] }[] =
   {
     title: "셀 다루기",
     items: [
+      {
+        q: "왼쪽 목차는 어떻게 만들어지나요?",
+        a: (
+          <>
+            각 셀의 첫 줄이 제목이면 자동으로 목차에 올라갑니다 — 텍스트 셀은{" "}
+            <code className="font-mono"># 제목</code>=상위, <code className="font-mono">##</code>·
+            <code className="font-mono">###</code>=하위이며, 기호 없이 짧은 한 줄만 적어도
+            상위 목차가 됩니다. 코드 셀은 첫 주석 줄(
+            <code className="font-mono"># ── 제목 ──</code> 형식 포함)을 사용합니다.
+            목차 항목을 클릭하면 그 셀로 바로 이동하고, 앞의 점 색으로 실행
+            상태(완료·오류·실행 중)를 보여 줍니다. <strong>☰ 목차</strong> 버튼으로
+            감추거나 보일 수 있습니다(PC).
+          </>
+        ),
+      },
+      {
+        q: "실행 결과를 코드 옆이나 팝업으로 볼 수 있나요?",
+        a: (
+          <>
+            <strong>결과 표시</strong> 선택으로 바꿉니다 — <strong>아래</strong>(기본),{" "}
+            <strong>우측</strong>(PC에서 코드 왼쪽·결과 오른쪽 2열),{" "}
+            <strong>팝업</strong>(실행하면 결과가 팝업으로 열리고, 셀에는 &lsquo;결과
+            보기&rsquo; 버튼만 남음). 선택은 이 브라우저에 저장됩니다.
+          </>
+        ),
+      },
       {
         q: "변수는 셀 사이에 유지되나요?",
         a: (
