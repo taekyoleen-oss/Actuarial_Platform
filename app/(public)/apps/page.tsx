@@ -125,6 +125,18 @@ const WORK_APPS: AppItem[] = [
     ],
     link: "https://md-la-te-x-studio.vercel.app/",
   },
+  {
+    title: "SheetPython — 스프레드시트 파이썬",
+    description:
+      "스프레드시트 위에서 파이썬 코드를 작성·실행하는 앱입니다. 데이터를 표로 보면서 셀 단위로 결과를 확인할 수 있어 초보자도 코드 작성 과정을 따라가기 쉽습니다.",
+    features: [
+      "스프레드시트에서 데이터를 보며 파이썬 코드 작성",
+      "셀 단위 실행·결과 산출",
+      "참고할 만한 예시 코드 제공",
+      "AI 채팅으로 파이썬 코드 지원",
+    ],
+    link: "https://sheetpython.vercel.app/",
+  },
 ];
 
 // featured: 모델분석 카드를 벤토 대형 타일로 (2026-06-13 입체화)

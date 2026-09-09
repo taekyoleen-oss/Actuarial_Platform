@@ -31,6 +31,7 @@ import {
   Settings,
   ShieldCheck,
   Sigma,
+  Table2,
   User,
   X,
 } from "lucide-react";
@@ -115,6 +116,13 @@ const QUICK_LINKS: LauncherLink[] = [
     label: "MD·LaTeX",
     icon: FileCode2,
     color: "slate",
+    external: true,
+  },
+  {
+    href: "https://sheetpython.vercel.app/",
+    label: "SheetPython",
+    icon: Table2,
+    color: "teal",
     external: true,
   },
 ];
