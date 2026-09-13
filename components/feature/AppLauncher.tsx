@@ -78,8 +78,8 @@ const QUICK_LINKS: LauncherLink[] = [
     external: true,
   },
   {
-    href: "https://flexiblewholelife.vercel.app/",
-    label: "유연 종신",
+    href: "https://flexibleinsurance.vercel.app/",
+    label: "유연 보험",
     icon: SlidersHorizontal,
     color: "amber",
     external: true,
