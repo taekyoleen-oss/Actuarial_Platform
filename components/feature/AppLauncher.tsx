@@ -31,6 +31,7 @@ import {
   Settings,
   ShieldCheck,
   Sigma,
+  SlidersHorizontal,
   Table2,
   User,
   X,
@@ -74,6 +75,13 @@ const QUICK_LINKS: LauncherLink[] = [
     label: "ML 자동분석",
     icon: Brain,
     color: "violet",
+    external: true,
+  },
+  {
+    href: "https://flexiblewholelife.vercel.app/",
+    label: "유연 종신",
+    icon: SlidersHorizontal,
+    color: "amber",
     external: true,
   },
   {

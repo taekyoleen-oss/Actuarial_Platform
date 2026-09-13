@@ -50,6 +50,18 @@ const MODEL_APPS: AppItem[] = [
     ],
     link: "https://machine-learning-auto-flow.vercel.app/",
   },
+  {
+    title: "Flexible Whole Life — 계약자 주도 유연 종신보험",
+    description:
+      "계약자의 미래 현금흐름과 설계에 따라 보험금을 유연하게 조정하는 종신보험 설계 앱입니다. 보험사 주도의 상품설계를 계약자 주도로 전환해 개인별 맞춤형 보장을 제공하고, 개인의 현금 능력에 맞춘 보험료 산출이 가능합니다.",
+    features: [
+      "미래 현금흐름 기반 보험금·보장 설계",
+      "보험사 주도 → 계약자 주도 상품설계",
+      "개인별 맞춤형 보장 구성",
+      "현금 능력에 따른 보험료 산출",
+    ],
+    link: "https://flexiblewholelife.vercel.app/",
+  },
 ];
 
 const WORK_APPS: AppItem[] = [
@@ -317,6 +329,11 @@ export default function AppsPage() {
             url="/apps/ml-auto-flow-brochure.pdf"
             fileName="ML_Auto_Flow_브로셔.pdf"
           />
+        </div>
+
+        {/* 3번째 이후 모델분석 앱 — 지그재그(아이덴트 짝)는 앞 2종 전용, 나머지는 그리드 */}
+        <div className="mt-6">
+          <AppGrid apps={MODEL_APPS.slice(2)} featured />
         </div>
       </Collapsible>
 
