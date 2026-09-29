@@ -1,5 +1,6 @@
 // 그래프(matplotlib) 스니펫 — /datalab 파이썬 실행기의 셀별 '그래프 ▾' 콤보박스용.
 // 데이터 핸들링(wrangleSnippets)과 동형: 필요할 때 셀에 조각을 삽입한다.
+// - 기초 그래프(basic) 그룹은 맨 앞 — 초보용 히스토그램·막대·파이·선 등 7종(초급판은 lib/beginnerCode/plot.ts).
 // - 탐색(EDA) 조각은 df(샘플 policy·claims) 가정 — 열 이름만 바꾸면 실제 데이터에도 쓴다.
 // - 모델 진단·해석 조각은 '자체 완결' — 인라인으로 빠른 모델을 적합한다. 이미 적합된
 //   model·X_te·proba(또는 pred)가 있으면 각 조각 첫 줄 안내대로 준비 블록만 지우면 된다.
@@ -29,6 +30,137 @@ export function plotInsertCode(s: PlotSnippet): string {
 }
 
 export const PLOT_SNIPPET_GROUPS: PlotSnippetGroup[] = [
+  {
+    id: "basic",
+    label: "기초 그래프 (쉬움)",
+    snippets: [
+      {
+        id: "basic-hist",
+        label: "히스토그램",
+        desc: "수치형 변수 하나의 분포(어느 값대에 몰려 있는지)를 막대로 봅니다.",
+        code: `import matplotlib.pyplot as plt
+
+col = "premium"                       # 볼 변수(실제 열로 바꾸세요)
+x = df[col].dropna()
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.hist(x, bins=20, color="#3E6AE1", alpha=0.75, edgecolor="white")
+ax.axvline(x.mean(), color="#B4531F", lw=2, ls="--", label=f"평균 {x.mean():,.0f}")
+ax.axvline(x.median(), color="#0E9488", lw=2, ls=":", label=f"중앙값 {x.median():,.0f}")
+ax.set_xlabel(col); ax.set_ylabel("건수"); ax.legend()
+ax.set_title(f"{col} 분포")
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-bar",
+        label: "막대그래프 (범주별 개수)",
+        desc: "범주형 변수의 값별 건수를 세로 막대로 비교합니다.",
+        code: `import matplotlib.pyplot as plt
+
+col = "product"                       # 범주 열(실제 열로 바꾸세요)
+counts = df[col].value_counts()       # 값별 건수(많은 순)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+bars = ax.bar(counts.index.astype(str), counts.values, color="#3E6AE1")
+ax.bar_label(bars, fmt="%d")          # 막대 위에 건수 표시
+ax.set_xlabel(col); ax.set_ylabel("건수")
+ax.set_title(f"{col}별 건수")
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-pie",
+        label: "파이차트 (비율)",
+        desc: "범주별 구성 비율을 원그래프로 봅니다 — 조각이 많으면 상위 N개 외는 '기타'로 묶습니다.",
+        code: `import pandas as pd
+import matplotlib.pyplot as plt
+
+col, top_n = "region", 3              # 범주 열, 따로 보일 상위 개수
+counts = df[col].value_counts()
+# 상위 N개만 남기고 나머지는 '기타'로 합침(조각이 너무 많으면 읽기 어려움)
+if len(counts) > top_n:
+    counts = pd.concat([counts.iloc[:top_n],
+                        pd.Series({"기타": counts.iloc[top_n:].sum()})])
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.pie(counts.values, labels=counts.index.astype(str), autopct="%1.1f%%",
+       startangle=90, counterclock=False, wedgeprops={"edgecolor": "white"})
+ax.set_title(f"{col} 구성 비율")
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-line",
+        label: "선그래프 (추이)",
+        desc: "x가 커질 때 평균값이 어떻게 변하는지(추이)를 선으로 봅니다 — 예: 연령별 평균 보험료.",
+        code: `import matplotlib.pyplot as plt
+
+xcol, ycol = "age", "premium"         # x(순서가 있는 값), y(평균낼 값)
+trend = df.groupby(xcol)[ycol].mean() # x 값별 y 평균
+smooth = trend.rolling(5, center=True, min_periods=1).mean()   # 5칸 이동평균
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(trend.index, trend.values, "o-", ms=3, color="#3E6AE1", alpha=0.5, label="평균")
+ax.plot(smooth.index, smooth.values, color="#B4531F", lw=2, label="이동평균(5)")
+ax.set_xlabel(xcol); ax.set_ylabel(f"평균 {ycol}"); ax.legend()
+ax.set_title(f"{xcol}에 따른 평균 {ycol}")
+ax.grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-box",
+        label: "박스플롯",
+        desc: "그룹별 값의 중앙값·사분위·이상치를 상자 그림으로 나란히 비교합니다.",
+        code: `import matplotlib.pyplot as plt
+
+by, val = "product", "premium"        # 그룹 열, 값 열(실제 열로 바꾸세요)
+groups = df.dropna(subset=[val]).groupby(by)[val]
+labels = [str(k) for k, _ in groups]
+data = [v.values for _, v in groups]
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.boxplot(data)                      # 상자=사분위(25~75%), 가운데 선=중앙값, 점=이상치
+ax.set_xticks(range(1, len(labels) + 1))
+ax.set_xticklabels(labels)
+ax.set_xlabel(by); ax.set_ylabel(val)
+ax.set_title(f"{by}별 {val} 분포")
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-scatter",
+        label: "산점도",
+        desc: "두 수치형 변수를 점으로 찍어 함께 움직이는지(관계)를 봅니다.",
+        code: `import matplotlib.pyplot as plt
+
+xcol, ycol = "age", "premium"         # x, y 변수(실제 열로 바꾸세요)
+d = df[[xcol, ycol]].dropna()
+r = d[xcol].corr(d[ycol])             # 상관계수(-1~1)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.scatter(d[xcol], d[ycol], s=14, alpha=0.5, color="#3E6AE1")
+ax.set_xlabel(xcol); ax.set_ylabel(ycol)
+ax.set_title(f"{xcol} vs {ycol}  (상관계수 r = {r:.2f})")
+ax.grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()`,
+      },
+      {
+        id: "basic-group-bar",
+        label: "그룹별 평균 막대",
+        desc: "그룹마다 값의 평균을 막대로 비교합니다 — 예: 판매채널별 평균 보험료.",
+        code: `import matplotlib.pyplot as plt
+
+by, val = "channel", "premium"        # 그룹 열, 값 열(실제 열로 바꾸세요)
+stat = df.groupby(by)[val].agg(["mean", "std", "count"]).sort_values("mean", ascending=False)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+bars = ax.bar(stat.index.astype(str), stat["mean"], yerr=stat["std"],
+              capsize=4, color="#3E6AE1", alpha=0.85)   # 오차막대 = 표준편차
+ax.bar_label(bars, labels=[f"{m:,.0f}\\n(n={n})" for m, n in zip(stat["mean"], stat["count"])],
+             padding=3, fontsize=8)
+ax.set_xlabel(by); ax.set_ylabel(f"평균 {val}")
+ax.set_title(f"{by}별 평균 {val} (±표준편차)")
+plt.tight_layout(); plt.show()`,
+      },
+    ],
+  },
   {
     id: "eda",
     label: "탐색 (EDA)",

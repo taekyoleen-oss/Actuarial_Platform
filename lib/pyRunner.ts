@@ -27,6 +27,7 @@ interface PyodideAPI {
     readFile(path: string): Uint8Array;
     readdir(path: string): string[];
     stat(path: string): { size: number };
+    analyzePath(path: string): { exists: boolean };
   };
 }
 
@@ -296,6 +297,19 @@ export async function runPythonCode(
   // 실패는 던져서 사용자에게 노출(조용히 넘기면 파일이 안 만들어져 원인 파악 불가).
   if (/read_excel|to_excel|ExcelWriter|\.xlsx|\.xls\b/.test(code)) {
     await ensureExcelSupport(py);
+    // 사이트 샘플을 읽는 코드인데 아직 안 불러왔으면 자동으로 가져온다(초보자가 '데이터 불러오기'를
+    // 먼저 하지 않아도 사전 코드가 바로 실행되도록). 이미 있는 파일(사용자 데이터)은 덮지 않는다.
+    for (const [, file] of code.matchAll(
+      /["']((?:policy|claims|experience|triangle|mortality_table)\.xlsx)["']/g
+    )) {
+      if (py.FS.analyzePath(file).exists) continue;
+      try {
+        const res = await fetch(`/datalab/samples/${file}`);
+        if (res.ok) writeDataFile(py, file, new Uint8Array(await res.arrayBuffer()));
+      } catch {
+        // 네트워크 실패 — 실행 단계의 FileNotFoundError로 표면화
+      }
+    }
   }
   // pandas의 스피어만·켄달 상관은 내부적으로 scipy를 지연 import한다.
   // 코드에 scipy import가 없어도(=.corr(method="spearman") 등) 미리 로드해 둔다.

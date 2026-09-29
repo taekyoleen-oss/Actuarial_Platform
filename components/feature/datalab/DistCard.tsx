@@ -13,6 +13,8 @@ import { useMemo, useState } from "react";
 import { Code2, GitCompare, LineChart, RotateCcw } from "lucide-react";
 import {
   comparePython,
+  beginnerComparePython,
+  beginnerSinglePython,
   defaultParams,
   meanOf,
   medianOf,
@@ -615,6 +617,13 @@ export function DistCard({ dist }: { dist: Distribution }) {
         : singlePython(dist, params, q),
     [compare, dist, params, distB, paramsB, q]
   );
+  const beginnerCode = useMemo(
+    () =>
+      compare
+        ? beginnerComparePython(dist, params, distB, paramsB)
+        : beginnerSinglePython(dist, params),
+    [compare, dist, params, distB, paramsB]
+  );
 
   const riskA = useMemo<RiskPair>(
     () => ({
@@ -959,7 +968,7 @@ export function DistCard({ dist }: { dist: Distribution }) {
         <DistCodeDialog
           name={compare ? `${dist.name} vs ${distB.name}` : dist.name}
           en={compare ? `${dist.en} vs ${distB.en}` : dist.en}
-          code={code}
+          tabs={[{ key: "py", label: "파이썬 코드", code, beginner: beginnerCode }]}
           onClose={() => setShowCode(false)}
         />
       ) : null}

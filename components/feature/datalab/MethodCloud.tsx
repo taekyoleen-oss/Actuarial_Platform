@@ -58,7 +58,21 @@ import {
   CopyButton,
   Prose,
 } from "@/components/feature/datalab/code-popup";
-import { DistCodeDialog } from "@/components/feature/datalab/DistCodeDialog";
+import {
+  DistCodeDialog,
+  LevelTabs,
+  BeginnerNote,
+  type CodeLevel,
+} from "@/components/feature/datalab/DistCodeDialog";
+import {
+  beginnerBlocks,
+  beginnerScript,
+  beginnerSnippetCode,
+  toBeginnerExcel,
+  BEGINNER_NOTE,
+  BEGINNER_EXCEL_NOTE,
+  type BeginnerBlock,
+} from "@/lib/beginnerCode";
 import {
   FunctionSearch,
   type SearchItem,
@@ -136,14 +150,14 @@ const levelOf = (s: MethodCodeSection): SectionLevel => s.level ?? "basic";
 
 /** 수준 칩 색 — 카테고리 고정색(blue/violet/teal/rose/amber)과 겹치지 않는 저채도 2색 */
 const LEVEL_META: Record<SectionLevel, { label: string; chip: "slate" | "cyan" }> = {
-  basic: { label: "기본", chip: "slate" },
-  advanced: { label: "고급", chip: "cyan" },
+  basic: { label: "표준", chip: "slate" },
+  advanced: { label: "심화", chip: "cyan" },
 };
 
 const LEVEL_FILTERS: { key: LevelFilter; label: string }[] = [
   { key: "all", label: "전체" },
-  { key: "basic", label: "기본" },
-  { key: "advanced", label: "고급" },
+  { key: "basic", label: "표준" },
+  { key: "advanced", label: "심화" },
 ];
 
 function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number }) {
@@ -158,8 +172,8 @@ function LevelChip({ level, fontSize }: { level: SectionLevel; fontSize: number 
       }}
       title={
         level === "basic"
-          ? "기본 — 하이퍼파라미터·변수를 지정해 바로 결과를 산출하는 첫 실행 경로"
-          : "고급 — 최적화·튜닝·교차검증·진단·시뮬레이션"
+          ? "표준 — 하이퍼파라미터·변수를 지정해 바로 결과를 산출하는 경로"
+          : "심화 — 최적화·튜닝·교차검증·진단·시뮬레이션"
       }
     >
       {label}
@@ -691,6 +705,45 @@ function TheoryPanel({
   );
 }
 
+/** [초급] 코드 — 블록(셀)마다 제목+코드. 엑셀이면 xl() 참조로 변환 */
+function BeginnerPanel({
+  blocks,
+  excel,
+  fz,
+  fontScale,
+}: {
+  blocks: BeginnerBlock[];
+  excel: boolean;
+  fz: (px: number) => { fontSize: number };
+  fontScale: number;
+}) {
+  return (
+    <div>
+      <BeginnerNote text={excel ? BEGINNER_EXCEL_NOTE : BEGINNER_NOTE} fontScale={fontScale} />
+      {blocks.map((b, i) => (
+        <div key={i} className="mt-5 first:mt-0">
+          <h3 className="mb-2 font-semibold text-foreground" style={fz(15)}>
+            {b.title}
+            <span className="ml-2 align-middle text-[11.5px] font-medium text-tertiary">
+              {excel ? `엑셀 셀 ${i + 1}` : `셀 ${i + 1}`}
+            </span>
+          </h3>
+          <CodeBlock
+            code={excel ? toBeginnerExcel(b.code.trim()) : b.code.trim()}
+            codeFz={13.5 * fontScale}
+          />
+        </div>
+      ))}
+      <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12.5)}>
+        {excel
+          ? "블록마다 엑셀의 다른 셀에 =PY( 로 넣으면 앞 셀의 변수(df 등)를 다음 셀에서 이어 씁니다."
+          : "셀을 위에서부터 차례로 실행하세요(앞 셀의 변수를 다음 셀에서 이어 씁니다)."}{" "}
+        익숙해지면 <strong>고급</strong> 탭에서 옵션·진단·튜닝까지 확인하세요.
+      </p>
+    </div>
+  );
+}
+
 function MethodDialog({
   method: methodBase,
   color,
@@ -706,12 +759,17 @@ function MethodDialog({
   fontScale: number;
   onFontScale: Dispatch<SetStateAction<number>>;
   // 코드는 팝업이 현재 보여주는 수준 필터 기준으로 넘긴다(전체 복사와 같은 범위)
-  onSendToRunner: (m: StatMethod, code: string, level: LevelFilter) => void;
+  onSendToRunner: (m: StatMethod, code: string, scope: string) => void;
   onClose: () => void;
 }) {
   // 기본 탭 = 정의 및 방법(개념을 먼저 이해하고 코드로)
   const [tab, setTab] = useState<DialogTab>("theory");
   const [level, setLevel] = useState<LevelFilter>("all");
+  // 코드 탭의 [초급 | 고급] — 초보자 우선(기본 초급). 초급 = lib/beginnerCode, 고급 = 기존 전체 코드
+  const [codeLv, setCodeLv] = useState<CodeLevel>("beginner");
+  const beginner = useMemo(() => beginnerBlocks("method", methodBase.id), [methodBase.id]);
+  const beginnerPy = useMemo(() => (beginner ? beginnerScript(beginner) : ""), [beginner]);
+  const showBeg = (tab === "code" || tab === "excel") && codeLv === "beginner" && !!beginner;
   // 고정(pin) — 크롬·엣지: 별도 창(다른 앱 위), 그 외: 뷰포트 내 축소창
   const pin = usePinnableDialog({
     onClose,
@@ -994,13 +1052,23 @@ function MethodDialog({
               {/* 코드 복사는 [코드 적용]·[엑셀 코드 적용] 탭 공용, 실행기 전송은 파이썬 탭 전용 */}
               {tab === "code" || tab === "excel" ? (
                 <CopyButton
-                  text={tab === "excel" ? allExcelCode : allCode}
+                  text={
+                    showBeg
+                      ? tab === "excel"
+                        ? toBeginnerExcel(beginnerPy)
+                        : beginnerPy
+                      : tab === "excel"
+                        ? allExcelCode
+                        : allCode
+                  }
                   label={
                     pin.pinned
                       ? "복사"
-                      : tab === "excel"
-                        ? "전체 코드 복사"
-                        : `전체 코드 복사${scopeSuffix}`
+                      : showBeg
+                        ? "전체 코드 복사 (초급)"
+                        : tab === "excel"
+                          ? "전체 코드 복사"
+                          : `전체 코드 복사${scopeSuffix}`
                   }
                   className={pin.pinned ? "!text-[10.5px]" : ""}
                 />
@@ -1009,19 +1077,29 @@ function MethodDialog({
               {tab === "code" && method.category !== "wrangle" ? (
                 <button
                   type="button"
-                  onClick={() => onSendToRunner(method, allCode, level)}
+                  onClick={() =>
+                    showBeg
+                      ? onSendToRunner(method, beginnerPy, " — 초급")
+                      : onSendToRunner(
+                          method,
+                          allCode,
+                          level === "all" ? "" : ` — ${LEVEL_META[level].label}`
+                        )
+                  }
                   aria-label="실행기로 보내기"
                   className={`inline-flex items-center gap-1 whitespace-nowrap rounded border border-border bg-white font-medium text-tertiary hover:text-foreground ${
                     pin.pinned ? "px-2 py-1 text-[10.5px]" : "px-2 py-1 text-[11.5px]"
                   }`}
                   title={
-                    level === "all"
+                    showBeg
+                      ? "‘파이썬 코드 실행’ 탭 실행기에 초급 코드를 담고 그 탭으로 이동합니다"
+                      : level === "all"
                       ? "‘파이썬 코드 실행’ 탭 실행기에 이 코드를 담고 그 탭으로 이동합니다"
                       : `‘파이썬 코드 실행’ 탭 실행기에 ${LEVEL_META[level].label} 수준 코드만 담고 그 탭으로 이동합니다`
                   }
                 >
                   {/* 고정 시엔 기호(▶)만 — 상단 메뉴가 한 줄에 들어오도록 */}
-                  {pin.pinned ? "▶" : `▶ 실행기로 보내기${scopeSuffix}`}
+                  {pin.pinned ? "▶" : `▶ 실행기로 보내기${showBeg ? " (초급)" : scopeSuffix}`}
                 </button>
               ) : null}
               {pin.isPip ? null : (
@@ -1078,6 +1156,10 @@ function MethodDialog({
           ))}
         </div>
 
+        {(tab === "code" || tab === "excel") && beginner && !editing ? (
+          <LevelTabs value={codeLv} onChange={setCodeLv} small={pin.pinned} />
+        ) : null}
+
         {/* 세로 여백은 안쪽 래퍼에 — 스크롤 컨테이너에 py를 주면 sticky top-0 이
             콘텐츠 상자 위(패딩 아래)에 붙어 그 폭만큼 스크롤 내용이 머리 위로 비친다 */}
         <div className="flex-1 overflow-y-auto px-5 sm:px-6">
@@ -1095,6 +1177,13 @@ function MethodDialog({
             />
           ) : tab === "theory" ? (
             <TheoryPanel method={method} fz={fz} fontScale={fontScale} />
+          ) : showBeg ? (
+            <BeginnerPanel
+              blocks={beginner!}
+              excel={tab === "excel"}
+              fz={fz}
+              fontScale={fontScale}
+            />
           ) : tab === "excel" ? (
             <ExcelCodePanel method={method} fz={fz} fontScale={fontScale} />
           ) : tab === "options" ? (
@@ -1140,14 +1229,14 @@ function MethodDialog({
               ))}
             </div>
             <span className="text-[11.5px] text-tertiary">
-              기본 = 값을 지정해 바로 산출 · 고급 = 최적화·진단·시뮬레이션
-              {hasAdvanced ? "" : " (이 방법은 기본 코드만 제공)"}
+              표준 = 값을 지정해 바로 산출 · 심화 = 최적화·진단·시뮬레이션
+              {hasAdvanced ? "" : " (이 방법은 표준 코드만 제공)"}
             </span>
           </div>
 
           {visibleSections.length === 0 ? (
             <p className="mt-4 rounded bg-surface px-4 py-3 text-[12.5px] leading-relaxed text-tertiary">
-              이 방법에는 <strong>{level === "basic" ? "기본" : "고급"}</strong>{" "}
+              이 방법에는 <strong>{level === "basic" ? "표준" : "심화"}</strong>{" "}
               수준 코드가 없습니다. 위에서 <strong>전체</strong>를 선택해 모든
               코드를 확인하세요.
             </p>
@@ -1898,8 +1987,7 @@ export function MethodCloud() {
   const highlightId: string | null = null;
 
   // 팝업이 현재 필터로 보여주는 코드(code)를 그대로 실행기 탭으로 — 화면과 범위가 어긋나지 않게
-  const sendToRunner = (m: StatMethod, code: string, level: LevelFilter) => {
-    const scope = level === "all" ? "" : ` — ${LEVEL_META[level].label}`;
+  const sendToRunner = (m: StatMethod, code: string, scope: string) => {
     runner?.sendToRunner(
       `# ═══ ${m.name} (${m.en})${scope} ═══\n${code}`,
       `${m.name} (${m.en})${scope}`
@@ -2025,6 +2113,7 @@ export function MethodCloud() {
               key: "py",
               label: "파이썬 코드 적용",
               code: snippetInsertCode(snippet),
+              beginner: beginnerSnippetCode("wrangle", snippet.id, snippet.label),
             },
           ]}
           onClose={() => setSnippet(null)}
@@ -2042,6 +2131,7 @@ export function MethodCloud() {
               key: "py",
               label: "파이썬 코드 적용",
               code: plotInsertCode(plotSnip),
+              beginner: beginnerSnippetCode("plot", plotSnip.id, plotSnip.label),
             },
           ]}
           onClose={() => setPlotSnip(null)}

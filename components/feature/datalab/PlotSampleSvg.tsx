@@ -24,7 +24,10 @@ type PlotShape =
   | "gain"
   | "barsH"
   | "lineMono"
-  | "linesFan";
+  | "linesFan"
+  | "pie"
+  | "barsV"
+  | "line";
 
 interface PlotMeta {
   shape: PlotShape;
@@ -36,6 +39,42 @@ interface PlotMeta {
 
 /** 스니펫 id → 샘플 모양·대표 모델·입력 데이터 형태 */
 export const PLOT_META: Record<string, PlotMeta> = {
+  // ── 기초 그래프 ──
+  "basic-hist": {
+    shape: "hist",
+    models: "기초 탐색 — 모든 분석의 첫 단계(보험료·연령 등 분포 확인)",
+    inputShape: "수치형 변수 1개 (한 열)",
+  },
+  "basic-bar": {
+    shape: "barsV",
+    models: "기초 탐색 — 상품·채널 등 범주별 건수 비교",
+    inputShape: "범주형 변수 1개 (한 열)",
+  },
+  "basic-pie": {
+    shape: "pie",
+    models: "기초 탐색 — 포트폴리오 구성비(상품·지역 비중)",
+    inputShape: "범주형 변수 1개 (범주 3~6개 권장)",
+  },
+  "basic-line": {
+    shape: "line",
+    models: "기초 탐색 — 연령·경과기간에 따른 평균 추이",
+    inputShape: "순서형 x 1열(연령·기간) + 수치 y 1열",
+  },
+  "basic-box": {
+    shape: "box",
+    models: "기초 탐색 — 그룹별 분포·이상치 비교",
+    inputShape: "그룹(범주) 열 1개 + 값(수치) 열 1개",
+  },
+  "basic-scatter": {
+    shape: "scatterLine",
+    models: "기초 탐색 — 두 수치 변수의 관계(상관) 확인",
+    inputShape: "수치 x 1열 + 수치 y 1열",
+  },
+  "basic-group-bar": {
+    shape: "barsV",
+    models: "기초 탐색 — 채널·상품별 평균 보험료 비교",
+    inputShape: "그룹(범주) 열 1개 + 값(수치) 열 1개",
+  },
   // ── 탐색(EDA) ──
   "hist-kde": {
     shape: "hist",
@@ -170,8 +209,16 @@ export function PlotSampleSvg({ shape }: { shape: PlotShape }) {
       style={{ maxWidth: 90, height: "auto" }}
     >
       <rect x={1} y={1} width={126} height={78} rx={6} fill="white" stroke={AX} />
-      <Axes />
-      {shape === "hist" ? (
+      {shape !== "pie" && <Axes />}
+      {shape === "pie" ? (
+        <>
+          {/* 원그래프 — 조각 3개(45%·30%·25%) */}
+          <path d="M64 40 L64 14 A26 26 0 0 1 72.03 64.73 Z" fill={P} opacity={0.75} />
+          <path d="M64 40 L72.03 64.73 A26 26 0 0 1 38 40 Z" fill={A} opacity={0.75} />
+          <path d="M64 40 L38 40 A26 26 0 0 1 64 14 Z" fill={T} opacity={0.75} />
+          <circle cx={64} cy={40} r={26} fill="none" stroke="white" strokeWidth={1} />
+        </>
+      ) : shape === "hist" ? (
         <>
           {HIST_H.map((h, i) => (
             <rect
@@ -447,6 +494,34 @@ export function PlotSampleSvg({ shape }: { shape: PlotShape }) {
             <path key={i} d={d} fill="none" stroke={G} strokeWidth={1} opacity={0.7} />
           ))}
           <path d="M18 56 Q44 47 66 37 Q88 26 110 22" fill="none" stroke={P} strokeWidth={2.2} />
+        </>
+      ) : shape === "barsV" ? (
+        <>
+          {[40, 30, 22, 14].map((h, i) => (
+            <rect
+              key={i}
+              x={26 + i * 22}
+              y={64 - h}
+              width={14}
+              height={h}
+              fill={P}
+              opacity={0.75 - i * 0.1}
+            />
+          ))}
+        </>
+      ) : shape === "line" ? (
+        <>
+          <polyline
+            points="20,56 34,50 48,52 62,40 76,36 90,28 108,20"
+            fill="none"
+            stroke={P}
+            strokeWidth={2}
+          />
+          {[[20, 56], [34, 50], [48, 52], [62, 40], [76, 36], [90, 28], [108, 20]].map(
+            ([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r={2.2} fill={P} />
+            )
+          )}
         </>
       ) : null}
     </svg>

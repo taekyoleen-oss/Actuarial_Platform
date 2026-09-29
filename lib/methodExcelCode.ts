@@ -189,7 +189,10 @@ export function unwrapToString(code: string): string {
  * 나머지 차이(셀당 그림 1개 등)는 코드 위 안내(PIE_CODE_NOTE)로 설명한다.
  */
 export function toExcelPython(code: string): string {
-  let out = code.replace(/;?[ \t]*plt\.show\(\)/g, "");
+  // plt.show()만 있는 줄(뒤 주석 포함)은 줄째 삭제 — 주석만 남는 빈 줄 방지
+  let out = code
+    .replace(/^[ \t]*plt\.show\(\)[ \t]*(#[^\n]*)?(\n|$)/gm, "")
+    .replace(/;?[ \t]*plt\.show\(\)/g, "");
   out = stripPrintWrappers(out);
   out = unwrapToString(out);
   out = commentPreloadedImports(out);

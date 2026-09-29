@@ -28,6 +28,12 @@ import {
   type RunPhase,
 } from "@/lib/pyFit";
 import {
+  beginnerFrequencyFitCode,
+  beginnerMcCode,
+  beginnerSeverityFitCode,
+  beginnerSimCode,
+  freqFrozenExpr,
+  sevFrozenExpr,
   frequencyFitCode,
   frequencySimCode,
   monteCarloCode,
@@ -722,11 +728,17 @@ export function FitLab() {
       name: nm,
       en: row.id,
       tabs: [
-        { key: "fit", label: "모델 적합", code: severityFitCode(row.id, nm, data) },
+        {
+          key: "fit",
+          label: "모델 적합",
+          code: severityFitCode(row.id, nm, data),
+          beginner: beginnerSeverityFitCode(row.id, nm, data),
+        },
         {
           key: "sim",
           label: "시뮬레이션",
           code: severitySimCode(row.id, nm, row.params),
+          beginner: beginnerSimCode(sevFrozenExpr(row.id, row.params), nm),
         },
       ],
     });
@@ -742,11 +754,15 @@ export function FitLab() {
           key: "fit",
           label: "모델 적합",
           code: frequencyFitCode(row.id, nm, freqEmp.counts),
+          beginner: beginnerFrequencyFitCode(row.id, nm, freqEmp.counts),
         },
         {
           key: "sim",
           label: "시뮬레이션",
           code: frequencySimCode(row.id, nm, row.params),
+          beginner: /^zi/.test(row.id)
+            ? undefined
+            : beginnerSimCode(freqFrozenExpr(row.id, row.params), nm),
         },
       ],
     });
@@ -758,14 +774,24 @@ export function FitLab() {
     setCodeDialog({
       name: "몬테카를로 시뮬레이션",
       en: freq ? "compound model" : "severity sampling",
-      code: monteCarloCode(
+      tabs: [
+        {
+          key: "mc",
+          label: "파이썬 코드",
+          beginner: beginnerMcCode(
+            sevFrozenExpr(sev.id, sev.params),
+            freq?.params ? freqFrozenExpr(freq.id, freq.params) : null
+          ),
+          code: monteCarloCode(
         { id: sev.id, name: nameOf(SEV_DISTS, sev.id), params: sev.params },
         freq?.params
           ? { id: freq.id, name: nameOf(FREQ_DISTS, freq.id), params: freq.params }
           : null,
         // 면책·한도가 있으면 지급액 분포 섹션 추가(기본 표본은 원손해 기준 유지)
         trunc ? { d: trunc.d > 0 ? trunc.d : undefined, u: trunc.u } : null
-      ),
+          ),
+        },
+      ],
     });
   };
 

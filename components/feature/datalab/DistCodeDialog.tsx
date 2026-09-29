@@ -11,6 +11,7 @@ import { ChevronDown, X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import { toExcelPython, PIE_CODE_NOTE } from "@/lib/methodExcelCode";
+import { toBeginnerExcel, BEGINNER_NOTE, BEGINNER_EXCEL_NOTE } from "@/lib/beginnerCode";
 import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
 
 const FONT_SCALE_MIN = 0.8;
@@ -22,7 +23,11 @@ export interface CodeTab {
   code: string;
   /** 코드 위에 표시할 안내(선택) — 문자열 또는 글머리 목록 */
   note?: string | string[];
+  /** 초급 코드(선택) — 있으면 [초급 | 고급] 하위 탭이 생기고 code는 '고급'이 된다 */
+  beginner?: string;
 }
+
+export type CodeLevel = "beginner" | "advanced";
 
 export function DistCodeDialog({
   name,
@@ -64,12 +69,19 @@ export function DistCodeDialog({
         label: "엑셀 코드 적용",
         code: toExcelPython(baseTabs[0].code),
         note: PIE_CODE_NOTE,
+        beginner: baseTabs[0].beginner
+          ? toBeginnerExcel(baseTabs[0].beginner)
+          : undefined,
       },
     ],
     [baseTabs]
   );
   const [tabKey, setTabKey] = useState<string>(baseTabs[0].key);
   const active = allTabs.find((t) => t.key === tabKey) ?? allTabs[0];
+  // 초급/고급 — 초보자 우선(기본 초급). 초급 코드가 없는 탭은 고급(원래 코드)만
+  const [lv, setLv] = useState<CodeLevel>("beginner");
+  const showBeginner = lv === "beginner" && !!active.beginner;
+  const shownCode = showBeginner ? active.beginner! : active.code;
   // 글자 확대/축소 — 코드·안내에 적용(창 크기와 독립)
   const [fontScale, setFontScale] = useState(1);
   // 탭 위 프리뷰(그림+설명) 펼침 — 고정(창으로 고정) 시 기본 감춤, '보이기'로 펼침
@@ -182,7 +194,7 @@ export function DistCodeDialog({
               </button>
             </div>
             <CopyButton
-              text={active.code}
+              text={shownCode}
               label="전체 복사"
               className={pin.pinned ? "!text-[10.5px]" : ""}
             />
@@ -252,8 +264,17 @@ export function DistCodeDialog({
           })}
         </div>
 
+        {active.beginner ? (
+          <LevelTabs value={lv} onChange={setLv} small={pin.pinned} />
+        ) : null}
+
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          {active.note ? (
+          {showBeginner ? (
+            <BeginnerNote
+              text={active.key === "__excel" ? BEGINNER_EXCEL_NOTE : BEGINNER_NOTE}
+              fontScale={fontScale}
+            />
+          ) : active.note ? (
             <div
               className="mb-4 rounded px-4 py-3 text-body"
               style={{
@@ -273,7 +294,7 @@ export function DistCodeDialog({
               </ul>
             </div>
           ) : null}
-          <CodeBlock code={active.code} codeFz={13.5 * fontScale} />
+          <CodeBlock code={shownCode} codeFz={13.5 * fontScale} />
         </div>
 
         {hideFooter ? null : (
@@ -284,5 +305,70 @@ export function DistCodeDialog({
           </footer>
         )}
     </>
+  );
+}
+
+/** [초급 | 고급] 하위 탭 — 코드 탭 바로 아래(분석 방법 팝업과 공용) */
+export function LevelTabs({
+  value,
+  onChange,
+  small,
+}: {
+  value: CodeLevel;
+  onChange: (v: CodeLevel) => void;
+  small?: boolean;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="코드 수준"
+      className="flex items-center gap-1.5 border-b border-border px-5 py-2 sm:px-6"
+    >
+      {(
+        [
+          { key: "beginner", label: "초급", hint: "가장 쉬운 코드 — 처음이라면 여기부터" },
+          { key: "advanced", label: "고급", hint: "옵션·진단·튜닝까지 포함한 전체 코드" },
+        ] as { key: CodeLevel; label: string; hint: string }[]
+      ).map((t) => {
+        const on = value === t.key;
+        return (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            title={t.hint}
+            onClick={() => onChange(t.key)}
+            className={`rounded-full border font-medium transition-colors ${
+              small ? "px-2.5 py-0.5 text-[11px]" : "px-3.5 py-1 text-[12.5px]"
+            } ${
+              on
+                ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                : "border-border bg-white text-tertiary hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+      <span className={`ml-1 text-tertiary ${small ? "hidden" : "text-[12px]"}`}>
+        {value === "beginner" ? "가장 쉬운 코드" : "옵션·진단까지 전체"}
+      </span>
+    </div>
+  );
+}
+
+/** 초급 안내 박스 */
+export function BeginnerNote({ text, fontScale }: { text: string; fontScale: number }) {
+  return (
+    <p
+      className="mb-4 rounded px-4 py-2.5 leading-[1.7] text-body"
+      style={{
+        fontSize: Math.round(13 * fontScale * 10) / 10,
+        background: "color-mix(in srgb, var(--chip-teal-bg) 55%, white)",
+      }}
+    >
+      {text}
+    </p>
   );
 }

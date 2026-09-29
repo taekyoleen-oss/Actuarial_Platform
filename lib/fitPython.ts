@@ -962,3 +962,114 @@ plt.title("Aggregate loss S"); plt.legend(); plt.tight_layout(); plt.show()
 # ceded = np.clip(S - att, 0, lim - att)
 # print("층별 기대손해(출재):", ceded.mean())${duBlockAgg}`;
 }
+
+/* ─────────────── 초급 코드(코드 팝업 [초급] 하위 탭) ─────────────── */
+
+/** 심도 분포 id → scipy 적합 호출(초급) — 고급 코드(sevFitLines)와 같은 고정 모수 */
+const BEGINNER_SEV_FIT: Record<string, string> = {
+  normal: "stats.norm.fit(x)",
+  lognormal: "stats.lognorm.fit(x, floc=0)",
+  exponential: "stats.expon.fit(x, floc=0)",
+  weibull: "stats.weibull_min.fit(x, floc=0)",
+  gamma: "stats.gamma.fit(x, floc=0)",
+  beta: "stats.beta.fit(x, floc=0, fscale=1)",
+  pareto2: "stats.lomax.fit(x, floc=0)",
+  pareto1: "stats.pareto.fit(x, floc=0, fscale=x.min())",
+  genpareto: "stats.genpareto.fit(x, floc=0)",
+};
+
+/** 초급 심도 적합 — 개별 값 데이터(면책·한도 없음)만. 그 외는 undefined(고급만 제공) */
+export function beginnerSeverityFitCode(id: string, name: string, data: FitData): string | undefined {
+  const call = BEGINNER_SEV_FIT[id];
+  if (
+    !call ||
+    data.kind === "grouped" ||
+    (data.deductible ?? 0) > 0 ||
+    data.limit !== undefined
+  )
+    return undefined;
+  const arr = pyArray(data.values);
+  return `# ${name} 적합 — 가장 쉬운 방법(scipy .fit 한 줄)
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# 1) 데이터 — 내 데이터로 바꾸려면 이 목록만 교체
+x = np.array(${arr.code}, float)
+
+# 2) 분포 적합 — 결과는 scipy 파라미터(모양, 위치, 크기) 순서
+params = ${call}
+params
+
+# %%
+# 3) 그림 확인 — 막대(데이터)와 선(적합한 분포)이 비슷하면 잘 맞은 것
+dist = stats.${call.split(".")[1]}(*params)   # 추정 파라미터로 분포 만들기
+plt.hist(x, bins=30, density=True, alpha=0.5)
+xs = np.linspace(x.min(), x.max(), 200)
+plt.plot(xs, dist.pdf(xs))
+plt.show()`;
+}
+
+/** 초급 빈도 적합 — 포아송(평균)·음이항(적률법)·이항만. 제로팽창은 undefined */
+export function beginnerFrequencyFitCode(id: string, name: string, counts: number[]): string | undefined {
+  const fit: Record<string, string> = {
+    poisson: `lam = counts.mean()                 # 포아송: 연평균 건수가 곧 lambda
+dist = stats.poisson(lam)
+lam`,
+    negbinom: `m, v = counts.mean(), counts.var()   # 평균·분산
+r = m * m / max(v - m, 1e-9)          # 적률법: 분산이 평균보다 클수록 r이 작음
+p = r / (r + m)
+dist = stats.nbinom(r, p)
+r, p`,
+    binomial: `n = int(counts.max())                # 시행 수(간단히 관측 최대값)
+p = counts.mean() / n                 # 성공 확률 = 평균 / n
+dist = stats.binom(n, p)
+n, p`,
+  };
+  if (!fit[id]) return undefined;
+  const arr = pyArray(counts);
+  return `# ${name} 적합(빈도) — 가장 쉬운 방법
+import numpy as np
+from scipy import stats
+
+# 1) 연도별 사고 건수
+counts = np.array(${arr.code})
+
+# 2) 파라미터 추정
+${fit[id]}
+
+# %%
+# 3) 관측 vs 모형 — 0건·1건… 이 나올 확률 비교
+k = np.arange(counts.max() + 1)
+table = {"k": k, "관측 비율": [(counts == i).mean() for i in k], "모형 확률": dist.pmf(k).round(4)}
+pd_table`;
+}
+
+/** 초급 시뮬레이션 — 적합 분포에서 난수 10,000개 → 평균·99% 분위수 */
+export function beginnerSimCode(frozenExpr: string, name: string): string {
+  return `# ${name} 시뮬레이션 — 가장 쉬운 방법
+import numpy as np
+from scipy import stats
+
+dist = ${frozenExpr}             # 적합한 분포(파라미터 반영)
+x = dist.rvs(size=10000, random_state=0)   # 난수 1만 개
+{"평균": x.mean(), "99% 분위수(VaR)": np.percentile(x, 99)}`;
+}
+
+/** 초급 몬테카를로 — 심도만(난수) 또는 빈도×심도 합(연간 총손해). 제로팽창 빈도는 undefined */
+export function beginnerMcCode(sevExpr: string, freqExpr: string | null): string | undefined {
+  if (freqExpr?.startsWith("ZeroInflated")) return undefined;
+  const body = freqExpr
+    ? `freq = ${freqExpr}              # 연간 사고 건수 분포
+n = freq.rvs(size=10000, random_state=0)       # 1만 년치 사고 건수
+rng = np.random.default_rng(0)
+S = np.array([sev.rvs(size=k, random_state=rng).sum() for k in n])   # 해마다 손해 합계`
+    : `S = sev.rvs(size=10000, random_state=0)   # 손해액 1만 건`;
+  return `# 몬테카를로 시뮬레이션 — 가장 쉬운 방법
+import numpy as np
+from scipy import stats
+
+sev = ${sevExpr}              # 건당 손해액(심도) 분포
+${body}
+{"평균": S.mean(), "99% 분위수(VaR)": np.percentile(S, 99)}`;
+}

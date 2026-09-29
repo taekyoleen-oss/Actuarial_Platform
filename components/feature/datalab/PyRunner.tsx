@@ -39,6 +39,7 @@ import { SheetDialog } from "@/components/feature/datalab/SheetDialog";
 import { CopyButton } from "@/components/feature/datalab/code-popup";
 import { WRANGLE_SNIPPET_GROUPS, snippetInsertCode } from "@/lib/wrangleSnippets";
 import { PLOT_SNIPPET_GROUPS, plotInsertCode } from "@/lib/plotSnippets";
+import { beginnerBlocks, beginnerScript, beginnerSnippetCode } from "@/lib/beginnerCode";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import {
   loadTabs,
@@ -588,6 +589,9 @@ function cellTocEntry(code: string, kind?: "code" | "markdown"): {
 /** 실행 결과 표시 위치 — 아래(기본)·우측(PC)·팝업 */
 type OutMode = "below" | "right" | "popup";
 const OUTMODE_KEY = "datalab:pyrunner:outmode:v1";
+/** 코드 불러오기·셀 삽입 수준(초급/고급) — 기기별 localStorage, 기본 초급 */
+type CodeLv = "beginner" | "advanced";
+const CODELV_KEY = "datalab:pyrunner:codelv:v1";
 
 /** 셀 실행 결과(출력 텍스트+그림) — 인라인·우측·팝업이 공유하는 뷰 */
 function OutputView({ c, i }: { c: Cell; i: number }) {
@@ -913,6 +917,22 @@ function RunnerWorkspace({
   /** 왼쪽 목차(TOC) 표시 — lg+ 전용, 토글로 감추기/보이기 */
   const [tocOpen, setTocOpen] = useState(true);
   /** 실행 결과 표시 위치(아래·우측·팝업) — 기기별 localStorage */
+  const [codeLv, setCodeLv] = useState<CodeLv>("beginner");
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(CODELV_KEY) === "advanced") setCodeLv("advanced");
+    } catch {
+      // 접근 불가 시 기본(초급)
+    }
+  }, []);
+  const changeCodeLv = (v: CodeLv) => {
+    setCodeLv(v);
+    try {
+      localStorage.setItem(CODELV_KEY, v);
+    } catch {
+      // 저장 실패는 무시
+    }
+  };
   const [outMode, setOutMode] = useState<OutMode>("below");
   const outModeRef = useRef<OutMode>("below");
   useEffect(() => {
@@ -1056,14 +1076,17 @@ function RunnerWorkspace({
       }
       const m = STAT_METHODS.find((x) => x.id === id);
       if (!m) return;
+      const beg = codeLv === "beginner" ? beginnerBlocks("method", m.id) : undefined;
       setCellsFromCode(
-        `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
-        `${m.name} (${m.en})`
+        beg
+          ? `# ═══ ${m.name} (${m.en}) — 초급 ═══\n${beginnerScript(beg)}`
+          : `# ═══ ${m.name} (${m.en}) ═══\n${methodFullCode(m)}`,
+        `${m.name} (${m.en})${beg ? " — 초급" : ""}`
       );
       // 콤보박스에서 방법을 고르면 워드클라우드에서 해당 방법을 강조 표시
       onLoadMethod?.(m.id);
     },
-    [setCellsFromCode, onLoadMethod]
+    [setCellsFromCode, onLoadMethod, codeLv]
   );
 
   const addDataFiles = useCallback(
@@ -1818,6 +1841,35 @@ function RunnerWorkspace({
                   </optgroup>
                 ))}
               </select>
+              {/* 수준 — 코드 불러오기·셀 '코드 삽입'에 공통 적용(초급=가장 쉬운 코드) */}
+              <span
+                role="radiogroup"
+                aria-label="코드 수준"
+                className="inline-flex shrink-0 overflow-hidden rounded border border-border"
+                title="분석 코드 불러오기와 셀의 '코드 삽입'에 쓰일 코드 수준"
+              >
+                {(
+                  [
+                    ["beginner", "초급"],
+                    ["advanced", "고급"],
+                  ] as [CodeLv, string][]
+                ).map(([k, label]) => (
+                  <button
+                    key={k}
+                    type="button"
+                    role="radio"
+                    aria-checked={codeLv === k}
+                    onClick={() => changeCodeLv(k)}
+                    className={`h-9 px-2.5 text-[12.5px] font-medium ${
+                      codeLv === k
+                        ? "bg-[var(--primary)] text-white"
+                        : "bg-white text-tertiary hover:text-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </span>
             </span>
 
             <span aria-hidden className="hidden h-6 w-px bg-border sm:inline-block" />
@@ -2236,11 +2288,23 @@ function RunnerWorkspace({
                     if (kind === "w") {
                       const sn = WRANGLE_SNIPPET_GROUPS.find((g) => g.id === gid)
                         ?.snippets.find((s) => s.id === sid);
-                      if (sn) insertSnippet(c.id, snippetInsertCode(sn));
+                      if (sn)
+                        insertSnippet(
+                          c.id,
+                          (codeLv === "beginner" &&
+                            beginnerSnippetCode("wrangle", sn.id, sn.label)) ||
+                            snippetInsertCode(sn)
+                        );
                     } else if (kind === "p") {
                       const sn = PLOT_SNIPPET_GROUPS.find((g) => g.id === gid)
                         ?.snippets.find((s) => s.id === sid);
-                      if (sn) insertSnippet(c.id, plotInsertCode(sn));
+                      if (sn)
+                        insertSnippet(
+                          c.id,
+                          (codeLv === "beginner" &&
+                            beginnerSnippetCode("plot", sn.id, sn.label)) ||
+                            plotInsertCode(sn)
+                        );
                     }
                     e.target.value = "";
                   }}
@@ -2248,7 +2312,9 @@ function RunnerWorkspace({
                   title="데이터 핸들링·그래프 코드 조각을 이 셀에 삽입합니다"
                   className="h-6 max-w-[170px] rounded border border-border bg-white px-1 text-[11px] text-body"
                 >
-                  <option value="">코드 삽입: 핸들링·그래프 ▾</option>
+                  <option value="">
+                    {`코드 삽입(${codeLv === "beginner" ? "초급" : "고급"}): 핸들링·그래프 ▾`}
+                  </option>
                   {WRANGLE_SNIPPET_GROUPS.map((g) => (
                     <optgroup key={g.id} label={`핸들링 — ${g.label}`}>
                       {g.snippets.map((s) => (

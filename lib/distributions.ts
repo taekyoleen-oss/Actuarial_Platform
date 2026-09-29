@@ -1046,3 +1046,54 @@ ${tail}
 
 ${risk}`;
 }
+
+/* ─────────────── 초급 코드(코드 팝업 [초급] 하위 탭) ─────────────── */
+
+/** 초급 — 분포 만들기 → 평균·표준편차 → 난수 히스토그램 */
+export function beginnerSinglePython(d: Distribution, p: Params): string {
+  const s = d.pySpec(p, "");
+  return `# ${s.label} — 가장 쉬운 사용법
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# 1) 분포 만들기 (파라미터는 화면에서 고른 값)
+${s.assign}
+dist = ${s.expr}
+
+# 2) 평균과 표준편차 (마지막 줄 값이 결과로 표시)
+dist.mean(), dist.std()
+
+# %%
+# 3) 난수 1,000개를 뽑아 히스토그램으로 모양 보기
+x = dist.rvs(size=1000, random_state=0)
+plt.hist(x, bins=30)
+plt.show()`;
+}
+
+/** 초급 비교 — 두 분포의 평균 비교 + 난수 히스토그램 겹쳐 보기 */
+export function beginnerComparePython(a: Distribution, pa: Params, b: Distribution, pb: Params): string {
+  const sa = a.pySpec(pa, "_a");
+  const sb = b.pySpec(pb, "_b");
+  return `# 두 분포 비교 — 가장 쉬운 사용법
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# 1) A: ${sa.label}
+${sa.assign}
+dist_a = ${sa.expr}
+# B: ${sb.label}
+${sb.assign}
+dist_b = ${sb.expr}
+
+# 2) 평균 비교 (A, B)
+dist_a.mean(), dist_b.mean()
+
+# %%
+# 3) 난수 히스토그램을 겹쳐 모양 비교
+plt.hist(dist_a.rvs(size=1000, random_state=0), bins=30, alpha=0.5, label="A")
+plt.hist(dist_b.rvs(size=1000, random_state=1), bins=30, alpha=0.5, label="B")
+plt.legend()
+plt.show()`;
+}
