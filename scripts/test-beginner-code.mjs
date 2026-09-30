@@ -60,6 +60,7 @@ for (const j of jobs) {
   for (const b of j.blocks) {
     const lines = b.code.trim().split("\n").length;
     if (lines > 16) lint.push(`${j.key} "${b.title}" ${lines}줄`);
+    if (!b.result?.trim()) lint.push(`${j.key} "${b.title}" result(결과 설명) 없음`);
   }
 }
 const POOL = 6;
@@ -77,5 +78,5 @@ await Promise.all(
   })
 );
 console.log(`\n${jobs.length - fail}/${jobs.length} ok`);
-if (lint.length) console.log(`길이 경고(>16줄):\n  ${lint.join("\n  ")}`);
+if (lint.length) console.log(`경고(>16줄·결과 설명 없음):\n  ${lint.join("\n  ")}`);
 process.exit(fail ? 1 : 0);

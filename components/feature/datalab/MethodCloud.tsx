@@ -62,12 +62,12 @@ import {
   DistCodeDialog,
   LevelTabs,
   BeginnerNote,
+  BeginnerBlockList,
   type CodeLevel,
 } from "@/components/feature/datalab/DistCodeDialog";
 import {
   beginnerBlocks,
   beginnerScript,
-  beginnerSnippetCode,
   toBeginnerExcel,
   BEGINNER_NOTE,
   BEGINNER_EXCEL_NOTE,
@@ -720,20 +720,11 @@ function BeginnerPanel({
   return (
     <div>
       <BeginnerNote text={excel ? BEGINNER_EXCEL_NOTE : BEGINNER_NOTE} fontScale={fontScale} />
-      {blocks.map((b, i) => (
-        <div key={i} className="mt-5 first:mt-0">
-          <h3 className="mb-2 font-semibold text-foreground" style={fz(15)}>
-            {b.title}
-            <span className="ml-2 align-middle text-[11.5px] font-medium text-tertiary">
-              {excel ? `엑셀 셀 ${i + 1}` : `셀 ${i + 1}`}
-            </span>
-          </h3>
-          <CodeBlock
-            code={excel ? toBeginnerExcel(b.code.trim()) : b.code.trim()}
-            codeFz={13.5 * fontScale}
-          />
-        </div>
-      ))}
+      <BeginnerBlockList
+        blocks={excel ? blocks.map((b) => ({ ...b, code: toBeginnerExcel(b.code.trim()) })) : blocks}
+        fontScale={fontScale}
+        excel={excel}
+      />
       <p className="mt-6 rounded bg-surface px-4 py-2.5 leading-relaxed text-tertiary" style={fz(12.5)}>
         {excel
           ? "블록마다 엑셀의 다른 셀에 =PY( 로 넣으면 앞 셀의 변수(df 등)를 다음 셀에서 이어 씁니다."
@@ -2113,7 +2104,7 @@ export function MethodCloud() {
               key: "py",
               label: "파이썬 코드 적용",
               code: snippetInsertCode(snippet),
-              beginner: beginnerSnippetCode("wrangle", snippet.id, snippet.label),
+              beginner: beginnerBlocks("wrangle", snippet.id),
             },
           ]}
           onClose={() => setSnippet(null)}
@@ -2131,7 +2122,7 @@ export function MethodCloud() {
               key: "py",
               label: "파이썬 코드 적용",
               code: plotInsertCode(plotSnip),
-              beginner: beginnerSnippetCode("plot", plotSnip.id, plotSnip.label),
+              beginner: beginnerBlocks("plot", plotSnip.id),
             },
           ]}
           onClose={() => setPlotSnip(null)}

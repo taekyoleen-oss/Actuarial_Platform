@@ -516,6 +516,10 @@ export function FitLab() {
     tabs?: CodeTab[];
   } | null>(null);
 
+  /** 생성된 초급 코드에 결과 설명을 붙인 한 블록으로(없으면 undefined — 고급만 표시) */
+  const withResult = (code: string | undefined, title: string, result: string) =>
+    code ? [{ title, code, result }] : undefined;
+
   /* 리셋 — 입력 데이터·적합 결과를 지우고 처음 상태(분포 전체 선택)로 되돌린다 */
   const resetFit = () => {
     setCells(null);
@@ -732,13 +736,21 @@ export function FitLab() {
           key: "fit",
           label: "모델 적합",
           code: severityFitCode(row.id, nm, data),
-          beginner: beginnerSeverityFitCode(row.id, nm, data),
+          beginner: withResult(
+            beginnerSeverityFitCode(row.id, nm, data),
+            "적합",
+            "셀 1: 추정된 파라미터 숫자 묶음(모양, 위치, 크기). 셀 2: 데이터 히스토그램 위에 적합한 분포 곡선이 겹친 그림."
+          ),
         },
         {
           key: "sim",
           label: "시뮬레이션",
           code: severitySimCode(row.id, nm, row.params),
-          beginner: beginnerSimCode(sevFrozenExpr(row.id, row.params), nm),
+          beginner: withResult(
+            beginnerSimCode(sevFrozenExpr(row.id, row.params), nm),
+            "시뮬레이션",
+            "난수 1만 개의 평균과 99% 분위수(VaR) 두 값이 담긴 사전이 나옵니다."
+          ),
         },
       ],
     });
@@ -754,7 +766,11 @@ export function FitLab() {
           key: "fit",
           label: "모델 적합",
           code: frequencyFitCode(row.id, nm, freqEmp.counts),
-          beginner: beginnerFrequencyFitCode(row.id, nm, freqEmp.counts),
+          beginner: withResult(
+            beginnerFrequencyFitCode(row.id, nm, freqEmp.counts),
+            "적합",
+            "셀 1: 추정 파라미터(예: lambda). 셀 2: 건수 k별 관측 비율과 모형 확률을 나란히 둔 표."
+          ),
         },
         {
           key: "sim",
@@ -762,7 +778,11 @@ export function FitLab() {
           code: frequencySimCode(row.id, nm, row.params),
           beginner: /^zi/.test(row.id)
             ? undefined
-            : beginnerSimCode(freqFrozenExpr(row.id, row.params), nm),
+            : withResult(
+                beginnerSimCode(freqFrozenExpr(row.id, row.params), nm),
+                "시뮬레이션",
+                "연간 건수 난수 1만 개의 평균과 99% 분위수 두 값이 나옵니다."
+              ),
         },
       ],
     });
@@ -778,10 +798,12 @@ export function FitLab() {
         {
           key: "mc",
           label: "파이썬 코드",
-          beginner: beginnerMcCode(
+          beginner: withResult(beginnerMcCode(
             sevFrozenExpr(sev.id, sev.params),
             freq?.params ? freqFrozenExpr(freq.id, freq.params) : null
-          ),
+          ), "몬테카를로", freq
+            ? "1만 년치 연간 총손해(건수×건당 손해 합)의 평균과 99% 분위수(VaR) 두 값이 나옵니다."
+            : "건당 손해액 난수 1만 개의 평균과 99% 분위수(VaR) 두 값이 나옵니다."),
           code: monteCarloCode(
         { id: sev.id, name: nameOf(SEV_DISTS, sev.id), params: sev.params },
         freq?.params

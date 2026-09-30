@@ -11,7 +11,13 @@ import { ChevronDown, X } from "lucide-react";
 import { CodeBlock, CopyButton } from "@/components/feature/datalab/code-popup";
 import { useHistoryDismiss } from "@/lib/useHistoryDismiss";
 import { toExcelPython, PIE_CODE_NOTE } from "@/lib/methodExcelCode";
-import { toBeginnerExcel, BEGINNER_NOTE, BEGINNER_EXCEL_NOTE } from "@/lib/beginnerCode";
+import {
+  beginnerScript,
+  toBeginnerExcel,
+  BEGINNER_NOTE,
+  BEGINNER_EXCEL_NOTE,
+  type BeginnerBlock,
+} from "@/lib/beginnerCode";
 import { usePinnableDialog } from "@/components/feature/datalab/usePinnableDialog";
 
 const FONT_SCALE_MIN = 0.8;
@@ -24,8 +30,12 @@ export interface CodeTab {
   /** 코드 위에 표시할 안내(선택) — 문자열 또는 글머리 목록 */
   note?: string | string[];
   /** 초급 코드(선택) — 있으면 [초급 | 고급] 하위 탭이 생기고 code는 '고급'이 된다 */
-  beginner?: string;
+  beginner?: string | BeginnerBlock[];
 }
+
+/** 초급 값을 블록 배열로 — 문자열이면 제목 없는 한 블록 */
+const asBlocks = (b?: string | BeginnerBlock[]): BeginnerBlock[] | undefined =>
+  !b ? undefined : typeof b === "string" ? [{ title: "", code: b }] : b;
 
 export type CodeLevel = "beginner" | "advanced";
 
@@ -69,9 +79,10 @@ export function DistCodeDialog({
         label: "엑셀 코드 적용",
         code: toExcelPython(baseTabs[0].code),
         note: PIE_CODE_NOTE,
-        beginner: baseTabs[0].beginner
-          ? toBeginnerExcel(baseTabs[0].beginner)
-          : undefined,
+        beginner: asBlocks(baseTabs[0].beginner)?.map((b) => ({
+          ...b,
+          code: toBeginnerExcel(b.code),
+        })),
       },
     ],
     [baseTabs]
@@ -81,7 +92,14 @@ export function DistCodeDialog({
   // 초급/고급 — 초보자 우선(기본 초급). 초급 코드가 없는 탭은 고급(원래 코드)만
   const [lv, setLv] = useState<CodeLevel>("beginner");
   const showBeginner = lv === "beginner" && !!active.beginner;
-  const shownCode = showBeginner ? active.beginner! : active.code;
+  const begBlocks = showBeginner ? asBlocks(active.beginner) : undefined;
+  // 제목 없는 한 블록(확률분포 등 생성 코드)은 그대로, 여러 블록은 셀 구분(# %%)으로 이어 붙여 복사
+  const plainBeginner = begBlocks?.length === 1 && !begBlocks[0].title;
+  const shownCode = begBlocks
+    ? plainBeginner
+      ? begBlocks[0].code
+      : beginnerScript(begBlocks)
+    : active.code;
   // 글자 확대/축소 — 코드·안내에 적용(창 크기와 독립)
   const [fontScale, setFontScale] = useState(1);
   // 탭 위 프리뷰(그림+설명) 펼침 — 고정(창으로 고정) 시 기본 감춤, '보이기'로 펼침
@@ -294,7 +312,15 @@ export function DistCodeDialog({
               </ul>
             </div>
           ) : null}
-          <CodeBlock code={shownCode} codeFz={13.5 * fontScale} />
+          {begBlocks && !plainBeginner ? (
+            <BeginnerBlockList
+              blocks={begBlocks}
+              fontScale={fontScale}
+              excel={active.key === "__excel"}
+            />
+          ) : (
+            <CodeBlock code={shownCode} codeFz={13.5 * fontScale} />
+          )}
         </div>
 
         {hideFooter ? null : (
@@ -370,5 +396,63 @@ export function BeginnerNote({ text, fontScale }: { text: string; fontScale: num
     >
       {text}
     </p>
+  );
+}
+
+/**
+ * 초급 코드 블록 목록 — 블록마다 제목·(다른 방법 배지)·실행 결과 설명·코드.
+ * 분석 방법 팝업(MethodCloud)과 그래프·핸들링 조각 팝업이 공유한다.
+ */
+export function BeginnerBlockList({
+  blocks,
+  fontScale,
+  excel = false,
+}: {
+  blocks: BeginnerBlock[];
+  fontScale: number;
+  /** 엑셀 탭이면 셀 라벨을 '엑셀 셀'로 */
+  excel?: boolean;
+}) {
+  const fz = (px: number) => ({ fontSize: Math.round(px * fontScale * 10) / 10 });
+  let cell = 0;
+  return (
+    <div className="space-y-6">
+      {blocks.map((b, i) => {
+        if (!b.alt) cell++;
+        return (
+          <div key={i}>
+            <h3 className="flex flex-wrap items-center gap-2 font-semibold text-foreground" style={fz(15)}>
+              {b.alt ? (
+                <span
+                  className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  style={{ background: "var(--chip-amber-bg)", color: "var(--chip-amber-fg)" }}
+                >
+                  다른 방법
+                </span>
+              ) : null}
+              <span>{b.title}</span>
+              {b.alt ? null : (
+                <span className="text-[11.5px] font-medium text-tertiary">
+                  {excel ? `엑셀 셀 ${cell}` : `셀 ${cell}`}
+                </span>
+              )}
+            </h3>
+            {b.result ? (
+              <p
+                className="mt-1.5 rounded px-3 py-1.5 leading-relaxed text-body"
+                style={{
+                  ...fz(12.5),
+                  background: "color-mix(in srgb, var(--chip-teal-bg) 45%, white)",
+                }}
+              >
+                <span className="font-semibold text-foreground">결과 ▸ </span>
+                {b.result}
+              </p>
+            ) : null}
+            <CodeBlock code={b.code.trim()} codeFz={13.5 * fontScale} />
+          </div>
+        );
+      })}
+    </div>
   );
 }

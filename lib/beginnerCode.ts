@@ -3,7 +3,9 @@
  * 기존 코드는 '고급', 여기 코드는 처음 쓰는 사람이 바로 결과를 보는 가장 짧은 경로.
  *
  * 작성 규약(데이터 파일 lib/beginnerCode/*.ts 공통):
- *  · 블록 1~3개, 블록당 코드 ~12줄 이하. 블록 = 실행기의 셀 하나(# %%로 이어 붙음).
+ *  · 블록당 코드 ~12줄 이하. 블록 = 실행기의 셀 하나(# %%로 이어 붙음).
+ *  · 블록마다 result(실행 결과 설명)를 단다. 같은 일을 하는 흔한 다른 방법(예: 히스토그램의
+ *    df.plot / plt.hist / df.hist)은 alt: true 블록으로 기본 방법 뒤에 덧붙인다.
  *  · 한 줄마다 쉬운 한국어 주석. 결과는 print 대신 마지막 줄에 '값(식)'을 둔다
  *    (실행기는 마지막 식을 보여 주고, 엑셀 =PY()는 그 값을 셀에 반환).
  *  · 분석 방법: 첫 블록에서 샘플을 정확히 pd.read_excel("policy.xlsx") 형태로 읽는다
@@ -23,6 +25,13 @@ export interface BeginnerBlock {
   /** 블록 제목(셀 머리 주석) */
   title: string;
   code: string;
+  /** 실행하면 무엇이 나오는지 — 팝업에서 코드 위에 '결과'로 표시 */
+  result?: string;
+  /**
+   * 같은 일을 하는 '다른 방법'(대안 코드). 팝업에는 함께 보이고, 실행기 셀 삽입에서는
+   * 빠진다(기본 방법만 삽입). 대안 블록도 앞 블록 뒤에 순서대로 실행해도 동작해야 한다.
+   */
+  alt?: boolean;
 }
 
 export type BeginnerKind = "method" | "wrangle" | "plot";
@@ -63,6 +72,9 @@ export function beginnerSnippetCode(
   id: string,
   label: string
 ): string | undefined {
-  const b = beginnerBlocks(kind, id);
-  return b ? `# ▸ ${label} (초급)\n${b.map((x) => x.code.trim()).join("\n\n")}` : undefined;
+  // 셀 삽입은 기본 방법만(대안은 팝업에서 골라 복사) — 한 셀에 그래프가 여러 장 나오지 않도록
+  const b = beginnerBlocks(kind, id)?.filter((x) => !x.alt);
+  return b?.length
+    ? `# ▸ ${label} (초급)\n${b.map((x) => x.code.trim()).join("\n\n")}`
+    : undefined;
 }

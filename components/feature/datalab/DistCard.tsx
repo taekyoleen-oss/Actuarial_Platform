@@ -968,7 +968,22 @@ export function DistCard({ dist }: { dist: Distribution }) {
         <DistCodeDialog
           name={compare ? `${dist.name} vs ${distB.name}` : dist.name}
           en={compare ? `${dist.en} vs ${distB.en}` : dist.en}
-          tabs={[{ key: "py", label: "파이썬 코드", code, beginner: beginnerCode }]}
+          tabs={[
+            {
+              key: "py",
+              label: "파이썬 코드",
+              code,
+              beginner: [
+                {
+                  title: compare ? "두 분포 만들기 · 평균 비교 · 히스토그램" : "분포 만들기 · 평균·표준편차 · 히스토그램",
+                  code: beginnerCode,
+                  result: compare
+                    ? "셀 1: (A 평균, B 평균) 두 숫자. 셀 2: 두 분포에서 뽑은 난수 히스토그램이 반투명으로 겹친 그림 한 장."
+                    : "셀 1: (평균, 표준편차) 두 숫자. 셀 2: 이 분포에서 뽑은 난수 1,000개의 히스토그램(분포 모양) 한 장.",
+                },
+              ],
+            },
+          ]}
           onClose={() => setShowCode(false)}
         />
       ) : null}
