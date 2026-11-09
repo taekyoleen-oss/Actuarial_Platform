@@ -5,6 +5,7 @@ import { FSA_STATS } from "@/lib/japanFsa";
 import { FSA_THEMES } from "@/data/japan-fsa/themes";
 import { ThemeChip } from "@/components/feature/fsa/ThemeChip";
 import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
+import { GlobeBackdrop } from "@/components/feature/GlobeBackdrop";
 
 export const metadata: Metadata = {
   title: "해외 주요 보험 정보·자료 — Insurance Insights",
@@ -24,7 +25,9 @@ export default function GlobalHubPage() {
     <div className="bg-[var(--page-bg)]">
       {/* 히어로 */}
       <section className="bg-actuarial-dots bg-watermark-curve border-b border-border">
-        <div className="mx-auto max-w-container px-6 pb-10 pt-12 sm:pt-16">
+        <div className="relative mx-auto max-w-container px-6 pb-10 pt-12 sm:pt-16 lg:min-h-[340px]">
+          {/* 회전 지구본 — 히어로 우측 빈 공간(lg+ 전용, 모바일·태블릿 미표시) */}
+          <GlobeBackdrop />
           <div className="text-[13px] font-bold tracking-[0.16em] text-brand-sky">
             GLOBAL INSURANCE INSIGHTS
           </div>

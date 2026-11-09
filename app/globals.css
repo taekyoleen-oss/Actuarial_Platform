@@ -495,27 +495,24 @@ mark.key-phrase {
    브랜드 모션이므로 색상 트랜지션 규칙의 예외(셀 transition:none).
    ========================================================= */
 :root {
-  --brand-backdrop-opacity: 0.2; /* tkLeen 마크 워터마크 강도 */
+  --brand-backdrop-opacity: 0.12; /* 0.2→0.12, 2026-11-09 더 흐리게 */
   /* 워터마크 페이지 글래스 카드 — 배경 마크가 비치도록 반투명 프로스티드
      (0.34→0.2→0.1, 2026-07-10 사용자 요청: 워터마크가 더 비치게) */
   --card-glass-bg: rgba(255, 255, 255, 0.1);
   --card-glass-border: rgba(23, 26, 32, 0.08);
 }
 
-/* 지구본 워터마크(components/feature/GlobeBackdrop.tsx) — 스크롤과 무관하게
-   화면 정중앙 고정. 불투명도는 CSS가 아닌 캔버스 레이어별 알파로 분리
-   (배경 요소는 연하게, 국가명·노드·중앙 문구는 진하게 — GlobeBackdrop의
-   BG_ALPHA/FG_ALPHA 상수). 크기 72→86→100vmin(2026-07-10 사용자 요청 2회). */
+/* 지구본(components/feature/GlobeBackdrop.tsx) — 해외 자료 허브(/global) 히어로
+   우측 빈 공간에 배치(2026-11-09 사용자 요청: 홈 워터마크에서 이전). 불투명도는
+   캔버스 레이어별 알파(BG_ALPHA/FG_ALPHA). lg 미만은 컴포넌트가 렌더하지 않음. */
 .globe-backdrop {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  width: 100vmin;
-  height: 100vmin;
-  z-index: -10;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 460px; /* 구체는 높이 기준 — 가로 여백은 좌우 국가명 라벨용 */
+  height: 340px;
+  transform: translateY(-50%);
   pointer-events: none;
-  /* 화면 정중앙에서 아래로(2026-07-10 사용자 요청 2회: 5vh→10vh) */
-  transform: translateY(10vh);
 }
 
 .brand-backdrop {
@@ -527,10 +524,10 @@ mark.key-phrase {
   display: flex;
   align-items: flex-start; /* 상단 기준 정렬 — 마크를 위쪽으로 */
   justify-content: center;
-  padding-top: 133px; /* 크기 축소 시 중심(≈388px) 유지하도록 보정 */
+  padding-top: 213px; /* 축소(510→350px) 후에도 중심 ≈388px 유지 */
 }
 .brand-backdrop-drift {
-  width: min(510px, 49vw);
+  width: min(350px, 34vw); /* 2026-11-09 더 작게 */
   aspect-ratio: 1 / 1;
   animation: brand-drift 38s ease-in-out infinite;
   will-change: transform;
@@ -563,7 +560,7 @@ mark.key-phrase {
    너무 크지 않게) + 불투명도 0.16→0.12(같은 날 사용자 요청: 조금 더
    흐리게). 원본 이미지 비율 460/565 유지. */
 .portrait-backdrop {
-  --portrait-backdrop-size: min(50vmin, 380px);
+  --portrait-backdrop-size: min(40vmin, 300px); /* 2026-11-09 더 작게 */
   position: fixed;
   inset: 0;
   margin: auto;
@@ -571,7 +568,7 @@ mark.key-phrase {
   height: calc(var(--portrait-backdrop-size) * 565 / 460);
   z-index: -10;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.08; /* 0.12→0.08, 2026-11-09 더 흐리게 */
   filter: saturate(0.9);
 }
 
@@ -590,14 +587,14 @@ mark.key-phrase {
   border: 0;
   z-index: -10;
   pointer-events: none;
-  opacity: 0.22;
-  transform: scale(1.225);
+  opacity: 0.14; /* 0.22→0.14, 2026-11-09 더 흐리게 */
+  transform: scale(0.95); /* 1.225→0.95, 더 작게 */
   transform-origin: top right;
 }
 @media (max-width: 640px) {
   .apps-backdrop {
     right: 8px;
-    transform: scale(0.735);
+    transform: scale(0.6);
   }
 }
 

@@ -75,7 +75,7 @@ function vec(lat: number, lon: number): Vec3 {
 
 // d3 geoPath 정적 지오메트리 — 경위선(20° 간격, 기존 점묘 버전과 동일 격자)
 // 모바일 기준 — Tailwind md(768px) 미만(2026-08-23 사용자 요청: 모바일 미표시)
-const MOBILE_Q = "(max-width: 767px)";
+const MOBILE_Q = "(max-width: 1023px)"; // 히어로 우측 여백은 lg+에만 있음
 
 const SPHERE = { type: "Sphere" } as GeoPermissibleObjects;
 const GRATICULE = geoGraticule().step([20, 20])() as GeoPermissibleObjects;

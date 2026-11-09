@@ -9,7 +9,6 @@ import {
   LayoutGrid,
   Scale,
 } from "lucide-react";
-import { GlobeBackdrop } from "@/components/feature/GlobeBackdrop";
 import { HeroSection } from "@/components/feature/HeroSection";
 import { PostCard } from "@/components/feature/PostCard";
 import { PostGrid } from "@/components/feature/PostGrid";
@@ -195,10 +194,8 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 배경: 회전 지구본 워터마크 — 보험료 규모 Top10 + 흐름 아크(홈 전용) */}
-      <GlobeBackdrop />
       <HeroSection />
-      <section className="home-glass mx-auto max-w-container px-6 pb-28 pt-12">
+      <section className="mx-auto max-w-container px-6 pb-28 pt-12">
         {/* 스탯 스트립 — 카운트업 */}
         <Reveal>
           <StatStrip
