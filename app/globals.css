@@ -642,3 +642,60 @@ mark.key-phrase {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   홈 리디자인 모션 (2026-11-09) — 레이아웃·인터랙션 참고 리디자인
+   그라데이션 없음. 변형 모션은 아래 클래스 한정, reduced-motion 시 정지.
+   ========================================================= */
+/* 히어로 사진: 살짝 확대된 상태에서 천천히 정착 */
+.hero-settle {
+  animation: hero-settle 2.4s var(--ease) both;
+}
+@keyframes hero-settle {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+/* 히어로 문구: 줄 단위 아래→위 리빌 (부모 overflow-hidden이면 마스크 효과) */
+.line-rise {
+  animation: line-rise 0.9s var(--ease) both;
+}
+@keyframes line-rise {
+  from { opacity: 0; transform: translateY(105%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* 콘텐츠 인덱스 행: 호버 시 화살표 원이 primary로 채워지며 살짝 기울어짐 */
+.index-row .index-arrow {
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.index-row:hover .index-arrow,
+.index-row:focus-visible .index-arrow {
+  color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transform: rotate(45deg);
+}
+/* 사진 호버 줌 */
+.media-zoom img {
+  transition: transform 1.2s var(--ease);
+}
+.media-zoom:hover img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-settle,
+  .line-rise {
+    animation: none !important;
+  }
+  .index-row .index-arrow,
+  .media-zoom img {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+/* 인덱스 패널 — 지구본 워터마크가 은은히 비치되 행 글자는 읽히도록 옅은 크림 프로스트 */
+.index-panel {
+  background-color: rgba(250, 250, 247, 0.72);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}

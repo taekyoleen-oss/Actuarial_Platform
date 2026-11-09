@@ -51,6 +51,18 @@ const MODEL_APPS: AppItem[] = [
     link: "https://machine-learning-auto-flow.vercel.app/",
   },
   {
+    title: "DFA 동적재무분석",
+    description:
+      "동적재무분석(DFA)의 재무 시나리오 생성과 리스크 모델링을 자동화하는 앱입니다. 보험회사의 자산·부채 흐름을 시나리오별로 시뮬레이션해 재무 건전성을 점검할 수 있습니다.",
+    features: [
+      "재무 시나리오 자동 생성",
+      "리스크 모델링 자동화",
+      "자산·부채 흐름 시뮬레이션",
+      "시나리오별 결과 비교",
+    ],
+    link: "https://www.dfaautoflow.com/",
+  },
+  {
     title: "Flexible Insurance - 계약자 주도의 유연한 보험",
     description:
       "계약자의 미래 현금흐름과 설계에 따라 보험금을 유연하게 조정하는 설계형 보험(종신·암) 앱입니다. 보험사 주도의 상품설계를 계약자 주도로 전환해 개인별 맞춤형 보장을 제공하고, 개인의 현금 능력에 맞춘 보험료 산출이 가능합니다.",

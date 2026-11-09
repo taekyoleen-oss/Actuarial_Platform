@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   BookOpen,
   Database,
   Globe2,
@@ -42,12 +44,75 @@ const RELATED_LINKS = [
   },
 ];
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function SectionHeading({
+  children,
+  count,
+}: {
+  children: React.ReactNode;
+  count?: number;
+}) {
   return (
-    <h2 className="flex items-center gap-2.5 text-[22px] font-semibold text-foreground">
-      <span aria-hidden className="h-2 w-2 shrink-0 bg-brand-sky" />
+    <h2 className="flex items-center gap-3 text-[28px] font-semibold tracking-[-0.02em] text-foreground sm:text-[36px]">
+      <span aria-hidden className="h-2.5 w-2.5 shrink-0 bg-brand-sky" />
       {children}
+      {typeof count === "number" ? (
+        <span className="rounded-full border border-foreground/15 px-2.5 py-0.5 text-[13px] font-medium tabular-nums text-tertiary">
+          {count}
+        </span>
+      ) : null}
     </h2>
+  );
+}
+
+// 콘텐츠 인덱스 한 줄 — 번호 · 분류 · 제목 · 설명 · 화살표 (괘선 행)
+interface IndexRowProps {
+  no: string;
+  href: string;
+  eyebrow: string;
+  icon: React.ComponentType<{ size?: number }>;
+  color: string;
+  title: string;
+  description: string;
+  cta: string;
+  extra?: React.ReactNode;
+}
+
+function IndexRow({ no, href, eyebrow, icon: I, color, title, description, cta, extra }: IndexRowProps) {
+  return (
+    <Link
+      href={href}
+      className="index-row group grid gap-4 border-b border-foreground/10 py-8 lg:grid-cols-[64px_minmax(0,1.15fr)_minmax(0,1fr)_48px] lg:items-start lg:gap-10"
+    >
+      <span className="text-[15px] font-medium tabular-nums text-tertiary">{no}</span>
+      <div>
+        <p className="flex items-center gap-2.5 text-[11.5px] font-bold tracking-[0.14em] text-brand-sky">
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ background: `var(--chip-${color}-bg)`, color: `var(--chip-${color}-fg)` }}
+          >
+            <I size={16} />
+          </span>
+          {eyebrow}
+        </p>
+        <h3 className="mt-4 text-[21px] font-semibold leading-snug tracking-[-0.01em] text-foreground group-hover:text-primary sm:text-[24px]">
+          {title}
+        </h3>
+      </div>
+      <div className="lg:pt-12">
+        <p className="text-[14.5px] leading-[1.8] text-body">{description}</p>
+        {extra}
+        <span className="mt-3 inline-flex text-[13.5px] font-semibold text-primary lg:hidden">
+          {cta} →
+        </span>
+      </div>
+      <span
+        aria-hidden
+        className="index-arrow hidden h-12 w-12 items-center justify-center rounded-full border border-foreground/15 text-foreground lg:mt-10 lg:flex"
+      >
+        <ArrowUpRight size={18} />
+      </span>
+      <span className="sr-only">{cta}</span>
+    </Link>
   );
 }
 
@@ -128,22 +193,12 @@ export default async function HomePage() {
     }
   }
 
-  // 홈 전용: 반투명 프로스티드(배경 마크가 카드 뒤로 비침). 다른 페이지 카드는 불투명 유지.
-  const tileBase =
-    "group relative flex h-full flex-col rounded-cover border border-[color:var(--card-glass-border)] bg-white/[0.06] backdrop-blur-[2px] p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:shadow-card-hover";
-  const tileEyebrow =
-    "flex items-center gap-2.5 text-[11.5px] font-bold tracking-[0.14em] text-brand-sky";
-  const tileIcon =
-    "flex h-9 w-9 items-center justify-center rounded-lg";
-  const tileCta =
-    "mt-auto inline-flex items-center gap-1.5 pt-4 text-[13.5px] font-semibold text-primary";
-
   return (
     <>
       {/* 배경: 회전 지구본 워터마크 — 보험료 규모 Top10 + 흐름 아크(홈 전용) */}
       <GlobeBackdrop />
       <HeroSection />
-      <section className="home-glass mx-auto max-w-container px-6 pb-24 pt-10">
+      <section className="home-glass mx-auto max-w-container px-6 pb-28 pt-12">
         {/* 스탯 스트립 — 카운트업 */}
         <Reveal>
           <StatStrip
@@ -176,237 +231,148 @@ export default async function HomePage() {
           />
         </Reveal>
 
-        {/* 벤토 그리드 — 콘텐츠 한눈에 */}
-        <div className="mt-16">
-          <div className="mb-6 flex items-end justify-between">
-            <SectionHeading>콘텐츠 한눈에</SectionHeading>
-          </div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {/* 배타적 사용권 — 가장 최근 자료 */}
+        {/* 콘텐츠 인덱스 — 괘선 행 목록 (링크·내용은 기존 벤토와 동일) */}
+        <div className="mt-20">
+          <SectionHeading count={6}>콘텐츠 한눈에</SectionHeading>
+          <div className="index-panel mt-8 border-t border-foreground/10">
             <Reveal>
-              <Link
-                href={
+              <IndexRow
+                no="01"
+                href={latestExclusive ? `/posts/${latestExclusive.id}` : "/posts?category=exclusive-rights"}
+                eyebrow="EXCLUSIVE · 배타적 사용권"
+                icon={Scale}
+                color="rose"
+                title={latestExclusive?.title ?? exclusiveCat?.name ?? "보험 배타적 사용권 분석"}
+                description={
                   latestExclusive
-                    ? `/posts/${latestExclusive.id}`
-                    : "/posts?category=exclusive-rights"
-                }
-                className={tileBase}
-              >
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-rose-bg)",
-                      color: "var(--chip-rose-fg)",
-                    }}
-                  >
-                    <Scale size={18} />
-                  </span>
-                  EXCLUSIVE · 배타적 사용권
-                </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  {latestExclusive?.title ??
-                    exclusiveCat?.name ??
-                    "보험 배타적 사용권 분석"}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  {latestExclusive
-                    ? excerpt(latestExclusive.content, 90)
+                    ? excerpt(latestExclusive.content, 110)
                     : exclusiveCat?.description ??
-                      "신상품 배타적사용권 심의 결과를 급부 구조 중심으로 분석합니다."}
-                </p>
-                <span className={tileCta}>
-                  최신 분석 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </Reveal>
-
-            {/* 국내 보험 정보·분석 — 상품정보 최신 자료 */}
-            <Reveal delay={40}>
-              <Link
-                href={
-                  latestProduct
-                    ? `/domestic/products/${latestProduct.base}`
-                    : "/posts?category=domestic"
+                      "신상품 배타적사용권 심의 결과를 급부 구조 중심으로 분석합니다."
                 }
-                className={tileBase}
-              >
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-green-bg)",
-                      color: "var(--chip-green-fg)",
-                    }}
-                  >
-                    <LayoutGrid size={18} />
-                  </span>
-                  DOMESTIC · 국내 보험 정보·분석
-                </div>
-                <h3 className="mt-4 text-[18px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  {latestProduct?.title ??
-                    domesticCat?.name ??
-                    "국내 보험 정보·분석"}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  {latestProduct?.subtitle ||
-                    domesticCat?.description ||
-                    "국내 보험 시장의 정보와 분석 자료를 제공합니다."}
-                </p>
-                <span className={tileCta}>
-                  최신 상품정보 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
+                cta="최신 분석 보기"
+              />
             </Reveal>
-
-            {/* 보험이론 사전 */}
-            <Reveal delay={80}>
-              <Link href="/theory" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-teal-bg)",
-                      color: "var(--chip-teal-fg)",
-                    }}
-                  >
-                    <BookOpen size={18} />
-                  </span>
-                  THEORY · 보험이론 사전
-                </div>
-                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  생명·연금·손해·재보험·위험·금융·통계 {theoryCount}편 해설서
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  이론과 한국 보험시장 현황을 함께 다루는 학습 해설서
-                  모음입니다.
-                </p>
-                <span className={tileCta}>
-                  사전 펼치기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
+            <Reveal>
+              <IndexRow
+                no="02"
+                href={latestProduct ? `/domestic/products/${latestProduct.base}` : "/posts?category=domestic"}
+                eyebrow="DOMESTIC · 국내 보험 정보·분석"
+                icon={LayoutGrid}
+                color="green"
+                title={latestProduct?.title ?? domesticCat?.name ?? "국내 보험 정보·분석"}
+                description={
+                  latestProduct?.subtitle ||
+                  domesticCat?.description ||
+                  "국내 보험 시장의 정보와 분석 자료를 제공합니다."
+                }
+                cta="최신 상품정보 보기"
+              />
             </Reveal>
-
-            {/* 대형: 해외 자료 */}
-            <Reveal className="md:col-span-2 lg:col-span-3" delay={120}>
-              <Link href="/posts?category=global" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-blue-bg)",
-                      color: "var(--chip-blue-fg)",
-                    }}
-                  >
-                    <Globe2 size={18} />
-                  </span>
-                  GLOBAL · 해외 주요 보험 정보·자료
-                </div>
-                <h3 className="mt-4 text-[22px] font-semibold leading-snug text-foreground group-hover:text-primary sm:text-[24px]">
-                  일본 금융청 심사사례 {FSA_STATS.cases}건, 테마·기간·분야로
-                  탐색
-                </h3>
-                <p className="mt-2 text-[15px] leading-[1.8] text-body">
-                  금융청 심사사례집({FSA_STATS.periods}개 호)·생명보험
-                  동향·변천 가이드를 사이트 일체형 페이지로 — 용어 해설과 한국
-                  시장 맥락(유사 사례·현황·규정)까지 함께 제공합니다.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {FSA_THEMES.slice(0, 6).map((t) => (
-                    <ThemeChip key={t.id} themeId={t.id} />
-                  ))}
-                </div>
-                <span className={tileCta}>
-                  해외 자료 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
+            <Reveal>
+              <IndexRow
+                no="03"
+                href="/posts?category=global"
+                eyebrow="GLOBAL · 해외 주요 보험 정보·자료"
+                icon={Globe2}
+                color="blue"
+                title={`일본 금융청 심사사례 ${FSA_STATS.cases}건, 테마·기간·분야로 탐색`}
+                description={`금융청 심사사례집(${FSA_STATS.periods}개 호)·생명보험 동향·변천 가이드를 사이트 일체형 페이지로 — 용어 해설과 한국 시장 맥락까지 함께 제공합니다.`}
+                cta="해외 자료 보기"
+                extra={
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {FSA_THEMES.slice(0, 4).map((t) => (
+                      <ThemeChip key={t.id} themeId={t.id} />
+                    ))}
+                  </div>
+                }
+              />
             </Reveal>
-
-            {/* 앱 */}
-            <Reveal className="md:col-span-2 lg:col-span-3" delay={160}>
-              <Link href="/apps" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-cyan-bg)",
-                      color: "var(--chip-cyan-fg)",
-                    }}
-                  >
-                    <LayoutGrid size={18} />
-                  </span>
-                  APPS · 모델분석/업무지원
-                </div>
-                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  보험료 자동산출·머신러닝 플로우 등 실무 앱 7종
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  모델분석 2종과 강의 지원·PDF·계산기·화이트보드·수식변환 등
-                  업무지원 5종을 바로 사용할 수 있습니다.
-                </p>
-                <span className={tileCta}>
-                  앱 모음 보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
+            <Reveal>
+              <IndexRow
+                no="04"
+                href="/theory"
+                eyebrow="THEORY · 보험이론 사전"
+                icon={BookOpen}
+                color="teal"
+                title={`생명·연금·손해·재보험·위험·금융·통계 ${theoryCount}편 해설서`}
+                description="이론과 한국 보험시장 현황을 함께 다루는 학습 해설서 모음입니다."
+                cta="사전 펼치기"
+              />
             </Reveal>
-
-            {/* 데이터 예제/분석 */}
-            <Reveal className="md:col-span-2 lg:col-span-3" delay={200}>
-              <Link href="/datalab" className={tileBase}>
-                <div className={tileEyebrow}>
-                  <span
-                    className={tileIcon}
-                    style={{
-                      background: "var(--chip-slate-bg)",
-                      color: "var(--chip-slate-fg)",
-                    }}
-                  >
-                    <Database size={18} />
-                  </span>
-                  DATALAB · 데이터 예제/분석
-                </div>
-                <h3 className="mt-4 text-[20px] font-semibold leading-snug text-foreground group-hover:text-primary">
-                  엑셀 함수·VBA·Python으로 정리·분석한 데이터 예제
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-[1.75] text-body">
-                  산재된 데이터를 정리·분석해 보관하고, 워크북을 웹에서 바로
-                  열람하거나 다운로드할 수 있는 공간입니다.
-                </p>
-                <span className={tileCta}>
-                  데이터 살펴보기{" "}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-tesla group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
+            <Reveal>
+              <IndexRow
+                no="05"
+                href="/datalab"
+                eyebrow="DATALAB · 데이터 예제/분석"
+                icon={Database}
+                color="slate"
+                title="엑셀 함수·VBA·Python으로 정리·분석한 데이터 예제"
+                description="산재된 데이터를 정리·분석해 보관하고, 워크북을 웹에서 바로 열람하거나 다운로드할 수 있는 공간입니다."
+                cta="데이터 살펴보기"
+              />
+            </Reveal>
+            <Reveal>
+              <IndexRow
+                no="06"
+                href="/apps"
+                eyebrow="APPS · 모델분석/업무지원"
+                icon={LayoutGrid}
+                color="cyan"
+                title="보험 실무 앱 모음"
+                description="보험료 산출·머신러닝·DFA 등 모델분석 4종과 강의 지원·PDF·계산기·화이트보드 등 업무지원 7종. 우측 상단 앱 메뉴에서도 바로 열 수 있습니다."
+                cta="앱 모음 보기"
+              />
             </Reveal>
           </div>
         </div>
 
+        {/* 사진 + 소개 — 보험 증권·통계 그래프 (Unsplash License) */}
+        <div className="mt-24 grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-14">
+          <Reveal className="lg:col-span-7">
+            <div className="media-zoom relative aspect-[4/3] overflow-hidden rounded-cover bg-surface">
+              <Image
+                src="/images/insurance-policy.jpg"
+                alt="보험 증권 서류 위에 놓인 돋보기"
+                fill
+                sizes="(min-width: 1024px) 56vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </Reveal>
+          <Reveal className="index-panel rounded-cover p-6 lg:col-span-5 lg:p-8" delay={80}>
+            <p className="text-[11.5px] font-bold tracking-[0.14em] text-brand-sky">
+              ABOUT THE BOARD
+            </p>
+            <h2 className="mt-4 text-[28px] font-semibold leading-[1.3] tracking-[-0.02em] text-foreground sm:text-[34px]">
+              출처가 분명한 자료를,
+              <br />
+              근거와 함께 읽습니다
+            </h2>
+            <p className="mt-5 text-[15px] leading-[1.85] text-body">
+              협회 공시와 원문 PDF, 해외 감독기관 자료를 출처와 함께 정리하고, 보험이론
+              해설과 데이터 예제로 해석을 돕습니다.
+            </p>
+            <div className="media-zoom relative mt-8 aspect-[3/2] overflow-hidden rounded-cover bg-surface">
+              <Image
+                src="/images/statistics-graph.jpg"
+                alt="자와 펜 옆에 손으로 그린 통계 그래프"
+                fill
+                sizes="(min-width: 1024px) 38vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <Link
+              href="/about"
+              className="mt-8 inline-flex h-11 items-center gap-2 rounded-full border border-foreground/25 px-5 text-[14px] font-semibold text-foreground hover:border-foreground hover:bg-foreground hover:text-white"
+            >
+              만든이 소개 <ArrowRight size={15} />
+            </Link>
+          </Reveal>
+        </div>
+
         {/* 최신 자료 — 항목(서브타이틀)별 최신 1건 */}
-        <div className="mt-20">
-          <div className="mb-6 flex items-end justify-between">
+        <div className="mt-24">
+          <div className="mb-8 flex items-end justify-between">
             <SectionHeading>최신 자료</SectionHeading>
             <Link href="/posts" className="text-sm font-medium text-primary">
               전체 보기
@@ -444,30 +410,35 @@ export default async function HomePage() {
           )}
         </div>
 
-        {/* 관련 링크 */}
-        <div className="mt-20">
-          <div className="mb-6">
-            <SectionHeading>관련 링크</SectionHeading>
-          </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {/* 관련 링크 — 괘선 행 */}
+        <div className="mt-24">
+          <SectionHeading>관련 링크</SectionHeading>
+          <ul className="index-panel mt-8 grid border-t border-foreground/10 sm:grid-cols-2 sm:gap-x-10">
             {RELATED_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-cover border border-[color:var(--card-glass-border)] bg-white/10 backdrop-blur-[2px] p-6 shadow-card transition-[box-shadow,transform,border-color] duration-tesla ease-tesla hover:-translate-y-1 hover:border-foreground hover:shadow-card-hover"
-              >
-                <h3 className="text-[18px] font-semibold text-brand-sky">
-                  {l.title}
-                </h3>
-                <p className="mt-2 text-sm text-tertiary">{l.description}</p>
-                <span className="mt-3 inline-block text-sm font-medium text-primary">
-                  {l.domain} ↗
-                </span>
-              </a>
+              <li key={l.href} className="border-b border-foreground/10">
+                <a
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="index-row group flex items-start justify-between gap-6 py-6"
+                >
+                  <span>
+                    <span className="block text-[18px] font-semibold text-foreground group-hover:text-primary">
+                      {l.title}
+                    </span>
+                    <span className="mt-1.5 block text-sm text-tertiary">{l.description}</span>
+                    <span className="mt-2 block text-[13px] font-medium text-primary">{l.domain}</span>
+                  </span>
+                  <span
+                    aria-hidden
+                    className="index-arrow flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-foreground/15"
+                  >
+                    <ArrowUpRight size={16} />
+                  </span>
+                </a>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
     </>

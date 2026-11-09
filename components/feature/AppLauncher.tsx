@@ -24,6 +24,7 @@ import {
   ImagePlus,
   Landmark,
   LayoutGrid,
+  LineChart,
   Newspaper,
   Pencil,
   PenLine,
@@ -75,6 +76,13 @@ const QUICK_LINKS: LauncherLink[] = [
     label: "ML 자동분석",
     icon: Brain,
     color: "violet",
+    external: true,
+  },
+  {
+    href: "https://www.dfaautoflow.com/",
+    label: "DFA 분석",
+    icon: LineChart,
+    color: "cyan",
     external: true,
   },
   {
