@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "흥국화재 표적치매약물허가치료 중 MRI 검사지원비(3회한)", "keywords": ["치매", "알츠하이머", "MRI"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_흥국화재_표적치매MRI검사지원비.pdf", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "치매 신약 치료 중\n꼭 받아야 하는\n==MRI 검사비==를 보장", "text": "흥국화재 **(무)표적치매약물허가치료 중 MRI 검사지원비(3회한)**는 손해보험협회 신상품심의위원회에서 **배타적사용권 6개월**(2026.1 ~ 2026.7.24)을 받았습니다.", "tags": ["업계 최초 비급여 MRI 보장", "회당 50만원 · 최대 3회"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 담보가 나왔을까?", "lead": "알츠하이머 신약 레켐비(레카네맙)는 치료비가 비싼데, 치료 중에는 부작용을 살피는 뇌 MRI도 여러 번 찍어야 합니다. 모두 건강보험이 안 되는 비급여입니다.", "blocks": [{"type": "stats", "items": [{"label": "레켐비 치료비", "value": "3~4천만원", "sub": "회당 100~120만 × 36회"}, {"label": "MRI 1회", "value": "약 74만원", "sub": "비급여 평균", "tone": "amber"}, {"label": "MRI 3회", "value": "약 220만원", "sub": "최소 권고 횟수", "tone": "amber"}]}, {"type": "item", "tag": "공백", "tone": "rose", "title": "치료비 담보로는 MRI가 채워지지 않았어요", "text": "흥국화재는 레켐비 치료비를 보장하는 '표적치매약물허가치료비' 담보로 이미 9개월 배타권(2024.12~2025.9)을 받았지만, 치료 중 MRI 검사비는 보장 공백이었습니다."}, {"type": "note", "text": "그래서 치료비 한도를 더 올리는 대신, 그 **빈틈인 MRI 검사비를 별도 담보**로 만들었습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "레켐비는 어떤 약이고, 왜 MRI가 필요할까?", "blocks": [{"type": "item", "tag": "약", "title": "뇌에 쌓인 아밀로이드 베타를 없애는 항체 치료제", "text": "알츠하이머병으로 인한 경도인지장애나 경증 알츠하이머가 대상입니다. 2주에 한 번 정맥주사로, 약 18개월 동안 총 36회 맞습니다."}, {"type": "compare", "boxes": [{"chip": "ARIA-E", "tone": "violet", "title": "뇌부종", "text": "뇌가 붓는 이상"}, {"chip": "ARIA-H", "tone": "rose", "title": "미세출혈", "text": "작은 출혈·철 침착"}]}, {"type": "note", "text": "이 부작용(ARIA, 아밀로이드 관련 영상 이상)은 증상이 없는 경우가 많아 **MRI로만 확인**됩니다. MRI 확인 없이는 투여를 이어갈 수 없습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "세 가지 조건을 모두 갖추면 지급돼요", "lead": "아래 ①~③을 모두 충족하면 검사 1회당 50만원을 최대 3회(총 150만원)까지 지급합니다.", "blocks": [{"type": "item", "tag": "조건 1", "title": "초기 알츠하이머 단계 진단", "text": "보장개시일 이후 원인으로 최경증 치매(CDR 0.5) 또는 경증 알츠하이머 치매(CDR 1 + F00/G30) 진단 확정"}, {"type": "item", "tag": "조건 2", "tone": "violet", "title": "아밀로이드 베타 양성", "text": "PET 검사 30 centiloid 이상 등, 원인 단백질이 쌓였다는 검사 결과"}, {"type": "item", "tag": "조건 3", "tone": "teal", "title": "표적약물 치료 중 MRI 시행", "text": "레켐비 등 허가된 표적치료제를 맞는 중에, 의사가 인정해 MRI 검사를 받음"}, {"type": "note", "tone": "slate", "text": "한 줄 정리: **진단 + 양성 확인 + 치료 중 MRI**의 세 관문을 모두 통과해야 합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "왜 '3회'로 정했을까?", "lead": "허가사항·가이드라인은 투여 전 검사 외에 5차·7차·14차 투여 전 뇌 MRI를 권고합니다. 대한치매학회도 최소 3회를 권고합니다.", "blocks": [{"type": "steps", "items": [{"step": "투여 전", "title": "기준 MRI (baseline)", "text": "치료 시작 전 상태 확인"}, {"step": "5·7차 전", "title": "1·2번째 모니터링 MRI", "text": "ARIA의 약 74%가 5차 투여 전에 발견"}, {"step": "14차 전", "title": "3번째 모니터링 MRI", "text": "ARIA는 거의 전부 14차 전에 발생"}]}, {"type": "note", "text": "약관의 **3회 한도는 이 임상 권고와 맞물립니다**. 실제 자료에서 ARIA는 약 22%에서 생기고, APOE ε4 유전형을 두 개 가진 사람에게서 위험이 더 높습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자로 보면 이렇습니다", "lead": "MRI 3회를 모두 받는 경우를 보고서 수치로 비교했습니다.", "blocks": [{"type": "vbars", "caption": "레켐비 치료 중 MRI 3회 (만원)", "bars": [{"label": "MRI 비용 (3회)", "value": 220, "display": "약 220만원"}, {"label": "이 담보 지급", "value": 150, "display": "150만원"}, {"label": "남는 부담 (추정)", "value": 70, "display": "약 70만원"}]}, {"type": "text", "text": "회당 비용 약 74만원에 회당 50만원을 정액으로 줍니다. 실제 비용과 상관없이 정해진 금액을 주는 방식이라, 1회당 약 24만원은 본인이 부담하는 셈입니다(추정)."}, {"type": "note", "tone": "slate", "text": "보고서는 이 담보가 MRI 부담을 **'상당 부분 흡수'**한다고 평가합니다. 치료비 3~4천만원은 별도 치료비 담보의 몫입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "이 담보가 새로웠던 네 가지", "blocks": [{"type": "item", "tag": "독립 위험화", "title": "치료비 담보가 못 메우는 MRI를 따로 떼어 냄", "text": "부수 검사비를 하나의 독립된 위험으로 정의했습니다."}, {"type": "item", "tag": "필수 요건", "tone": "violet", "title": "MRI를 '치료를 계속하기 위한 조건'으로 봄", "text": "단순 부대비용이 아니라, 부작용 확인 없이는 투여를 이어갈 수 없다는 점에 주목했습니다."}, {"type": "item", "tag": "건전 경쟁", "tone": "teal", "title": "한도 경쟁 대신 빈틈 메우기", "text": "치료비 담보는 한도 2,000~3,000만원 경쟁 중입니다. 이 담보는 그 경쟁을 피했습니다."}, {"type": "item", "tag": "급여화 대비", "tone": "amber", "title": "나중에 건강보험이 돼도 보장", "text": "추후 MRI가 급여로 바뀌어도 보장할 수 있도록 산출했습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "이런 경우는 보장이 어려울 수 있어요", "lead": "보고서가 짚은 보장의 경계입니다.", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "치료 시작 전 MRI", "text": "투여 전 기준 MRI는 '치료 중'이 아니므로, 보고서는 치료 개시 후 MRI만 포함하도록 해석을 분명히 해야 한다고 봅니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "부작용 확인 외의 MRI", "text": "치료 중·의사 인정 안전성 모니터링이라는 요건이 엄격히 적용됩니다."}, {"type": "item", "tag": "3", "tone": "rose", "title": "알츠하이머가 아닌 치매", "text": "혈관성 치매 등은 적응증에서 빠집니다."}, {"type": "note", "tone": "amber", "text": "부작용 등으로 14차 전에 치료를 멈추면 MRI도 **3회보다 적게** 청구될 수 있습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타권 6개월을 받은 이유", "lead": "한국에자이 HED팀과 협업해 만든 담보로, 경도인지장애·치매 비급여 MRI를 보장한 업계 최초 사례입니다.", "blocks": [{"type": "table", "head": ["일정", "내용"], "cols": ["key", ""], "hl": 3, "rows": [["2025.10.29", "손보협회 제3보험 신상품개발협의기구 의결"], ["2025.12.3", "금융감독원 신고수리"], ["2026.1", "배타적사용권 6개월 부여 (2026.1.20 보도)"], ["2026.7.24", "배타적사용권 만료"]]}, {"type": "note", "text": "인정받은 점: ① **독창성**(업계 최초 보장) ② **진보성**(MRI를 치료 지속의 필수 요건으로 재해석) ③ **유용성**(고액 치료의 실제 접근성 향상)."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 담보가 있을까?", "blocks": [{"type": "table", "head": ["담보", "보장 대상", "특징"], "hl": 3, "rows": [["표적치매약물\n허가치료비", "레켐비 치료(약제)", "한도 2,000~3,000만\n흥국 배타권 후 업계 확산"], ["치매 라인업", "검사·진단·통원·입원", "비급여 MRI는\n미보장 공백"], ["MRI 검사지원비", "치료 중 비급여 MRI", "회당 50만·3회\n업계 최초"]]}, {"type": "item", "tag": "지급 방식", "tone": "slate", "title": "'치료 중 검사비'를 따로 주는 구조는 선례가 있어요", "text": "항암치료 중 검사·미세잔존암 검사 지원형처럼 다른 영역에는 있었습니다. 이를 치매 표적치료의 ARIA 모니터링 MRI에 적용한 것은 처음입니다."}, {"type": "note", "tone": "slate", "text": "치료비 담보와 경쟁하지 않고 **보완·결합**하는 관계입니다."}]}, {"section": "② 국내외 유사상품", "title": "일본은 왜 이런 담보가 덜 필요할까?", "lead": "일본은 2023년 레켐비를 승인하고 공적 의료보험으로 적용했습니다.", "blocks": [{"type": "table", "head": ["", "일본", "한국"], "cols": ["key", "", ""], "rows": [["레켐비 약값", "공적 보험 적용·약가 통제", "전액 비급여\n약 3,000~4,000만원"], ["MRI 모니터링", "보험 진료 체계 안", "전액 비급여\n회당 약 74만원"], ["민간 보장 수요", "상대적으로 낮음", "큼"]]}, {"type": "note", "text": "**비급여 구조가 시장을 만듭니다.** 다만 급여화되면 공백이 줄 수 있어, 약관을 '급여화 후에도 보장'하게 설계했습니다. MRI 모니터링은 전 세계 공통 기준이라 일본·미국 자료를 위험률 추정에 참고할 수 있습니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 데이터·제도·시장", "lead": "보험료 계산의 핵심은 '레켐비 치료를 실제로 시작할 확률'입니다. MRI 횟수(최대 3회)와 금액(50만원)은 이미 정해져 있기 때문입니다.", "blocks": [{"type": "item", "tag": "데이터 (최우선)", "tone": "rose", "title": "국내 경험 통계가 거의 없어요", "text": "신약·신담보라 처방 인구 추정이 불확실합니다. → 제조사·글로벌 실사용 자료(RWD) 가중, 보수적 초기 요율, 정기 갱신."}, {"type": "item", "tag": "급여화", "tone": "amber", "title": "건강보험 적용 시 전제가 바뀌어요", "text": "본인부담·치료 진입률이 함께 변합니다. → 지급 정의·빈도 재산정 시뮬레이션."}, {"type": "item", "tag": "처방 확산", "tone": "amber", "title": "처방병원 13개, 아직 작은 시장", "text": "확산 속도에 따라 빈도가 급변합니다. → 시나리오 기반 모니터링."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 청구·가입·재보험", "blocks": [{"type": "item", "tag": "공급자 유인", "tone": "rose", "title": "의료기관이 처방·MRI를 늘릴 유인", "text": "MRI는 안전 가이드라인상 필수라 적응증·치료 중 요건이 관문입니다. → 투여 전 vs 치료 중 구분 명확화."}, {"type": "item", "tag": "역선택", "tone": "rose", "title": "인지 저하를 느낀 사람의 가입", "text": "가족력이 있거나 증상을 자각한 사람이 가입 후 진단·치료를 받을 수 있습니다. → 보장개시일·진단 요건·고지로 통제."}, {"type": "item", "tag": "청구 경계", "tone": "amber", "title": "다른 이유의 MRI를 청구하려는 시도", "text": "→ '치료 중·의사 인정 안전성 모니터링' 요건 엄격 적용."}, {"type": "item", "tag": "재보험", "tone": "teal", "title": "1건 최대 150만원이라 넘기기는 쉬운 편", "text": "다만 빈도 불확실성이 출재 조건에 반영될 수 있습니다."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "text", "text": "약관 구조(치료 중 MRI 정액)는 **따라 하기 어렵지 않습니다.** 실질 경쟁력은 다른 데 있습니다."}, {"type": "list", "title": "흥국화재의 진입장벽", "ordered": true, "items": ["제조사(한국에자이) 협업과 임상 근거", "표적치료비 담보(9개월 배타권)와 결합·교차판매", "신규 위험률 산출·감독원 신고수리 노하우, 1년간 배타권 6건"]}, {"type": "list", "title": "예상되는 경쟁사 대응", "bullets": true, "items": ["표적치료비 한도 상향 경쟁 지속", "배타권 만료 후 유사 MRI·검사비 담보 출시", "도나네맙 등 후속 약물 보장으로 차별화"]}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 담보가 진짜 주는 것은 '치료 완주'", "lead": "개선 방향을 찾기 위해 상품의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "필수 안전 검사 비용 걱정 없이 치료를 끝까지", "text": "고액 신약 치료를 받는 환자가 MRI 부담 없이 치료를 완주하게 합니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "치료비에 더해지는 수백만원의 MRI", "text": "검사 부담 때문에 치료를 포기하거나 중단할까 걱정합니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "치료 지속 + 실질적 접근성 + 안전 모니터링", "text": "혁신 치료에 다가가고, 안전하게 계속 받을 수 있게 합니다."}, {"type": "note", "text": "제안은 이 가치를 출발점으로 **확장 · 집중 · 전환 · 재구성** 네 갈래로 넓힙니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", ""], "rows": [[{"chip": "확장", "tone": "blue"}, "**차기 표적약물로 확장**\n도나네맙 등 후속 약물 치료 중 MRI까지 자동 포함"], [{"chip": "확장", "tone": "blue"}, "**투여 전 검사·ARIA 처치 확장**\n아밀로이드 PET·기준 MRI·부작용 대응까지"], [{"chip": "집중", "tone": "teal"}, "**ARIA 고위험군 집중**\nAPOE ε4 보유자에 MRI 횟수 한도 상향"], [{"chip": "집중", "tone": "teal"}, "**중증 ARIA 대응**\n증상성 ARIA로 치료 중단·입원 시 일시금"], [{"chip": "전환", "tone": "violet"}, "**치료여정 패키지**\n치료비·MRI·ARIA 대응을 하나로"], [{"chip": "전환", "tone": "violet"}, "**모니터링 서비스 결합**\n검사 예약·결과 관리·ARIA 알림 현물 제공"], [{"chip": "재구성", "tone": "slate"}, "**'혁신치료 완주 보장'**\n검사비 보전이 아닌 완주 가치로 소구"], [{"chip": "재구성", "tone": "slate"}, "**치매 전과정 케어**\n검사–진단–치료–MRI–간병을 하나의 여정으로"]]}]}, {"section": "④ 상품개선 제안", "title": "눈여겨볼 제안 세 가지", "blocks": [{"type": "item", "tag": "확장", "title": "차기 항아밀로이드 약물로 자동 확장", "text": "'아밀로이드 표적약물허가치료제'를 포괄적으로 정의해 신약이 허가되면 재개발 없이 자동 포함합니다. 약물별로 MRI 일정이 달라 약물별 3회 한도·정의 정비가 필요합니다."}, {"type": "item", "tag": "집중", "tone": "teal", "title": "ARIA 고위험군 집중 보장", "text": "위험에 비례해 검사를 늘리는 방식으로 임상과도 맞습니다. 다만 유전자검사·개인정보·역선택 문제가 있어 적응증·고지 기준이 필요합니다."}, {"type": "item", "tag": "전환", "tone": "violet", "title": "치료비 + MRI 통합 패키지", "text": "치료를 시작하면 패키지가 활성화되고 단계별로 지급합니다. 단품 모방의 가치를 낮추는 차단 전략도 됩니다. 패키지 역선택에는 인수·요율 균형이 필요합니다."}]}, {"section": "④ 상품개선 제안", "title": "무엇부터 할까", "lead": "보고서가 추천한 추진 순서입니다.", "blocks": [{"type": "steps", "items": [{"step": "1단계", "title": "급여화 시나리오 대비", "text": "MRI·약제가 급여로 바뀔 때 보장·위험률 영향 시뮬레이션"}, {"step": "2단계", "title": "처방 인구·데이터 확보", "text": "에자이·처방병원 실사용 자료로 투여 환자 규모 추정"}, {"step": "3단계", "title": "확장·전환 담보", "text": "차기 표적약물·치료비 통합 패키지를 위험률 재산출과 함께"}, {"step": "4단계", "title": "포지셔닝", "text": "'혁신치료 완주' 메시지 + 표적치료비 담보 교차판매"}]}, {"type": "note", "tone": "slate", "text": "첫 단계가 급여화 대비인 이유: 제도 변화가 예상되는 영역이라 **담보의 지속성**이 걸려 있기 때문입니다."}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "진단 단계", "text": "최경증(CDR 0.5) 또는 경증 알츠하이머(CDR 1) 진단이어야 함"}, {"title": "아밀로이드 양성", "text": "PET 30 centiloid 이상 등 양성 검사 결과가 필요"}, {"title": "치료 중 MRI만", "text": "치료 시작 전 MRI는 제외될 수 있음 · 부작용 확인 목적"}, {"title": "회당 50만원 · 최대 3회", "text": "실제 비용(회당 약 74만원)과의 차액은 본인 부담"}]}, {"type": "note", "text": "배타적사용권: 2026년 1월 부여 · 6개월 → 2026년 7월 24일 만료"}, {"type": "fine", "text": "분석 한계: 공시·약관·제안서와 공개 통계·학술자료에 기반한 분석가 관점의 추정이며, 실제 위험률·요율은 회사 경험데이터와 급여정책에 따라 확정됩니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#6b4fbb", "dark": "#2a1f4a", "light": "#c3b2f2", "soft": "#eee9f7", "ink": "#4d3a8a", "name": "violet", "motif": "brain", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"currentColor\" opacity=\".35\" d=\"M32 10c-6 0-10 4-11 8-5 0-9 4-9 9 0 3 1 5 3 7-2 2-3 4-3 7 0 5 4 9 9 9 1 4 5 7 11 7V10z\"/><path fill=\"currentColor\" d=\"M32 10c6 0 10 4 11 8 5 0 9 4 9 9 0 3-1 5-3 7 2 2 3 4 3 7 0 5-4 9-9 9-1 4-5 7-11 7V10z\"/><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\".55\" d=\"M22 26c3 0 5 2 5 5M20 40c3-1 6 0 7 3\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

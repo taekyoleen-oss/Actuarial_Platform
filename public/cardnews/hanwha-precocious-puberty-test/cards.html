@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "한화손해보험 성조숙증 등 진단검사지원비", "keywords": ["성조숙증", "진단검사", "어린이보험"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_한화손해보험_성조숙증등진단검사지원비.pdf (작성 2026.8)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "진단이 나오기 전,\n==성조숙증 검사==만 받아도\n지급하는 담보", "text": "한화손해보험 **성조숙증등진단검사지원비**는 2026년 8월 10일 손해보험협회에서 배타적사용권 **6개월**을 받았습니다.", "tags": ["GnRH 자극검사 수검 시 지급", "연간 1회 · 급여 검사"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 담보가 나왔을까?", "lead": "성조숙증은 이차성징이 또래보다 2~3년 일찍 나타나는 상태입니다. 일시적으로 키가 빨리 크지만 성장판도 일찍 닫혀 최종 키가 작아질 수 있습니다.", "blocks": [{"type": "vbars", "caption": "성조숙증 진료인원 (심사평가원)", "bars": [{"label": "2014년", "value": 7.2, "display": "7.2만명"}, {"label": "2023년", "value": 18.7, "display": "18.7만명"}, {"label": "2024년", "value": 17.5, "display": "17.5만명"}, {"label": "2025년", "value": 16.8, "display": "16.8만명"}]}, {"type": "item", "tag": "공백", "tone": "rose", "title": "진단이 나오기 전 검사 단계는 보장이 없었어요", "text": "기존 성조숙증 보장은 진단비와 약제치료비뿐이라, 검사 결과가 진단으로 이어지지 않으면 어떤 정액 담보도 작동하지 않았습니다."}, {"type": "note", "text": "이 담보는 **진단이 아니라 검사를 받은 것 자체**를 지급 사유로 삼아 그 공백을 겨냥했습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "담보 구조를 한눈에 보면", "lead": "개발과정요약서에 적힌 담보 제원입니다.", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["지급 사유", "급여 GnRH 자극검사를 받으면\n연간 1회, 보험가입금액 정액 지급"], ["대상 검사", "성선자극호르몬 자극검사\n수가 분류번호 F0913 하나"], ["급여 요건", "건강보험 요양급여(의료급여)로\n인정되는 경우에만"], ["나이", "가입 최대 4세 · 보장 5~13세"], ["지급 횟수", "연 1회 · 보장기간 중 최대 9회"]]}, {"type": "note", "tone": "slate", "text": "가입금액 수준, 갱신 주기, 성별 요율 분리 여부는 제안서에 적혀 있지 않습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "확진에는 이 검사가 꼭 필요해요", "lead": "성조숙증 진단은 단계적으로 진행됩니다.", "blocks": [{"type": "list", "ordered": true, "items": ["**문진·신체 진찰** — 이차성징이 언제 시작됐는지 확인", "**골연령 X선 촬영** — 뼈 나이가 실제 나이보다 2세 이상 앞서면 의심", "**GnRH 자극검사** — 확진은 이 검사로만 가능"]}, {"type": "item", "tag": "검사 방법", "tone": "teal", "title": "주사 1회 + 2시간 동안 6번 채혈", "text": "공복에 호르몬을 정맥 주사한 뒤 15·30·60·90·120분에 피를 뽑아 호르몬(LH) 수치를 잽니다. 최고 수치가 5.0 IU/L 이상이면 진성 성조숙증입니다."}, {"type": "note", "text": "아이에게 부담이 큰 검사라서, 그 자체가 무분별한 수검을 막는 장치가 됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "검사 결과는 네 갈래로 나뉘어요", "blocks": [{"type": "table", "head": ["판정", "호르몬 소견", "다음 단계"], "cols": ["key", "sm", "sm"], "rows": [["진성", "LH 크게 상승\n(5.0 IU/L 이상)", "진단코드 부여\n→ 4주 간격 주사치료"], ["가성", "FSH만 상승", "난소·부신 등\n원인 질환 치료"], ["불완전형", "정상 범위", "3~6개월마다\n추적·재검사"], ["정상", "모두 1 IU/L 이내", "치료 불필요"]]}, {"type": "note", "text": "진단비는 **진성일 때만** 나옵니다. 이 담보는 결과와 관계없이 급여 검사를 받았으면 지급하므로, 정상·불완전형 판정을 받은 집단도 처음으로 보장을 받습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "나이 조건이 가장 잘 설계된 부분이에요", "blocks": [{"type": "compare", "boxes": [{"chip": "가입", "title": "4세 이하만", "text": "증상을 보고 나서 가입하는 길을 원천 차단"}, {"chip": "보장", "tone": "teal", "hl": true, "title": "5세 ~ 13세", "text": "치료 종료(여아 11세·남아 12세) 뒤 재검사까지 포함"}]}, {"type": "stats", "items": [{"label": "1인당 연간 검사 · 남아", "value": "1.14회"}, {"label": "1인당 연간 검사 · 여아", "value": "1.16회"}]}, {"type": "note", "tone": "slate", "text": "반복 검사가 드물어 **연 1회 한도**가 막는 지급은 전체의 10% 안팎입니다. 손해율 방어보다는 설명을 단순하게 하는 의미가 큽니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "‘검사만 받으면 지급’은 아니에요", "lead": "약관 문언과 소비자 인식 사이에 생기기 쉬운 간극입니다.", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "급여로 인정된 검사만 지급", "text": "이 검사에는 따로 고시된 급여기준이 없어 심사기관이 진료기록·상병코드로 하나하나 판단합니다. 검사 당일에는 지급 여부를 알 수 없고, 인정되지 않으면 거절됩니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "재검사는 1년에 한 번만", "text": "불완전형은 3~6개월마다 재검사가 권고되지만, 같은 해 두 번째 검사부터는 지급되지 않습니다."}, {"type": "item", "tag": "3", "tone": "amber", "title": "실손보험과 겹치는 부분", "text": "급여 검사의 본인부담은 실손이 보전합니다. 다만 4세대 실손은 자기부담이 있고, 정액 담보는 결근·교통 같은 부수 비용까지 흡수합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자로 보면 작은 담보예요", "lead": "공개 통계로 보고서가 추정한 규모입니다(분석가 추정, 가입금액 20만원 가정).", "blocks": [{"type": "vbars", "caption": "연간 위험보험료 (추정 범위의 상단을 막대로)", "bars": [{"label": "여아", "value": 8600, "display": "5,800~8,600원"}, {"label": "성별 통합", "value": 5200, "display": "3,400~5,200원"}, {"label": "남아", "value": 2000, "display": "1,400~2,000원"}]}, {"type": "table", "cols": ["key", "val"], "rows": [["보장연령(5~13세) 인구", "약 346만명"], ["급여 검사 받는 인원 (연)", "6만~9만명"], ["검사 받는 비율 · 여아 / 남아", "2.9~4.3% / 0.7~1.0%"]]}, {"type": "note", "tone": "amber", "text": "여아가 남아의 약 4배입니다. 성별 요율을 나누지 않았다면 여아 계약을 남아 계약이 보조하는 구조가 됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타권 6개월, 무엇을 인정받았나", "blocks": [{"type": "stats", "items": [{"label": "부여", "value": "2026.8.10", "sub": "손해보험협회"}, {"label": "기간", "value": "6개월", "sub": "→ 2027.2.10 만료"}]}, {"type": "text", "text": "검사 수검을 지급 사유로 삼는 형식 자체는 이미 있습니다(예: 베일리영유아발달검사지원비). 인정된 독창성은 **고관심 질환의 확진 관문 검사를 그 형식에 처음 결합한 조합**입니다."}, {"type": "note", "text": "보고서는 배타권 6개월과 경쟁사 개발기간 3~4개월을 더해 **약 9~10개월**을 단독 판매 구간으로 봅니다(추정)."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 담보가 있을까?", "blocks": [{"type": "list", "title": "같은 질병, 다른 지급 사유", "items": ["**현대해상 성조숙증진단보장** — 진단 확정 시 지급 (굿앤굿어린이종합보험Q)", "**손보사 약제치료비 계열** — 주사치료 시작 후 지급", "**실손의료보험** — 급여 검사비의 본인부담을 실비로 보전"]}, {"type": "list", "title": "다른 질병, 같은 지급 사유(검사)", "items": ["**현대해상** 선별검사 이상소견 후 융모막·양수검사지원비", "**KB손보·한화손보** 베일리영유아발달검사지원비", "안과 특정처치·요로감염 진단 등 연 1회 정액 계열"]}, {"type": "note", "tone": "slate", "text": "검사 단계를 정액으로 보장한 성조숙증 담보는 처음이지만, 검사비 지원이라는 형식은 이미 표준이 되어 가고 있습니다."}]}, {"section": "② 국내외 유사상품", "title": "일본에는 왜 이런 담보가 없을까?", "lead": "보고서가 확인한 해외 사례는 일본뿐이며, 성조숙증 검사비를 보장하는 민영보험 담보는 확인되지 않았습니다.", "blocks": [{"type": "item", "tag": "공적 지원", "title": "소아만성특정질병 의료비 지원", "text": "2025년 4월 기준 801개 질병 대상, 본인부담 2할로 경감. 성조숙증 장기 치료가 이 안에서 관리됩니다."}, {"type": "item", "tag": "공적 지원", "title": "지자체 아동의료비 조성", "text": "중·고생 나이까지 자기부담을 지원해 많은 지역에서 사실상 무상입니다. LH-RH 부하검사 약 42,790엔(4,279점) 사례도 이 지원이 흡수합니다."}, {"type": "note", "tone": "amber", "text": "이 담보의 가치는 **공적 보장이 비어 있다는 조건** 위에 있습니다. 국내 지자체의 검사비 지원이 늘면 효용이 줄어들어, 갱신형이 더 알맞다는 판단의 근거가 됩니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 계약자와 의료 현장", "lead": "각 리스크와 보고서가 제시한 대응을 함께 정리했습니다.", "blocks": [{"type": "item", "tag": "역선택", "tone": "teal", "title": "가장 잘 통제된 항목", "text": "증상은 부모가 눈으로 알 수 있지만, 4세 이하 가입·5세 보장 개시 조건이 증상 뒤 가입을 막습니다. 별도 조치가 필요 없습니다."}, {"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "최대 노출 지점 — 보험금을 위한 검사", "text": "정액이라 본인부담보다 많이 받으면 유인이 생깁니다. **대응**: 침습적 검사·급여 요건·연 1회 한도에 더해, 가입금액을 실제 본인부담 수준에 맞춤."}, {"type": "item", "tag": "공급자", "tone": "rose", "title": "병원이 보험을 근거로 검사를 권유", "text": "이 영역은 과잉진료 논란으로 급여기준이 강화된 적이 있습니다. **대응**: 수검 기관별 청구 집중도를 모니터링해 이상 기관 조기 식별."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 제도·데이터·재보험", "blocks": [{"type": "item", "tag": "규제", "tone": "amber", "title": "급여기준이 바뀌면 지급률도 바뀌어요", "text": "치료제 급여기준 추가 강화, 검사 급여기준 신설, 지자체 지원 확대 모두 예측이 어렵습니다. → 갱신형 채택, 개정 동향을 상품 관리 항목에 편입."}, {"type": "item", "tag": "데이터", "tone": "amber", "title": "급여 인정률 실측치가 없어요", "text": "가입자 수검 행태 보정계수도 순수 가정입니다. → 판매 후 12개월 경험을 성별·연령·기관 종별로 분리 집계, 거절 사유 코드화."}, {"type": "item", "tag": "추세", "tone": "amber", "title": "환자 수는 이미 줄고 있어요", "text": "제안서는 증가를 근거로 들었지만 2023년이 정점이고 2년 연속 감소했습니다. 증가 추세를 적용했다면 위험률이 과대 산출됐을 수 있습니다."}, {"type": "item", "tag": "재보험", "tone": "amber", "title": "위험을 전부 자체 보유", "text": "재보험 없는 자체개발입니다. → 초년도 손해율 상한 재보험 검토, 실익이 낮으면 갱신형으로 재산출 주기 확보."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "데이터 장벽", "value": "낮음", "sub": "공개 통계로 재현"}, {"label": "제휴 장벽", "value": "없음", "sub": "독점 공급자 없음"}, {"label": "시스템 장벽", "value": "낮음", "sub": "코드 하나로 판정"}]}, {"type": "table", "head": ["예상 우회 경로", "위협도"], "cols": ["", "center"], "rows": [["급여 요건 제거형 (급여·비급여 불문)", {"chip": "높음", "tone": "rose"}], ["검사 통합 확장형 (성장검사 전반)", {"chip": "높음", "tone": "rose"}], ["횟수 완화형 · 연령 확장형", {"chip": "중간", "tone": "amber"}], ["진단 결합 패키지", {"chip": "낮음", "tone": "slate"}]]}, {"type": "note", "tone": "slate", "text": "복제 난이도는 ‘하’입니다. 확보한 것은 기술 장벽이 아니라 **시간적 선점**뿐입니다."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 담보가 진짜 지키는 것은 ‘성장 시간’", "lead": "개선 방향을 찾기 위해 담보의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "확진 관문 검사의 비용을 정액 현금으로 보전", "text": "어떤 진단비도 작동하기 전, 가장 먼저 지급이 일어납니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "확인하고 싶지만 검사를 미루게 돼요", "text": "검사는 아프고 비용이 들며, 정상이 나오면 돈만 쓴 셈입니다. 미루는 동안 성장판은 계속 닫혀 갑니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "검사 문턱을 낮춰 조기 발견", "text": "되돌릴 수 없는 성장 기간을 지키고, 정상일 때 불필요한 호르몬 치료를 막습니다."}, {"type": "note", "tone": "amber", "text": "다만 담보 하나로는 선점이 지켜지지 않습니다. **검사 영역 전체를 덮는 상위 담보**로 넓혀야 방어력이 생깁니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 일곱 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "sm"], "rows": [[{"chip": "확장", "tone": "blue"}, "**성장검사통합지원비**\n골연령·성장호르몬·IGF-1 등 급여·비급여 통합", "우회 경로\n사전 차단"], [{"chip": "확장", "tone": "blue"}, "**성장이상통합검사지원비**\n사춘기지연·저신장까지, 보장 5~16세", "대상 인구\n약 1.8배"], [{"chip": "집중", "tone": "teal"}, "**검사후 치료불요판정 위로금**\n정상 판정일 때만 지급하는 역구조", "진단비와\n상호배타"], [{"chip": "집중", "tone": "teal"}, "**성조숙증 경계군 치료비**\n급여에서 밀려난 비급여 주사치료", "새 공백\n직접 대응"], [{"chip": "전환", "tone": "violet"}, "**성장추적 모니터링 결합형**\n연 2회 측정 후 이상 시 검사비", "서비스\n진입장벽"], [{"chip": "전환", "tone": "violet"}, "**조기발견 가산 지급**\n일찍 검사할수록 더 지급", "조기 수검\n유도"], [{"chip": "재구성", "tone": "slate"}, "**성장 시간 보장 포지셔닝**\n키가 아니라 남은 성장 기간", "과잉진료\n논란 회피"]]}]}, {"section": "④ 상품개선 제안", "title": "먼저 볼 제안 세 가지, 자세히", "blocks": [{"type": "item", "tag": "확장 A", "title": "성장검사통합지원비 (회당 15만~30만원 제안)", "text": "GnRH·골연령·성장호르몬 자극·IGF-1·갑상선 검사 중 하나를 받으면 급여 여부와 관계없이 연 1회 지급. 검사 당일 보장 여부를 확정해 원담보의 최대 약점을 없앱니다. 전문의 시행·열거 항목으로 남용을 막습니다."}, {"type": "item", "tag": "집중 C", "tone": "teal", "title": "검사후 치료불요판정 위로금 (30만~50만원)", "text": "LH 최고치 5 IU/L 미만으로 진성이 아니라고 판정되면 최초 1회 지급. ‘질병이 아님’을 지급 사유로 삼아 진단비와 중복이 없습니다. 골연령 선행검사 요건을 붙입니다."}, {"type": "item", "tag": "전환 E", "tone": "violet", "title": "성장추적 모니터링 결합형 (검사비 20만원)", "text": "연 2회 성장속도·골연령 서비스로 이상이 확인될 때만 검사비 지급. 서비스 네트워크는 바로 복제되지 않아 진입장벽이 됩니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "lead": "배타권 기간 안에 상위 담보 개발에 착수하는 것이 핵심입니다.", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "2026.9~2027.2", "title": "성장검사통합지원비 개발 착수", "text": "비급여 검사 단가 자료부터 확보"}, {"step": "2단계", "time": "2027 상반기", "title": "경험통계 성별·연령별 분리 집계", "text": "성별 요율 분리 결정, 급여 인정률·삭감률 실측"}, {"step": "3단계", "time": "2027 하반기", "title": "치료불요판정 위로금 · 모니터링 결합형 투입"}, {"step": "4단계", "time": "2028 이후", "title": "성장이상통합검사지원비로 확대", "text": "어린이보험을 성장 단계별 보장 체계로 재편"}]}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "급여로 인정돼야 지급돼요", "text": "검사를 받아도 급여로 인정되지 않으면 받을 수 없음"}, {"title": "1년에 한 번만", "text": "같은 해 재검사는 지급 대상이 아님"}, {"title": "가입은 4세 이하만", "text": "보장은 5세부터 13세까지"}, {"title": "실손보험과 따로 받는 정액", "text": "실손은 본인부담 보전, 이 담보는 정해진 금액"}]}, {"type": "note", "text": "배타적사용권: 2026년 8월 10일 부여 · 6개월 → 2027년 2월 10일 만료"}, {"type": "fine", "text": "분석 한계: 개발과정요약서·공개 통계 기반이며, 가입금액·갱신 주기·성별 요율과 위험률 규모는 분석가 추정입니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#1d7fa3", "dark": "#0f2f3d", "light": "#8ccfe6", "soft": "#e2f1f7", "ink": "#1d6486", "name": "cyan", "motif": "dna", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" d=\"M22 8c0 16 20 16 20 32s-20 16-20 16M42 8c0 16-20 16-20 32s20 16 20 16\"/><path stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\".5\" d=\"M25 16h14M26 26h12M26 46h12M25 52h14\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

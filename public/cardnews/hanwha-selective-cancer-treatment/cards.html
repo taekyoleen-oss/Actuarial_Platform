@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "한화생명 선별급여 암주요치료보장S특약", "keywords": ["암", "선별급여", "항암치료"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_한화생명_선별급여암주요치료보장S특약.pdf (개발과정 요약서 2026.06.02 기반) · 배타권 날짜는 output/exclusive_dates.json(협회 공시 기준)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "급여인데도\n30~90%를 내는 ==‘선별급여’==\n암치료를 메운다", "text": "한화생명 **선별급여 암주요치료보장S특약Ⅱ**는 건강보험의 사각지대인 선별급여 암치료에 연 1회 정액을 주는 신규 담보로, 생명보험협회에서 배타적사용권 **9개월**을 받았습니다.", "tags": ["선별급여 암 주요치료", "연 1회 · 정액 지급"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 상품이 나왔을까?", "lead": "선별급여는 효과는 기대되지만 비용 대비 효과가 아직 검증 중인 치료에 건강보험이 비용 일부만 내 주는 ‘시험 단계 급여’입니다.", "blocks": [{"type": "vbars", "caption": "암환자 본인부담률 (건강보험 지원 수준별)", "bars": [{"label": "산정특례 급여", "value": 5, "display": "5%"}, {"label": "선별급여", "value": 90, "display": "30~90%"}, {"label": "비급여", "value": 100, "display": "100%"}]}, {"type": "item", "tag": "사각지대", "tone": "rose", "title": "두 가지 보호장치에서 모두 빠져요", "text": "암환자 5% 경감(산정특례)도, 1년 본인부담 상한제(2026년 최고 1,096만원)도 선별급여에는 적용되지 않습니다. 상한을 넘겨도 돌려받지 못합니다."}, {"type": "note", "text": "‘급여 안에 있으면서도 부담이 큰’ 이 회색지대를 **정액으로 메우는** 것이 이 특약의 출발점입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "구조는 단순해요 — 연 1회, 정해진 금액", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["지급 이름", "선별급여 암 주요치료자금"], ["지급 조건", "암 진단확정 + 그 치료로\n‘선별급여 암 주요치료’를 받음"], ["지급 횟수", "1년에 1번\n해마다 치료하면 해마다 지급"], ["지급 방식", "정액\n실제 낸 본인부담액과 무관"]]}, {"type": "item", "tag": "판정 기준", "tone": "violet", "title": "병명이 아니라 ‘진료비 세부내역서’로 정해요", "text": "같은 약·수술이라도 그 환자의 그 치료가 선별급여로 청구됐는지가 기준입니다. 증빙이 객관적이라 분쟁 소지는 작습니다."}, {"type": "note", "tone": "slate", "text": "한 줄 정리: **암 치료 중 선별급여가 붙은 해마다 정액 1번**"}]}, {"section": "① 배타적사용권 내용·구조", "title": "어떤 치료가 해당될까? 세 가지예요", "lead": "약관은 수술·항암약물·항암방사선 중 해당 항목이 ‘선별급여’로 판정될 때를 주요치료로 봅니다.", "blocks": [{"type": "item", "tag": "수술", "title": "선별급여 암 수술", "text": "암을 직접 제거하거나 증식을 억제하는 처치·수술료가 선별급여인 경우"}, {"type": "item", "tag": "약물", "tone": "violet", "title": "선별급여 항암약물치료", "text": "항암제 약제비가 선별급여인 경우. 호르몬 관련 치료제·보조 약제는 제외"}, {"type": "item", "tag": "방사선", "tone": "teal", "title": "선별급여 항암방사선치료", "text": "방사선치료료가 선별급여인 경우. 모의치료·치료계획 같은 부수 행위는 제외"}, {"type": "note", "tone": "slate", "text": "약 외에도 NGS 유전자 패널검사·유방재건·동맥경유 방사선색전술 같은 행위·재료가 선별급여에 포함됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "암 보장의 빈칸을 채우는 ‘세 번째 층’", "lead": "기존 암주요치료비는 두 층뿐이었고, 그 사이 선별급여 부담은 전용 보장이 없었습니다.", "blocks": [{"type": "table", "head": ["구간 · 본인부담", "기존 보장", "이 특약"], "hl": 2, "cols": ["key", "", "center"], "rows": [["산정특례 급여\n5%", "포괄형 암주요치료비", "—"], ["선별급여\n30~90%", "전용 보장 없음", {"chip": "신설", "tone": "blue"}], ["비급여\n100%", "비급여 암주요치료비", "—"]]}, {"type": "note", "text": "포괄형은 선별급여에도 지급하지만 **가입금액이 낮고**, 비급여형은 선별급여를 **보장하지 않습니다**. 이 특약은 그 사이를 전담합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "대표적인 선별급여 항암제는?", "lead": "2017년 할라벤을 시작으로 2018년 블린사이토까지 16품목 23개 요법이 선별급여가 됐고, 대부분 본인부담 30%입니다.", "blocks": [{"type": "table", "head": ["약", "암종", "본인부담"], "cols": ["key", "sub", "center"], "rows": [["페스코·퍼제타", "HER2 양성 유방암\n수술 전 보조요법", "30%"], ["블린사이토", "급성림프모구백혈병\n일부 요법", "30%"], ["할라벤", "전이성 유방암 등", "30%"], ["엑스탄디", "전립선암", "30%"]]}, {"type": "note", "tone": "slate", "text": "대체로 표적·면역·새 제형처럼 **효과는 좋지만 급여화 장벽이 높은 최신 치료**입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자로 보면 이렇습니다", "lead": "보고서의 예시인 블린사이토 항암약물치료 1주기입니다.", "blocks": [{"type": "vbars", "caption": "블린사이토 1주기 (단위: 만원)", "bars": [{"label": "약제비 총액", "value": 5000, "display": "약 5,000"}, {"label": "선별급여 30% 부담", "value": 1500, "display": "약 1,500"}, {"label": "5%였다면 (계산 추정)", "value": 250, "display": "약 250"}]}, {"type": "text", "text": "1,500만원은 2026년 상한제 최고액 **1,096만원**보다 크지만, 선별급여라 상한 계산에서 빠져 **돌려받지 못합니다**. 이때 이 특약은 정해진 금액을 줍니다."}, {"type": "note", "tone": "amber", "text": "‘5%였다면’ 막대는 산정특례율을 그대로 적용한 단순 계산입니다. 월 보험료 예시는 개발과정 요약서 기준 **4.25~10.5만원** 구성입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "헷갈리기 쉬운 네 가지", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "‘급여니까 5%만 내겠지’ → 아니에요", "text": "선별급여는 산정특례가 적용되지 않아 30~90%를 그대로 냅니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "‘낸 만큼 돌려준다’ → 정액이에요", "text": "부담률이 90%로 오르거나 약값이 바뀌어도 받는 돈은 같습니다."}, {"type": "item", "tag": "3", "tone": "rose", "title": "‘같은 약이면 같다’ → 치료 단계마다 달라요", "text": "페스코는 수술 전이면 선별급여 30%, 수술 후면 전액 본인부담 100%라 이 특약 대상이 아닙니다."}, {"type": "item", "tag": "4", "tone": "rose", "title": "‘보장 범위는 고정’ → 5년마다 바뀌어요", "text": "선별급여는 재평가로 정규급여나 비급여로 옮겨질 수 있어, 대상 치료도 함께 달라집니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타적사용권은 9개월", "blocks": [{"type": "stats", "items": [{"label": "부여", "value": "2026.6.30"}, {"label": "기간", "value": "9개월"}, {"label": "만료", "value": "2027.3.30"}]}, {"type": "list", "title": "보고서가 본 독창성의 근거", "bullets": true, "items": ["‘선별급여’를 전용 지급 조건으로 쓴 암 담보는 조사 범위에서 확인되지 않음 → **업계 최초** 타당성 높음", "금융감독원이 **신규 위험담보**로 신고수리", "진짜 강점은 진단·치료·본인부담을 개인 단위로 잇는 **자사 실손 데이터**"]}, {"type": "fine", "text": "날짜는 생명보험협회 공시 기준입니다. 보고서에는 부여 기간과 그 사유가 기재되어 있지 않습니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 상품이 있을까?", "blocks": [{"type": "table", "head": ["상품(예)", "선별급여 대응"], "cols": ["key", ""], "rows": [["현대해상 두배받는암보험\n암주요치료비 연 1회 정액", "포괄 보장에 포함되나 정액이 낮음"], ["DB손해 하이클래스암보험\n항암약물·중입자방사선 분리 정액", "비급여 중심, 선별급여 전용 아님"], ["메리츠·하나생명 등\n포괄형 + 비급여 특약", "비급여 전용, 선별급여 공백"]]}, {"type": "item", "tag": "시장 변화", "tone": "amber", "title": "2024년 11월, 비례형 판매 중단", "text": "치료비에 비례해 주는 암주요치료비는 과잉진료 우려로 판매가 멈춰 지금은 정액형만 됩니다. 이 특약이 정액인 이유입니다."}]}, {"section": "② 국내외 유사상품", "title": "해외에서는 이미 시도됐을까?", "lead": "일본에도 같은 구조의 빈칸이 있습니다. 先進医療(선진의료) 기술료는 환자가 전액 내고 고액요양비(상한제)에서도 빠집니다.", "blocks": [{"type": "item", "tag": "일본", "title": "선진의료특약 · 환자신출요양특약", "text": "거의 모든 의료·암보험에 붙습니다. 대부분 기술료 실비(실손형)이고, 사고가 드물고 고액이라 보험료가 매우 저렴합니다."}, {"type": "compare", "boxes": [{"label": "일본", "tone": "slate", "title": "실손형", "text": "기술료 실비를 따라감"}, {"label": "이 특약", "tone": "blue", "hl": true, "title": "정액형", "text": "비례형 금지로 정액, 부담 변동은 못 따라감"}]}, {"type": "note", "text": "‘선별급여(예비급여)를 명시 조건으로 한 정액 상품’은 일본에도 없어, 보고서는 **해외에 직접 대응물이 없는 독자 설계**로 봅니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 보장 기반 자체가 흔들릴 수 있어요", "lead": "가장 큰 위험은 위험률 수준보다, 선별급여가 5년마다 재평가되며 양방향으로 움직인다는 점입니다.", "blocks": [{"type": "table", "head": ["재평가 결과", "영향"], "cols": ["key", ""], "rows": [["선별급여 → 정규급여", "부담 5%로 하락, 지급 조건 소멸"], ["선별급여 → 비급여", "이 특약 대상에서 빠짐, 풀 축소"], ["비급여 → 선별급여", "풀 확대, 위험률 상승"]]}, {"type": "note", "tone": "rose", "text": "예: 페스코 수술 후 요법(현재 100%)이 선별급여로 바뀌면 대상이 급증할 수 있습니다. 그래서 **위험률 변동 마진을 보수적으로** 잡아야 합니다."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 계약자·의료 현장·재보험", "blocks": [{"type": "item", "tag": "역선택", "tone": "rose", "title": "암 위험이 높은 사람이 골라 가입", "text": "가족력·검진 이상소견을 아는 사람의 가입 유인. → 90일 면책·감액기간, 고지의무·부담보로 관리"}, {"type": "item", "tag": "공급자 유인", "tone": "amber", "title": "선별급여 요법 선택·청구 단계 조정", "text": "정액이라 과잉진료 유인은 약하지만, 선별급여 여부가 지급을 가르므로 미세 유인은 남습니다. → 연 1회 한도, 청구 모니터링"}, {"type": "item", "tag": "재보험", "tone": "amber", "title": "경험 통계가 없고 제도 위험은 넘기기 어려워요", "text": "업계 최초라 비교 통계가 없고, 재평가 같은 제도 위험은 가격을 매기기 까다롭습니다. → 경험 누적 후 요율 재산출 조항 확보"}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "약관·조건 설계", "value": "낮음", "sub": "공개 제도 기반"}, {"label": "위험률 데이터", "value": "높음", "sub": "개인 단위 실손 보유사만", "tone": "amber"}, {"label": "배타권", "value": "한시", "sub": "법적 차단"}]}, {"type": "list", "title": "예상되는 우회 진입", "bullets": true, "items": ["기존 포괄형 암주요치료비의 **가입금액만 올리기** (가장 현실적)", "비급여 + 선별급여를 합친 통합 신담보", "실손 데이터를 가진 대형사의 단기 추격"]}, {"type": "note", "tone": "slate", "text": "진입장벽은 약관이 아니라 **데이터**에 있습니다. 시간 여유는 길지 않습니다."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약이 진짜 파는 것은 ‘최신 치료의 안심’", "lead": "개선 방향을 찾기 위해 상품의 가치를 세 가지로 나눴습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "제도가 일부만 책임지는 구간을 정액으로 메움", "text": "본인부담 30~90%·상한제 제외인 선별급여 부담을 보전합니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "급여인 줄 알았는데 수백만~수천만 원", "text": "상한제 환급도 안 되는, 예측하기 어려운 고액 부담과 불안입니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "새 치료가 나와도 다시 가입할 필요 없음", "text": "표적·면역·새 제형 같은 최신 치료의 자기부담을 메워 치료환경 변화에 자동으로 대응합니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여섯 가지 제안", "blocks": [{"type": "table", "head": ["갈래", "제안", "추진"], "cols": ["", "", "center"], "rows": [[{"chip": "확장", "tone": "blue"}, "**2대질병 선별급여 확장**\n뇌졸중·급성심근경색 선별급여 치료로", "12개월"], [{"chip": "확장", "tone": "blue"}, "**재발·전이 반복보장**\n재발·전이 시 선별급여 치료에 가산", "—"], [{"chip": "집중", "tone": "teal"}, "**고가 선별급여 상향 옵션**\n블린사이토 등 초고가 요법에 상위 정액", "6~9개월"], [{"chip": "전환", "tone": "violet"}, "**선별급여+비급여 통합 모듈**\n어느 구간이든 자동 정액 보전", "6개월 · 최우선"], [{"chip": "전환", "tone": "violet"}, "**치료 단계별 분할 지급**\n개시 60% + 경과 40% 예시", "6~9개월"], [{"chip": "재구성", "tone": "slate"}, "**‘신의료기술 갭 커버’**\n제도 용어 대신 소비자 언어로", "—"]]}]}, {"section": "④ 상품개선 제안", "title": "최우선 제안: 선별급여+비급여 통합 모듈", "lead": "재평가로 치료가 구간을 옮겨도 보장이 끊기지 않게, 두 구간을 한 모듈로 묶습니다.", "blocks": [{"type": "compare", "boxes": [{"chip": "선별급여", "title": "예: 1,000만원", "text": "30~90% 구간 정액"}, {"chip": "비급여", "tone": "violet", "title": "예: 2,000만원", "text": "100% 구간 정액"}]}, {"type": "item", "tag": "효과", "tone": "teal", "title": "재평가 위험이 오히려 강점이 돼요", "text": "가입자는 본인부담 구조를 몰라도 되고, 경쟁사의 ‘통합 담보’ 우회도 먼저 막습니다."}, {"type": "item", "tag": "주의", "tone": "amber", "title": "두 구간 위험률이 더해져요", "text": "중복 지급 방지와 구간 판정 규정을 정교하게 만들어야 합니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1", "time": "즉시", "title": "선별급여 청구 모니터링 상시화", "text": "재평가에 따른 풀 변동을 분기마다 추적, 위험률 재산출 기준 마련"}, {"step": "2", "time": "6개월", "title": "선별급여+비급여 통합 모듈 설계", "text": "재평가 위험을 강점으로, 경쟁사 우회 차단"}, {"step": "3", "time": "6~9개월", "title": "고가 상향 옵션 · 단계별 분할 지급", "text": "유용성과 체감 효용 보강"}, {"step": "4", "time": "12개월", "title": "2대질병 확장 타당성 검토", "text": "순환계 선별급여 풀·경험데이터 확보 후 차기 개정"}]}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "선별급여 치료에만 지급", "text": "모든 신치료가 아님 · 산정특례 급여·비급여 치료는 대상 아님"}, {"title": "정액이라 실제 부담과 다를 수 있음", "text": "부담률·약값이 올라도 받는 금액은 같음"}, {"title": "대상 치료는 5년마다 바뀔 수 있음", "text": "정규급여·비급여로 옮겨지면 대상에서 빠짐"}, {"title": "기존 암주요치료비와 함께 보기", "text": "포괄형·비급여형과 어떻게 겹치고 비는지 확인"}]}, {"type": "note", "text": "배타적사용권: 2026년 6월 30일 부여 · 9개월 → 2027년 3월 30일 만료 (협회 공시 기준)"}, {"type": "fine", "text": "분석 한계: 개발과정 요약서·공개 자료 기반이며 위험률 절대값은 산출하지 않았습니다. 위험률 차수(연 0.03~0.5%)는 보고서 추정입니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#c2453a", "dark": "#47201d", "light": "#f2a99f", "soft": "#f8e8e6", "ink": "#93362c", "name": "rose", "motif": "ribbon", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"currentColor\" opacity=\".4\" d=\"M26 34 14 54l8-2 4 7 12-22z\"/><path fill=\"currentColor\" d=\"M38 34l12 20-8-2-4 7-12-22z\"/><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"7\" stroke-linecap=\"round\" d=\"M24 38c-4-6-6-11-6-16a14 14 0 0 1 28 0c0 5-2 10-6 16\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

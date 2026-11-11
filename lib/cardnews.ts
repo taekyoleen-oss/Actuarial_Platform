@@ -20,6 +20,17 @@ const CARDNEWS: Record<string, CardNewsSet> = {
   "5500e79b-9bda-4722-b14c-999466b2a4d2": { slug: "samsung-er-retransfer" }, // 삼성생명 응급실내원(재이송)
   "8081d75d-5124-4bcd-9132-f3d47cf80360": { slug: "heungkuk-prostate-biodegradable" }, // 흥국생명 전립선암 생분해성 물질주입술
   "a31ffb08-e253-45d4-8efe-c530b5e1c18f": { slug: "db-ai-lifecare-cancer" }, // DB AI라이프케어암
+  "71e9a894-8938-4677-b79c-d1b6d2adedf7": { slug: "hana-neurocognitive-test" }, // 하나손보 신경인지기능검사비
+  "2dea70bf-f139-470c-ab89-52b397dcedfa": { slug: "hanwha-precocious-puberty-test" }, // 한화손보 성조숙증 진단검사지원비
+  "03072970-4743-478f-9303-76a5cead8342": { slug: "hyundai-home-caregiver" }, // 현대해상 재택간병·프리미엄간병
+  "6e27a4e1-1b81-4819-8c6d-35446957932d": { slug: "aia-mild-dementia-amyloid-pet" }, // AIA생명 특정최경도치매
+  "ffcf0b9a-6671-4720-850a-f35e58ba3f5c": { slug: "kyobo-split-underwriting" }, // 교보생명 복합심사인수특약
+  "3c4797c3-df5b-4ab8-88d5-492a742ba85e": { slug: "dbins-no-claim-term-extension" }, // DB손보 무사고 시 보험기간 연장
+  "499e22f9-b6c6-434d-b5a0-e155d2fa065a": { slug: "hanwha-selective-cancer-treatment" }, // 한화생명 선별급여암주요치료
+  "763438f1-cd7b-467b-bf79-dc705360c365": { slug: "samsung-family-premium-waiver" }, // 삼성생명 가족계약 납입면제·할인
+  "1f5b8f7d-28e2-4c72-8398-00e076cdfbc5": { slug: "samsung-targeted-dementia-aria-h" }, // 삼성생명 통합표적치매(ARIA-H)
+  "c914fdb7-d948-4812-ab94-4e4db6caf728": { slug: "db-ltc-plus" }, // DB생명 장기요양플러스
+  "4123fa0e-1a61-436a-b0d7-a902de8a178d": { slug: "heungkuk-fire-dementia-mri" }, // 흥국화재 표적치매 MRI
 };
 
 export function getCardNews(postId: string): CardNewsSet | undefined {

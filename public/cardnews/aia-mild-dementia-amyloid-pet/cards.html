@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "AIA생명 특정최경도치매(아밀로이드PET양성)보장특약", "keywords": ["치매", "아밀로이드 PET", "최경도치매"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_AIA생명_특정최경도치매(아밀로이드PET양성)보장특약.pdf (분석일 2026.8.22)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "치매 진단금을\n==한 단계 더 일찍==\n받는 특약", "text": "AIA생명 **특정최경도치매(아밀로이드PET양성)보장특약**은 2026년 8월 4일 생명보험협회에서 배타적사용권 **6개월**을 받았습니다.", "tags": ["최경도치매(CDR 0.5)", "아밀로이드 PET 20 센틸로이드"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 특약이 나왔을까?", "lead": "치매는 일찍 발견해 개입할수록 좋다는 쪽으로 관리 방식이 바뀌고 있습니다. 그런데 기존 치매보험의 진단금은 경도치매(CDR 1)부터 시작됐습니다.", "blocks": [{"type": "vbars", "caption": "회사가 제시한 '골든타임' 의료비 (합계 650만원)", "bars": [{"label": "초기 진단", "value": 200, "display": "200만원"}, {"label": "약물치료", "value": 250, "display": "250만원"}, {"label": "인지재활", "value": 200, "display": "200만원"}]}, {"type": "note", "text": "그 앞 단계인 **최경도(CDR 0.5)** 구간에서도 비용이 드는데 보장이 비어 있었습니다. 이 특약은 그 공백을 메웁니다. (금액의 산출 근거는 요약서에 없음)"}]}, {"section": "① 배타적사용권 내용·구조", "title": "두 조건을 모두 만족해야 받아요", "lead": "치매보장개시일 이후 아래 두 요건에 모두 해당하면 진단자금을 최초 1회 지급합니다.", "blocks": [{"type": "item", "tag": "요건 1", "title": "최경도치매상태로 진단 확정", "text": "임상치매척도(CDR) 검사 결과가 0.5점인 상태"}, {"type": "item", "tag": "요건 2", "tone": "violet", "title": "아밀로이드베타 PET 양성", "text": "뇌에 쌓인 단백질을 보는 PET 검사가 양성이고 20 센틸로이드 이상"}, {"type": "table", "cols": ["key", ""], "rows": [["지급", "정액 진단자금 · 최대 200만원 · 최초 1회"], ["계약", "갱신형 · 해약환급금 없음"], ["가입", "(무)파워100 치매보험의 선택특약"]]}]}, {"section": "① 배타적사용권 내용·구조", "title": "요건 1 · CDR 0.5는 어떤 상태일까?", "lead": "CDR은 기억력·판단력·사회활동 등 6개 영역을 면담으로 평가해 한 점수로 매깁니다. 0 정상 → 0.5 최경도 → 1 경도 → 2 중등도 → 3 중증.", "blocks": [{"type": "compare", "boxes": [{"chip": "저위험", "tone": "slate", "title": "심한 건망증 수준", "text": "힌트 후에도 기억 안 남 · 수면장애"}, {"chip": "고위험", "tone": "rose", "hl": true, "title": "생활에 지장", "text": "약속·돈 관리 어려움 · 주변이 이상을 알아챔"}]}, {"type": "note", "text": "같은 0.5점 안에 위험이 다른 사람이 섞여 있습니다. 점수만으로는 회사가 판정을 반증하기도 어려워, **병리 검사(요건 2)를 함께** 걸었습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "요건 2 · 센틸로이드 20은 어느 정도일까?", "lead": "센틸로이드는 아밀로이드 PET 결과를 공통 눈금으로 바꾼 척도입니다. 0 = 젊은 정상인 평균, 100 = 전형적 알츠하이머 환자 평균.", "blocks": [{"type": "table", "head": ["구간", "AIA 이 특약", "흥국화재 담보"], "hl": 1, "cols": ["key", "center", "center"], "rows": [["20 미만\n유의한 축적 없음", "부지급", "부지급"], ["20~30\n판정이 갈리는 회색지대", "지급", "부지급"], ["30 이상\n명확한 양성", "지급", "지급"]]}, {"type": "note", "tone": "amber", "text": "기준을 30에서 20으로 낮춰 **보장 대상이 넓어졌지만**, 기관마다 판정이 갈리는 구간이라 분쟁 소지도 함께 늘었습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "진단금 200만원, 검사비와 비교하면?", "lead": "아밀로이드 PET은 건강보험이 적용되지 않는 비급여 검사입니다.", "blocks": [{"type": "vbars", "caption": "비용 비교 (만원, 상단값 기준)", "bars": [{"label": "뇌척수액 검사", "value": 50, "display": "40~50만"}, {"label": "MRI(레켐비 병원 평균)", "value": 74, "display": "74만"}, {"label": "아밀로이드 PET", "value": 200, "display": "100~200만"}, {"label": "이 특약 진단금", "value": 200, "display": "최대 200만", "color": "violet"}]}, {"type": "note", "text": "진단금이 검사비와 비슷해 **보험금만 노린 검사 유인이 작습니다**. 진단금은 사실상 검사 단계 비용을 상쇄하는 규모이고, 치료비는 주계약의 다른 특약이 맡습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "지급률은 네 단계를 거쳐 결정돼요", "lead": "지급 사유는 하나의 질병이 아니라 네 사건이 모두 일어나야 하는 결합 사건입니다.", "blocks": [{"type": "steps", "items": [{"step": "1", "title": "CDR 0.5 수준 인지저하 발생"}, {"step": "2", "title": "병원 방문 후 CDR 0.5 진단 확정"}, {"step": "3", "title": "아밀로이드 PET 검사 시행", "text": "비급여 · 자기부담 커서 감쇄가 가장 큼"}, {"step": "4", "title": "20 센틸로이드 이상 양성 판정"}]}, {"type": "note", "tone": "amber", "text": "핵심 변수는 발병률이 아니라 **검사 접근성**입니다. PET 시행률·양성률은 비급여라 공적 통계에 잡히지 않습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "알고 보면 다른, 세 가지 문구", "lead": "회사 개발과정요약서의 표현과 보고서가 점검한 실제 사이의 간극입니다.", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "'골든타임 모든 의료비를 범용 보장' → 검사비 정도 상쇄", "text": "200만원은 초기 진단비 수준입니다. 레켐비 약값은 연 2,300만~3,100만원입니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "'고위험군 치매 확률 5~7배' → 출처 미기재", "text": "양성군의 진행 위험이 높다는 점은 문헌으로 뒷받침되나 배수는 검증이 필요합니다."}, {"type": "item", "tag": "3", "tone": "rose", "title": "'발병 5년 지연·위험 38% 축소' → 인지활동의 효과", "text": "보험 가입 효과가 아니라 인지활동 수준에 따른 관찰 연구 결과입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타권이 6개월인 이유는?", "lead": "신규위험담보에 주는 기간 중 짧은 편입니다. 같은 진단 조건을 먼저 쓴 손해보험 담보가 있었기 때문으로 보입니다(보고서 해석).", "blocks": [{"type": "table", "head": ["", "흥국화재 MRI검사지원비", "AIA 이 특약"], "hl": 2, "cols": ["key", "", ""], "rows": [["조건", "CDR 0.5·1 + PET 30 이상", "CDR 0.5 + PET 20 이상"], ["급부", "MRI 검사비 회당 50만원 · 3회", "정액 진단자금 · 1회"], ["돈 쓰임", "레켐비 치료 중 MRI", "제한 없음"]]}, {"type": "note", "text": "심의위원회는 **업계 최초로 CDR 0.5까지 보장**하고, 병리 기준으로 고위험군을 객관적으로 고른 점을 인정했습니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 담보가 있을까?", "blocks": [{"type": "table", "head": ["회사 · 담보", "지급 요건", "급부"], "cols": ["key", "sm", "sm"], "rows": [["흥국화재\nMRI검사지원비", "CDR 0.5·1 + PET 30 이상", "회당 50만원 · 3회"], ["KB손해보험\nCDR척도검사지원비", "CDR 검사 시행", "검사비 · 배타권 3개월"], ["복수 보험사\n레켐비 치료비", "레켐비 처방·투여", "한도 2,000만~3,000만원"]]}, {"type": "note", "tone": "slate", "text": "국내 조기 치매 담보는 대부분 **비급여 비용 보전형**입니다. 이 특약은 그 가운데 유일하게 **쓰임을 정하지 않은 정액 진단금**입니다."}]}, {"section": "② 국내외 유사상품", "title": "일본은 정반대로 설계했어요", "lead": "일본은 2018년경부터 경도인지장애(MCI) 보장을 팔아 왔습니다(타이요·스미토모·니혼·메이지야스다·PGF생명).", "blocks": [{"type": "compare", "boxes": [{"label": "일본형", "tone": "slate", "title": "조건 넓게 · 금액 작게", "text": "임상 진단만으로 인정 · 인지증 진단금의 10% 안팎(1만~30만 엔)"}, {"label": "AIA 이 특약", "tone": "blue", "hl": true, "title": "조건 좁게 · 금액 크게", "text": "PET 양성 필수 · 최대 200만원 정액"}]}, {"type": "note", "text": "일본은 혈액 선별검사·결과별 캐시백·건강 앱으로 **검사-보장-예방을 하나로 묶었습니다**. 이 특약은 출시 초 한시 검사 지원에 그칩니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 가입자·병원의 행동", "blocks": [{"type": "item", "tag": "역선택", "tone": "rose", "title": "이미 이상을 느낀 사람이 몰려 가입", "text": "병리 변화는 발병 20년 전부터 시작돼 고지로 걸러낼 수 없습니다. **대응**: 보장개시 유예를 길게, 가입 직후 청구 쏠림 감시."}, {"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "보험금을 노린 검사", "text": "지금은 검사비와 진단금이 비슷해 약하지만, 급여화되면 억제력이 사라집니다. **대응**: 진단금을 검사비 대비 일정 배수 이내로."}, {"type": "item", "tag": "공급자", "tone": "rose", "title": "회색지대 판정이 관대한 병원", "text": "**대응**: 기관별·센틸로이드 분포 감시(20~25 밀집 주의), 소프트웨어·트레이서를 심사 기준에 명시."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 제도·재보험·데이터", "blocks": [{"type": "item", "tag": "규제 · 최대", "tone": "amber", "title": "PET 급여화 + 혈액 검사 허가", "text": "두 변화가 겹치면 지급률이 곱셈으로 늘 수 있습니다. → 갱신형이 안전판, 시나리오별 지급률을 미리 산출."}, {"type": "item", "tag": "재보험", "tone": "amber", "title": "요율 근거가 없어 인수가 어려움", "text": "→ 초기엔 초과손해율 방식, 급여화를 재산정 사유로 계약에 명시."}, {"type": "item", "tag": "데이터", "tone": "amber", "title": "핵심 요인이 공적 통계에 없음", "text": "→ 청구 때 센틸로이드 값·검사 기관·검사일을 정형 데이터로 수집."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "데이터 장벽", "value": "중", "sub": "비급여 통계", "tone": "amber"}, {"label": "제휴 장벽", "value": "하", "sub": "PET은 여러 병원"}, {"label": "시스템 장벽", "value": "하", "sub": "판독지 확인"}]}, {"type": "list", "title": "예상되는 진입 경로", "bullets": true, "items": ["컷오프를 25·30으로 바꿔 우회 (임박)", "PET 대신 뇌척수액 검사 인정 (임박)", "일본형 임상 단독 소액 지급 (가장 위협적)", "만료 후 진단금 증액 경쟁 (2027년 상반기)"]}, {"type": "note", "tone": "slate", "text": "종합 판정은 **카피 난이도 낮음**입니다."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약이 진짜 주는 가치는?", "lead": "개선 방향을 찾기 위해 상품을 세 요소로 나눴습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "진행 위험이 높은 사람만 정밀하게 골라 현금 지급", "text": "선별의 정밀성이 곧 상품의 본질입니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "수백만원 비급여 검사비 때문에 확인을 미룸", "text": "미루는 사이 개입할 수 있는 시기가 지나갑니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "조기 확인 행동을 이끌어 냄", "text": "진단금 자체보다 '제때 확인하게 만드는 것'이 가치입니다."}, {"type": "note", "text": "그래서 제안은 선별 경로를 넓히고(**확장**), 확인 이후 행동을 돕고(**집중**), 급부 형태를 바꾸는(**전환**) 방향입니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "rank"], "rows": [[{"chip": "확장", "tone": "blue"}, "**바이오마커 통합형 진단자금**\nPET 200 · 뇌척수액 150 · 혈액 선별 50+150만원", "3단계"], [{"chip": "확장", "tone": "blue"}, "**배우자 동시가입 검사 지원**\n가입 2년 후부터 2년마다 선별검사", "—"], [{"chip": "집중", "tone": "teal"}, "**치료개시 보너스**\n진단 후 12개월 내 표적치료 시작 시 추가 지급", "1단계"], [{"chip": "집중", "tone": "teal"}, "**ARIA 감시 MRI 보장**\n회당 50만~70만원 · 3회 기준", "1단계"], [{"chip": "전환", "tone": "violet"}, "**단계 승급형 진단자금**\nCDR 0.5·1·2·3에 10·30·30·30%", "2단계"], [{"chip": "전환", "tone": "violet"}, "**인지훈련 현물 결합**\n현금 100 + 이용권 150만원 선택", "2단계"], [{"chip": "재구성", "tone": "slate"}, "**'뇌 건강검진 멤버십'**\n40대 후반~50대 초반 공략", "3단계"], [{"chip": "재구성", "tone": "slate"}, "**보호자를 의사결정자로**\n지정대리청구 기본값 · 보호자 통지", "—"]]}]}, {"section": "④ 상품개선 제안", "title": "먼저 할 두 가지, 자세히", "lead": "둘 다 기존 지급 대상자 안에서 작동해 자사 청구 데이터로 위험률을 맞출 수 있습니다.", "blocks": [{"type": "item", "tag": "집중", "tone": "teal", "title": "치료개시 보너스", "text": "진단금을 받은 뒤 12개월 안에 항아밀로이드 치료제 투여를 시작하면 진단금과 같거나 그 이상을 한 번 더 줍니다. 비용 때문에 치료를 포기하는 계층을 실제 치료로 이끕니다."}, {"type": "item", "tag": "집중", "tone": "teal", "title": "ARIA 감시 MRI 보장", "text": "표적치료제 부작용(뇌부종·미세출혈)은 MRI로만 확인돼 3회 촬영이 필수인데 비급여입니다(평균 74만원). 치료 중단 환자의 절반이 비용을 이유로 든다는 보고가 있습니다."}, {"type": "note", "tone": "amber", "text": "MRI 보장은 흥국화재 선행 담보가 있어 배타권보다 **진단→치료 연속 보장 완성**이 목적입니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "lead": "배타권이 6개월뿐이므로 존속 기간 안에 보장 폭을 먼저 넓혀야 합니다.", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "즉시", "title": "ARIA 감시 MRI · 치료개시 보너스", "text": "배타권 만료 전에 후발 상품과의 차이를 선점"}, {"step": "2단계", "time": "6~12개월", "title": "단계 승급형 · 인지훈련 현물 결합", "text": "병원 코호트 확보, 제휴사·품질관리 체계 구축"}, {"step": "3단계", "time": "12개월 이후", "title": "바이오마커 통합형 · 멤버십 재포지셔닝", "text": "혈액 검사 허가·PET 급여화 결론 이후 착수"}]}, {"type": "note", "tone": "slate", "text": "지속 우위는 담보가 아니라 **지급 데이터 자산**에서 나옵니다. 후발사는 2~3년간 갖기 어렵습니다."}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "두 조건이 모두 필요해요", "text": "CDR 0.5 진단 + PET 20 센틸로이드 이상"}, {"title": "PET 검사비는 본인 부담", "text": "비급여 100만~200만원, 진단금은 최대 200만원"}, {"title": "보장개시일 이후 진단만 인정", "text": "가입 직후 진단은 지급되지 않을 수 있음"}, {"title": "갱신형 · 해약환급금 없음", "text": "갱신 때 보험료가 오를 수 있고 해지 시 환급금 없음"}]}, {"type": "note", "text": "배타적사용권: 2026년 8월 4일 공표 · 6개월 → 2027년 2월 4일 만료"}, {"type": "fine", "text": "분석 한계: 개발과정요약서·공개 자료 기반이며 약관 문언과 다를 수 있습니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#6b4fbb", "dark": "#2a1f4a", "light": "#c3b2f2", "soft": "#eee9f7", "ink": "#4d3a8a", "name": "violet", "motif": "brain", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"currentColor\" opacity=\".35\" d=\"M32 10c-6 0-10 4-11 8-5 0-9 4-9 9 0 3 1 5 3 7-2 2-3 4-3 7 0 5 4 9 9 9 1 4 5 7 11 7V10z\"/><path fill=\"currentColor\" d=\"M32 10c6 0 10 4 11 8 5 0 9 4 9 9 0 3-1 5-3 7 2 2 3 4 3 7 0 5-4 9-9 9-1 4-5 7-11 7V10z\"/><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\".55\" d=\"M22 26c3 0 5 2 5 5M20 40c3-1 6 0 7 3\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

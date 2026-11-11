@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "DB생명 (무)장기요양 플러스보장특약Ⅰ", "keywords": ["장기요양", "간병", "등급변경"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_DB생명_장기요양플러스보장특약.pdf (DB생명 개발과정 요약서·공개 통계 기반, 분석기준일 보고서 미기재)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "요양 등급이\n==더 나빠지면==\n1,000만원", "text": "DB생명 **(무)장기요양 플러스보장특약Ⅰ**은 장기요양 등급의 ‘악화’ 자체를 보장하는 업계 최초 담보로, 생명보험협회에서 배타적사용권 **6개월**을 받았습니다.", "tags": ["장기요양 등급 상향변경", "미상향 시 적립액 환급"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 특약이 나왔을까?", "lead": "기존 장기요양 진단비는 ‘처음 판정받은 등급’에 돈을 줍니다. 판정 뒤 상태가 더 나빠지는 구간은 비어 있었습니다.", "blocks": [{"type": "item", "tag": "문제", "tone": "rose", "title": "중증까지 대비하려면 특약을 여러 개 들어야 해요", "text": "업계는 1~2 / 1~3 / 1~5등급 진단비를 계단식 특약으로 쌓아 팝니다. 중증 보장을 넓히려면 특약을 추가해야 해서 보험료 부담이 커집니다."}, {"type": "item", "tag": "공백", "tone": "amber", "title": "“더 나빠지면 어쩌나”는 보장되지 않았어요", "text": "특히 경증(5등급·치매)으로 처음 판정받은 사람은 이후 악화가 걱정이지만, 진단비는 판정 시점에 한 번 주고 끝납니다."}, {"type": "note", "text": "그래서 이 특약은 보장의 기준을 **등급 진입(level)에서 등급 사이의 이전(악화)**으로 옮겼습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "먼저, 장기요양 등급이란?", "lead": "공단 조사원이 방문해 일상생활 능력을 점수로 매긴 결과입니다. 질병 이름이 아닙니다.", "blocks": [{"type": "table", "head": ["등급", "인정점수", "상태(요지)"], "cols": ["key", "center", "sm"], "hl": 4, "rows": [["1등급", "95점 이상", "전적으로 도움 필요 · 시설급여"], ["2등급", "75~94점", "상당 부분 도움 · 시설급여"], ["3등급", "60~74점", "부분적 도움 · 재가급여"], ["4등급", "51~59점", "일정 부분 도움 · 재가급여"], ["5등급", "45~50점", "치매(노인성 질병 한정)"], ["인지지원", "45점 미만", "경증 치매"]]}, {"type": "note", "tone": "amber", "text": "‘등급이 오른다’ = 숫자가 **5 → 3처럼 작아지는 것**(더 중증). 이 특약은 “처음 판정받은 사람이 4년 안에 더 나빠졌는가”를 봅니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "구조를 한눈에 보면", "blocks": [{"type": "item", "tag": "지급사유", "title": "최초 2~5등급 판정 → 그 뒤 더 중증 등급으로 변경", "text": "처음 장기요양상태(2~5등급)로 판정된 뒤, 보장기간 안에 상위 등급으로 판정되면 ‘상향등급변경’입니다."}, {"type": "item", "tag": "보장기간", "tone": "violet", "title": "최초 판정일을 포함해 4년", "text": "최초 2~5등급 판정일을 포함해 4년이 지난 날까지만 악화를 봅니다."}, {"type": "item", "tag": "지급금액", "tone": "teal", "title": "1,000만원 정액, 최초 1회", "text": "5등급 진입자는 4·3·2·1등급 어디로 바뀌어도 같은 금액을 받습니다."}, {"type": "note", "tone": "slate", "text": "한 줄 정리: **처음 판정(A) → 4년 안에 악화(B)**, 두 사건이 이어져야 지급되는 ‘결합사고’ 구조"}]}, {"section": "① 배타적사용권 내용·구조", "title": "4년 뒤 결과는 세 갈래예요", "lead": "예: 5등급으로 처음 판정받은 뒤 4년 동안 지켜봅니다.", "blocks": [{"type": "compare", "boxes": [{"chip": "악화", "tone": "blue", "hl": true, "title": "3등급 등으로 변경", "text": "1,000만원 지급 후 특약 소멸"}, {"chip": "유지·호전", "tone": "teal", "title": "등급 그대로·하향", "text": "기간 끝에 계약자적립액 지급 후 소멸"}, {"chip": "사망", "tone": "rose", "title": "악화 없이 사망", "text": "그때 효력 소멸, 적립액 미지급"}]}, {"type": "note", "text": "악화되지 않아도 **적립액을 돌려받는 저축성 요소**가 있다는 점이 기존 진단비(미사고 시 소멸)와 다릅니다. 다만 악화 전에 사망하면 받는 것이 없습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "얼마나 자주 악화될까?", "lead": "회사가 공시한 보장확률입니다(5등급 진입자 · 4년 안에 상향).", "blocks": [{"type": "progress", "caption": "5등급 진입자가 4년 안에 도달하는 등급", "rows": [{"label": "1~2등급", "value": 12.2, "right": "12.2%"}, {"label": "1~3등급", "value": 38.0, "right": "38.0%"}, {"label": "1~4등급", "value": 79.4, "right": "79.4%"}, {"label": "이 특약", "value": 79.4, "right": "79.4%"}]}, {"type": "text", "text": "5등급에서 한 단계라도 오르면 곧 ‘4등급 이상 도달’이므로 이 특약과 1~4등급의 확률은 정의상 같습니다. 범위가 넓을수록 확률이 커져 내적 일관성도 맞습니다."}, {"type": "note", "tone": "amber", "text": "보고서 판단: 방향은 타당하지만 **79.4%는 꽤 높은 수준**입니다. 악화 전에 사망하는 경우를 충분히 빼 주었는지 검증이 필요합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "같은 79.4%, 보험료는 약 1/2.5", "lead": "5등급 진입자 기준 비교입니다(40세 남 · 100세만기 · 20년납 · 표준형).", "blocks": [{"type": "vbars", "caption": "보험료 비교", "bars": [{"label": "현행 1~4등급 진단비", "value": 13490, "display": "13,490원"}, {"label": "신규 플러스진단", "value": 5270, "display": "5,270원"}]}, {"type": "list", "title": "보험료가 싼 이유 세 가지", "ordered": true, "items": ["악화가 생길 때까지 **지급이 늦어짐**(현재가치 차이)", "악화가 없으면 돌려주는 적립액은 위험보험료가 아닌 **저축**", "1~4등급으로 바로 진입한 사람은 빠지는 **좁은 대상**"]}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자를 읽을 때 조심할 두 가지", "lead": "보고서가 지적한 정합성 쟁점입니다.", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "‘동일 79.4%’는 5등급 진입자에만 해당", "text": "두 상품의 전체 기대지급이 같다는 뜻이 아닙니다. 현행 진단비는 처음부터 1~4등급으로 진입한 사람까지 보장합니다. 안내 시 비교 조건을 밝혀야 합니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "사망이라는 ‘경쟁위험’", "text": "선행연구에서 요양 최초 인정자의 3년 내 사망은 60% 이상(전 등급), 갱신 때 약 73.5%는 등급을 유지합니다. 사망을 충분히 빼지 않으면 상향확률이 부풀 수 있습니다."}, {"type": "note", "tone": "amber", "text": "이전확률 추정치·민감도는 외부에 공개되지 않아 보고서도 구조만 역추정했습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타권 6개월, 무엇을 인정받았나", "blocks": [{"type": "stats", "items": [{"label": "배타적사용권", "value": "6개월", "sub": "2026.3 부여 공시"}, {"label": "만료", "value": "2026.8.27", "sub": "심의 2026.2.27 기준", "tone": "slate"}]}, {"type": "item", "tag": "독창성", "title": "등급 ‘악화’ 자체를 독립 트리거로 둔 업계 최초 담보", "text": "국내·일본 모두 ‘상태 진입’형이 대부분이고, 악화를 트리거로 한 상품은 확인되지 않았습니다."}, {"type": "item", "tag": "진보성", "tone": "teal", "title": "등급 간 이전확률을 직접 만든 데이터·방법론", "text": "노인코호트 DB 접근이 막히자 유사 코호트로 이전확률을 자체 산출하고 보험개발원 요율확인을 거쳤습니다. 이것이 곧 모방 장벽입니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 상품이 있을까?", "blocks": [{"type": "list", "title": "등급 ‘진입’ 시점을 보장하는 상품", "items": ["**KB손보 노후/간병** — 1~5등급 판정 시 가입금액(최초 1회), 간병인사용일당 병행", "**한화생명 간병** — 간병인지원금(1~180일), 3대질병 간병인지원금", "**업계 일반** — 1~2/1~3/1~4/1~5등급 진단비 누적 계단식 특약"]}, {"type": "list", "title": "지급 방법이 비슷한 유형", "items": ["**간병 연금형** — 요양등급(통상 2등급 이상) 시 매월·매년 연금", "**경증치매 진단비** — CDR 1 등 진단 시 일시금, 악화 추적 없음"]}, {"type": "note", "tone": "slate", "text": "국내 시장은 재가급여 한도 경쟁과 진입 일시금에 집중했고, **악화 자체를 독립 트리거로 둔 사례는 이 특약이 처음**입니다."}]}, {"section": "② 국내외 유사상품", "title": "일본은 어떻게 하고 있을까?", "lead": "공적 개호보험(요지원1~2·요개호1~5, 7단계) 위에 민간 개호·인지증 보험이 성숙했습니다. 개호 원인 1위는 인지증(치매)입니다.", "blocks": [{"type": "table", "head": ["상품", "트리거·지급", "시사점"], "cols": ["key", "sm", "sm"], "rows": [["라쿠텐생명 인지증", "진단확정 시 일시금 + 납입면제", "진단 시점 보장"], ["아사히생명 안심개호", "요개호1+인지증 시 종신 연금", "연금형 전환 근거"], ["미쓰이스미토모아이오이 개호C", "요지원1 이상·MCI 진단 시 일시금", "조기 단계 보장 근거"], ["소니생명 개호", "요개호2 이상 지속 시 종신 연금", "‘상태 지속’ 기준"]]}, {"type": "note", "text": "일본도 대부분 ‘진입형’이라 독창성은 국내외 모두 인정됩니다. 일본의 **경도 단계 조기보장·연금형**은 ④ 제안의 근거가 됩니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 가입자와 청구 현장", "lead": "등급은 공단(제3자)이 판정해 모럴해저드는 비교적 통제되지만, ‘악화’가 트리거라 새로운 노출이 생깁니다.", "blocks": [{"type": "item", "tag": "역선택", "tone": "rose", "title": "치매 가족력·초기 인지저하가 있는 사람이 더 가입", "text": "무진단·간편심사 채널이 넓어지면 커집니다. **대응**: 고지·인수기준 정교화."}, {"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "등급변경·갱신 신청을 적극화할 유인", "text": "과장 진술, 평가 직전 컨디션 관리 등. **대응**: 약관의 ‘객관적 사실 근거’ 정의 강화."}, {"type": "item", "tag": "공급자 유인", "tone": "rose", "title": "요양기관·브로커의 등급 상향 컨설팅", "text": "**대응**: 특정 기관 집중·상향 패턴 모니터링, 이상치 심사 룰."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 기간·제도·재보험", "blocks": [{"type": "item", "tag": "Timing", "tone": "amber", "title": "4년 보장기간 끝 직전에 신청이 몰릴 수 있어요", "text": "→ 보장기간·판정일 기준을 명확히 하고, 경과기간별 청구 분포를 감시."}, {"type": "item", "tag": "데이터·추세", "tone": "amber", "title": "판정 기준이 바뀌면 이전확률도 흔들려요", "text": "점수 산정 정책 변경, 수급자 급증에 따른 판정 엄격화 등. → 정책 변동 시 요율 재산정 트리거 설정."}, {"type": "item", "tag": "재보험", "tone": "amber", "title": "새 이전확률은 경험데이터가 부족해요", "text": "→ 초기에는 비례재보험(QS·Surplus) + 요율 재산정·이익정산 조항. 개발원 확인 요율을 협상 앵커로."}, {"type": "note", "tone": "slate", "text": "참고: 장기요양 수급자는 2023년 110만 명에서 2027년 145만 명으로 늘 전망입니다(제3차 장기요양기본계획안)."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "컨셉 모방", "value": "쉬움", "sub": "약관 수준에서 명확", "tone": "rose"}, {"label": "데이터 장벽", "value": "있음", "sub": "등급 이전확률 산출", "tone": "teal"}]}, {"type": "text", "text": "‘악화 시 지급’은 6개월 독점이 끝나면 따라 하기 쉽습니다. 대형사는 자사 경험·코호트 접근으로 빨리 추격하고, 중소형사는 데이터 확보가 관건입니다."}, {"type": "list", "title": "예상되는 우회 진입", "bullets": true, "items": ["악화 시 일시금 대신 **연금** 지급", "인지지원등급→5등급 등 **더 경증 구간** 포함", "뇌졸중·심근경색 후 악화와 **결합**", "진입 진단비 + 악화 보장 **통합**"]}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약이 진짜 파는 것은 ‘비용효율적 안심’", "lead": "개선 방향을 찾기 위해 상품의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "요양 진입 뒤 ‘악화 구간’ 공백을 단일 특약·정액으로", "text": "기존 진단비가 비워 둔 구간을 한 특약으로 메웁니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "“더 나빠지면?” + 누적 특약의 비싼 보험료", "text": "첫 판정(특히 5등급·치매) 뒤의 불확실성을 대비하려면 여러 특약을 모두 비싸게 들어야 했습니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "모든 악화를 같은 금액으로 + 미악화 시 적립액", "text": "어느 등급으로 나빠져도 1,000만원, 나빠지지 않으면 적립액을 돌려받습니다."}, {"type": "note", "text": "제안은 이 가치를 **확장 · 집중 · 전환 · 재구성** 네 갈래로 넓힙니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "sm"], "rows": [[{"chip": "확장", "tone": "blue"}, "**전구간 악화 보장**\n인지지원등급·등급외 → 5등급 이상 진입도 포함", "300만+1,000만원"], [{"chip": "확장", "tone": "blue"}, "**2대질병 악화 결합**\n뇌졸중·심근경색 후 기능 악화(mRS 등)", "질병별 1,000만원"], [{"chip": "집중", "tone": "teal"}, "**중증 도달 가산**\n1~2등급(시설급여 구간) 도달 시 가산", "1,500만원"], [{"chip": "집중", "tone": "teal"}, "**치매 코호트 트랙**\n5등급 진입자 전용 + 인지기능 정기평가", "+추가 옵션"], [{"chip": "전환", "tone": "violet"}, "**등급악화 연금형**\n일시금 대신 월·연 연금 선택권", "예 연 200만원×N년"], [{"chip": "전환", "tone": "violet"}, "**적립액 + 인지케어**\n연 1회 인지검진·홈케어 바우처", "현물 서비스"], [{"chip": "재구성", "tone": "slate"}, "**가족 돌봄비 방어**\n‘악화 시 즉시 목돈’ 메시지", "구조 동일"], [{"chip": "재구성", "tone": "slate"}, "**효(孝) 보장**\n자녀가 부모를 피보험자로 가입", "가족 할인"]]}]}, {"section": "④ 상품개선 제안", "title": "눈여겨볼 제안 세 가지", "blocks": [{"type": "item", "tag": "확장", "title": "전구간 악화 보장", "text": "요양 진입 이전·최경증 단계까지 시간축을 앞당겨, 진입 단계 300만원 + 상향 단계 1,000만원(누적 한도)을 줍니다. 대상은 치매 가족력이 있는 50~60대. 경증 역선택은 인수기준·대기기간으로 통제합니다."}, {"type": "item", "tag": "집중", "tone": "teal", "title": "중증(1~2등급) 도달 가산", "text": "4·3등급 도달은 1,000만원, 1~2등급 도달은 1,500만원. 비용이 큰 시설급여 구간에 보장을 모으고, 가산분은 별도 재보험으로 넘깁니다."}, {"type": "item", "tag": "전환", "tone": "violet", "title": "등급악화 연금형 전환", "text": "1회성 일시금을 기간형·종신 연금으로 바꿀 수 있게 합니다. 일본 개호연금형을 빌린 것으로, 장기 지급의 장수위험은 잔존확률을 따로 추정하고 재보험합니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "배타권 6개월 안", "title": "채널 선점 · 자사 경험데이터 적재 체계", "text": "준비: 등급변경 청구 데이터 표준화, 갱신·상향 추적 지표"}, {"step": "2단계", "time": "만료 직전", "title": "연금형·치매 트랙 등 후속 라인업(플러스Ⅱ)", "text": "준비: 등급별 이전확률 재추정, 연금현가 가정 확정"}, {"step": "3단계", "time": "6~12개월", "title": "2대질병 악화 결합 · 전구간 확장", "text": "준비: 뇌졸중 임상 대리지표(mRS) 확보"}, {"step": "4단계", "time": "상시", "title": "경험 기반 요율 재산정 · 재보험 조건 개선", "text": "준비: A/E 모니터링, 사망 경쟁위험 반영 정교화"}]}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "최초 2~5등급 판정 뒤 4년 안의 악화만", "text": "보장기간은 최초 판정일을 포함해 4년, 지급은 1회"}, {"title": "악화 없이 사망하면 받는 것이 없어요", "text": "적립액도 지급되지 않고 특약이 소멸"}, {"title": "‘같은 확률, 싼 보험료’의 비교 조건", "text": "5등급 진입자·40세 남·20년납 등 조건 한정"}]}, {"type": "note", "text": "배타적사용권: 6개월 (2026.3 부여 공시 · 심의 2026.2.27 → 2026.8.27 만료)"}, {"type": "fine", "text": "분석 한계: DB생명 개발과정 요약서와 공개 통계에 기반한 역추정이며, 이전확률 절대수준·민감도는 공개되지 않았습니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#1f8a7a", "dark": "#12352f", "light": "#8ed8cb", "soft": "#e3f1ef", "ink": "#1a6358", "name": "teal", "motif": "hospital", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"currentColor\" opacity=\".35\" x=\"8\" y=\"20\" width=\"48\" height=\"36\" rx=\"4\"/><rect fill=\"currentColor\" x=\"20\" y=\"8\" width=\"24\" height=\"48\" rx=\"4\"/><path fill=\"#fff\" opacity=\".9\" d=\"M29 16h6v6h6v6h-6v6h-6v-6h-6v-6h6z\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>
