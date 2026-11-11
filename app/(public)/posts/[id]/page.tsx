@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { CardNews } from "@/components/feature/CardNews";
 import { CommentSection } from "@/components/feature/CommentSection";
 import { PdfViewer } from "@/components/feature/PdfViewer";
 import { SummaryPanel } from "@/components/feature/SummaryPanel";
@@ -9,6 +10,7 @@ import {
   stripViewerMarker,
   viewerSlugFromContent,
 } from "@/lib/global";
+import { getCardNews } from "@/lib/cardnews";
 import { getPost, listComments, publicUrl } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
@@ -22,6 +24,7 @@ export default async function PostDetailPage({
   if (!post || !post.is_published) notFound();
 
   const comments = await listComments(id);
+  const cardNews = getCardNews(id);
   const viewerSlug = viewerSlugFromContent(post.content);
   const viewer = viewerSlug ? getGlobalViewer(viewerSlug) : undefined;
   const bodyText = stripViewerMarker(post.content);
@@ -51,7 +54,12 @@ export default async function PostDetailPage({
       </div>
 
       <div className="mt-8">
-        <SummaryPanel summary={post.summary} />
+        {/* 카드뉴스가 등록된 게시물은 AI 요약 대신 카드뉴스를 먼저 보여 준다 */}
+        {cardNews ? (
+          <CardNews set={cardNews} />
+        ) : (
+          <SummaryPanel summary={post.summary} />
+        )}
       </div>
 
       {bodyText ? (
