@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "교보생명 심폐소생술·제세동 급여보장특약", "keywords": ["응급", "심폐소생술", "제세동"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_교보생명_심폐소생술급여보장특약외1종.pdf (작성 2026.06) · 배타권 심의일은 output/exclusive_dates.json(KLIA #214)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "심장이 멈춘 순간의\n==응급처치==를\n보장하는 특약", "text": "교보생명 **(무)심폐소생술급여보장특약**과 **(무)제세동술및전기적심조율전환급여보장특약**은 병원에서 심폐소생술·전기충격 처치를 받으면 가입금액을 정액으로 주는 업계 최초 담보입니다.", "tags": ["모든 원인 · 면책·횟수 제한 없음", "급여 수가코드 연동 · 갱신형"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 특약이 나왔을까?", "lead": "기존 보험은 진단비·수술비처럼 '병이 확인된 뒤'를 보장합니다. 그런데 그보다 앞선 순간, 심장이 멈췄을 때의 응급처치는 비어 있었습니다.", "blocks": [{"type": "stats", "items": [{"label": "2024 급성심장정지", "value": "33,034건", "sub": "10만명당 64.7명"}, {"label": "환자 생존율", "value": "9.2%", "sub": "역대 최고치", "tone": "rose"}, {"label": "70세 이상 비중", "value": "52.9%", "sub": "고연령 집중", "tone": "amber"}]}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "\"할 수 있는 데까지 해 달라\"는 가족의 절박함", "text": "위급한 순간의 경제적·심리적 부담은 큰데, 기존 보험에는 응급처치 자체를 보장하는 담보가 없었습니다."}, {"type": "note", "text": "그래서 이 특약은 보장의 출발점을 **진단·수술 이전의 응급처치(救命)**로 옮겼습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "두 개의 특약, 한 가지 원리", "lead": "병원에서 해당 처치의 건강보험(급여) 수가코드가 발생하면, 1회당 가입금액의 100%를 지급합니다.", "blocks": [{"type": "table", "head": ["", "심폐소생술 특약", "제세동·심조율전환 특약"], "cols": ["key", "", ""], "rows": [["지급사유", "급여 심폐소생술 시행", "급여 제세동·전기적심조율전환 시행"], ["지급금액", "1회당 가입금액 100%", "1회당 가입금액 100%"], ["대상 수가코드", "M1583~M1587 · M5873~M5877\n총 10개 (시간구간·병원급 구분)", "M5880\n(1일당)"]]}, {"type": "note", "tone": "slate", "text": "공통: **모든 원인(질병·재해)**, 면책·감액·횟수 제한 없음, **갱신형**. 진단이 아니라 '처치 행위'가 일어나면 지급합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "심폐소생술·제세동, 무엇이 다를까?", "blocks": [{"type": "item", "tag": "CPR", "title": "심폐소생술", "text": "심장이 멈췄을 때 가슴압박과 인공호흡으로 혈액순환·호흡을 인공적으로 유지하는 응급처치."}, {"type": "item", "tag": "제세동", "tone": "violet", "title": "제세동술", "text": "심실세동 같은 치명적 부정맥에 전기충격을 줘 무질서한 전기활동을 끊고 정상 리듬을 되살립니다."}, {"type": "item", "tag": "심조율전환", "tone": "teal", "title": "전기적심조율전환", "text": "심장 박동 주기에 맞춘(동기화한) 전기충격으로 빠른 부정맥을 정상 리듬으로 돌립니다."}, {"type": "note", "tone": "amber", "text": "'급여'라야 지급됩니다 — **의료기관에서 의사 관리 하에** 시행된 처치만 해당하고, 간호사·조산사 단독 시행은 급여 대상이 아닙니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "가장 중요한 단어는 '1회'", "lead": "한 번의 심정지 사건이라도 시간구간·병원급·재시작·병원 이동에 따라 수가코드가 여러 개 생길 수 있습니다.", "blocks": [{"type": "compare", "boxes": [{"chip": "코드 1개", "title": "가입금액 × 1", "text": "한 병원에서 한 번의 처치로 끝난 경우"}, {"chip": "코드 2개 이상", "tone": "rose", "hl": true, "title": "가입금액 × 2 이상", "text": "같은 날 처치가 다시 시작되거나 두 병원에서 시행된 경우 (예시)"}]}, {"type": "text", "text": "특약 설명상 한 병원 안에서 일련의 과정이 새로 시작되거나, 2개 이상 병원에서 시행되면 **1일당 2개 이상 코드**가 생길 수 있습니다."}, {"type": "note", "text": "그래서 '1회'를 어떻게 정의하느냐가 **회사의 손해율을 직접 좌우**합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자로 보는 급성심장정지", "lead": "질병관리청·소방청 2024년 급성심장정지조사 기준입니다.", "blocks": [{"type": "vbars", "caption": "일반인 CPR 시행 여부별 생존율 (병원 전 단계)", "bars": [{"label": "미시행", "value": 6.1, "display": "6.1%"}, {"label": "시행", "value": 14.4, "display": "14.4%"}]}, {"type": "table", "cols": ["key", "val"], "rows": [["원인", "질병 77% · 질병 외 23%"], ["성별", "남자 64.3%"], ["뇌기능 회복률", "6.3%"], ["일반인 CPR 시행률", "30.3%"]]}, {"type": "note", "tone": "amber", "text": "생존율 **2.4배**는 병원 도착 전 '일반인 CPR' 기준입니다. 이 특약이 보장하는 '병원 안 급여 CPR'과는 대상이 다릅니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "알고 보면 다른, 세 가지 사실", "lead": "보고서가 짚은, 겉으로 보이는 인상과 실제 작동 사이의 간극입니다.", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "'생존율을 높인다' → 생존 기여가 아니라 부담 경감", "text": "2.4배 개선은 일반인 CPR 통계입니다. 이 특약의 가치는 '위급한 순간의 비용·심리 부담을 덜어 주는 것'으로 설명하는 것이 정확합니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "응급처치 보장 → 사실상 임종 직전 급부", "text": "처치받은 환자의 약 91%가 사망합니다(생존율 9.2%). 지급 대부분이 사망 직전에 일어나 사망률과 강하게 연결됩니다."}, {"type": "item", "tag": "3", "tone": "rose", "title": "소액 담보 → 나이 들수록 보험료 급등 가능", "text": "갱신형이라 처치 시행률이 크게 늘어나는 고연령에서 갱신보험료가 크게 오를 수 있습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타권은 무엇에, 얼마나 주어졌나?", "blocks": [{"type": "compare", "boxes": [{"label": "인정된 점", "tone": "teal", "title": "트리거의 선행성", "text": "응급처치(CPR·제세동)를 단독 정액 보장한 사례가 국내·일본 모두에서 확인되지 않음"}, {"label": "약한 점", "tone": "rose", "title": "형식의 신규성", "text": "'처치마다 정액'은 기존 수술비 정액담보와 같은 계열이라 따라 하기 쉬움"}]}, {"type": "table", "cols": ["key", ""], "rows": [["협회 심의", "2026년 2월 27일 · 생명보험협회"], ["보호기간", "보고서 미기재"]]}, {"type": "note", "tone": "slate", "text": "보호기간이 정해져 있지 않아도 핵심은 같습니다. 공개된 수가코드에 정액만 붙이면 되므로, **보호기간 안에 선점하는 것**이 실질적인 방어입니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 비슷한 담보가 있을까?", "lead": "가장 가까운 것은 '수술비 정액담보'입니다. 정해진 처치를 받을 때마다 정액을 주는 구조가 같습니다.", "blocks": [{"type": "table", "head": ["유형", "지급 구조", "이 특약과의 차이"], "cols": ["key", "", ""], "rows": [["수술비 정액담보\n종수술비 · N대 수술비", "수술·처치마다 정액, 반복 지급", "대상이 수술 중심\nCPR·제세동 미포함"], ["심장질환 담보\n진단비·수술비·응급실 내원비", "진단·수술·내원 정액", "심정지 '처치 행위'가\n트리거 아님"], ["상해·재해 담보", "사고·재해 정액", "질병 원인 응급처치 미포함"]]}, {"type": "note", "tone": "slate", "text": "형식(수가코드 연동 정액)은 흔하지만, **응급처치를 단독 보장 대상으로 삼은 것**은 처음입니다. 반대로 형식이 흔하다는 건 따라 하기 쉽다는 뜻이기도 합니다."}]}, {"section": "② 국내외 유사상품", "title": "일본에서는 어떻게 할까?", "blocks": [{"type": "item", "tag": "일본", "title": "수술급부금(手術給付金)은 '수술료' 행위만 대상", "text": "공적 진료보수점수표의 '수술료'로 산정되는 행위에 지급합니다. 심폐소생술·제세동은 대개 '처치료(구급소생)'로 분류돼 지급 대상에서 빠집니다."}, {"type": "item", "tag": "일본", "tone": "violet", "title": "'연속 치료는 1회만', '1일당 산정' 규칙", "text": "한국과 비슷한 수가 산정 규칙을 보험금 지급 규정에 반영합니다. 이 특약의 '1회' 정의 설계에 참고할 만한 선례입니다."}, {"type": "note", "text": "일본에서도 CPR·제세동을 정액 보장하는 상품 패턴은 확인되지 않습니다. **처치를 '수술'이 아닌 별도 행위로 정의해 지급**한다는 점이 이 특약의 핵심 신규성입니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 계약자와 갱신", "lead": "각 리스크와 보고서가 제시한 대응을 함께 정리했습니다.", "blocks": [{"type": "item", "tag": "모럴해저드 · 낮음", "tone": "teal", "title": "스스로 일으킬 수 없는 사고 — 이 상품의 강점", "text": "CPR·제세동은 본인이 유발할 수 없는 비자발적 응급처치이고 보장금액도 작아, 도덕적 해이 유인이 작습니다."}, {"type": "item", "tag": "역선택 · 중", "tone": "amber", "title": "심장질환 기왕력·고위험군의 자기선택", "text": "갱신형이라 고위험·고연령 계약이 남기 쉽습니다. **대응**: 가입심사, 갱신 시 위험률 재산정."}, {"type": "item", "tag": "갱신 · 중~높음", "tone": "rose", "title": "고연령에서 갱신보험료 급등", "text": "처치 시행률은 사망률을 따라 고연령에서 급증합니다. **대응**: 연령별 보험료 경로를 미리 시뮬레이션하고, 소비자 안내·상한·평준화 옵션 검토."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 의료 현장과 제도", "blocks": [{"type": "item", "tag": "무의미 CPR · 높음", "tone": "rose", "title": "가족 요구·소송 대비로 하는 '방어 CPR'", "text": "임종 환자에게도 CPR이 시행되는 경우가 있습니다(말기암 사망자의 5.4%가 임종 전 한 달 내 CPR, 2012년). **대응**: '치료 목적·의학적 필요' 요건 명확화, 심사 강화."}, {"type": "item", "tag": "코드 분할 · 높음", "tone": "rose", "title": "한 사건에 여러 번 지급", "text": "**대응**: 일련의 과정은 1회로 정의, 1일·1회 지급 상한, 복수 병원 합산 규칙."}, {"type": "item", "tag": "제도", "tone": "amber", "title": "연명의료결정법과의 관계", "text": "CPR은 연명의료 행위지만 응급환자는 법 적용에서 빠집니다. 또 연명의료 중단으로 사망한 사람의 보험금을 불리하게 대우할 수 없습니다(제37조)."}, {"type": "note", "tone": "slate", "text": "재보험은 비례재보험에 **1일·1회 지급 상한, 지급배수 상한**을 함께 거는 방식이 권고됩니다."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "카피 난이도", "value": "매우 낮음", "sub": "수가코드 공개 · 구조 단순", "tone": "rose"}, {"label": "외부 진입장벽", "value": "없음", "sub": "검사기술·독점계약 불필요"}]}, {"type": "list", "title": "예상되는 대체 담보", "bullets": true, "items": ["**동일 코드 정액** — 같은 M코드에 정액을 붙여 보장금액·보험료로 경쟁 (가장 빠름)", "**범위 변형** — 기관삽관·전문소생술 등 인접 응급 코드까지 넓힌 '응급처치비'", "**패키지 편입** — 기존 심장질환·수술비 상품에 끼워 넣기"]}, {"type": "note", "tone": "slate", "text": "차단 전략: **여정형 패키지 선점**, 무의미 CPR 차단 같은 심사 노하우 자산화, 생존연동 설계, AED·CPR 교육 연계 브랜드."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약이 진짜 주는 것은 '위급한 순간의 버팀목'", "lead": "개선 방향을 찾기 위해 상품의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "급여 응급처치를 모든 원인·제한 없이 정액 보장", "text": "심정지 등 생애 가장 위급한 순간의 CPR·제세동을 보장합니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "가족의 절박함과 기존 보험의 공백", "text": "위급한 순간의 경제적·심리적 부담이 크지만 응급처치 보장은 없었습니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "위기를 넘길 시간·기회 + 가족 부담 경감", "text": "응급치료 접근을 돕고 가족의 짐을 덜어 줍니다."}, {"type": "note", "tone": "amber", "text": "이 가치를 지키면서 **따라 하기 쉬운 형식**과 **청구 부풀림·갱신 리스크**를 보완하는 것이 제안의 방향입니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "center"], "rows": [[{"chip": "확장", "tone": "blue"}, "**치료여정 패키지**\n응급처치 → 중환자실 → 재활·합병증 단계별 정액", "핵심"], [{"chip": "확장", "tone": "blue"}, "**현장·이송 단계 확장**\n병원 전 AED 사용·전문소생술 연계 시 정액", ""], [{"chip": "집중", "tone": "teal"}, "**중증 처치 가중**\n장시간 CPR·ECPR·목표체온유지치료 2~5배", "핵심"], [{"chip": "집중", "tone": "teal"}, "**무의미 처치 차단형**\n연명 목적 처치 제외, 1회 정의·지급 상한", ""], [{"chip": "전환", "tone": "violet"}, "**생존연동 단계 지급**\n시행 → 자발순환회복 → 생존 가산 / 유족 정액", "핵심"], [{"chip": "전환", "tone": "violet"}, "**가족 케어 서비스**\n심리상담·CPR 교육 바우처 결합", ""], [{"chip": "재구성", "tone": "slate"}, "**'생명의 골든타임' 포지셔닝**\n처치비가 아닌 가족 보호로 메시지 전환", "핵심"], [{"chip": "재구성", "tone": "slate"}, "**사회공헌 연계 ESG**\nAED 보급·일반인 CPR 교육 캠페인", ""]]}, {"type": "fine", "text": "'핵심'은 보고서 제안 요약에 오른 갈래별 대표 제안입니다(우선순위 점수는 보고서에 없음)."}]}, {"section": "④ 상품개선 제안", "title": "핵심 제안 네 가지, 자세히", "blocks": [{"type": "item", "tag": "확장", "title": "치료여정 패키지", "text": "처치 20만 + 중환자실 일당 + 재활·합병증 정액을 단계별로 묶습니다. 단순 코드 카피로는 재현할 수 없어 진보성과 모방 난이도를 함께 높입니다."}, {"type": "item", "tag": "집중", "tone": "teal", "title": "중증 처치 가중", "text": "기본 20만에 ECPR(체외순환소생술)·저체온치료 등 중증군은 2~5배 가중. 부담이 큰 중증에 집중해 무의미 처치 비중을 희석합니다."}, {"type": "item", "tag": "전환", "tone": "violet", "title": "생존연동 단계 지급", "text": "처치 시 기본 정액, 자발순환회복(ROSC)·생존 시 추가, 사망 시 유족 위로 정액. 청구 부풀림을 완화하되 생존 판정 기준과 사망담보 규제 검토가 필요합니다."}, {"type": "item", "tag": "재구성", "tone": "slate", "title": "'생명의 골든타임'", "text": "같은 급부를 '가족을 지키는 골든타임 보장'으로 알립니다. 생존 기여를 과장하지 않도록 주의합니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "즉시", "title": "'1회' 카운팅·지급배수 심사기준 확정", "text": "1일 2코드 이상·복수병원·재시작 시 지급 단위 명확화, HIRA 코드 동시발생 분포로 지급코드 수 추정"}, {"step": "2단계", "time": "단기", "title": "갱신 리스크·고연령 위험률 점검", "text": "연령별 시행률로 갱신보험료 경로 시뮬레이션, 소비자 안내·상한 검토"}, {"step": "3단계", "time": "중기", "title": "생존연동·중증 가중 설계", "text": "급성심장정지조사·HIRA로 자발순환회복·중증 처치 데이터 확보"}, {"step": "4단계", "time": "중기", "title": "여정형 패키지·포지셔닝 재구성", "text": "응급→중환자실→재활 담보 결합, 메시지 전환, 사회공헌 연계"}]}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "'1회'의 기준", "text": "하루에 코드가 여러 개면 몇 번 지급되는지 · 병원을 옮기면 어떻게 되는지"}, {"title": "갱신보험료 경로", "text": "갱신형이라 나이가 들수록 보험료가 얼마나 오르는지"}, {"title": "병원 안 급여 처치만 해당", "text": "의료기관에서 의사 관리 하에 시행된 CPR·제세동"}, {"title": "기존 보장과 역할 비교", "text": "수술비·심장질환 담보는 처치 행위를 보장하지 않음"}]}, {"type": "note", "text": "배타적사용권: 2026년 2월 27일 생명보험협회 심의 · 보호기간은 보고서 미기재"}, {"type": "fine", "text": "분석 한계: 개발과정요약서·공식통계·법령 등 공개 자료 기반이며, 위험률은 데이터 확보 전 방법론 추정 단계입니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#1f8a7a", "dark": "#12352f", "light": "#8ed8cb", "soft": "#e3f1ef", "ink": "#1a6358", "name": "teal", "motif": "hospital", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"currentColor\" opacity=\".35\" x=\"8\" y=\"20\" width=\"48\" height=\"36\" rx=\"4\"/><rect fill=\"currentColor\" x=\"20\" y=\"8\" width=\"24\" height=\"48\" rx=\"4\"/><path fill=\"#fff\" opacity=\".9\" d=\"M29 16h6v6h6v6h-6v6h-6v-6h-6v-6h6z\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>
