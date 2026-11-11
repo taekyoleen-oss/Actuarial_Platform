@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "삼성화재 간·폐·신장 장기보조치료비·특정약물치료비", "keywords": ["투석", "이식수술", "약물치료"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_삼성화재_간폐신장_장기보조치료비_특정약물치료비.pdf (작성 기준일 2026.11.11)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "투석·산소치료·면역억제제를\n==매달·매년== 보장하는\n간·폐·신장 특약", "text": "삼성화재는 간·폐·신장 질환의 **장기보조치료 6종(월 1회)**과 **특정 약물치료(연 1회)**로 2026년 10월 22일 배타적사용권을 신청했습니다. 작성 기준일 현재 **심의 대기** 중입니다.", "tags": ["장기보조치료비 Ⅰ·Ⅱ", "특정약물치료비"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 담보가 나왔을까?", "lead": "간·폐·신장 질환은 진단 후 수년에서 평생 관리가 이어집니다. 그런데 기존 보장은 대부분 진단 시점에 한 번 지급하고 끝납니다.", "blocks": [{"type": "vbars", "caption": "1인당 연 진료비 (회사 자료 인용)", "bars": [{"label": "말기신장질환", "value": 2800, "display": "약 2,800만원"}, {"label": "암", "value": 510, "display": "약 510만원"}, {"label": "치매", "value": 380, "display": "약 380만원"}]}, {"type": "note", "text": "진단비는 한 번에 끝나지만 **투석·산소·복수 천자·면역억제제는 끝없이 이어집니다.** 이 담보는 그 관리 비용을 치료 주기대로 반복 보장하려는 설계입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "다섯 가지 급부를 한눈에", "lead": "모두 특정 간·폐·신장질환 진단확정 후, 건강보험 급여 치료를 받을 때 지급합니다(표준형).", "blocks": [{"type": "table", "head": ["급부", "대상 치료", "지급"], "cols": ["key", "sub", "val"], "rows": [["장기보조치료비Ⅰ", "투석(혈액·복막)·인공호흡·혈장교환술", "월 1회 50만원"], ["장기보조치료비Ⅱ", "천자(복수·흉수)·특정배액술·산소요법", "월 1회 30만원"], ["특정약물치료비\n3대 약물", "DAA C형간염·항섬유화제·사구체신염 표적면역치료", "연 1회 100만원"], ["특정약물치료비\n경구 면역억제", "이식 후 「간·폐·신장 이식상태」 진단 + 경구 면역억제제", "연 1회 100만원"], ["특정약물치료비\n주사 면역억제", "같은 조건의 주사 면역억제제", "연 1회 100만원"]]}, {"type": "note", "tone": "slate", "text": "한 줄 정리: 보조치료는 **매달**, 약물은 **매년** — 치료가 이어지는 동안 반복해서 받는 구조"}]}, {"section": "① 배타적사용권 내용·구조", "title": "장기보조치료 6종은 어떤 치료일까?", "blocks": [{"type": "compare", "boxes": [{"chip": "Ⅰ · 월 50만원", "hl": true, "title": "투석 · 인공호흡 · 혈장교환술", "text": "망가진 신장 대신 피를 거르거나(투석), 숨을 대신 쉬게 하거나, 혈장을 바꿔 독성 물질을 없앰"}, {"chip": "Ⅱ · 월 30만원", "tone": "teal", "title": "천자 · 배액술 · 산소요법", "text": "배·가슴에 찬 물을 바늘이나 관으로 빼내거나, 부족한 산소를 공급"}]}, {"type": "item", "tag": "참고", "tone": "slate", "title": "혈액투석은 주 3회, 한 번에 약 4시간", "text": "병원에서 받습니다. 복막투석은 집에서 배 속 복막을 이용해 매일 합니다. 간경변 환자의 약 절반은 10년 안에 복수가 생기고, 복수는 반복됩니다."}, {"type": "note", "text": "어느 치료든 **그 달에 한 번이라도 받으면** 월 1회 지급됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "특정약물치료비는 무엇을 보장할까?", "blocks": [{"type": "item", "tag": "간", "title": "DAA C형간염 약물치료", "text": "8~12주 복용, 완치율 95% 이상의 항바이러스제"}, {"type": "item", "tag": "폐", "tone": "teal", "title": "항섬유화제 약물치료", "text": "폐가 굳는 섬유화의 진행을 늦추는 약. 완치가 아니라 진행 억제라 계속 복용"}, {"type": "item", "tag": "신장", "tone": "violet", "title": "사구체신염 표적면역치료", "text": "사구체를 공격하는 B세포를 제거·억제하는 생물학적 제제"}, {"type": "item", "tag": "이식 후", "tone": "amber", "title": "면역억제 약물치료(경구·주사)", "text": "이식한 장기를 몸이 거부하지 않도록 평생 복용. 이식 직후 유도요법에는 주사제 사용"}]}, {"section": "① 배타적사용권 내용·구조", "title": "자주 하는 치료일수록 '확정 지급'에 가까워요", "lead": "월 평균 시행 횟수(회사 실손 가입자 통계, 2021.1~2026.5)", "blocks": [{"type": "progress", "rows": [{"label": "혈액투석", "value": 100, "right": "약 11회"}, {"label": "산소요법", "value": 91, "right": "약 10회"}, {"label": "인공호흡", "value": 82, "right": "약 9회"}, {"label": "혈장교환술", "value": 55, "right": "약 6회"}, {"label": "복막투석", "value": 18, "right": "약 2회"}, {"label": "복수 천자", "value": 18, "right": "약 2회"}]}, {"type": "note", "tone": "amber", "text": "월 1회 한도이므로 한 달에 11번 투석하는 환자는 **'그 달에 치료가 있었는가'가 거의 확실**합니다. 급부가 확률형에서 확정형으로 넘어갑니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "숫자로 보면 사실상 '연금형' 급부", "blocks": [{"type": "stats", "items": [{"label": "유지 혈액투석", "value": "연 600만원", "sub": "매달 50만원 확정"}, {"label": "이식 후 면역억제제", "value": "매년 100만원", "sub": "평생 복용", "tone": "amber"}]}, {"type": "vbars", "caption": "투석을 시작한 해의 의료비는 직전 해의 2배 이상", "bars": [{"label": "직전 해", "value": 1318, "display": "1,318만원"}, {"label": "투석 시작한 해", "value": 2888, "display": "2,888만원"}]}, {"type": "note", "tone": "slate", "text": "다만 투석은 **산정특례로 본인부담이 낮아** 총액의 대부분은 건강보험이 냅니다. 그래서 위험률은 발생률보다 **유병 상태가 얼마나 오래 이어지는지**가 좌우합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "약관에서 꼭 확인할 경계", "blocks": [{"type": "item", "tag": "경계 1", "tone": "rose", "title": "산소요법에 '가정 산소치료'가 포함될까?", "text": "만성 호흡부전 환자는 집에서 산소발생기를 장기간 씁니다. 포함되면 매월 확정 지급이 될 수 있습니다."}, {"type": "item", "tag": "경계 2", "tone": "rose", "title": "흉수 천자에서 '악성 흉수(암)'는 어떻게 거를까?", "text": "암으로 찬 흉수까지 들어오면 지급 빈도가 크게 달라집니다."}, {"type": "item", "tag": "범위 밖", "tone": "slate", "title": "수술·입원은 이번 신청에서 제외", "text": "이식·절제·특정·다빈도 수술, 중환자실·ECMO·CRRT는 기존 통합치료비(2026년 7월 「온(ON)통보장」 계열)입니다."}, {"type": "note", "text": "약관의 「특정 간·폐·신장질환」 목록과 **치료 정의 확인이 필수**입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타적사용권은 아직 심의 대기", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["금융감독원 신고수리", "2026. 9. 22."], ["손해보험협회 신청", "2026. 10. 22."], ["신청 분야", "새로운 위험담보 · 장기보조치료 6종(Ⅰ·Ⅱ), 3대 주요약물·이식 후 면역억제 약물치료"], ["심의 결과", "심의 대기 (작성 기준일 2026.11.11 현재)"]]}, {"type": "item", "tag": "쟁점", "tone": "amber", "title": "DAA C형간염 항목이 타사 배타권과 겹쳐요", "text": "현대해상이 2026년 8월 배타권(~2027.2.20)을 받은 「특정질병항바이러스제치료비」의 간염 급부와 위험 구조가 같습니다. 부분 미부여나 범위 조정 가능성이 있습니다."}, {"type": "note", "tone": "slate", "text": "부여 여부와 기간은 아직 정해지지 않았습니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 담보가 있을까?", "blocks": [{"type": "table", "head": ["담보", "본 담보와의 차이"], "cols": ["key", ""], "rows": [["간·폐·신장·당뇨 단계별 진단비\n삼성화재 태평삼대 플러스 등", "진단 시점 1회. 이후 관리 비용은 공백"], ["말기신부전·투석 진단비\n손보 다수", "개시 1회 지급. 월 반복 지급 아님"], ["온(ON)통보장 간·폐·신장 치료비\n삼성화재 2026.7", "이 신청의 앞 단계. 보조치료·약물은 미포함"], ["특정질병항바이러스제치료비\n현대해상 2026.8 배타권", "DAA C형간염 항목과 위험 구조 중첩"], ["항암약물·표적항암 치료비\n연 1회형", "약물 트리거 선례. 간·폐·신장 적용은 처음"]]}, {"type": "note", "text": "장기보조치료를 **하나의 치료군으로 묶어 월 단위로 보장**한 담보는 검색 범위에서 확인되지 않았습니다."}]}, {"section": "② 국내외 유사상품", "title": "해외(일본)에서는 어떻게 보장할까?", "blocks": [{"type": "item", "tag": "제도", "title": "인공투석은 '특정질병요양'", "text": "자기부담 상한을 월 1만엔(고소득자 2만엔) 수준으로 낮춥니다. 지자체 장애인 의료비 지원까지 더하면 부담은 매우 작습니다."}, {"type": "item", "tag": "민영보험", "tone": "violet", "title": "8대 질병 입원·특정질병 일시금·투석 일시금", "text": "확인한 범위에서 투석·산소요법을 월 단위로 반복 지급하는 상품은 찾지 못했습니다."}, {"type": "note", "tone": "teal", "text": "일본의 투석 관련 급부는 의료비가 아니라 **소득 상실·생활비 보전**으로 소구합니다. 한국도 산정특례로 본인부담이 낮아, 월 50만원의 실질 가치는 **통원·돌봄·소득 공백**에 있습니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 가입자와 의료 현장", "blocks": [{"type": "item", "tag": "역선택", "tone": "rose", "title": "검진 이상을 아는 사람이 먼저 가입", "text": "만성신장질환 3~4기·COPD·간경변을 아는 사람이 들어오면 매월 확정 지급이 시작됩니다. **대응**: 사구체여과율·단백뇨·간기능 수치 고지, 가입 후 1~2년 감액·면책."}, {"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "월 1회 청구를 위한 치료 시행", "text": "산소요법·천자처럼 의료진 재량이 있는 치료. **대응**: 급여 인정 기준 충족 확인, 월 1회 한도 유지."}, {"type": "item", "tag": "공급자 유인", "tone": "rose", "title": "혈장교환술 적응증 확대·배액술 반복", "text": "**대응**: 치료별 청구 패턴 모니터링, 이상 기관 집중 심사."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 재보험·규제·데이터", "blocks": [{"type": "item", "tag": "재보험", "tone": "amber", "title": "장기 확정 지급으로 준비금이 길게 쌓여요", "text": "→ 확정 지급 구간 비례재보험, 지급 총액 또는 기간 상한 검토"}, {"type": "item", "tag": "규제", "tone": "amber", "title": "급여 기준 변화 · DAA 중첩", "text": "→ 급여 변경 시 지급 기준 승계 조항, DAA 항목 분리 운영 검토"}, {"type": "item", "tag": "데이터", "tone": "amber", "title": "실손 통계의 선택 편향 · 경험 부재", "text": "실손 가입자는 일반 인구와 유병률·치료 빈도가 다를 수 있습니다. → 출시 초기 갱신형, 치료 정의별 경험 분리 집계 후 재산출"}, {"type": "note", "text": "가장 큰 리스크는 **상태 진입형 확정 지급 구간의 역선택**입니다. 고지 항목에 검진 수치를 넣는 언더라이팅이 손해율을 결정합니다."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "데이터 장벽", "value": "중간", "sub": "치료행위 단위 월간 빈도", "tone": "amber"}, {"label": "제휴 장벽", "value": "없음", "sub": "외부 제휴 불필요"}, {"label": "시스템 장벽", "value": "중간", "sub": "월 단위 반복 청구 연동", "tone": "amber"}]}, {"type": "text", "text": "통합치료비 경쟁 중인 대형 손보사가 **'말기신부전 투석 월지급' 같은 단일 치료 담보**로 빠르게 따라올 수 있습니다. 6종 통합이 아닌 개별 담보는 배타권 범위를 피할 수 있습니다."}, {"type": "note", "tone": "slate", "text": "차단 전략: 수술·입원(기판매)과 보조치료·약물(신청)을 **하나의 치료 여정**으로 묶고, 재택 치료·조기 관리 서비스를 더하는 것"}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 담보가 진짜 주는 것은 '예측 가능한 현금 흐름'", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "진단 이후의 보조치료·약물치료를 치료 주기대로 반복 보장", "text": "수년에서 평생 이어지는 관리 기간을 덮습니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "끝없는 치료, 가족에게 쌓이는 통원·돌봄 부담", "text": "진단비는 한 번에 끝나지만 치료는 계속됩니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "매달·매년 예측 가능한 현금으로 치료 지속을 도움", "text": "장기 관리 기간 내내 지급이 이어집니다."}, {"type": "note", "text": "제안 방향: **투석·이식 여정의 고비용 지점 보완** + **재택 치료와 조기 관리로 비용 곡선 바꾸기**"}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "sm"], "rows": [[{"chip": "확장", "tone": "blue"}, "**① 투석 개시·혈관통로 담보**\n개시 일시금 + 동정맥루 수술", "500만 · 100만원"], [{"chip": "확장", "tone": "blue"}, "**② 생체 장기기증 가족 보장**\n기증자의 수술·회복기 소득", "500만 + 월 100만원×3"], [{"chip": "집중", "tone": "teal"}, "**③ 이식 대기·이식 후 1년 집중**\n대기 생활자금 + 입원 가산", "월 50만 · 회당 100만원"], [{"chip": "집중", "tone": "teal"}, "**④ 희귀 사구체·간질성 폐질환 고가 신약**", "연 500만원"], [{"chip": "전환", "tone": "violet"}, "**⑤ 재택 치료 전환 지원**\n방문 간호·장비 관리 현물", "서비스 30만 + 현금 20만원"], [{"chip": "전환", "tone": "violet"}, "**⑥ 조기 관리 연계형**\n관리 프로그램 참여 시 할인", "보험료 최대 10%"], [{"chip": "재구성", "tone": "slate"}, "**⑦ '침묵의 장기' 제4의 축**\n암·뇌·심 다음 축으로 브랜드화", "패키지 할인"], [{"chip": "재구성", "tone": "slate"}, "**⑧ 투석 가족 생활비**\n통원 동행·교통비 추가", "월 10만원 상당"]]}]}, {"section": "④ 상품개선 제안", "title": "출시 직후 먼저 붙일 두 가지", "lead": "보고서는 확정 지급 구간의 비용을 줄이는 서비스부터 붙이라고 권합니다.", "blocks": [{"type": "item", "tag": "⑤ 전환", "tone": "violet", "title": "재택 치료 전환 지원", "text": "복막투석·가정 혈액투석·가정 산소 이용 시 월 지급액 일부를 방문 간호·장비 점검·원격 모니터링 서비스로 대체(선택형). 주 3회 통원 부담을 줄이고 삶의 질과 의료비를 함께 개선합니다. 서비스 원가 자료는 아직 부족한 탐색 단계입니다."}, {"type": "item", "tag": "⑥ 전환", "tone": "violet", "title": "조기 관리 연계형", "text": "검진상 사구체여과율 저하·지방간·폐기능 저하 단계에서 관리 프로그램(식이·약물 순응·정기 검사)을 유지하면 다음 해 보험료를 최대 10% 할인. 확정 지급 구간 진입 자체를 늦춥니다. 형식적 참여는 검사 수치 제출로 막습니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "심의 대응기", "title": "DAA 중첩 의견 준비 · 지급 경계 정리", "text": "현대해상 배타권과의 중첩 여부 의견, 가정 산소·악성 흉수의 지급 경계를 약관 해석으로 정리"}, {"step": "2단계", "time": "출시 후 6개월", "title": "⑤ 재택 치료 지원 · ⑥ 조기 관리 연계", "text": "확정 지급 구간의 비용을 줄이는 서비스부터"}, {"step": "3단계", "time": "경험 축적 후", "title": "①·②·③·④·⑦·⑧", "text": "투석·이식 경로의 자사 경험이 쌓인 뒤 확장"}]}, {"type": "note", "tone": "slate", "text": "제안의 보장금액은 모두 **보고서의 제안값**이며 확정된 상품 내용이 아닙니다."}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "「특정 간·폐·신장질환」 목록", "text": "내 질환이 대상 질환에 들어가는지"}, {"title": "치료 정의의 경계", "text": "가정 산소치료·악성 흉수 천자가 포함되는지"}, {"title": "급여 치료 조건", "text": "모든 급부는 건강보험 급여 치료일 때 지급"}, {"title": "지급 한도", "text": "보조치료는 월 1회, 약물은 연 1회 — 횟수와 무관하게 정액"}]}, {"type": "note", "text": "배타적사용권: 2026년 10월 22일 손해보험협회 신청 · 작성 기준일(2026.11.11) 현재 심의 대기(부여 미정)"}, {"type": "fine", "text": "분석 한계: 협회 공시 신청서·제안서와 공개 통계·보도 기반 내부 분석이며, 위험률 산출은 개념 수준입니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#1f8a7a", "dark": "#12352f", "light": "#8ed8cb", "soft": "#e3f1ef", "ink": "#1a6358", "name": "teal", "motif": "hospital", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"currentColor\" opacity=\".35\" x=\"8\" y=\"20\" width=\"48\" height=\"36\" rx=\"4\"/><rect fill=\"currentColor\" x=\"20\" y=\"8\" width=\"24\" height=\"48\" rx=\"4\"/><path fill=\"#fff\" opacity=\".9\" d=\"M29 16h6v6h6v6h-6v6h-6v-6h-6v-6h6z\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

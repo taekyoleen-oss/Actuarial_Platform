@@ -31,6 +31,14 @@ const CARDNEWS: Record<string, CardNewsSet> = {
   "1f5b8f7d-28e2-4c72-8398-00e076cdfbc5": { slug: "samsung-targeted-dementia-aria-h" }, // 삼성생명 통합표적치매(ARIA-H)
   "c914fdb7-d948-4812-ab94-4e4db6caf728": { slug: "db-ltc-plus" }, // DB생명 장기요양플러스
   "4123fa0e-1a61-436a-b0d7-a902de8a178d": { slug: "heungkuk-fire-dementia-mri" }, // 흥국화재 표적치매 MRI
+  "c4e904fe-000c-4c5f-9ce4-93b36d70e932": { slug: "hyundai-antiviral-amniocentesis" },
+  "2e7f92b0-0c0d-4e62-ae61-a400a7d58d0c": { slug: "hanwha-safe-location-sharing" },
+  "a879f457-f0f2-4db2-b3ec-91c4873f7df0": { slug: "kyobo-stroke-unit-admission" },
+  "cbce8bf6-72dc-481b-9ab0-c9a6b0def388": { slug: "lina-neuro-disease-diagnosis" },
+  "817cfe5e-3620-4030-ba9b-9a95dbeb93cb": { slug: "shinhan-life-switching-savings" },
+  "bf3df83f-7121-440b-a818-e1318a64f0ce": { slug: "hanwha-assistive-device-support" },
+  "cb0ed5bb-15b3-411e-b289-47367396cb84": { slug: "heungkuk-fire-deferred-limit-treatment" },
+  "29a9e889-43ea-4b0d-b27e-7c116ab7b7dc": { slug: "samsung-fire-organ-support-drug" },
 };
 
 export function getCardNews(postId: string): CardNewsSet | undefined {

@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "한화생명 보조기기지원금특약", "keywords": ["요양", "장애인", "보조기기"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_한화생명_보조기기지원금특약.pdf (작성 기준일 2026.11.11)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "휠체어·보청기를 받은\n해마다 ==현금으로 돕는==\n장애인 특약", "text": "한화생명 **보조기기지원금특약(연1회)**은 2026년 10월 15일 생명보험협회에 배타적사용권을 신청했고, 작성 기준일 현재 **심의 대기** 중입니다.", "tags": ["장애인 등록 + 보조기기 급여 연동", "연 1회 반복 지급"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "공적 지원을 받아도 왜 돈이 남을까?", "lead": "건강보험은 등록 장애인의 보조기기(휠체어·보청기 등) 값을 기준액의 90%까지 지원합니다. 의료급여·차상위는 100%입니다.", "blocks": [{"type": "vbars", "caption": "가군 전동휠체어 본인부담 (기준액 236만원)", "bars": [{"label": "236만원 제품", "value": 23.6, "display": "23.6만원"}, {"label": "300만원 제품", "value": 87.6, "display": "87.6만원"}]}, {"type": "item", "tag": "남는 비용", "tone": "rose", "title": "본인부담 · 고가 제품 차액 · 수리비", "text": "기준액을 넘는 제품을 고르면 초과분을 모두 내야 하고, 내구연한 안의 수리·교체는 원칙적으로 본인 부담입니다."}, {"type": "note", "text": "이 특약은 공적 급여를 받은 해마다 남는 이런 비용을 **현금으로 보전**합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "보험금은 두 단계를 거쳐 나와요", "lead": "위험이 '한 번 일어나는 일'과 '해마다 반복되는 일'로 나뉩니다.", "blocks": [{"type": "steps", "items": [{"step": "1단계", "title": "보험기간 중 장애 발생 → 장애인 등록", "text": "장애 진단 → 주민센터 신청 → 국민연금공단 심사 → 등록 결정"}, {"step": "2단계", "title": "등록 후 해마다 보조기기 급여 이용 → 연 1회 지급", "text": "처방 → 사전승인(일부) → 구입 → 공단 지급까지 마친 해"}]}, {"type": "note", "tone": "teal", "text": "장기요양 등급을 받은 뒤 복지용구를 쓰면 주던 기존 담보를 **장애인 제도로 옮겨 온 형태**입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "용어는 모두 공적 제도에서 가져왔어요", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["장애", "장애인복지법 제2조·시행령 제2조의 신체적·정신적 장애"], ["장애인", "장애인복지법 제32조 절차로 등록된 사람"], ["보조기기", "국민건강보험법 제51조·의료급여법 제13조로 급여가 실제 이루어진 기기"], ["지급", "건강보험형·의료급여형 각 연 1회\n자격상 하나만 해당 → 실질 연 1회"]]}, {"type": "item", "tag": "제외", "tone": "amber", "title": "지자체 교부사업 · 장기요양 복지용구", "text": "같은 보조기기라도 이 두 경로로 받은 경우는 지급사유가 아닙니다."}, {"type": "note", "tone": "slate", "text": "가입금액 예시는 개발과정요약서에 없어, 연 1회 정액으로 **추정**됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "'연 1회'지만 실제 빈도는 사람마다 달라요", "lead": "공적 급여는 같은 유형의 기기를 내구연한 안에 1인당 1회만 인정합니다.", "blocks": [{"type": "vbars", "caption": "품목별 내구연한 (년)", "bars": [{"label": "지팡이", "value": 2, "display": "2년"}, {"label": "욕창예방 방석", "value": 3, "display": "3년"}, {"label": "수동휠체어·보청기", "value": 5, "display": "5년"}, {"label": "전동휠체어", "value": 6, "display": "6년"}]}, {"type": "note", "tone": "amber", "text": "기기 하나만 쓰면 **수년에 한 번**, 여러 기기나 전지·소모품을 쓰면 **거의 매년** 지급사유가 생깁니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "기존 복지용구 담보와 무엇이 다를까?", "blocks": [{"type": "vbars", "caption": "보장 품목 수", "bars": [{"label": "장기요양 복지용구", "value": 25, "display": "25개"}, {"label": "장애인 보조기기 (회사 자료)", "value": 96, "display": "96개"}]}, {"type": "table", "head": ["", "이 특약", "복지용구 담보"], "cols": ["key", "", ""], "rows": [["근거 법", "장애인복지법 · 건강보험법 · 의료급여법", "노인장기요양보험법"], ["연령", "제한 없음", "대부분 65세 이상"]]}, {"type": "note", "text": "'등록 장애인'이라는 집단을 **처음으로 보장 대상**에 끌어들였다는 점이 혁신입니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "보청기 경로는 왜 따로 봐야 할까?", "lead": "보청기 급여 기준액은 34만원에서 131만원(제품 111만 + 적합 관리 20만)으로 크게 올랐고, 5년에 1회 지급됩니다.", "blocks": [{"type": "vbars", "caption": "보청기가 필요한 중등도 난청 유병률 (이비인후과 학회)", "bars": [{"label": "60대", "value": 12, "display": "12%"}, {"label": "70대", "value": 26, "display": "26%"}, {"label": "80대 이상", "value": 53, "display": "53%"}]}, {"type": "note", "tone": "rose", "text": "등록 기준(양측 60dB 이상 등)에 가까운 사람이 많아, 급여와 보험금이 함께 커지면 **등록 결정에 영향**을 줄 수 있습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "알고 보면 다른, 두 가지 점", "blocks": [{"type": "item", "tag": "1", "tone": "rose", "title": "이미 등록된 장애인은 보장받기 어려워요", "text": "지급사유가 '보험기간 중 장애 발생'이라, 가입 전에 등록된 사람은 원칙적으로 대상이 아닙니다. 회사가 든 유용성(현재 장애인의 수리·교체 부담)과 실제 대상(가입 후 새로 장애가 생긴 사람)이 어긋납니다."}, {"type": "item", "tag": "2", "tone": "rose", "title": "등록은 '본인 신청'이에요", "text": "장애 상태와 등록 사이에 시차가 생길 수 있고, 언제 등록할지 본인이 정하므로 보험금이 등록 시점과 등록률에 영향을 줄 수 있습니다."}, {"type": "note", "tone": "amber", "text": "가입 전에는 **이미 등록된 장애인의 가입 가능 여부와 보장 범위**를 꼭 확인하세요."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타적사용권은 아직 심의 대기 중", "blocks": [{"type": "table", "head": ["시기", "경과"], "cols": ["key", ""], "rows": [["2025.10", "기획"], ["2026.03", "상품개발 · 리스크 검토 → 위험률·상품 외부검증"], ["2026.07", "금융감독원 신고"], ["2026.10", "판매 준비 · 배타적사용권 신청(10.15)"]]}, {"type": "note", "text": "작성 기준일(2026.11.11) 현재 생명보험협회 **심의 전**입니다. 부여 여부와 기간은 협회 공시로 확인해야 합니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 담보가 있을까?", "blocks": [{"type": "item", "tag": "지급방식 유사", "title": "장기요양 복지용구 지원금", "text": "장기요양 등급 판정 후 복지용구 이용 시 월 1회 정액. 노인장기요양보험법 기반으로 대부분 65세 이상"}, {"type": "item", "tag": "보장 유사", "tone": "violet", "title": "장해 진단비 · 장해 연금", "text": "보험사 장해분류표의 지급률 기준. 이 특약은 공적 등록과 급여 실적을 그대로 사용"}, {"type": "item", "tag": "보장 유사", "tone": "slate", "title": "재가·시설급여 지원금 · 학습용 보조기기 지원", "text": "돌봄 서비스 중심이거나, 보험이 아닌 공익사업(생명보험사회공헌재단)"}, {"type": "note", "text": "등록 장애인의 보조기기 급여 이용을 지급사유로 삼은 담보는 확인되지 않았습니다. 독창성의 핵심은 **공적 제도의 선택**입니다."}]}, {"section": "② 국내외 유사상품", "title": "일본에서는 어떻게 하고 있을까?", "blocks": [{"type": "item", "tag": "공적 제도", "title": "장애인종합지원법 '보장구비 지급제도'", "text": "의지·보조기·휠체어·보청기 등을 지원. 본인부담 원칙 1할, 소득별 월 상한. 고령자는 개호보험 복지용구 대여·구입"}, {"type": "item", "tag": "민영보험", "tone": "violet", "title": "장애 '등급'을 트리거로 하는 일시금·연금", "text": "신체장애자수첩 등급이나 공적연금 장애등급 기준. 보장구비 지급 실적을 트리거로 쓰는 상품은 확인되지 않았습니다."}, {"type": "note", "tone": "slate", "text": "기기 이용을 트리거로 쓰면 **이용률 변동**이라는 새 위험을 집니다. 등급 연동 일시금과 결합해 위험을 나누는 구성이 바람직합니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 가입자와 판매 현장", "lead": "각 리스크와 보고서가 제시한 대응을 함께 정리했습니다.", "blocks": [{"type": "item", "tag": "역선택", "tone": "rose", "title": "장애 기준에 가까운 사람의 가입", "text": "진행성 난청·퇴행성 관절질환·신경계 질환 등. **대응**: 청력·보행·시력 고지 강화, 가입 후 2년 내 등록 시 감액"}, {"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "등록 시점 조정 · 저가 품목 반복 구입", "text": "**대응**: 등록 후 최초 지급 대기기간, 지급 품목군 한정, 소모품 제외 검토"}, {"type": "item", "tag": "공급자 유인", "tone": "rose", "title": "판매업체의 진단·등록 알선, 고가 권유", "text": "**대응**: 청구 시 공단 지급 내역 확인, 업체별 청구 집중도 모니터링, 제휴 업체 우대"}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 제도·데이터와 모방 가능성", "blocks": [{"type": "item", "tag": "재보험·규제", "tone": "amber", "title": "경험 없는 장기 반복 지급, 기준 변경에 민감", "text": "기준액 인상·품목 확대(2026 아동용 전동휠체어 등)가 곧 빈도 상승. **대응**: 지급 횟수 상한 또는 갱신형, 요율 조정 조항"}, {"type": "item", "tag": "데이터", "tone": "amber", "title": "가입자 등록 행동·이용 주기 경험 부재", "text": "**대응**: 보험개발원 협업, 초기 판매한도, 3년 경험 후 재산출"}, {"type": "stats", "items": [{"label": "데이터 장벽", "value": "중간", "sub": "공단 맞춤형 자료", "tone": "amber"}, {"label": "제휴 장벽", "value": "없음", "sub": "현금 급부"}, {"label": "시스템 장벽", "value": "낮음", "sub": "복지용구 체계 재사용"}]}, {"type": "note", "tone": "slate", "text": "손보사는 협정 범위 밖이라 배타기간 중에도 개발할 수 있습니다."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약이 진짜 메우는 것은 '제도의 틈'", "lead": "개선 방향을 찾기 위해 상품의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "급여 받은 해마다 남는 본인부담·부대비용을 현금 보전", "text": "공적 보조기기 제도와 실제 생활비용 사이의 틈을 메웁니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "90%까지만 지원, 내구연한 안 수리는 미지원", "text": "실제 사용 과정의 비용이 계속 남습니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "기기를 제때 바꾸고 고쳐 쓰며 자립 생활 유지", "text": "장애 이후의 생활을 이어 가게 돕습니다."}, {"type": "note", "tone": "amber", "text": "제안은 **공적 채널 전체로 범위를 넓히는 방향**과 **수리·렌탈 서비스로 바꾸는 방향** 두 가지입니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "center"], "rows": [[{"chip": "확장", "tone": "blue"}, "**보조기기 통합지원금**\n건강보험·의료급여·지자체·복지용구를 하나로, 연 30만원", "3단계"], [{"chip": "확장", "tone": "blue"}, "**장애아동 성장기 교체 지원**\n어린이보험 탑재, 교체 시 회당 50만원", "3단계"], [{"chip": "집중", "tone": "teal"}, "**고가 보조기기 차액 보장**\n기준액 초과분 실손, 연 100만원 한도", "3단계"], [{"chip": "집중", "tone": "teal"}, "**유지·수리비 전용 담보**\n배터리·타이어·모터 수리, 연 20만원", "2단계"], [{"chip": "전환", "tone": "violet"}, "**수리·렌탈 현물 급부형**\n현금의 120% 가치 서비스 선택", "2단계"], [{"chip": "전환", "tone": "violet"}, "**장애 정도 변경 연동형**\n등록 200만 · '심한 장애' 재판정 300만원", "3단계"], [{"chip": "재구성", "tone": "slate"}, "**자립생활 보험**\n주거 개조 300만 · 운전 보조장치 200만원", "3단계"], [{"chip": "재구성", "tone": "slate"}, "**시니어 청력·보행 케어**\n회당 30만원 + 보청기 적합 관리", "3단계"]]}]}, {"section": "④ 상품개선 제안", "title": "먼저 할 두 가지, 자세히", "lead": "출시 직후 2단계에서 추천된 제안입니다(금액은 보고서 제안값).", "blocks": [{"type": "item", "tag": "집중", "tone": "teal", "title": "유지·수리비 전용 담보", "text": "회사가 유용성 근거로 든 배터리·타이어·조이스틱·모터 수리비를 직접 보장합니다. 연 1회 정액 또는 제휴 수리센터 현물. 영수증 위조는 현물 우선으로, 고의 파손은 면책으로 막습니다."}, {"type": "item", "tag": "전환", "tone": "violet", "title": "수리·렌탈 현물 급부형", "text": "현금 대신 보조기기센터·수리업체 제휴로 출장 수리와 수리 기간 대체 기기 대여를 제공합니다. 목적 외 사용이 줄고, 현물이라 모럴해저드가 감소합니다."}, {"type": "note", "text": "서비스 네트워크를 먼저 깔면 현금 담보로는 따라오기 어려운 **제휴 장벽**이 생깁니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "심의 대응기", "title": "가입 전 등록 장애인 가입·보장 범위 명확화", "text": "소모품·수리 급여의 지급사유 포함 여부를 약관에 정리"}, {"step": "2단계", "time": "출시 후", "title": "④ 수리비 전용 담보 · ⑤ 현물 급부형", "text": "보조기기센터·수리업체 제휴를 먼저 확보해 등록 유인을 서비스로 통제"}, {"step": "3단계", "time": "경험 축적 후", "title": "①·②·③·⑥·⑦·⑧ 확장", "text": "자사 지급 경험으로 품목별 이용 주기를 확인한 뒤"}]}, {"type": "note", "tone": "slate", "text": "등록 장애인 중 65세 이상이 **56.9%** — 시니어 세그먼트가 가장 큰 시장이자 등록 유인 관리가 가장 필요한 경로입니다."}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "이미 장애인으로 등록돼 있다면", "text": "가입 가능 여부와 보장 범위 — 원칙적으로 가입 후 발생 장애만 보장"}, {"title": "가입금액과 지급 횟수", "text": "연 1회 정액으로 추정, 요약서에 금액 예시 없음"}, {"title": "어떤 경로가 해당되나", "text": "건강보험·의료급여 급여만 — 지자체 교부·복지용구는 제외"}, {"title": "수리·소모품도 되나", "text": "내구연한 안 수리·소모품 급여의 포함 여부"}]}, {"type": "note", "text": "배타적사용권: 2026년 10월 15일 신청 · 작성 기준일 현재 심의 대기(부여 미정)"}, {"type": "fine", "text": "분석 한계: 협회 공시 신청사항·개발과정요약서와 공개 자료 기반이며, 위험률은 개념 수준만 기술했습니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#1f8a7a", "dark": "#12352f", "light": "#8ed8cb", "soft": "#e3f1ef", "ink": "#1a6358", "name": "teal", "motif": "hospital", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"currentColor\" opacity=\".35\" x=\"8\" y=\"20\" width=\"48\" height=\"36\" rx=\"4\"/><rect fill=\"currentColor\" x=\"20\" y=\"8\" width=\"24\" height=\"48\" rx=\"4\"/><path fill=\"#fff\" opacity=\".9\" d=\"M29 16h6v6h6v6h-6v6h-6v-6h-6v-6h6z\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>

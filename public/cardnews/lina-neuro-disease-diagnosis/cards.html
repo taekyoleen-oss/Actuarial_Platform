@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tkLeen 카드뉴스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+/* tkLeen 카드뉴스 렌더러 — 데이터(JSON)만 바꾸면 같은 배치·다른 테마로 렌더된다.
+   빌드: python cards_build.py build cards-template.html cards.json out.html */
+:root{
+  --fg:#171a20; --body:#393c41; --tert:#5c5e62; --line:#eeeeee; --page:#fafaf7;
+  --accent:#3e6ae1; --dark:#1b2845; --light:#8fb4f0; --soft:#e8eef9; --ink:#2b4a8c;
+  --amber-bg:#f7eedc; --amber-fg:#7d5a14; --rose-bg:#f8e8e6; --rose-fg:#a03e33;
+  --teal-bg:#e3f1ef; --teal-fg:#1f6e64; --violet-bg:#eee9f7; --violet-fg:#5b4493;
+  --slate-bg:#eaedf1; --slate-fg:#475266; --green-bg:#e7f2e4; --green-fg:#3d6b2f;
+  --cyan-bg:#e2f0f6; --cyan-fg:#1d6486;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;padding:4px 24px 8px}
+body.embed{background:transparent;padding:0 22px 4px}
+html:has(body.embed){background:transparent}
+b{font-weight:600;color:var(--fg)}
+.wrap{max-width:600px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chipnav{border:1px solid var(--line);background:#fff;color:var(--body);border-radius:999px;padding:4px 10px;font:500 12px/1.4 inherit;cursor:pointer;transition:color .33s,background .33s,border-color .33s}
+.chipnav:hover{color:var(--accent)}
+.chipnav.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{margin-left:auto;font-size:13px;color:var(--tert);font-variant-numeric:tabular-nums}
+.stage{position:relative;margin-top:8px;outline:none}
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);scrollbar-width:none;cursor:grab;user-select:none;background:#fff}
+.track::-webkit-scrollbar{display:none}
+.track:active{cursor:grabbing}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;display:flex}
+@media (min-width:640px){.slide{overflow:hidden}}
+@media (min-width:640px){.slide{aspect-ratio:1/1}}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(23,26,32,.04),0 4px 14px rgba(23,26,32,.06);transition:color .33s,opacity .2s}
+.nav:hover{color:var(--accent)}
+.nav[disabled]{opacity:0;pointer-events:none}
+.prev{left:-20px}.next{right:-20px}
+.dots{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dot{height:8px;width:8px;border-radius:999px;border:0;background:var(--line);cursor:pointer;transition:width .33s,background .33s}
+.dot.on{width:20px;background:var(--accent)}
+
+/* 슬라이드 틀 */
+.s{display:flex;flex-direction:column;width:100%;background:#fff;padding:20px}
+@media (min-width:640px){.s{padding:28px}}
+.sec{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.s h3{margin-top:6px;font-size:21px;font-weight:700;line-height:1.375;color:var(--fg)}
+@media (min-width:640px){.s h3{font-size:23px}}
+.lead{margin-top:8px;font-size:14px;line-height:1.625}
+.body{margin-top:16px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px;font-size:13.5px;line-height:1.625}
+.cap{font-size:12.5px;font-weight:600;color:var(--fg)}
+.fine{font-size:11.5px;color:var(--tert)}
+.tone-blue{background:var(--soft);color:var(--ink)}
+.tone-amber{background:var(--amber-bg);color:var(--amber-fg)}
+.tone-rose{background:var(--rose-bg);color:var(--rose-fg)}
+.tone-teal{background:var(--teal-bg);color:var(--teal-fg)}
+.tone-violet{background:var(--violet-bg);color:var(--violet-fg)}
+.tone-slate{background:var(--slate-bg);color:var(--slate-fg)}
+.tone-green{background:var(--green-bg);color:var(--green-fg)}
+.tone-cyan{background:var(--cyan-bg);color:var(--cyan-fg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.item{border-top:1px solid var(--line);padding-top:10px}
+.item .hd{display:flex;align-items:center;gap:8px}
+.item .hd b{font-size:14.5px}
+.item p{margin-top:4px}
+.note{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.625}
+.note b{color:inherit}
+/* 막대 */
+.vbars{margin-top:8px;display:flex;height:128px;align-items:flex-end;gap:20px;border-bottom:1px solid var(--line);padding:0 8px}
+.vbar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar span{margin-bottom:4px;font-size:13px;font-weight:600;color:var(--fg)}
+.vbar i{display:block;width:100%;max-width:64px;border-radius:4px 4px 0 0;background:var(--accent)}
+.vlabels{margin-top:4px;display:flex;gap:20px;padding:0 8px;text-align:center;font-size:11.5px;color:var(--tert)}
+.vlabels span{flex:1}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;color:var(--tert)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.series{position:relative;margin-top:8px;display:flex;height:144px;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line)}
+.series .col{position:relative;flex:1;height:100%;display:flex;align-items:flex-end}
+.series .a{position:absolute;bottom:0;width:100%;border-radius:2px 2px 0 0;background:var(--soft)}
+.series .b{position:relative;width:100%;border-radius:2px 2px 0 0;background:var(--accent)}
+.series .end{position:absolute;right:0;font-size:12px;font-weight:600}
+.ticks{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:var(--tert)}
+.prog{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:8px}
+.prow .l{width:40px;flex-shrink:0;font-size:12px;color:var(--tert)}
+.prow .t{flex:1;height:20px;display:flex;overflow:hidden;border-radius:4px;background:var(--slate-bg)}
+.prow .t i{display:block;height:100%}
+.prow .r{width:86px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:4px 8px 4px 0;font-weight:500;color:var(--tert);text-align:left;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:last-child,th:last-child{padding-right:0}
+.c-key{color:var(--fg);font-weight:500}
+.c-sub{font-size:11.5px;color:var(--tert)}
+.c-val{text-align:right;font-weight:600;white-space:nowrap;color:var(--accent)}
+.c-rank{text-align:right;white-space:nowrap;font-size:12px;font-weight:600;color:var(--tert)}
+.c-rank.top{color:var(--accent)}
+.c-center{text-align:center}
+.c-sm{font-size:12px}
+th.hl{color:var(--accent)}
+td .sub{display:block;font-size:12px;color:var(--body);font-weight:400}
+/* 비교·통계 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border-radius:8px;padding:12px}
+.box.outline{border:1px solid var(--line)}
+.box.outline.hl{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.box .bt{margin-top:8px;font-weight:600;color:var(--fg)}
+.box .bx{margin-top:4px}
+.box .lab{font-size:12px;color:var(--tert)}
+.box.tone-blue .lab{color:var(--ink)}
+.box .lab+.bt{margin-top:4px}
+.box.filled .bx{font-size:12.5px;color:var(--body)}
+.stats{display:grid;gap:8px;text-align:center}
+.stat{border-radius:8px;padding:10px}
+.stat .k{font-size:11.5px;color:var(--tert)}
+.stat .v{margin-top:2px;font-size:17px;font-weight:700;color:var(--fg)}
+.stat .u{font-size:11px;color:var(--body)}
+ul.l,ol.l{margin-top:4px;display:flex;flex-direction:column;gap:4px;list-style:none}
+ul.l.bul{list-style:disc;padding-left:16px;gap:2px}
+.steps{display:flex;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.steps .w{width:64px;flex-shrink:0}
+.steps .st{font-size:15px;font-weight:700;color:var(--accent)}
+.steps .tm{font-size:11.5px;color:var(--tert)}
+.steps .tt{font-weight:600;color:var(--fg)}
+.steps .tx{margin-top:2px;font-size:12.5px}
+ol.check{display:flex;flex-direction:column;gap:8px;list-style:none}
+ol.check li{display:flex;gap:12px}
+ol.check .n{width:24px;height:24px;flex-shrink:0;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.check .d{display:block;font-size:12.5px}
+/* 표지 */
+.cover{position:relative;display:flex;flex-direction:column;width:100%;background:var(--dark);color:#fff;padding:24px}
+@media (min-width:640px){.cover{padding:32px}}
+.cover .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cover .kick{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--light)}
+.cover .motif{width:84px;height:84px;flex-shrink:0;color:var(--light)}
+.cover .motif svg{width:100%;height:100%;display:block}
+.cover h1{margin-top:8px;font-size:30px;font-weight:700;line-height:1.25;color:#fff}
+@media (min-width:640px){.cover h1{font-size:36px}}
+.cover h1 em{font-style:normal;color:var(--light)}
+.cover .txt{margin-top:16px;font-size:15px;line-height:1.625;color:rgba(255,255,255,.8)}
+.cover .txt b{color:#fff}
+.cover .tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.cover .toc{margin-top:auto;border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+.cover .toc p{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.cover .toc ol{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;list-style:none;font-size:14px}
+.cover .hint{margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+.cover-gap{height:24px}
+/* 모션 — 활성 장에서 [data-r]이 순서대로, 막대가 자라남 */
+.slide [data-r]{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i,0)*90ms)}
+.slide.on [data-r]{opacity:1;transform:none}
+.gy{transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.gx{transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.slide.on .gy,.slide.on .gx{transform:none}
+@media (prefers-reduced-motion:reduce){.slide [data-r],.gy,.gx{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="deck">{"title": "라이나생명 신경계질환통합진단특약", "keywords": ["신경계", "뇌", "진단"], "theme": "auto", "motif": "auto", "source": "content/exclusive-rights/분석보고서_라이나생명_신경계질환통합진단특약.pdf (작성 기준일 2026.11.11)", "cover": {"kicker": "보험 배타적사용권 분석 · 카드뉴스", "title": "신경계 질환 59종을\n==중증도 5단계==로\n묶은 진단비", "text": "라이나생명 **(무)신경계질환통합진단특약**은 2026년 10월 13일 생명보험협회에 배타적사용권을 신청했고, 작성 기준일(2026.11.11) 현재 **심의 대기** 중입니다.", "tags": ["G코드 59종 통합", "1~5종 누적 지급"], "toc": ["① 내용·구조", "② 국내외 유사상품", "③ 리스크 진단", "④ 상품개선 제안"]}, "slides": [{"nav": "내용·구조", "section": "① 배타적사용권 내용·구조", "title": "왜 이런 상품이 나왔을까?", "lead": "암·뇌·심장 보장은 있어도, 신경계 질환은 이름 있는 몇 개 질환 외에는 보장되는지 알기 어려웠습니다.", "blocks": [{"type": "stats", "items": [{"label": "신경계질환 환자 수", "value": "+11.4%", "sub": "5년간 증가"}, {"label": "요양급여비용총액", "value": "+14.0%", "sub": "5년간 증가"}, {"label": "평균 재원일수", "value": "약 6배", "sub": "신생물(암 등) 대비", "tone": "amber"}]}, {"type": "text", "text": "세계질병부담연구(GBD 2021)는 **전 세계 3명 중 1명 이상**이 신경계 질환을 가진다고 보고했습니다(회사 제시 근거)."}, {"type": "note", "text": "그래서 이 특약은 질환 이름을 몇 개 고르는 대신 **신경계 질환 분류 체계(G코드) 전체**를 출발점으로 삼았습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "59개 질환을 1~5종으로 나눴어요", "lead": "G코드는 질병 분류표(KCD)의 신경계통 질환 코드입니다. 전문의 자문으로 59종을 중증도에 따라 5단계로 나눴습니다.", "blocks": [{"type": "table", "cols": ["key", "", "center"], "head": ["종", "정의(회사 자문 기준)", "개수"], "hl": 5, "rows": [["1종", "조절 가능한 경도 기능 저하", "14종"], ["2종", "일상 기능 저하 뚜렷, 지속 관리 필요", "15종"], ["3종", "전문 치료 필요, 진행 시 중증 장애 가능", "12종"], ["4종", "즉각 치료 필수, 영구 기능손상 위험 높음", "11종"], ["5종", "생명 위협, 중환자 치료 필요", "7종"]]}, {"type": "note", "text": "종 숫자가 클수록 **더 무거운 질환**입니다. 신경계를 암·뇌·심장·치매와 나란한 **독립 보장영역**으로 정의한 첫 시도라는 회사 주장에는 근거가 있습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "보험금은 계단처럼 쌓여요", "lead": "가입금액 2,000만원 기준입니다. 급부 5개가 각각 최초 1회씩 지급됩니다.", "blocks": [{"type": "vbars", "caption": "도달한 가장 높은 종까지의 누적 지급액", "bars": [{"label": "1종", "value": 40, "display": "40만원"}, {"label": "2종", "value": 100, "display": "100만원"}, {"label": "3종", "value": 200, "display": "200만원"}, {"label": "4종", "value": 1000, "display": "1,000만원"}, {"label": "5종", "value": 2000, "display": "2,000만원"}]}, {"type": "item", "tag": "핵심", "title": "급부 이름이 「k종 이상」 진단보험금이에요", "text": "1-5종(40만) · 2-5종(60만) · 3-5종(100만) · 4-5종(800만) · 5종(1,000만) 다섯 개가 겹쳐 있어, 높은 종일수록 여러 급부가 함께 지급됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "병이 진행하면 차액만 더 받아요", "lead": "진단 순서와 관계없이, 최종 도달한 가장 높은 종까지의 금액이 한 번씩만 지급됩니다.", "blocks": [{"type": "compare", "boxes": [{"chip": "처음 진단", "title": "4종 질환 진단", "text": "1-5종부터 4-5종까지 급부 4개가 한꺼번에 → 1,000만원"}, {"chip": "이후 진행", "tone": "violet", "hl": true, "title": "5종으로 진행", "text": "남은 5종 급부 1개만 → 1,000만원 추가"}]}, {"type": "text", "text": "파킨슨병·다발경화증 같은 **진행형 질환**과 세균성 수막염 같은 **급성 중증질환**을 같은 틀에서 다룹니다."}, {"type": "note", "text": "각 급부가 한 번만 지급되므로 계약 1건의 최대 지급액은 **가입금액(2,000만원)으로 고정**됩니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "종마다 어떤 병이 들어 있을까?", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["1종", "수근관증후군(손목 신경 눌림)·안면신경마비·삼차신경통\n대부분 약·주사·보조기로 조절"], ["2종", "뇌전증·일과성 뇌허혈발작·당뇨병성 다발신경병증·중증근무력증\n장기 약물 관리가 중심"], ["3종", "이차성 파킨슨증·시신경척수염·척수질환\n면역치료·재활 등 전문 치료 필요"], ["4종", "파킨슨병·알츠하이머병·다발경화증·루게릭(G12)·편마비\n완치보다 진행 억제, 장기 돌봄"], ["5종", "세균성 수막염·뇌염·척수염·두개내 농양\n응급 치료·중환자실"]]}, {"type": "note", "tone": "slate", "text": "같은 코드 안에서도 경과가 크게 다릅니다. 예) G56에는 흔한 수근관증후군과 드문 고도 신경손상이 함께 들어 있습니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "보험료는 한 달 몇천 원 수준이에요", "lead": "회사가 제시한 월 보험료 예시(남자, 가입금액 2,000만원 기준)입니다. 여자는 남자보다 소폭 낮습니다.", "blocks": [{"type": "table", "cols": ["key", "val", "val"], "head": ["가입 나이", "10년 만기", "20년 만기"], "rows": [["40세", "2,680원", "3,240원"], ["50세", "3,840원", "5,160원"], ["60세", "7,260원", "10,640원"]]}, {"type": "item", "tag": "읽는 법", "tone": "amber", "title": "저렴한 보험료는 엄격한 진단 기준을 전제로 해요", "text": "보고서는 낮은 보험료 예시가 **회사가 엄격한 진단 확정 기준을 전제**했음을 시사한다고 봅니다. 약관의 진단 확정 문언을 꼭 확인해야 합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "빠진 코드와 짚어 볼 쟁점", "blocks": [{"type": "item", "tag": "제외 9개", "tone": "slate", "title": "편두통·두통·수면장애, 유전·선천 질환은 빠졌어요", "text": "G43·G44(편두통·두통), G47(수면장애)처럼 흔하고 주관적인 코드, G10·G11(유전성)·G80(뇌성마비) 같은 유전·선천 코드, 뇌혈관 담보와 겹치는 G46 등입니다."}, {"type": "item", "tag": "쟁점 1", "tone": "rose", "title": "비슷한 치매인데 종이 달라요", "text": "알츠하이머병(G30)은 4종, 전두측두엽·루이소체 치매가 든 G31은 2종입니다."}, {"type": "item", "tag": "쟁점 2", "tone": "rose", "title": "탈수초 질환도 엇갈려요", "text": "다발경화증(G35)은 4종, 실명·사지마비 위험이 큰 시신경척수염(G36)은 3종입니다."}, {"type": "note", "text": "분류 일관성은 **심의와 약관 분쟁에서 쟁점**이 될 수 있어 의학적 근거 정리가 필요합니다."}]}, {"section": "① 배타적사용권 내용·구조", "title": "배타적사용권은 아직 심의 전이에요", "blocks": [{"type": "stats", "items": [{"label": "금감원 신고수리", "value": "9.14", "sub": "2026년"}, {"label": "생보협회 신청", "value": "10.13", "sub": "2026년"}, {"label": "심의 결과", "value": "대기", "sub": "작성 기준일 11.11", "tone": "amber"}]}, {"type": "text", "text": "신청 분야는 **위험률**, 신청 위험률명은 「무배당 특정신경계질환(1-5종) 발생률(최초1회한)」입니다. 부여 여부·기간은 아직 정해지지 않았습니다."}, {"type": "note", "tone": "amber", "text": "관건은 **자사 선행 상품**인 라이나 브레인케어건강보험(2026.6)이 이미 신경계 경증·중증을 보장한다는 점입니다. G코드 체계화와 누적 차액 구조가 진보성의 핵심 논거입니다."}]}, {"nav": "유사상품", "section": "② 국내외 유사상품", "title": "국내에는 어떤 비슷한 상품이 있을까?", "blocks": [{"type": "table", "cols": ["key", ""], "rows": [["치매·파킨슨·루게릭 진단특약", "질환 3~4종만 열거\n이 특약은 G코드 59종을 체계적으로 포괄"], ["4대 신경계질환·뇌전증 진단특약", "특정 질환군만 보장\n중증도 차등 없음"], ["20대 뇌질환·희귀난치 진단특약", "다른 질병군에 일부 신경계를 묶음\n신경계가 독립 영역이 아님"], ["라이나 브레인케어건강보험(2026.6)", "순환계·신경계·정신계·장기요양 통합\n같은 회사의 선행 상품"], ["DB손보 편마비 진단비(2022)", "편마비(G81) 단일 코드, 배타권 3개월\nG81은 이 특약의 4종"]]}, {"type": "note", "text": "암·장기요양 등급별 단계 진단비는 있었지만, **신경계를 G코드 전체로 묶어 중증도 계단을 만든 담보**는 검색 범위에서 확인되지 않았습니다."}]}, {"section": "② 국내외 유사상품", "title": "일본에서는 어떻게 보장할까?", "blocks": [{"type": "item", "tag": "공적 제도", "title": "「지정난병」이 의료비를 낮춰 줘요", "text": "파킨슨병·근위축성측삭경화증·다발경화증 등 신경계 희귀질환 다수를 지정난병으로 정해 공적 의료비 조성으로 본인부담을 낮춥니다."}, {"type": "item", "tag": "민영보험", "tone": "violet", "title": "삼대질병·7대·8대 질병 일시금이 주류", "text": "신경계 질환은 일부 특정질병 특약에 개별 포함되는 수준입니다. 인지증 보험은 발달했지만 진단·요개호 인정을 트리거로 하는 단일 위험 상품입니다."}, {"type": "item", "tag": "확인 결과", "tone": "slate", "title": "분류 체계 + 중증도 누적 상품은 못 찾았어요", "text": "확인한 범위에서 같은 구조의 일본 상품은 없었습니다."}, {"type": "note", "text": "한국도 **산정특례**가 같은 역할을 하므로, 4·5종 고액 구간은 치료비보다 **생활비·돌봄비 보전**으로 알리는 편이 타당합니다."}]}, {"nav": "리스크", "section": "③ 리스크 진단", "title": "리스크 ① 1·2종 소액 다빈도 청구", "lead": "4·5종은 발생률이 낮고 진단이 객관적이라 관리가 쉽습니다. 손해율의 성패는 1·2종에 달려 있습니다.", "blocks": [{"type": "item", "tag": "모럴해저드", "tone": "rose", "title": "1종 소액을 노린 진단서 요청", "text": "가벼운 증상에도 G56·G62 코드가 붙을 수 있습니다. **대응**: 신경과·신경외과 전문의와 신경전도·영상 등 검사 근거로 진단 확정 기준 한정."}, {"type": "item", "tag": "공급자 유인", "tone": "rose", "title": "별표 코드가 함께 청구돼요", "text": "추간판장애의 신경근 압박은 G55, 당뇨병성 다발신경병증은 G63처럼 다른 병의 합병 증상 코드가 흔히 붙습니다. **대응**: 원인 질환 코드와 함께 확인, 주상병 요건 검토."}, {"type": "item", "tag": "역선택", "tone": "rose", "title": "전조 증상이 있는 사람의 가입", "text": "손저림·떨림·인지저하가 있는 사람이 4종 고액(G30·G20)을 노릴 수 있습니다. **대응**: 1~2년 감액·면책, 신경계 증상 고지 신설, 고연령 가입금액 상한."}]}, {"section": "③ 리스크 진단", "title": "리스크 ② 경험·제도·데이터", "blocks": [{"type": "item", "tag": "재보험", "tone": "amber", "title": "5개 층 위험이 모두 처음이에요", "text": "경험이 없고 4·5종 고액 구간이 몰릴 수 있습니다. → 4종 이상 고액 구간 비례재보험, 손해율 연동 수수료."}, {"type": "item", "tag": "규제", "tone": "amber", "title": "질병 분류표가 바뀌면 공백이 생겨요", "text": "KCD 개정으로 코드가 옮겨지거나 새로 생기면 종 배정이 비고, 분류 쟁점이 분쟁이 될 수 있습니다. → 개정 승계 조항과 종 재배정 원칙을 약관에 명시."}, {"type": "item", "tag": "데이터", "tone": "amber", "title": "통계로는 질환 안의 중증도 차이를 못 봐요", "text": "청구 자료의 코드는 의심·감별 진단이 섞이고, '최초 진단' 판별은 과거 이력 관찰기간에 따라 크게 달라집니다. → 출시 초기 갱신형, 4단상병 경험 분석 후 재산출."}]}, {"section": "③ 리스크 진단", "title": "경쟁사는 얼마나 쉽게 따라 할까?", "blocks": [{"type": "stats", "items": [{"label": "데이터 장벽", "value": "낮음~중간", "sub": "종 배정에 의학 자문"}, {"label": "제휴 장벽", "value": "없음", "sub": "외부 제휴 불필요"}, {"label": "시스템 장벽", "value": "중간", "sub": "누적·중복 판정 로직", "tone": "amber"}]}, {"type": "list", "title": "예상되는 우회 진입", "bullets": true, "items": ["같은 59종을 경·중·중증 3단계로 다시 묶기", "뇌혈관과 합친 '뇌·신경 통합진단'", "4종 고액 질환만 담은 저렴한 '중증 신경계 진단비'"]}, {"type": "note", "tone": "slate", "text": "분류 기준 자체는 보호받기 어렵습니다. 브레인케어와 결합해 **신경계 전 단계를 한 브랜드로 선점**하고, 치료·재활로 다음 배타권을 준비하는 것이 대응입니다."}]}, {"nav": "개선 제안", "section": "④ 상품개선 제안", "title": "이 특약의 가치는 '신경계 지도'", "lead": "개선 방향을 찾기 위해 상품의 가치를 분해했습니다.", "blocks": [{"type": "item", "tag": "핵심 기능", "title": "흩어진 신경계 질환을 G코드 체계로 묶어 단계별 보장", "text": "경증부터 생명을 위협하는 중증까지 한 특약에 담았습니다."}, {"type": "item", "tag": "고객의 고민", "tone": "rose", "title": "신경계는 보장 여부를 알기 어려움", "text": "이름 있는 몇 개 질환 외에는 보장되는지 판단하기 힘듭니다."}, {"type": "item", "tag": "제공 가치", "tone": "teal", "title": "진행할수록 보장이 커진다는 안심", "text": "한 특약으로 신경계 위험 전체를 이해할 수 있습니다."}, {"type": "note", "text": "제안은 이 지도 위에 **검사·치료·돌봄 단계를 얹는 방향**과, **1종 다빈도 위험을 객관 지표로 다듬는 방향**으로 나뉩니다."}]}, {"section": "④ 상품개선 제안", "title": "네 갈래, 여덟 가지 제안", "blocks": [{"type": "table", "cols": ["", "", "center"], "rows": [[{"chip": "확장", "tone": "blue"}, "**신경계 정밀검사비 특약**\n신경전도·근전도·뇌파·급여 MRI 연 1회 10만~20만원", "3단계"], [{"chip": "확장", "tone": "blue"}, "**신경계 재활치료 연계특약**\n3종 이상 진단 후 재활치료 월 20만원, 최대 24개월", "3단계"], [{"chip": "집중", "tone": "teal"}, "**신경계 고가 약물치료비**\n다발경화증 등 고가 약제 투여 시 연 300만~500만원", "3단계"], [{"chip": "집중", "tone": "teal"}, "**희귀 신경계질환 산정특례 연동형**\n산정특례 등록 시 1,000만원 일시금", "2단계"], [{"chip": "전환", "tone": "violet"}, "**중증 진행 생활자금형**\n4종 이상: 일시금 50% + 월 30만원, 최대 60개월", "3단계"], [{"chip": "전환", "tone": "violet"}, "**경증 진단 후 2차 소견 서비스**\n1·2종 진단 시 전문의 2차 소견·디지털 기능검사", "2단계"], [{"chip": "재구성", "tone": "slate"}, "**당뇨 합병증 케어형**\n신경·망막·신장병증 각 100만원 + 혈당 앱", "3단계"], [{"chip": "재구성", "tone": "slate"}, "**'생활 신경' 미니보험**\n1종 질환 1년 만기 20만~30만원, 월 1천원대", "3단계"]]}]}, {"section": "④ 상품개선 제안", "title": "먼저 할 두 가지, 자세히", "lead": "보고서는 출시 후 6개월 안에 객관 트리거와 서비스로 1종 다빈도 위험을 보완하라고 권합니다.", "blocks": [{"type": "item", "tag": "집중 ④", "tone": "teal", "title": "희귀 신경계질환 산정특례 연동형", "text": "근위축성측삭경화증·다발경화증·시신경척수염·척수성근위축증·중증근무력증 등으로 **산정특례에 등록되면** 4종 급부와 별도로 1,000만원을 지급합니다. 공적 심사를 지급 조건으로 삼아 상병코드 진단의 불확실성을 없앱니다."}, {"type": "item", "tag": "전환 ⑥", "tone": "violet", "title": "경증 진단 후 2차 소견 서비스", "text": "1·2종 지급 시 원격 2차 소견 1회와 3년간 연 1회 디지털 인지·보행 기능검사를 제공합니다(서비스 원가 약 5만~10만원 상당). 오진·과잉진단을 줄이고 진행 신호를 일찍 알아차리게 돕습니다."}, {"type": "note", "tone": "amber", "text": "두 제안 모두 **원상품의 약점(1종 진단 신뢰도)을 직접 보완**합니다."}]}, {"section": "④ 상품개선 제안", "title": "언제, 무엇부터 할까", "blocks": [{"type": "steps", "items": [{"step": "1단계", "time": "심의 대응기", "title": "1·2종 진단 확정 기준을 약관에 명시", "text": "전문의·검사 근거 기준, 분류 일관성 쟁점(G30·G31, G35·G36)의 의학적 근거 정리"}, {"step": "2단계", "time": "출시 후 6개월", "title": "④ 산정특례 연동형 · ⑥ 2차 소견 서비스", "text": "객관 트리거와 서비스로 1종 다빈도 위험 보완"}, {"step": "3단계", "time": "경험 축적 후", "title": "①·②·③·⑤·⑦·⑧ 순차 출시", "text": "자사 청구 경험으로 종별 실제 발생 분포를 확인한 뒤"}]}, {"type": "note", "tone": "slate", "text": "진단 이후 **치료·재활(②·③)로 다음 배타권을 준비**하는 연속 개발이 경쟁 차단에도 유효합니다."}]}, {"section": "정리", "title": "가입을 고민한다면 이것만은 확인하세요", "blocks": [{"type": "checklist", "items": [{"title": "진단 확정 기준", "text": "전문의·검사 근거가 필요한지, 1·2종은 어떻게 인정되는지"}, {"title": "내 질환이 몇 종인지", "text": "59종 목록과 제외 9개 코드(편두통·수면장애 등)"}, {"title": "누적 한도 = 가입금액", "text": "진행해도 총액은 가입금액(예: 2,000만원)까지"}, {"title": "감액·면책 기간과 고지 항목", "text": "가입 초기 감액 여부, 신경계 증상 고지"}]}, {"type": "note", "text": "배타적사용권: 2026.10.13 생명보험협회 신청 · 작성 기준일(2026.11.11) 현재 심의 대기 — 부여 여부·기간 미정"}, {"type": "fine", "text": "분석 한계: 협회 공시 신청사항·개발과정요약서와 공개 통계·보도 기반 내부 분석이며, 위험률 산출은 개념 수준입니다. 전체 보고서는 아래 PDF에서 볼 수 있습니다."}]}], "_theme": {"accent": "#6b4fbb", "dark": "#2a1f4a", "light": "#c3b2f2", "soft": "#eee9f7", "ink": "#4d3a8a", "name": "violet", "motif": "brain", "motifSvg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"currentColor\" opacity=\".35\" d=\"M32 10c-6 0-10 4-11 8-5 0-9 4-9 9 0 3 1 5 3 7-2 2-3 4-3 7 0 5 4 9 9 9 1 4 5 7 11 7V10z\"/><path fill=\"currentColor\" d=\"M32 10c6 0 10 4 11 8 5 0 9 4 9 9 0 3-1 5-3 7 2 2 3 4 3 7 0 5-4 9-9 9-1 4-5 7-11 7V10z\"/><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\".55\" d=\"M22 26c3 0 5 2 5 5M20 40c3-1 6 0 7 3\"/><\/svg>"}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('deck').textContent);
+  var T = D._theme || {};
+  var root = document.documentElement.style;
+  ['accent','dark','light','soft','ink'].forEach(function(k){ if (T[k]) root.setProperty('--'+k, T[k]); });
+  if (D.title) document.title = D.title;
+  if (window.self !== window.top || /[?&]embed/.test(location.search)) document.body.classList.add('embed');
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // 인라인 마크업: **굵게**, ==강조색==(표지 제목), 줄바꿈 \n
+  var md = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<em>$1</em>').replace(/\n/g,'<br>'); };
+  var tone = function(t){ return 'tone-' + (t || 'blue'); };
+  var bar = function(t){ return {blue:'var(--accent)',soft:'var(--soft)',amber:'var(--amber-fg)',rose:'var(--rose-fg)',teal:'var(--teal-fg)',violet:'var(--violet-fg)',slate:'var(--slate-fg)',green:'var(--green-fg)',cyan:'var(--cyan-fg)'}[t || 'blue'] || t; };
+  var R = function(i, html, cls, css){ return '<div data-r style="--i:'+i+(css ? ';'+css : '')+'"' + (cls ? ' class="'+cls+'"' : '') + '>' + html + '</div>'; };
+  var d = function(ms){ return '--d:'+ms+'ms'; };
+  var chip = function(text, t){ return '<span class="chip '+tone(t)+'">'+md(text)+'</span>'; };
+  var legend = function(arr){ return '<div class="legend">' + arr.map(function(l){ return '<span><i style="background:'+bar(l.color)+'"></i>'+md(l.label)+'</span>'; }).join('') + (arguments[1] ? '<span style="margin-left:auto">'+md(arguments[1])+'</span>' : '') + '</div>'; };
+
+  var B = {
+    text: function(b, i){ return R(i, '<p>'+md(b.text)+'</p>'); },
+    fine: function(b, i){ return R(i, md(b.text), 'fine'); },
+    item: function(b, i){ return R(i, '<div class="hd">' + (b.tag ? chip(b.tag, b.tone) : '') + '<b>'+md(b.title)+'</b></div><p>'+md(b.text)+'</p>', 'item'); },
+    note: function(b, i){ return R(i, md(b.text), 'note '+tone(b.tone)); },
+    vbars: function(b, i){
+      var max = Math.max.apply(null, b.bars.map(function(x){ return x.value; }));
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') +
+        '<div class="vbars">' + b.bars.map(function(x, k){ return '<div class="vbar"><span>'+md(x.display || x.value)+'</span><i class="gy" style="height:'+(x.value/max*70)+'%;background:'+bar(x.color)+';'+d(200+k*150)+'"></i></div>'; }).join('') + '</div>' +
+        '<div class="vlabels">' + b.bars.map(function(x){ return '<span>'+md(x.label)+'</span>'; }).join('') + '</div>');
+    },
+    series: function(b, i){
+      var max = b.max || Math.max.apply(null, b.a.concat(b.b)) * 1.02;
+      var cols = b.a.map(function(av, k){ return '<div class="col"><i class="a gy" style="height:'+(av/max*100)+'%;'+d(k*35)+'"></i><i class="b gy" style="height:'+(b.b[k]/max*100)+'%;'+d(300+k*35)+'"></i></div>'; }).join('');
+      var ea = b.endA ? '<span class="end" style="top:0;color:var(--ink)">'+md(b.endA)+'</span>' : '';
+      var eb = b.endB ? '<span class="end" style="bottom:'+(b.b[b.b.length-1]/max*100+2)+'%;color:var(--accent)">'+md(b.endB)+'</span>' : '';
+      return R(i, legend([{label:b.legend[0],color:'soft'},{label:b.legend[1],color:'blue'}], b.note) +
+        '<div class="series">' + cols + ea + eb + '</div>' +
+        (b.ticks ? '<div class="ticks">' + b.ticks.map(function(t){ return '<span>'+md(t)+'</span>'; }).join('') + '</div>' : ''));
+    },
+    progress: function(b, i){
+      var c = b.colors || ['teal','blue'];
+      return R(i, (b.caption ? '<p class="cap">'+md(b.caption)+'</p>' : '') + '<div class="prog">' +
+        b.rows.map(function(r, k){ return '<div class="prow"><span class="l">'+md(r.label)+'</span><div class="t"><i class="gx" style="width:'+r.value+'%;background:'+bar(c[0])+';'+d(200+k*160)+'"></i><i style="flex:1;background:'+bar(c[1])+';opacity:.8"></i></div><span class="r">'+md(r.right || '')+'</span></div>'; }).join('') +
+        '</div>' + (b.legend ? '<div style="margin-top:8px">' + legend([{label:b.legend[0],color:c[0]},{label:b.legend[1],color:c[1]}]) + '</div>' : ''));
+    },
+    table: function(b, i){
+      var st = b.cols || [];
+      var cell = function(v, k, head){
+        var cls = st[k] ? 'c-' + st[k].split(' ').join(' c-') : '';
+        if (head) return '<th class="'+(b.hl === k ? 'hl ' : '')+(st[k] && st[k].indexOf('center')>=0 ? 'c-center' : '')+'">'+md(v)+'</th>';
+        if (v && typeof v === 'object') return '<td class="'+cls+'">'+chip(v.chip, v.tone)+'</td>';
+        var s = String(v == null ? '' : v), parts = s.split('\n'), main = parts.shift();
+        if (st[k] === 'rank' && /1/.test(main)) cls += ' top';
+        return '<td class="'+cls+'">'+md(main) + (parts.length ? '<span class="sub">'+md(parts.join('\n'))+'</span>' : '') + '</td>';
+      };
+      return R(i, (b.caption ? '<p class="cap" style="margin-bottom:4px">'+md(b.caption)+'</p>' : '') + '<table>' +
+        (b.head ? '<thead><tr>' + b.head.map(function(h, k){ return cell(h, k, true); }).join('') + '</tr></thead>' : '') +
+        '<tbody>' + b.rows.map(function(r){ return '<tr>' + r.map(function(v, k){ return cell(v, k); }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+    },
+    compare: function(b, i){
+      return R(i, b.boxes.map(function(x){
+        if (x.label) return '<div class="box filled '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="lab">'+md(x.label)+'</p><p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+        return '<div class="box outline'+(x.hl ? ' hl' : '')+'">' + (x.chip ? chip(x.chip, x.tone) : '') + '<p class="bt">'+md(x.title)+'</p><p class="bx">'+md(x.text)+'</p></div>';
+      }).join(''), 'grid2');
+    },
+    stats: function(b, i){
+      return R(i, b.items.map(function(x){ return '<div class="stat '+tone(x.tone || 'slate')+'" style="color:inherit"><p class="k">'+md(x.label)+'</p><p class="v">'+md(x.value)+'</p><p class="u">'+md(x.sub || '')+'</p></div>'; }).join(''),
+        'stats', 'grid-template-columns:repeat('+b.items.length+',1fr)');
+    },
+    list: function(b, i){
+      var tag = b.ordered ? 'ol' : 'ul';
+      return R(i, (b.title ? '<p class="cap">'+md(b.title)+'</p>' : '') + '<'+tag+' class="l'+(b.bullets ? ' bul' : '')+'">' + b.items.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</'+tag+'>');
+    },
+    steps: function(b, i){
+      return b.items.map(function(x, k){ return R(i + k, '<div class="w"><p class="st">'+md(x.step)+'</p><p class="tm">'+md(x.time || '')+'</p></div><div><p class="tt">'+md(x.title)+'</p>' + (x.text ? '<p class="tx">'+md(x.text)+'</p>' : '') + '</div>', 'steps'); }).join('');
+    },
+    checklist: function(b, i){
+      return R(i, '<ol class="check">' + b.items.map(function(x, k){ return '<li><span class="n">'+(k+1)+'</span><span><b>'+md(x.title)+'</b><span class="d">'+md(x.text || '')+'</span></span></li>'; }).join('') + '</ol>');
+    }
+  };
+  var span = function(b){ return b.type === 'steps' ? b.items.length : 1; };
+
+  function cover(c){
+    return '<div class="cover">' +
+      R(0, '<div class="top"><span class="kick">'+md(c.kicker || '')+'</span>' + (T.motifSvg ? '<span class="motif" aria-hidden="true">'+T.motifSvg+'</span>' : '') + '</div>') +
+      R(1, '<h1>'+md(c.title)+'</h1>') +
+      (c.text ? R(2, '<p class="txt">'+md(c.text)+'</p>') : '') +
+      (c.tags ? R(3, c.tags.map(function(t){ return '<span>'+md(t)+'</span>'; }).join(''), 'tags') : '') +
+      (c.toc ? R(4, '<p>'+md(c.tocTitle || '이 카드뉴스의 순서')+'</p><ol>' + c.toc.map(function(t){ return '<li>'+md(t)+'</li>'; }).join('') + '</ol>' + '<p class="hint">'+md(c.hint || '넘기기: 버튼 · 드래그 · 키보드 ← →')+'</p>', 'toc') : '') +
+      '</div>';
+  }
+  function slide(s){
+    var i = 0, out = R(i++, '<span class="sec">'+md(s.section)+'</span>') + R(i++, '<h3>'+md(s.title)+'</h3>');
+    if (s.lead) out += R(i, '<p class="lead">'+md(s.lead)+'</p>');
+    i = 3; var body = '';
+    (s.blocks || []).forEach(function(b){
+      if (!B[b.type]) { body += R(i, '<p style="color:#a03e33">알 수 없는 블록: '+esc(b.type)+'</p>'); i++; return; }
+      body += B[b.type](b, s.lead ? i : i - 1); i += span(b);
+    });
+    return '<div class="s">' + out + '<div class="body">' + body + '</div></div>';
+  }
+
+  var slides = [cover(D.cover)].concat(D.slides.map(slide));
+  var sections = [{label: D.cover.nav || '표지', start: 0}];
+  D.slides.forEach(function(s, k){ if (s.nav) sections.push({label: s.nav, start: k + 1}); });
+  var N = slides.length;
+  var svgL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  var svgR = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="bar">' + sections.map(function(s, k){ return '<button type="button" class="chipnav" data-go="'+s.start+'">'+md(s.label)+'</button>'; }).join('') + '<span class="count"></span></div>' +
+    '<div class="stage" tabindex="0" aria-roledescription="carousel"><div class="track">' +
+      slides.map(function(h, k){ return '<div class="slide" aria-label="'+(k+1)+'/'+N+'">' + h + '</div>'; }).join('') +
+    '</div><button type="button" class="nav prev" aria-label="이전 카드">'+svgL+'</button><button type="button" class="nav next" aria-label="다음 카드">'+svgR+'</button></div>' +
+    '<div class="dots">' + slides.map(function(_, k){ return '<button type="button" class="dot" aria-label="'+(k+1)+'번 카드로" data-go="'+k+'"></button>'; }).join('') + '</div>';
+
+  var track = document.querySelector('.track'), els = track.children, idx = -1;
+  var chips = document.querySelectorAll('.chipnav'), dots = document.querySelectorAll('.dot');
+  var prev = document.querySelector('.prev'), next = document.querySelector('.next'), count = document.querySelector('.count');
+  function go(k){ k = Math.max(0, Math.min(N - 1, k)); track.scrollTo({left: k * track.clientWidth, behavior: 'smooth'}); }
+  function sync(){
+    var k = Math.round(track.scrollLeft / track.clientWidth);
+    if (k === idx) return; idx = k;
+    for (var j = 0; j < N; j++) { els[j].classList.toggle('on', j === k); dots[j].classList.toggle('on', j === k); }
+    var cur = 0; sections.forEach(function(s, n){ if (s.start <= k) cur = n; });
+    chips.forEach(function(c, n){ c.classList.toggle('on', n === cur); });
+    prev.disabled = k === 0; next.disabled = k === N - 1;
+    count.textContent = (k + 1) + ' / ' + N;
+  }
+  track.addEventListener('scroll', sync, {passive: true});
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.go); }); });
+  prev.onclick = function(){ go(idx - 1); }; next.onclick = function(){ go(idx + 1); };
+  document.querySelector('.stage').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+  });
+  // 마우스 드래그(터치는 네이티브 스크롤)
+  var drag = null;
+  track.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; drag = {x: e.clientX, left: track.scrollLeft}; track.style.scrollSnapType = 'none'; });
+  track.addEventListener('pointermove', function(e){ if (drag) track.scrollLeft = drag.left - (e.clientX - drag.x); });
+  function end(e){ if (!drag) return; var dx = e.clientX - drag.x, base = Math.round(drag.left / track.clientWidth); drag = null; track.style.scrollSnapType = ''; go(Math.abs(dx) > track.clientWidth * .15 ? base + (dx < 0 ? 1 : -1) : base); }
+  track.addEventListener('pointerup', end); track.addEventListener('pointerleave', end);
+  // 임베드 시 부모에 높이 알림(모바일 자연 높이 유지)
+  var post = function(){ if (window.parent !== window) window.parent.postMessage({type: 'tkleen-cards-height', h: document.documentElement.scrollHeight}, '*'); };
+  new ResizeObserver(post).observe(document.body);
+  requestAnimationFrame(function(){ sync(); post(); });
+  window.__cards = {count: function(){ return N; }, go: go, overflow: function(){
+    var bad = []; for (var j = 0; j < N; j++) { var s = els[j].firstElementChild; if (s.scrollHeight > els[j].clientHeight + 1) bad.push({slide: j, over: s.scrollHeight - els[j].clientHeight}); } return bad; }};
+})();
+</script>
+</body>
+</html>
