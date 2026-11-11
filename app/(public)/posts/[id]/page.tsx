@@ -62,7 +62,8 @@ export default async function PostDetailPage({
         )}
       </div>
 
-      {bodyText ? (
+      {/* 카드뉴스가 있으면 본문 설명 없이 바로 PDF로 */}
+      {bodyText && !cardNews ? (
         <div className="prose-tesla mt-8 whitespace-pre-wrap text-[16px] leading-relaxed text-body">
           {bodyText}
         </div>

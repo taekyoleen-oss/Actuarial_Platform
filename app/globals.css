@@ -696,13 +696,3 @@ mark.key-phrase {
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
-
-/* 카드뉴스 모션 — 활성 장(.is-active)에서 [data-r]이 --i 순서로 등장, 막대는 --d 지연 후 성장 */
-.cn-slide [data-r] { opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s ease; transition-delay: calc(var(--i, 0) * 90ms); }
-.cn-slide.is-active [data-r] { opacity: 1; transform: none; }
-.cn-slide .cn-grow-x { transform: scaleX(0); transform-origin: left; transition: transform .7s ease; transition-delay: var(--d, 0ms); }
-.cn-slide .cn-grow-y { transform: scaleY(0); transform-origin: bottom; transition: transform .7s ease; transition-delay: var(--d, 0ms); }
-.cn-slide.is-active .cn-grow-x, .cn-slide.is-active .cn-grow-y { transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  .cn-slide [data-r], .cn-slide .cn-grow-x, .cn-slide .cn-grow-y { opacity: 1; transform: none; transition: none; }
-}
