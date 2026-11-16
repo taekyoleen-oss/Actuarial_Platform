@@ -2,12 +2,14 @@ import { BrandBackdrop } from "@/components/feature/BrandBackdrop";
 import { Collapsible } from "@/components/feature/Collapsible";
 import { PostBoard, type BoardItem } from "@/components/feature/PostBoard";
 import { PostCard } from "@/components/feature/PostCard";
+import { ExclusiveFacets } from "@/components/feature/ExclusiveFacets";
 import { PostFilters } from "@/components/feature/PostFilters";
 import { PostGrid } from "@/components/feature/PostGrid";
 import { ResourceCard } from "@/components/feature/ResourceCard";
 import { RandomLetterSwap } from "@/components/feature/RandomLetterSwap";
 import { listDomesticProducts } from "@/lib/domesticProducts";
 import { nativePathFromContent } from "@/lib/global";
+import { applyFacets, facetOptions, type FacetSel } from "@/lib/exclusiveFacets";
 import { groupPosts } from "@/lib/postSections";
 import { listCategories, listPosts } from "@/lib/queries";
 import { excerpt, formatDate } from "@/lib/utils";
@@ -24,13 +26,16 @@ export default async function PostsPage({
     sort?: string;
     sub?: string;
     view?: string;
+    line?: string;
+    co?: string;
+    cov?: string;
   }>;
 }) {
   const sp = await searchParams;
   const sort: SortOrder = sp.sort === "popular" ? "popular" : "latest";
   const view: "card" | "board" = sp.view === "board" ? "board" : "card";
 
-  const [categories, posts] = await Promise.all([
+  const [categories, allPosts] = await Promise.all([
     listCategories(),
     listPosts({ categorySlug: sp.category, q: sp.q, sort }),
   ]);
@@ -41,6 +46,16 @@ export default async function PostsPage({
     : undefined;
   const heading = activeCategory?.name ?? "자료실";
   const subtitle = activeCategory?.description;
+
+  // 배타적사용권: 보험 종류·회사·보장 필터(제목 기반 분류, lib/exclusiveFacets).
+  // 건수는 선택한 항목(질병 관련 / 기타) 안에서 센다.
+  const isExclusive = sp.category === "exclusive-rights";
+  const facetSel: FacetSel = { line: sp.line, co: sp.co, cov: sp.cov };
+  const facetBase = isExclusive && sp.sub
+    ? groupPosts(sp.category, allPosts)?.find((g) => g.title === sp.sub)?.posts ?? []
+    : allPosts;
+  const facets = isExclusive ? facetOptions(facetBase, facetSel) : null;
+  const posts = isExclusive ? applyFacets(allPosts, facetSel) : allPosts;
 
   // 카테고리별 항목(subsection) 분류 — exclusive-rights / domestic 만 그룹핑.
   const grouped = groupPosts(sp.category, posts);
@@ -57,7 +72,7 @@ export default async function PostsPage({
     : products;
 
   // 항목(서브카테고리) 탭 — 선택 항목만 노출(없으면 전체 항목).
-  const subsections = grouped?.map((g) => g.title) ?? [];
+  const subsections = groupPosts(sp.category, allPosts)?.map((g) => g.title) ?? [];
   const visibleSections = grouped
     ? sp.sub
       ? grouped.filter((g) => g.title === sp.sub)
@@ -77,7 +92,6 @@ export default async function PostsPage({
 
   // 배타적 사용권 목록 전용: tkLeen 마크 워터마크(홈에서 이전) + 글래스 카드.
   // 크기·드리프트는 .brand-backdrop, 카드 투명도는 .home-glass 기존 컨벤션 그대로.
-  const isExclusive = sp.category === "exclusive-rights";
 
   return (
     <div
@@ -107,6 +121,7 @@ export default async function PostsPage({
         showViewToggle={Boolean(grouped)}
         view={view}
       />
+      {facets ? <ExclusiveFacets options={facets} selected={facetSel} /> : null}
 
       <div className="mt-10">
         {visibleSections ? (
