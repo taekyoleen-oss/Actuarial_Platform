@@ -7,10 +7,10 @@
  * 카드뉴스 iframe은 내용 높이를 postMessage(tkleen-cards-height)로 알려 와 모바일에서도 자연 높이를 유지한다.
  */
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import type { CardNewsSet } from "@/lib/cardnews";
 
-export function CardNews({ set }: { set: CardNewsSet }) {
+export function CardNews({ set, canDownload = false }: { set: CardNewsSet; canDownload?: boolean }) {
   const [mode, setMode] = useState<"card" | "motion">("card");
   const base = `/cardnews/${set.slug}`;
   const tab = (m: typeof mode, label: string) => (
@@ -34,6 +34,12 @@ export function CardNews({ set }: { set: CardNewsSet }) {
         </div>
       </div>
       {mode === "card" ? <CardFrame src={`${base}/cards.html`} /> : <MotionDeck src={`${base}/motion.html`} />}
+      {canDownload && (
+        <div className="mt-3 flex flex-wrap justify-end gap-2">
+          {pdfLink(set.slug, "cards", "카드뉴스 PDF")}
+          {pdfLink(set.slug, "slides", "슬라이드 PDF")}
+        </div>
+      )}
     </section>
   );
 }
@@ -73,5 +79,17 @@ function MotionDeck({ src }: { src: string }) {
         </a>
       </div>
     </div>
+  );
+}
+
+/** 관리자 로그인 브라우저에서만 렌더 — 라우트도 관리자 검증 후 비공개 버킷 서명 URL로 보낸다. */
+function pdfLink(slug: string, type: "cards" | "slides", label: string) {
+  return (
+    <a
+      href={`/api/cardnews/${slug}/pdf?type=${type}`}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:text-primary"
+    >
+      <Download className="h-3.5 w-3.5" /> {label}
+    </a>
   );
 }

@@ -11,6 +11,7 @@ import {
   viewerSlugFromContent,
 } from "@/lib/global";
 import { getCardNews } from "@/lib/cardnews";
+import { requireAdmin } from "@/lib/auth";
 import { getPost, listComments, publicUrl } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export default async function PostDetailPage({
 
   const comments = await listComments(id);
   const cardNews = getCardNews(id);
+  const canDownload = cardNews ? (await requireAdmin()).ok : false;
   const viewerSlug = viewerSlugFromContent(post.content);
   const viewer = viewerSlug ? getGlobalViewer(viewerSlug) : undefined;
   const bodyText = stripViewerMarker(post.content);
@@ -56,7 +58,7 @@ export default async function PostDetailPage({
       <div className="mt-8">
         {/* 카드뉴스가 등록된 게시물은 AI 요약 대신 카드뉴스를 먼저 보여 준다 */}
         {cardNews ? (
-          <CardNews set={cardNews} />
+          <CardNews set={cardNews} canDownload={canDownload} />
         ) : (
           <SummaryPanel summary={post.summary} />
         )}

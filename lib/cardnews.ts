@@ -44,3 +44,7 @@ const CARDNEWS: Record<string, CardNewsSet> = {
 export function getCardNews(postId: string): CardNewsSet | undefined {
   return CARDNEWS[postId];
 }
+
+export function hasCardNewsSlug(slug: string): boolean {
+  return Object.values(CARDNEWS).some((s) => s.slug === slug);
+}
