@@ -1,0 +1,5 @@
+#!/bin/sh
+# 카드뉴스 HTML이 바뀐 커밋이면 PDF 재생성·업로드 (실패해도 커밋은 유지, 다음 실행 때 재시도)
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -q '^public/cardnews/'; then
+  node scripts/cardnews-pdf-sync.mjs || echo "[cardnews-pdf] 수동 재실행: node scripts/cardnews-pdf-sync.mjs"
+fi
